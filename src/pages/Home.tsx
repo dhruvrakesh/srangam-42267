@@ -57,30 +57,33 @@ export default function Home() {
             alt="Aerial view of the Indian Ocean with ancient trade routes"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-charcoal/40 via-charcoal/60 to-charcoal/80" />
+          <div className="absolute inset-0 bg-gradient-to-b from-charcoal/30 via-charcoal/50 to-charcoal/90" />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-burgundy/10 to-transparent" />
         </div>
         
         {/* Hero Content */}
         <div className="relative z-10 flex items-center justify-center min-h-screen">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="font-serif text-5xl lg:text-7xl font-bold text-cream mb-6 drop-shadow-2xl">
-              Srangam
-            </h1>
-            <h2 className="font-serif text-2xl lg:text-3xl text-cream/90 mb-8 max-w-3xl mx-auto drop-shadow-lg">
-              Histories of the Indian Ocean World
-            </h2>
-            <p className="text-lg lg:text-xl text-cream/80 mb-12 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
-              Exploring the interconnected histories of the Indian Ocean through archaeology, 
-              epigraphy, and deep time perspectives — from monsoon rhythms to stone inscriptions, 
-              from pepper routes to tectonic drift.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild size="lg" className="bg-burgundy hover:bg-burgundy-light text-cream border-0 shadow-xl">
+            <div className="animate-fade-in">
+              <h1 className="font-serif text-5xl lg:text-7xl font-bold text-cream mb-6 drop-shadow-2xl tracking-wide">
+                Srangam
+              </h1>
+              <h2 className="font-serif text-2xl lg:text-3xl text-cream/95 mb-8 max-w-3xl mx-auto drop-shadow-lg font-medium">
+                Histories of the Indian Ocean World
+              </h2>
+              <p className="text-lg lg:text-xl text-cream/85 mb-12 max-w-2xl mx-auto leading-relaxed drop-shadow-md font-light">
+                Exploring the interconnected histories of the Indian Ocean through archaeology, 
+                epigraphy, and deep time perspectives — from monsoon rhythms to stone inscriptions, 
+                from pepper routes to tectonic drift.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-6 justify-center">
+              <Button asChild size="lg" className="bg-burgundy hover:bg-burgundy-light text-cream border-0 shadow-2xl hover:shadow-burgundy/25 transition-all duration-300 hover:scale-105">
                 <Link to="/themes/ancient-india">
                   Explore Themes <ArrowRight size={20} className="ml-2" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="border-cream/30 text-cream hover:bg-cream/10 shadow-xl">
+              <Button asChild variant="outline" size="lg" className="border-2 border-cream text-cream hover:bg-cream hover:text-charcoal shadow-2xl hover:shadow-cream/25 transition-all duration-300 hover:scale-105 backdrop-blur-sm bg-charcoal/20">
                 <Link to="/about">
                   About the Project
                 </Link>
@@ -91,8 +94,8 @@ export default function Home() {
 
         {/* Scroll Indicator */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 border-2 border-cream/50 rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-cream/50 rounded-full mt-2 animate-pulse" />
+          <div className="w-6 h-10 border-2 border-cream/60 rounded-full flex justify-center backdrop-blur-sm bg-charcoal/20 shadow-lg">
+            <div className="w-1 h-3 bg-cream/70 rounded-full mt-2 animate-pulse" />
           </div>
         </div>
       </section>
