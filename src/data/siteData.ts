@@ -51,24 +51,35 @@ export const ARTICLES = [
   },
   {
     id: 2,
-    title: "Monsoon Memories: How Seasonal Winds Shaped Maritime Culture", 
-    excerpt: "The predictable rhythm of monsoon winds created not just trade opportunities but entire cultural practices around waiting and seasonal movement.",
-    slug: "/themes/indian-ocean-world/monsoon-memories",
+    title: "Riding the Monsoon: How Winds Became an Engine of Commerce",
+    excerpt: "A logistics revolution long before steam—sailing the Arabian Sea on a seasonal clock.",
+    slug: "/monsoon-trade-clock",
     theme: "Indian Ocean World",
-    tags: ["monsoon", "maritime", "culture", "seasons"],
-    readTime: 6,
+    tags: ["Indian Ocean World", "Trade", "Monsoon"],
+    readTime: 8,
     author: "Prof. Ahmed Hassan",
     date: "2024-03-12"
   },
   {
     id: 3,
-    title: "Stone Voices: Reading Inscriptions Across the Deccan",
-    excerpt: "From Prakrit to early Tamil, rock inscriptions tell stories of local governance, trade guilds, and religious patronage across centuries.",
-    slug: "/themes/scripts-inscriptions/stone-voices",
-    theme: "Scripts & Inscriptions", 
-    tags: ["epigraphy", "Prakrit", "Tamil", "governance"],
+    title: "Scripts that Sailed: From Southern Brāhmī to Kawi, Khmer, and Thai",
+    excerpt: "Letterforms as shipping records: how Indic scripts adapted to new languages around the Bay of Bengal.",
+    slug: "/scripts-that-sailed",
+    theme: "Scripts & Inscriptions",
+    tags: ["Scripts & Inscriptions", "Epigraphy", "SE Asia"],
     readTime: 12,
     author: "Dr. Priya Venkat",
     date: "2024-03-08"
+  },
+  {
+    id: 4,
+    title: "India on the Move: From Gondwana to the Himalaya",
+    excerpt: "A plate that sprinted, a flood basalt that roared, a mountain range still rising.",
+    slug: "/gondwana-to-himalaya",
+    theme: "Geology & Deep Time",
+    tags: ["Geology & Deep Time", "Plate Tectonics", "Deccan"],
+    readTime: 10,
+    author: "Dr. Geological Survey", 
+    date: "2024-03-05"
   }
 ];

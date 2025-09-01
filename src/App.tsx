@@ -15,6 +15,9 @@ import MapsData from "./pages/MapsData";
 import ReadingRoom from "./pages/ReadingRoom";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
+import MonsoonTradeClock from "./pages/articles/MonsoonTradeClock";
+import ScriptsThatSailed from "./pages/articles/ScriptsThatSailed";
+import GondwanaToHimalaya from "./pages/articles/GondwanaToHimalaya";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +39,9 @@ const App = () => (
             <Route path="/maps-data" element={<MapsData />} />
             <Route path="/reading-room" element={<ReadingRoom />} />
             <Route path="/about" element={<About />} />
+            <Route path="/monsoon-trade-clock" element={<MonsoonTradeClock />} />
+            <Route path="/scripts-that-sailed" element={<ScriptsThatSailed />} />
+            <Route path="/gondwana-to-himalaya" element={<GondwanaToHimalaya />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
