@@ -3,6 +3,7 @@ import { ArticlePage } from '@/components/articles/ArticlePage';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { IconScript } from '@/components/icons';
+import { ResponsiveImage } from '@/components/ui/ResponsiveImage';
 
 const PillarSilhouetteComponent = () => {
   const pillars = Array.from({ length: 7 }, (_, i) => i + 1);
@@ -56,9 +57,7 @@ const PillarSilhouetteComponent = () => {
   );
 };
 
-const content = `> IMAGE SLOT (pillar in rainforest)
-
-Seven **yūpa** pillars at Kutai (East Kalimantan) bear **Sanskrit** inscriptions cut in early southern Brahmic forms often grouped with **Pallava/Grantha**. They praise donors, ritual acts, and lineages—the same genres known from the subcontinent, adapted to local courts.
+const content = `Seven **yūpa** pillars at Kutai (East Kalimantan) bear **Sanskrit** inscriptions cut in early southern Brahmic forms often grouped with **Pallava/Grantha**. They praise donors, ritual acts, and lineages—the same genres known from the subcontinent, adapted to local courts.
 
 ## Why a yūpa matters
 
@@ -88,6 +87,15 @@ export default function KutaiYupaBorneo() {
       author="Dr. Epigraphic Studies"
       date="2024-03-22"
       dataComponents={[
+        <ResponsiveImage 
+          key="kutai-hero"
+          src="/images/docu_kutai-yupa_dawn_3x2_v1.png"
+          alt="Ancient Kutai Yūpa pillar inscription in the rainforest at dawn"
+          aspectRatio="landscape"
+          caption="One of the seven Kutai Yūpa pillars bearing Sanskrit inscriptions, found at Muara Kaman, East Kalimantan"
+          credit="Archaeological Documentation Project"
+          className="mb-8"
+        />,
         <PillarSilhouetteComponent key="pillar-silhouette" />,
         <div key="related-link" className="mt-8 p-6 bg-muted rounded-lg">
           <h3 className="text-lg font-semibold text-foreground mb-2">Explore Further</h3>

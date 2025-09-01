@@ -3,10 +3,9 @@ import { ArticlePage } from '@/components/articles/ArticlePage';
 import { IconMonsoon } from '@/components/icons';
 import { MonsoonMap } from '@/components/articles/MonsoonMap';
 import { PepperCargoTable } from '@/components/articles/PepperCargoTable';
+import { ResponsiveImage } from '@/components/ui/ResponsiveImage';
 
-const content = `> IMAGE SLOT (monsoon map / ship lane)
-
-The Indian Ocean is unusual: a **reversing wind machine**. Summer westerlies carry ships east; winter easterlies bring them home. By the first centuries CE, pilots and merchants timed departures to this rhythm, turning climate into a schedule.
+const content = `The Indian Ocean is unusual: a **reversing wind machine**. Summer westerlies carry ships east; winter easterlies bring them home. By the first centuries CE, pilots and merchants timed departures to this rhythm, turning climate into a schedule.
 
 ## Ports on a Wind Calendar
 
@@ -43,6 +42,15 @@ export default function MonsoonTradeClock() {
       author="Prof. Ahmed Hassan"
       date="2024-03-12"
       dataComponents={[
+        <ResponsiveImage 
+          key="monsoon-hero"
+          src="/images/map_monsoon-trade_parchment_v2.png"
+          alt="Historical monsoon trade routes across the Indian Ocean on parchment map"
+          aspectRatio="landscape"
+          caption="Ancient monsoon trade routes showing the seasonal wind patterns that enabled regular commerce across the Indian Ocean"
+          credit="Maritime History Archive"
+          className="mb-8"
+        />,
         <MonsoonMap key="monsoon-map" />,
         <PepperCargoTable key="pepper-cargo" />
       ]}

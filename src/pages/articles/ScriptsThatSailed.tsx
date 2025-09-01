@@ -1,10 +1,9 @@
 import React from 'react';
 import { ArticlePage } from '@/components/articles/ArticlePage';
 import { IconScript } from '@/components/icons';
+import { ResponsiveImage } from '@/components/ui/ResponsiveImage';
 
-const content = `> IMAGE SLOT (palm-leaf manuscripts / script panels)
-
-When merchants, monks, and artisans moved, **scripts moved with them**. From late Southern Brāhmī and **Pallava/Grantha** hands emerged local daughters—**Khmer**, **Cham**, **Old Javanese Kawi**—each tuned to native phonologies.
+const content = `When merchants, monks, and artisans moved, **scripts moved with them**. From late Southern Brāhmī and **Pallava/Grantha** hands emerged local daughters—**Khmer**, **Cham**, **Old Javanese Kawi**—each tuned to native phonologies.
 
 ## What traveled?
 
@@ -84,6 +83,15 @@ export default function ScriptsThatSailed() {
       author="Dr. Priya Venkat"
       date="2024-03-08"
       dataComponents={[
+        <ResponsiveImage 
+          key="scripts-hero"
+          src="/images/flatlay_scripts-that-sailed_4x3_v3.png"
+          alt="Collection of ancient scripts and manuscripts showing the evolution from Southern Brahmi to Southeast Asian scripts"
+          aspectRatio="landscape"
+          caption="Evolution of Indic scripts across maritime Southeast Asia, from palm-leaf manuscripts to stone inscriptions"
+          credit="Script Documentation Archive"
+          className="mb-8"
+        />,
         <ScriptLineageComponent key="script-lineage" />
       ]}
     />

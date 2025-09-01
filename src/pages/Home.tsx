@@ -48,28 +48,39 @@ export default function Home() {
 
   return (
     <div className="bg-background">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-sand via-background to-sand py-20 lg:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="font-serif text-4xl lg:text-6xl font-bold text-foreground mb-6">
+      {/* Hero Section with Image Background */}
+      <section className="relative min-h-screen">
+        {/* Hero Image Background */}
+        <div className="absolute inset-0">
+          <img
+            src="/images/hero_indian-ocean_aerial_21x9_v1.png"
+            alt="Aerial view of the Indian Ocean with ancient trade routes"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-charcoal/40 via-charcoal/60 to-charcoal/80" />
+        </div>
+        
+        {/* Hero Content */}
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 className="font-serif text-5xl lg:text-7xl font-bold text-cream mb-6 drop-shadow-2xl">
               Srangam
             </h1>
-            <h2 className="font-serif text-xl lg:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+            <h2 className="font-serif text-2xl lg:text-3xl text-cream/90 mb-8 max-w-3xl mx-auto drop-shadow-lg">
               Histories of the Indian Ocean World
             </h2>
-            <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg lg:text-xl text-cream/80 mb-12 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
               Exploring the interconnected histories of the Indian Ocean through archaeology, 
               epigraphy, and deep time perspectives — from monsoon rhythms to stone inscriptions, 
               from pepper routes to tectonic drift.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild size="lg" className="bg-ocean hover:bg-ocean/90">
+              <Button asChild size="lg" className="bg-burgundy hover:bg-burgundy-light text-cream border-0 shadow-xl">
                 <Link to="/themes/ancient-india">
                   Explore Themes <ArrowRight size={20} className="ml-2" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg">
+              <Button asChild variant="outline" size="lg" className="border-cream/30 text-cream hover:bg-cream/10 shadow-xl">
                 <Link to="/about">
                   About the Project
                 </Link>
@@ -78,11 +89,11 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Decorative Icons */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <IconMonsoon className="absolute top-1/4 left-1/4 text-ocean/20" size={64} />
-          <IconScript className="absolute top-1/3 right-1/4 text-gold/20" size={48} />
-          <IconBasalt className="absolute bottom-1/4 left-1/3 text-laterite/20" size={56} />
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+          <div className="w-6 h-10 border-2 border-cream/50 rounded-full flex justify-center">
+            <div className="w-1 h-3 bg-cream/50 rounded-full mt-2 animate-pulse" />
+          </div>
         </div>
       </section>
 
@@ -133,21 +144,21 @@ export default function Home() {
                 <Link
                   key={theme.path}
                   to={theme.path}
-                  className="group block p-6 bg-card rounded-lg border border-border hover:shadow-lg transition-all duration-200 hover:border-ocean/30"
+                  className="group block p-6 bg-card rounded-lg border border-border hover:shadow-lg transition-all duration-200 hover:border-primary/30"
                 >
-                  <div className="flex items-start gap-4">
-                    <div className={`flex-shrink-0 ${theme.color}`}>
-                      <IconComponent size={32} />
-                    </div>
-                    <div>
-                      <h3 className="font-serif text-lg font-semibold text-foreground group-hover:text-ocean transition-colors mb-2">
-                        {theme.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {theme.description}
-                      </p>
-                    </div>
-                  </div>
+            <div className="flex items-start gap-4">
+              <div className={`flex-shrink-0 ${theme.color}`}>
+                <IconComponent size={32} />
+              </div>
+              <div>
+                <h3 className="font-serif text-lg font-semibold text-foreground group-hover:text-primary transition-colors mb-2">
+                  {theme.title}
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {theme.description}
+                </p>
+              </div>
+            </div>
                 </Link>
               );
             })}
@@ -160,16 +171,16 @@ export default function Home() {
                 <Link
                   key={theme.path}
                   to={theme.path}
-                  className="group block p-6 bg-card rounded-lg border border-border hover:shadow-lg transition-all duration-200 hover:border-ocean/30"
+                  className="group block p-6 bg-card rounded-lg border border-border hover:shadow-lg transition-all duration-200 hover:border-primary/30"
                 >
                   <div className="flex items-start gap-4">
                     <div className={`flex-shrink-0 ${theme.color}`}>
                       <IconComponent size={32} />
                     </div>
                     <div>
-                      <h3 className="font-serif text-lg font-semibold text-foreground group-hover:text-ocean transition-colors mb-2">
-                        {theme.title}
-                      </h3>
+                <h3 className="font-serif text-lg font-semibold text-foreground group-hover:text-primary transition-colors mb-2">
+                  {theme.title}
+                </h3>
                       <p className="text-sm text-muted-foreground leading-relaxed">
                         {theme.description}
                       </p>
@@ -187,19 +198,19 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Link to="/field-notes" className="group text-center p-8 bg-card rounded-lg border border-border hover:shadow-lg transition-all duration-200">
-              <BookOpen size={48} className="mx-auto text-ocean mb-4 group-hover:scale-110 transition-transform" />
+              <BookOpen size={48} className="mx-auto text-primary mb-4 group-hover:scale-110 transition-transform" />
               <h3 className="font-serif text-xl font-semibold text-foreground mb-2">Field Notes</h3>
               <p className="text-muted-foreground">Updates from ongoing fieldwork and new discoveries</p>
             </Link>
 
             <Link to="/maps-data" className="group text-center p-8 bg-card rounded-lg border border-border hover:shadow-lg transition-all duration-200">
-              <Map size={48} className="mx-auto text-gold mb-4 group-hover:scale-110 transition-transform" />
+              <Map size={48} className="mx-auto text-accent mb-4 group-hover:scale-110 transition-transform" />
               <h3 className="font-serif text-xl font-semibold text-foreground mb-2">Maps & Data</h3>
               <p className="text-muted-foreground">Interactive visualizations and datasets</p>
             </Link>
 
             <Link to="/about" className="group text-center p-8 bg-card rounded-lg border border-border hover:shadow-lg transition-all duration-200">
-              <Users size={48} className="mx-auto text-laterite mb-4 group-hover:scale-110 transition-transform" />
+              <Users size={48} className="mx-auto text-muted-foreground mb-4 group-hover:scale-110 transition-transform" />
               <h3 className="font-serif text-xl font-semibold text-foreground mb-2">About</h3>
               <p className="text-muted-foreground">Learn about our team, methods, and mission</p>
             </Link>

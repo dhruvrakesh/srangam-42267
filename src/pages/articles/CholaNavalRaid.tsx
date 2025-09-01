@@ -88,6 +88,15 @@ export default function CholaNavalRaid() {
       author="Prof. Naval History"
       date="2024-03-15"
       dataComponents={[
+        <ResponsiveImage 
+          key="chola-hero"
+          src="/images/scene_chola-fleet_bronze_21x9_v2.png"
+          alt="Bronze sculpture depicting Chola naval fleet crossing the Indian Ocean"
+          aspectRatio="wide"
+          caption="Artistic reconstruction of the Chola naval expedition of 1025 CE, showcasing the maritime power of medieval South India"
+          credit="Maritime Heritage Collection"
+          className="mb-8"
+        />,
         <ConvoyLanesComponent key="convoy-lanes" />
       ]}
     />

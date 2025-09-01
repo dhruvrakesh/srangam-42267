@@ -1,10 +1,9 @@
 import React from 'react';
 import { ArticlePage } from '@/components/articles/ArticlePage';
 import { IconEdict } from '@/components/icons';
+import { ResponsiveImage } from '@/components/ui/ResponsiveImage';
 
-const content = `> IMAGE SLOT (bilingual rock face)
-
-At **Kandahar**, Ashoka's edicts appear in **Greek and Aramaic**. The choice is policy: to speak beyond borders using the words that neighboring communities read in court and market.
+const content = `At **Kandahar**, Ashoka's edicts appear in **Greek and Aramaic**. The choice is policy: to speak beyond borders using the words that neighboring communities read in court and market.
 
 ## What the stones do
 
@@ -86,6 +85,15 @@ export default function AshokaKandaharEdicts() {
       author="Dr. Epigraphy Specialist"
       date="2024-03-18"
       dataComponents={[
+        <ResponsiveImage 
+          key="kandahar-hero"
+          src="/images/macro_ashoka-kandahar_raking_3x2_v1.png"
+          alt="Close-up view of the bilingual Ashoka edict at Kandahar showing Greek and Aramaic scripts"
+          aspectRatio="landscape"
+          caption="Detail of Ashoka's bilingual edict at Kandahar, showing the sophisticated multilingual governance of the Mauryan empire"
+          credit="Epigraphic Survey Archive"
+          className="mb-8"
+        />,
         <BilingualEdictComponent key="bilingual-edict" />
       ]}
     />

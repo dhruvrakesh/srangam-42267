@@ -8,16 +8,24 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Custom Srangam Colors */
+    /* Nartiang Foundation Inspired Palette */
+    --burgundy: 344 73% 22%;     /* #8B1D3D - Deep wine red */
+    --burgundy-light: 344 60% 35%; /* #B23A5D - Lighter burgundy */
+    --cream: 35 25% 92%;         /* #F4F0E8 - Warm cream */
+    --charcoal: 218 15% 12%;     /* #1A1F2E - Deep charcoal */
+    --gold-warm: 42 78% 58%;     /* #E6B547 - Warm gold */
+    --gold-light: 42 60% 75%;    /* #E5C373 - Light gold */
+    
+    /* Legacy Srangam Colors (as secondary palette) */
     --ocean: 195 82% 27%;        /* #0E6F7C */
     --laterite: 13 65% 40%;      /* #A03E2F */
     --sand: 32 31% 87%;          /* #E7DCCF */
     --gold: 45 53% 50%;          /* #C89F3D */
     --ink: 218 8% 7%;            /* #101214 */
 
-    /* Base theme using custom colors */
-    --background: var(--sand);
-    --foreground: var(--ink);
+    /* Base theme using Nartiang colors */
+    --background: var(--cream);
+    --foreground: var(--charcoal);
 
     --card: 0 0% 100%;
     --card-foreground: var(--ink);
@@ -25,24 +33,24 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: var(--ink);
 
-    --primary: var(--ocean);
-    --primary-foreground: 0 0% 98%;
+    --primary: var(--burgundy);
+    --primary-foreground: var(--cream);
 
-    --secondary: var(--sand);
-    --secondary-foreground: var(--ink);
+    --secondary: var(--cream);
+    --secondary-foreground: var(--charcoal);
 
-    --muted: 32 20% 92%;
-    --muted-foreground: var(--laterite);
+    --muted: 35 20% 90%;
+    --muted-foreground: var(--burgundy-light);
 
-    --accent: var(--gold);
-    --accent-foreground: var(--ink);
+    --accent: var(--gold-warm);
+    --accent-foreground: var(--charcoal);
 
     --destructive: var(--laterite);
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: var(--cream);
 
-    --border: 32 20% 85%;
-    --input: 32 20% 85%;
-    --ring: var(--ocean);
+    --border: 35 15% 82%;
+    --input: 35 15% 82%;
+    --ring: var(--burgundy);
 
     --radius: 0.5rem;
 
@@ -64,33 +72,33 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: var(--ink);
-    --foreground: var(--sand);
+    --background: var(--charcoal);
+    --foreground: var(--cream);
 
-    --card: 218 15% 12%;
-    --card-foreground: var(--sand);
+    --card: 218 20% 10%;
+    --card-foreground: var(--cream);
 
-    --popover: var(--ink);
-    --popover-foreground: var(--sand);
+    --popover: var(--charcoal);
+    --popover-foreground: var(--cream);
 
-    --primary: var(--ocean);
-    --primary-foreground: 0 0% 98%;
+    --primary: var(--burgundy-light);
+    --primary-foreground: var(--cream);
 
     --secondary: 218 15% 15%;
-    --secondary-foreground: var(--sand);
+    --secondary-foreground: var(--cream);
 
     --muted: 218 15% 15%;
-    --muted-foreground: 32 20% 65%;
+    --muted-foreground: var(--gold-light);
 
-    --accent: var(--gold);
-    --accent-foreground: var(--ink);
+    --accent: var(--gold-warm);
+    --accent-foreground: var(--charcoal);
 
     --destructive: var(--laterite);
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: var(--cream);
 
     --border: 218 15% 20%;
     --input: 218 15% 20%;
-    --ring: var(--ocean);
+    --ring: var(--burgundy-light);
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
