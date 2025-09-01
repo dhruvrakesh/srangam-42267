@@ -114,5 +114,16 @@ export const ARTICLES = [
     readTime: 5,
     author: "Dr. Epigraphy Specialist",
     date: "2024-03-18"
+  },
+  {
+    id: 8,
+    title: "Rainforest Prashastis: The Kutai Yūpa Inscriptions of Borneo",
+    excerpt: "Sanskrit verse and Vedic ritual vocabulary on sacrificial posts at the edge of the equator.",
+    slug: "/kutai-yupa-borneo",
+    theme: "Scripts & Inscriptions",
+    tags: ["Scripts & Inscriptions", "Sanskrit", "SE Asia"],
+    readTime: 8,
+    author: "Dr. Epigraphic Studies",
+    date: "2024-03-22"
   }
 ];

@@ -21,6 +21,7 @@ import GondwanaToHimalaya from "./pages/articles/GondwanaToHimalaya";
 import PepperAndBullion from "./pages/articles/PepperAndBullion";
 import CholaNavalRaid from "./pages/articles/CholaNavalRaid";
 import AshokaKandaharEdicts from "./pages/articles/AshokaKandaharEdicts";
+import KutaiYupaBorneo from "./pages/articles/KutaiYupaBorneo";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
                 <Route path="/pepper-and-bullion" element={<PepperAndBullion />} />
                 <Route path="/chola-srivijaya-1025" element={<CholaNavalRaid />} />
                 <Route path="/ashoka-kandahar-edicts" element={<AshokaKandaharEdicts />} />
+                <Route path="/kutai-yupa-borneo" element={<KutaiYupaBorneo />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
