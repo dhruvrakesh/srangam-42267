@@ -23,16 +23,25 @@ export default {
 				sans: ['Inter', 'system-ui', 'sans-serif'],
 			},
 			colors: {
-				ocean: 'hsl(var(--ocean))',
-				laterite: 'hsl(var(--laterite))',
-				sand: 'hsl(var(--sand))',
-				gold: 'hsl(var(--gold))',
-				ink: 'hsl(var(--ink))',
-				border: 'hsl(var(--border))',
-				input: 'hsl(var(--input))',
-				ring: 'hsl(var(--ring))',
-				background: 'hsl(var(--background))',
-				foreground: 'hsl(var(--foreground))',
+        // Legacy Srangam colors
+        ocean: "hsl(var(--ocean))",
+        laterite: "hsl(var(--laterite))",
+        sand: "hsl(var(--sand))",
+        gold: "hsl(var(--gold))",
+        ink: "hsl(var(--ink))",
+        
+        // Nartiang Foundation colors
+        burgundy: "hsl(var(--burgundy))",
+        "burgundy-light": "hsl(var(--burgundy-light))",
+        cream: "hsl(var(--cream))",
+        charcoal: "hsl(var(--charcoal))",
+        "gold-warm": "hsl(var(--gold-warm))",
+        "gold-light": "hsl(var(--gold-light))",
+				border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))'

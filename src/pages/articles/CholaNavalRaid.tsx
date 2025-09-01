@@ -1,10 +1,9 @@
 import React from 'react';
 import { ArticlePage } from '@/components/articles/ArticlePage';
 import { IconPort } from '@/components/icons';
+import { ResponsiveImage } from '@/components/ui/ResponsiveImage';
 
-const content = `> IMAGE SLOT (fleet reconstruction)
-
-In 1025 CE, **Rajendra I** hit the Srivijayan nexus across the Straits of Malacca. The action was surgical—harbor targets, shipping, tribute nodes—and strategic: a signal that the Cholas could project **sea power** along their trading arteries.
+const content = `In 1025 CE, **Rajendra I** hit the Srivijayan nexus across the Straits of Malacca. The action was surgical—harbor targets, shipping, tribute nodes—and strategic: a signal that the Cholas could project **sea power** along their trading arteries.
 
 ## The logistics behind the blow
 
