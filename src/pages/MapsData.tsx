@@ -2,8 +2,14 @@ import { Map, Database, BarChart3, Globe } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PORTS, MONSOON, PLATE_SPEED, PEPPER_CARGO } from "@/data/siteData";
+import { InteractivePortMap } from "@/components/interactive/InteractivePortMap";
+import { MonsoonAnimation } from "@/components/interactive/MonsoonAnimation";
+import { PlateTimeline } from "@/components/interactive/PlateTimeline";
+import { useState } from "react";
 
 export default function MapsData() {
+  const [activeModal, setActiveModal] = useState<'ports' | 'monsoon' | 'timeline' | null>(null);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -50,7 +56,12 @@ export default function MapsData() {
                   </div>
                 ))}
               </div>
-              <Button variant="outline" size="sm" className="w-full">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full" 
+                onClick={() => setActiveModal('ports')}
+              >
                 View Interactive Map
               </Button>
             </CardContent>
@@ -82,7 +93,12 @@ export default function MapsData() {
                   </p>
                 </div>
               </div>
-              <Button variant="outline" size="sm" className="w-full">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => setActiveModal('monsoon')}
+              >
                 View Seasonal Animation
               </Button>
             </CardContent>
@@ -108,7 +124,12 @@ export default function MapsData() {
                   </div>
                 ))}
               </div>
-              <Button variant="outline" size="sm" className="w-full">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => setActiveModal('timeline')}
+              >
                 View Timeline Visualization
               </Button>
             </CardContent>
@@ -169,6 +190,17 @@ export default function MapsData() {
           </Card>
         </div>
       </div>
+
+      {/* Interactive Modals */}
+      {activeModal === 'ports' && (
+        <InteractivePortMap onClose={() => setActiveModal(null)} />
+      )}
+      {activeModal === 'monsoon' && (
+        <MonsoonAnimation onClose={() => setActiveModal(null)} />
+      )}
+      {activeModal === 'timeline' && (
+        <PlateTimeline onClose={() => setActiveModal(null)} />
+      )}
     </div>
   );
 }
