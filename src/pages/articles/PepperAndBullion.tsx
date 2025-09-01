@@ -2,6 +2,8 @@ import React from 'react';
 import { ArticlePage } from '@/components/articles/ArticlePage';
 import { IconPort } from '@/components/icons';
 import { PepperCargoTable } from '@/components/articles/PepperCargoTable';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 const content = `> IMAGE SLOT (pepper sacks / amphorae)
 
@@ -34,7 +36,18 @@ export default function PepperAndBullion() {
       author="Dr. Maritime Historian"
       date="2024-03-08"
       dataComponents={[
-        <PepperCargoTable key="pepper-cargo" />
+        <PepperCargoTable key="pepper-cargo" />,
+        <div key="related-link" className="mt-8 p-6 bg-muted rounded-lg">
+          <h3 className="text-lg font-semibold text-ink mb-2">Explore the Full Trade Network</h3>
+          <p className="text-muted-foreground text-sm mb-4">
+            Discover the complete Muziris corridor with interactive trade ledgers and route maps.
+          </p>
+          <Link to="/batch/muziris-kutai-ashoka">
+            <Button variant="default">
+              View Scripts, Trade & Empire Collection
+            </Button>
+          </Link>
+        </div>
       ]}
     />
   );

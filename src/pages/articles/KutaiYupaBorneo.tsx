@@ -1,5 +1,7 @@
 import React from 'react';
 import { ArticlePage } from '@/components/articles/ArticlePage';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 import { IconScript } from '@/components/icons';
 
 const PillarSilhouetteComponent = () => {
@@ -86,7 +88,18 @@ export default function KutaiYupaBorneo() {
       author="Dr. Epigraphic Studies"
       date="2024-03-22"
       dataComponents={[
-        <PillarSilhouetteComponent key="pillar-silhouette" />
+        <PillarSilhouetteComponent key="pillar-silhouette" />,
+        <div key="related-link" className="mt-8 p-6 bg-muted rounded-lg">
+          <h3 className="text-lg font-semibold text-foreground mb-2">Explore Further</h3>
+          <p className="text-muted-foreground text-sm mb-4">
+            See the Kutai Yūpa inscriptions alongside other examples of ancient scripts and trade networks.
+          </p>
+          <Link to="/batch/muziris-kutai-ashoka">
+            <Button variant="default">
+              View Scripts, Trade & Empire Collection
+            </Button>
+          </Link>
+        </div>
       ]}
     />
   );

@@ -1,6 +1,7 @@
 import { Map, Database, BarChart3, Globe } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { PORTS, MONSOON, PLATE_SPEED, PEPPER_CARGO } from "@/data/siteData";
 import { InteractivePortMap } from "@/components/interactive/InteractivePortMap";
 import { MonsoonAnimation } from "@/components/interactive/MonsoonAnimation";
@@ -178,6 +179,30 @@ export default function MapsData() {
                 All research data is available for download and reuse under open access licenses. 
                 Contribute to the growing knowledge base of Indian Ocean studies.
               </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <Card className="p-4">
+                  <h4 className="font-semibold text-foreground mb-2">Maritime Networks</h4>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Explore comprehensive trade networks from Bujang Valley to Nagapattinam guilds.
+                  </p>
+                  <Link to="/batch/bujang-nagapattinam-ocean">
+                    <Button size="sm" variant="outline" className="w-full">
+                      View Maritime Collection
+                    </Button>
+                  </Link>
+                </Card>
+                <Card className="p-4">
+                  <h4 className="font-semibold text-foreground mb-2">Scripts & Empire</h4>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Interactive exploration of Muziris trade, Kutai inscriptions, and Ashoka's edicts.
+                  </p>
+                  <Link to="/batch/muziris-kutai-ashoka">
+                    <Button size="sm" variant="outline" className="w-full">
+                      View Scripts Collection
+                    </Button>
+                  </Link>
+                </Card>
+              </div>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button className="bg-ocean hover:bg-ocean/90">
                   Download CSV Data
