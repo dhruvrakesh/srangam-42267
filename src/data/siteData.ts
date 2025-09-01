@@ -81,5 +81,38 @@ export const ARTICLES = [
     readTime: 10,
     author: "Dr. Geological Survey", 
     date: "2024-03-05"
+  },
+  {
+    id: 5,
+    title: "Pepper and Bullion: The Malabar–Red Sea Circuit",
+    excerpt: "Sacks of spice eastbound; silver and gold westbound—the corridor that fed two worlds.",
+    slug: "/pepper-and-bullion",
+    theme: "Empires & Exchange",
+    tags: ["Empires & Exchange", "Malabar", "Roman World"],
+    readTime: 6,
+    author: "Dr. Maritime Historian",
+    date: "2024-03-08"
+  },
+  {
+    id: 6,
+    title: "Rajendra's Ocean: The Chola Strike on Srivijaya, 1025 CE",
+    excerpt: "A hard-power raid in a sea network bound by soft-power ties.",
+    slug: "/chola-srivijaya-1025",
+    theme: "Empires & Exchange",
+    tags: ["Empires & Exchange", "Chola", "Straits of Malacca"],
+    readTime: 7,
+    author: "Prof. Naval History",
+    date: "2024-03-15"
+  },
+  {
+    id: 7,
+    title: "Stones that Speak: Ashoka's Greek and Aramaic at Kandahar",
+    excerpt: "Imperial ethics in multiple languages at a cultural crossroads.",
+    slug: "/ashoka-kandahar-edicts",
+    theme: "Ancient India",
+    tags: ["Ancient India", "Edicts", "Hellenistic Links"],
+    readTime: 5,
+    author: "Dr. Epigraphy Specialist",
+    date: "2024-03-18"
   }
 ];

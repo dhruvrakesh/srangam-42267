@@ -18,6 +18,9 @@ import NotFound from "./pages/NotFound";
 import MonsoonTradeClock from "./pages/articles/MonsoonTradeClock";
 import ScriptsThatSailed from "./pages/articles/ScriptsThatSailed";
 import GondwanaToHimalaya from "./pages/articles/GondwanaToHimalaya";
+import PepperAndBullion from "./pages/articles/PepperAndBullion";
+import CholaNavalRaid from "./pages/articles/CholaNavalRaid";
+import AshokaKandaharEdicts from "./pages/articles/AshokaKandaharEdicts";
 
 const queryClient = new QueryClient();
 
@@ -39,9 +42,12 @@ const App = () => (
             <Route path="/maps-data" element={<MapsData />} />
             <Route path="/reading-room" element={<ReadingRoom />} />
             <Route path="/about" element={<About />} />
-            <Route path="/monsoon-trade-clock" element={<MonsoonTradeClock />} />
-            <Route path="/scripts-that-sailed" element={<ScriptsThatSailed />} />
-            <Route path="/gondwana-to-himalaya" element={<GondwanaToHimalaya />} />
+                <Route path="/monsoon-trade-clock" element={<MonsoonTradeClock />} />
+                <Route path="/scripts-that-sailed" element={<ScriptsThatSailed />} />
+                <Route path="/gondwana-to-himalaya" element={<GondwanaToHimalaya />} />
+                <Route path="/pepper-and-bullion" element={<PepperAndBullion />} />
+                <Route path="/chola-srivijaya-1025" element={<CholaNavalRaid />} />
+                <Route path="/ashoka-kandahar-edicts" element={<AshokaKandaharEdicts />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
