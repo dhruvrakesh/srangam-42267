@@ -3,7 +3,17 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import { Layout } from "@/components/layout/Layout";
+import Home from "./pages/Home";
+import AncientIndia from "./pages/themes/AncientIndia";
+import IndianOceanWorld from "./pages/themes/IndianOceanWorld";
+import ScriptsInscriptions from "./pages/themes/ScriptsInscriptions";
+import GeologyDeepTime from "./pages/themes/GeologyDeepTime";
+import EmpiresExchange from "./pages/themes/EmpiresExchange";
+import FieldNotes from "./pages/FieldNotes";
+import MapsData from "./pages/MapsData";
+import ReadingRoom from "./pages/ReadingRoom";
+import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -14,11 +24,22 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/themes/ancient-india" element={<AncientIndia />} />
+            <Route path="/themes/indian-ocean-world" element={<IndianOceanWorld />} />
+            <Route path="/themes/scripts-inscriptions" element={<ScriptsInscriptions />} />
+            <Route path="/themes/geology-deep-time" element={<GeologyDeepTime />} />
+            <Route path="/themes/empires-exchange" element={<EmpiresExchange />} />
+            <Route path="/field-notes" element={<FieldNotes />} />
+            <Route path="/maps-data" element={<MapsData />} />
+            <Route path="/reading-room" element={<ReadingRoom />} />
+            <Route path="/about" element={<About />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Layout>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

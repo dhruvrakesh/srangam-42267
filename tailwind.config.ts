@@ -18,7 +18,16 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				serif: ['IBM Plex Serif', 'serif'],
+				sans: ['Inter', 'system-ui', 'sans-serif'],
+			},
 			colors: {
+				ocean: 'hsl(var(--ocean))',
+				laterite: 'hsl(var(--laterite))',
+				sand: 'hsl(var(--sand))',
+				gold: 'hsl(var(--gold))',
+				ink: 'hsl(var(--ink))',
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
