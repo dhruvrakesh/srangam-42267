@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TagChip } from "@/components/ui/TagChip";
+import { MapboxBujangNetwork } from '@/components/interactive/MapboxBujangNetwork';
 
 /**
  * Srangam — Ready React pages (single-file batch)
@@ -419,6 +420,7 @@ const OceanChurnComponent: React.FC = () => {
 
 const BatchBujangNagapattinamOcean: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'bujang' | 'nagapattinam' | 'ocean'>('bujang');
+  const [showMapboxBujang, setShowMapboxBujang] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">
@@ -466,7 +468,17 @@ const BatchBujangNagapattinamOcean: React.FC = () => {
           {activeTab === 'bujang' && (
             <Section title="Bujang Valley: Gateway to the Bay of Bengal">
               <div className="grid gap-8">
-                <BujangMapComponent />
+                <div className="flex justify-between items-center">
+                  <BujangMapComponent />
+                  <div className="ml-4">
+                    <Button 
+                      onClick={() => setShowMapboxBujang(true)}
+                      className="mb-4"
+                    >
+                      View Enhanced Geographic Map
+                    </Button>
+                  </div>
+                </div>
                 <div className="prose max-w-none">
                   <p className="text-muted-foreground">
                     The Bujang Valley in Kedah represents one of Southeast Asia's most significant archaeological complexes, 
@@ -540,6 +552,11 @@ const BatchBujangNagapattinamOcean: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Enhanced Mapbox Components */}
+      {showMapboxBujang && (
+        <MapboxBujangNetwork onClose={() => setShowMapboxBujang(false)} />
+      )}
     </div>
   );
 };

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { PORTS, MONSOON, PLATE_SPEED, PEPPER_CARGO } from "@/data/siteData";
-import { InteractivePortMap } from "@/components/interactive/InteractivePortMap";
+import { MapboxPortMap } from "@/components/interactive/MapboxPortMap";
 import { MonsoonAnimation } from "@/components/interactive/MonsoonAnimation";
 import { PlateTimeline } from "@/components/interactive/PlateTimeline";
 import { useState } from "react";
@@ -218,7 +218,7 @@ export default function MapsData() {
 
       {/* Interactive Modals */}
       {activeModal === 'ports' && (
-        <InteractivePortMap onClose={() => setActiveModal(null)} />
+        <MapboxPortMap onClose={() => setActiveModal(null)} />
       )}
       {activeModal === 'monsoon' && (
         <MonsoonAnimation onClose={() => setActiveModal(null)} />
