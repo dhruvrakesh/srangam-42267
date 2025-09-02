@@ -50,8 +50,9 @@ const App = () => (
                 <Route path="/gondwana-to-himalaya" element={<GondwanaToHimalaya />} />
                 <Route path="/pepper-and-bullion" element={<PepperAndBullion />} />
                 <Route path="/chola-srivijaya-1025" element={<CholaNavalRaid />} />
-                <Route path="/ashoka-kandahar-edicts" element={<AshokaKandaharEdicts />} />
+            <Route path="/ashoka-kandahar-edicts" element={<AshokaKandaharEdicts />} />
             <Route path="/kutai-yupa-borneo" element={<KutaiYupaBorneo />} />
+            <Route path="/themes/ancient-india/pepper-routes" element={<PepperAndBullion />} />
             <Route path="/batch/bujang-nagapattinam-ocean" element={<BatchBujangNagapattinamOcean />} />
             <Route path="/batch/muziris-kutai-ashoka" element={<BatchMuzirisKutaiAshoka />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

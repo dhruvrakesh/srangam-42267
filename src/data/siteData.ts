@@ -45,8 +45,8 @@ export const ARTICLES = [
     slug: "/themes/ancient-india/pepper-routes",
     theme: "Ancient India",
     tags: ["pepper", "trade", "Roman", "Muziris"],
-    readTime: 8,
-    author: "Dr. Sarah Chennai",
+    readTime: 18,
+    author: "Nartiang Foundation",
     date: "2024-03-15"
   },
   {
