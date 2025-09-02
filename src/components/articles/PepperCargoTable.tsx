@@ -38,7 +38,8 @@ export function PepperCargoTable() {
       </div>
       
       <p className="text-sm text-muted-foreground">
-        * Standard sack weight estimated at 55kg based on archaeological evidence
+        * Figures show individual shipment weights (e.g., 16,500 kg for single Muziris→Berenike voyage)<br/>
+        * Standard sack weight estimated at 55kg based on archaeological evidence from Berenike
       </p>
     </div>
   );

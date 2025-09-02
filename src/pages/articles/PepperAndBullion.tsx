@@ -38,23 +38,24 @@ The Elder Pliny, writing in the 1st century CE, famously complained that India w
 - Custom duties on Indo-Roman spice trade contributed up to one-third of the Roman Empire's revenue in the 1st century CE
 - Hundreds of ships plied the route annually at the trade's zenith
 
-The very discovery of the monsoon wind system by Greek navigator Hippalus was likely driven by the incentive to streamline the spice trade. Before Hippalus, ships hugged the coastline, but he showed that by sailing with the monsoon winds, one could cut straight across the Arabian Sea from Arabia to India.
+Indian navigators had mastered monsoon wind patterns for millennia, as evidenced by ancient migrations from the subcontinent to Southeast Asia and Australia that required sophisticated understanding of seasonal wind systems. Tamil Sangam literature describes detailed knowledge of seasonal navigation long before Greek contact. The Greek navigator Hippalus, rather than "discovering" these winds, learned from Indian merchants who had been using monsoon patterns for direct Arabian Sea crossings for centuries—just as Vasco da Gama would later follow established Indian trade routes to reach Calicut.
 
 ## Cultural and Economic Exchange
 
 The pepper routes were not just conduits of commerce; they were channels of cultural exchange. Roman writers like Pliny and Ptolemy described Indian ports and products with remarkable accuracy, indicating substantial knowledge of the subcontinent. Tamil Sangam poetry refers to the Yavanas (Greeks/Romans) and their strange ways, marveling at their ships arriving with gold and departing with pepper.
 
 **Cross-Cultural Impact:**
-- Roman artisans may have influenced local craft (Indo-Roman mosaics found at Arikamedu)
-- Early Christianity likely reached South India via these maritime channels
-- Indian merchants carried Buddhism and Hinduism to Southeast Asia by sea
-- Indian astronomy absorbed Greek knowledge (Greco-Roman constellation names in Sanskrit texts)
+- Indian maritime traditions predated Greek contact by millennia (evidenced by ancient migrations to Southeast Asia)
+- Tamil Sangam literature shows sophisticated understanding of seasonal trade winds and navigation
+- Indian merchants established trade networks from Africa to China, carrying Buddhism and Hinduism across oceans
+- Early Christianity likely reached South India via established Indian Ocean trade routes
+- Cultural exchange flowed in all directions, with Indian mathematical and astronomical knowledge spreading westward
 
 The exchange was truly bidirectional – Indian kings dined off Roman wine while Roman nobles spiced their meats with Indian pepper, creating a proto-globalized world.
 
 ## The Legacy of Ancient Trade Networks
 
-India's ancient spice network across the Arabian Sea set the stage for millennia of global trade. When Portuguese explorer Vasco da Gama successfully sailed around Africa to Calicut in the late 15th century, he was retracing, in reverse, the ancient pepper route. The Arab traders' stranglehold on pepper pricing was a major impetus for da Gama's voyage.
+India's ancient spice networks across the Arabian Sea established sophisticated global trade millennia before European expansion. When Vasco da Gama reached Calicut in 1498, he followed Indian merchants who guided him along established routes—just as Hippalus had learned monsoon navigation from Indian masters centuries earlier. These patterns reflect how Indigenous knowledge systems were systematically appropriated and reframed as European "discoveries."
 
 For India, the pepper trade enriched port cities and contributed to a thriving oceanic economy long before colonial times. It connected the subcontinent to a wider world, fostering cosmopolitan societies on its coasts. The story of the pepper routes across the Arabian Sea is a potent antidote to the misconception that international trade and globalization began only with European colonialism.
 
@@ -69,7 +70,7 @@ export default function PepperAndBullion() {
       tags={["Empires & Exchange", "Malabar", "Roman World", "Maritime Trade", "Ancient Economics"]}
       icon={IconPort}
       readTime={18}
-      author="Dr. Maritime Historian"
+      author="Nartiang Foundation"
       date="2024-03-08"
       dataComponents={[
         // Hero image from existing collection
@@ -145,12 +146,13 @@ export default function PepperAndBullion() {
           />
           <div className="bg-blue-50/50 rounded-lg p-6 border border-blue-200">
             <h4 className="font-serif text-lg font-semibold text-foreground mb-3">
-              The Monsoon Discovery
+              Ancient Indigenous Navigation
             </h4>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              Hippalus's discovery of sailing with monsoon winds was revolutionary. Before this breakthrough, 
-              ships hugged coastlines, but direct sailing across the Arabian Sea slashed journey times and 
-              increased cargo capacity—turning a seasonal trickle of trade into a flood.
+              Indian mariners had utilized monsoon wind patterns for direct ocean crossings centuries before Greek contact. 
+              Tamil literature and archaeological evidence from ancient port cities show sophisticated seasonal navigation systems. 
+              When Hippalus documented these routes, he was recording existing Indian maritime knowledge—part of a broader 
+              pattern where Indigenous expertise was later reframed as European "discovery."
             </p>
           </div>
         </div>,
