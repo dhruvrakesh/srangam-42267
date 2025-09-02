@@ -1,6 +1,7 @@
 import { BookOpen, Calendar, MapPin } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TagChip } from "@/components/ui/TagChip";
+import { Link } from "react-router-dom";
 
 export default function FieldNotes() {
   return (
@@ -26,10 +27,10 @@ export default function FieldNotes() {
             <CardHeader>
               <div className="flex items-start justify-between gap-4">
                 <CardTitle className="font-serif text-xl text-foreground">
-                  Ceramic Analysis from Berenike Harbor
+                  Maritime Memories of South India: Major Publication Released
                 </CardTitle>
                 <TagChip variant="theme">
-                  Active Research
+                  Published
                 </TagChip>
               </div>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -39,21 +40,29 @@ export default function FieldNotes() {
                 </div>
                 <div className="flex items-center gap-1">
                   <MapPin size={14} />
-                  <span>Red Sea Coast, Egypt</span>
+                  <span>Berenike, Egypt & Muziris, India</span>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                Latest findings from our ceramic assemblage analysis reveal new insights into 
-                Indo-Roman trade patterns. The presence of specific fabric types suggests 
-                direct maritime connections between Muziris and Red Sea ports.
+                Our comprehensive study on Indo-Roman maritime trade networks has been published. 
+                The research integrates recent archaeological breakthroughs at Berenike, including 
+                the discovery of Indian pottery and 7.5kg of ancient pepper, with Tamil Sangam literature 
+                to reveal the true scale of ancient Indian Ocean globalization.
               </p>
-              <div className="flex gap-2">
-                <TagChip>ceramics</TagChip>
-                <TagChip>trade routes</TagChip>
-                <TagChip>Roman period</TagChip>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <TagChip>Indo-Roman Trade</TagChip>
+                <TagChip>Berenike</TagChip>
+                <TagChip>Muziris</TagChip>
+                <TagChip>Maritime Networks</TagChip>
               </div>
+              <Link 
+                to="/maritime-memories-south-india" 
+                className="text-ocean hover:text-ocean/80 font-medium"
+              >
+                → Read Full Article (18 min)
+              </Link>
             </CardContent>
           </Card>
 

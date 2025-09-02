@@ -40,6 +40,17 @@ export const PEPPER_CARGO = [
 export const ARTICLES = [
   {
     id: 1,
+    title: "Maritime Memories of South India: Emporia of the Ocean",
+    excerpt: "Recent archaeological breakthroughs at Berenike confirm the vast scale of Indo-Roman maritime trade. From pepper markets to desert ports, this exploration traces how South India became a pivotal hub of the ancient world.",
+    slug: "/maritime-memories-south-india",
+    theme: "Ancient India", 
+    tags: ["Indo-Roman Trade", "Muziris", "Berenike", "Maritime Networks"],
+    readTime: 18,
+    author: "Nartiang Foundation",
+    date: "2024-03-15"
+  },
+  {
+    id: 2,
     title: "The Pepper Routes: Tracing Spice Networks Across the Arabian Sea",
     excerpt: "Archaeological evidence from Muziris reveals how pepper transformed ancient trade networks and connected India to the Roman world.",
     slug: "/themes/ancient-india/pepper-routes",
@@ -50,7 +61,7 @@ export const ARTICLES = [
     date: "2024-03-15"
   },
   {
-    id: 2,
+    id: 3,
     title: "Riding the Monsoon: How Winds Became an Engine of Commerce",
     excerpt: "A logistics revolution long before steam—sailing the Arabian Sea on a seasonal clock.",
     slug: "/monsoon-trade-clock",
@@ -61,7 +72,7 @@ export const ARTICLES = [
     date: "2024-03-12"
   },
   {
-    id: 3,
+    id: 4,
     title: "Scripts that Sailed: From Southern Brāhmī to Kawi, Khmer, and Thai",
     excerpt: "Letterforms as shipping records: how Indic scripts adapted to new languages around the Bay of Bengal.",
     slug: "/scripts-that-sailed",
@@ -72,7 +83,7 @@ export const ARTICLES = [
     date: "2024-03-08"
   },
   {
-    id: 4,
+    id: 5,
     title: "India on the Move: From Gondwana to the Himalaya",
     excerpt: "A plate that sprinted, a flood basalt that roared, a mountain range still rising.",
     slug: "/gondwana-to-himalaya",
@@ -83,7 +94,7 @@ export const ARTICLES = [
     date: "2024-03-05"
   },
   {
-    id: 5,
+    id: 6,
     title: "Pepper and Bullion: The Malabar–Red Sea Circuit",
     excerpt: "Sacks of spice eastbound; silver and gold westbound—the corridor that fed two worlds.",
     slug: "/pepper-and-bullion",
@@ -94,7 +105,7 @@ export const ARTICLES = [
     date: "2024-03-08"
   },
   {
-    id: 6,
+    id: 7,
     title: "Rajendra's Ocean: The Chola Strike on Srivijaya, 1025 CE",
     excerpt: "A hard-power raid in a sea network bound by soft-power ties.",
     slug: "/chola-srivijaya-1025",
@@ -105,7 +116,7 @@ export const ARTICLES = [
     date: "2024-03-15"
   },
   {
-    id: 7,
+    id: 8,
     title: "Stones that Speak: Ashoka's Greek and Aramaic at Kandahar",
     excerpt: "Imperial ethics in multiple languages at a cultural crossroads.",
     slug: "/ashoka-kandahar-edicts",
@@ -116,7 +127,7 @@ export const ARTICLES = [
     date: "2024-03-18"
   },
   {
-    id: 8,
+    id: 9,
     title: "Rainforest Prashastis: The Kutai Yūpa Inscriptions of Borneo",
     excerpt: "Sanskrit verse and Vedic ritual vocabulary on sacrificial posts at the edge of the equator.",
     slug: "/kutai-yupa-borneo",
