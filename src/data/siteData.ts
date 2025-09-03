@@ -136,5 +136,16 @@ export const ARTICLES = [
     readTime: 8,
     author: "Dr. Epigraphic Studies",
     date: "2024-03-22"
+  },
+  {
+    id: 10,
+    title: "Riders on the Monsoon: Indigenous Navigation and Maritime Knowledge",
+    excerpt: "Long before European exploration, South Asian navigators developed sophisticated monsoon-based navigation systems. Recent palm-leaf manuscript discoveries reveal the scientific depth of indigenous maritime knowledge.",
+    slug: "/riders-on-monsoon",
+    theme: "Indian Ocean World",
+    tags: ["Navigation", "Indigenous Knowledge", "Monsoon", "Palm-leaf Manuscripts"],
+    readTime: 16,
+    author: "Nartiang Foundation",
+    date: "2024-03-25"
   }
 ];

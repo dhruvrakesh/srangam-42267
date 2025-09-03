@@ -23,6 +23,7 @@ import CholaNavalRaid from "./pages/articles/CholaNavalRaid";
 import AshokaKandaharEdicts from "./pages/articles/AshokaKandaharEdicts";
 import KutaiYupaBorneo from "./pages/articles/KutaiYupaBorneo";
 import MaritimeMemoriesSouthIndia from "./pages/articles/MaritimeMemoriesSouthIndia";
+import RidersOnMonsoon from "./pages/articles/RidersOnMonsoon";
 import BatchBujangNagapattinamOcean from "./pages/BatchBujangNagapattinamOcean";
 import BatchMuzirisKutaiAshoka from "./pages/BatchMuzirisKutaiAshoka";
 
@@ -54,6 +55,7 @@ const App = () => (
             <Route path="/ashoka-kandahar-edicts" element={<AshokaKandaharEdicts />} />
             <Route path="/kutai-yupa-borneo" element={<KutaiYupaBorneo />} />
             <Route path="/maritime-memories-south-india" element={<MaritimeMemoriesSouthIndia />} />
+            <Route path="/riders-on-monsoon" element={<RidersOnMonsoon />} />
             <Route path="/themes/ancient-india/pepper-routes" element={<PepperAndBullion />} />
             <Route path="/batch/bujang-nagapattinam-ocean" element={<BatchBujangNagapattinamOcean />} />
             <Route path="/batch/muziris-kutai-ashoka" element={<BatchMuzirisKutaiAshoka />} />

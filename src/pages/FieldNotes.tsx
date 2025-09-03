@@ -70,35 +70,42 @@ export default function FieldNotes() {
             <CardHeader>
               <div className="flex items-start justify-between gap-4">
                 <CardTitle className="font-serif text-xl text-foreground">
-                  Monsoon Navigation Texts Discovery
+                  Riders on the Monsoon: Indigenous Navigation Study Published
                 </CardTitle>
                 <TagChip variant="theme">
-                  Recent Find
+                  Published
                 </TagChip>
               </div>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <Calendar size={14} />
-                  <span>February 2024</span>
+                  <span>March 2024</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <MapPin size={14} />
-                  <span>Kerala Archives</span>
+                  <span>Kerala Archives & Maritime India</span>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                Uncovered palm leaf manuscripts containing detailed descriptions of monsoon 
-                timing and navigation techniques. These texts provide crucial evidence for 
-                indigenous maritime knowledge systems.
+                Our comprehensive analysis of newly discovered palm-leaf manuscripts reveals sophisticated 
+                indigenous navigation systems. The study demonstrates how South Asian mariners mastered 
+                monsoon patterns millennia before European "discoveries," using stellar navigation and 
+                seasonal wind knowledge encoded in ancient texts.
               </p>
-              <div className="flex gap-2">
-                <TagChip>manuscripts</TagChip>
-                <TagChip>navigation</TagChip>
-                <TagChip>monsoon</TagChip>
-                <TagChip>palm leaf</TagChip>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <TagChip>Navigation</TagChip>
+                <TagChip>Indigenous Knowledge</TagChip>
+                <TagChip>Monsoon</TagChip>
+                <TagChip>Palm-leaf Manuscripts</TagChip>
               </div>
+              <Link 
+                to="/riders-on-monsoon" 
+                className="text-ocean hover:text-ocean/80 font-medium"
+              >
+                → Read Full Article (16 min)
+              </Link>
             </CardContent>
           </Card>
 
