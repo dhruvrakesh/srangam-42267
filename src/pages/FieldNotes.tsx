@@ -2,6 +2,7 @@ import { BookOpen, Calendar, MapPin, Search, Compass, Layers } from "lucide-reac
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TagChip } from "@/components/ui/TagChip";
 import { Link } from "react-router-dom";
+import { IconDharmaChakra, IconSarnathLion } from "@/components/icons";
 
 export default function FieldNotes() {
   return (
@@ -15,25 +16,45 @@ export default function FieldNotes() {
       <div className="absolute inset-0 bg-gradient-to-t from-background/20 via-transparent to-background/10" />
       
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Enhanced Header */}
+        {/* Dharmic Archaeological Header */}
         <div className="text-center mb-16">
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-center items-center gap-8 mb-8">
             <div className="relative">
-              <div className="absolute inset-0 bg-burgundy/20 rounded-full blur-xl transform scale-110"></div>
-              <div className="relative bg-gradient-to-br from-burgundy to-burgundy-light p-6 rounded-full shadow-2xl">
-                <Search size={48} className="text-cream" />
+              <div className="absolute inset-0 bg-terracotta/30 rounded-full blur-xl transform scale-150 animate-pulse-gentle"></div>
+              <div className="relative bg-gradient-to-br from-terracotta/20 to-laterite/20 p-6 rounded-full backdrop-blur-sm border border-terracotta/30">
+                <IconSarnathLion size={52} className="text-terracotta" />
+              </div>
+            </div>
+            <div className="relative">
+              <div className="absolute inset-0 bg-burgundy/20 rounded-full blur-2xl transform scale-110"></div>
+              <div className="relative bg-gradient-to-br from-burgundy to-burgundy-light p-8 rounded-full shadow-2xl border-2 border-saffron/20">
+                <Search size={56} className="text-cream" />
+              </div>
+            </div>
+            <div className="relative">
+              <div className="absolute inset-0 bg-indigo-dharma/30 rounded-full blur-xl transform scale-150 animate-pulse-gentle"></div>
+              <div className="relative bg-gradient-to-br from-indigo-dharma/20 to-peacock-blue/20 p-6 rounded-full backdrop-blur-sm border border-indigo-dharma/30">
+                <IconDharmaChakra size={52} className="text-indigo-dharma" />
               </div>
             </div>
           </div>
-          <h1 className="font-serif text-4xl lg:text-6xl font-bold bg-gradient-to-r from-burgundy via-burgundy-light to-burgundy bg-clip-text text-transparent mb-8">
-            Field Notes
-          </h1>
-          <div className="max-w-4xl mx-auto">
-            <p className="text-xl text-charcoal/80 leading-relaxed mb-6 font-medium">
-              Chronicles from the field: discoveries, insights, and ongoing research 
-              uncovering the maritime heritage of the Indian Ocean world.
-            </p>
-            <div className="h-1 w-24 bg-gradient-to-r from-gold-warm to-burgundy mx-auto rounded-full"></div>
+          <div className="relative">
+            <h1 className="font-serif text-4xl lg:text-6xl font-bold mb-4">
+              <span className="bg-gradient-to-r from-terracotta via-burgundy to-terracotta bg-clip-text text-transparent">
+                क्षेत्र टिप्पणी
+              </span>
+            </h1>
+            <h2 className="font-serif text-2xl lg:text-3xl font-semibold text-burgundy mb-8">
+              Archaeological Dharma
+            </h2>
+            <div className="max-w-4xl mx-auto">
+              <p className="text-xl text-charcoal/80 leading-relaxed mb-6 font-medium">
+                धर्म की खुदाई — Excavating dharma through stone, inscription, and artifact. 
+                Chronicles from sacred sites where ancient wisdom meets archaeological discovery, 
+                uncovering the maritime heritage of the Indian Ocean world.
+              </p>
+              <div className="h-1 w-32 bg-gradient-to-r from-terracotta via-burgundy to-saffron mx-auto rounded-full"></div>
+            </div>
           </div>
         </div>
 

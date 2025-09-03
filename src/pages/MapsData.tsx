@@ -7,25 +7,60 @@ import { MapboxPortMap } from "@/components/interactive/MapboxPortMap";
 import { MonsoonAnimation } from "@/components/interactive/MonsoonAnimation";
 import { PlateTimeline } from "@/components/interactive/PlateTimeline";
 import { useState } from "react";
+import { IconConch, IconDharmaChakra } from "@/components/icons";
 
 export default function MapsData() {
   const [activeModal, setActiveModal] = useState<'ports' | 'monsoon' | 'timeline' | null>(null);
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="flex justify-center mb-6">
-            <Map size={64} className="text-gold" />
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Cosmic Ocean Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-peacock-blue/20 via-ocean/10 to-indigo-dharma/20" />
+      <div className="absolute inset-0 opacity-[0.05]" 
+           style={{
+             backgroundImage: `url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%230066CC' stroke-width='1' opacity='0.4'%3E%3Ccircle cx='60' cy='60' r='50' fill='none'/%3E%3Ccircle cx='60' cy='60' r='30' fill='none'/%3E%3Ccircle cx='60' cy='60' r='10' fill='none'/%3E%3Cpath d='M60 10 L65 25 L60 40 L55 25 Z' fill='%23FF6600' opacity='0.3'/%3E%3Cpath d='M110 60 L95 65 L80 60 L95 55 Z' fill='%23FF6600' opacity='0.3'/%3E%3Cpath d='M60 110 L65 95 L60 80 L55 95 Z' fill='%23FF6600' opacity='0.3'/%3E%3Cpath d='M10 60 L25 65 L40 60 L25 55 Z' fill='%23FF6600' opacity='0.3'/%3E%3C/g%3E%3C/svg%3E")`,
+           }} />
+      <div className="absolute inset-0 bg-gradient-to-t from-background/10 via-transparent to-background/5" />
+      
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Dharmic Cosmic Header */}
+        <div className="text-center mb-16">
+          <div className="flex justify-center items-center gap-6 mb-8">
+            <div className="relative">
+              <div className="absolute inset-0 bg-ocean/30 rounded-full blur-xl transform scale-150 animate-pulse-gentle"></div>
+              <div className="relative bg-gradient-to-br from-ocean/20 to-peacock-blue/20 p-6 rounded-full backdrop-blur-sm border border-ocean/30">
+                <IconConch size={48} className="text-ocean" />
+              </div>
+            </div>
+            <div className="relative">
+              <div className="absolute inset-0 bg-saffron/20 rounded-full blur-2xl transform scale-110"></div>
+              <div className="relative bg-gradient-to-br from-saffron/80 to-turmeric p-8 rounded-full shadow-2xl border-2 border-indigo-dharma/20">
+                <Map size={64} className="text-cream" />
+              </div>
+            </div>
+            <div className="relative">
+              <div className="absolute inset-0 bg-indigo-dharma/30 rounded-full blur-xl transform scale-150 animate-pulse-gentle"></div>
+              <div className="relative bg-gradient-to-br from-indigo-dharma/20 to-peacock-blue/20 p-6 rounded-full backdrop-blur-sm border border-indigo-dharma/30">
+                <IconDharmaChakra size={48} className="text-indigo-dharma" />
+              </div>
+            </div>
           </div>
-          <h1 className="font-serif text-4xl lg:text-5xl font-bold text-foreground mb-6">
-            Maps & Data
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Interactive visualizations and datasets exploring the spatial and temporal 
-            dimensions of Indian Ocean histories — from port locations to monsoon patterns.
-          </p>
+          <div className="relative">
+            <h1 className="font-serif text-4xl lg:text-6xl font-bold mb-4">
+              <span className="bg-gradient-to-r from-ocean via-peacock-blue to-indigo-dharma bg-clip-text text-transparent">
+                भौगोलिक डेटा
+              </span>
+            </h1>
+            <h2 className="font-serif text-2xl lg:text-3xl font-semibold text-ocean mb-8">
+              Cosmic Ocean Visualizations
+            </h2>
+            <p className="text-lg text-charcoal/80 max-w-4xl mx-auto leading-relaxed font-medium">
+              समुद्र मंथन — Interactive cosmographic visualizations mapping the spatial and temporal 
+              dimensions of dharmic civilizations across the Indian Ocean world, from sacred port geometries 
+              to monsoon mandalas, revealing the cosmic patterns that guided ancient navigation.
+            </p>
+            <div className="mt-6 h-1 w-32 bg-gradient-to-r from-ocean via-peacock-blue to-indigo-dharma mx-auto rounded-full"></div>
+          </div>
         </div>
 
         {/* Data Visualizations */}
