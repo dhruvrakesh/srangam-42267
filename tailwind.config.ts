@@ -23,6 +23,18 @@ export default {
 				sans: ['Inter', 'system-ui', 'sans-serif'],
 			},
 			colors: {
+        // Dharmic & Sanatan colors
+        saffron: "hsl(var(--saffron))",
+        "saffron-light": "hsl(var(--saffron-light))",
+        "indigo-dharma": "hsl(var(--indigo-dharma))",
+        "indigo-light": "hsl(var(--indigo-light))",
+        "lotus-pink": "hsl(var(--lotus-pink))",
+        turmeric: "hsl(var(--turmeric))",
+        "peacock-blue": "hsl(var(--peacock-blue))",
+        terracotta: "hsl(var(--terracotta))",
+        sandalwood: "hsl(var(--sandalwood))",
+        "charcoal-om": "hsl(var(--charcoal-om))",
+        
         // Legacy Srangam colors
         ocean: "hsl(var(--ocean))",
         laterite: "hsl(var(--laterite))",

@@ -8,6 +8,18 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    /* Dharmic & Sanatan Color Palette */
+    --saffron: 25 95% 53%;       /* #FF8C00 - Sacred saffron */
+    --saffron-light: 25 85% 65%; /* #FFB347 - Light saffron */
+    --indigo-dharma: 235 84% 34%; /* #1A365D - Deep dharmic indigo */
+    --indigo-light: 235 70% 50%;  /* #4A90E2 - Light indigo */
+    --lotus-pink: 330 65% 75%;    /* #E79CC2 - Sacred lotus pink */
+    --turmeric: 45 93% 58%;       /* #E6B547 - Turmeric gold */
+    --peacock-blue: 195 100% 35%; /* #0088B3 - Peacock feather blue */
+    --terracotta: 13 75% 45%;     /* #B8462A - Sacred earth */
+    --sandalwood: 35 30% 88%;     /* #F0E6D6 - Sandalwood cream */
+    --charcoal-om: 218 20% 8%;    /* #151A26 - Deep meditation */
+    
     /* Nartiang Foundation Inspired Palette */
     --burgundy: 344 73% 22%;     /* #8B1D3D - Deep wine red */
     --burgundy-light: 344 60% 35%; /* #B23A5D - Lighter burgundy */
@@ -118,4 +130,74 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Sacred Geometry & Dharmic Patterns */
+@layer components {
+  .mandala-bg {
+    background-image: 
+      radial-gradient(circle at 25% 25%, hsl(var(--saffron)) 2px, transparent 2px),
+      radial-gradient(circle at 75% 75%, hsl(var(--lotus-pink)) 1px, transparent 1px),
+      radial-gradient(circle at 50% 50%, hsl(var(--turmeric)) 0.5px, transparent 0.5px);
+    background-size: 50px 50px, 30px 30px, 20px 20px;
+    background-position: 0 0, 25px 25px, 10px 10px;
+  }
+  
+  .chakra-pattern {
+    background-image: 
+      conic-gradient(from 0deg at 50% 50%, 
+        hsl(var(--saffron)), 
+        hsl(var(--indigo-dharma)), 
+        hsl(var(--peacock-blue)), 
+        hsl(var(--lotus-pink)), 
+        hsl(var(--turmeric)), 
+        hsl(var(--terracotta)),
+        hsl(var(--saffron))
+      );
+    opacity: 0.1;
+  }
+  
+  .lotus-gradient {
+    background: linear-gradient(135deg, 
+      hsl(var(--lotus-pink)) 0%, 
+      hsl(var(--saffron)) 50%, 
+      hsl(var(--turmeric)) 100%
+    );
+  }
+  
+  .dharma-scroll {
+    background-image: 
+      linear-gradient(90deg, transparent 0%, hsl(var(--sandalwood)) 20%, transparent 100%);
+  }
+}
+
+/* Dharmic Animations */
+@layer components {
+  .chakra-spin {
+    animation: chakra-rotate 20s linear infinite;
+  }
+  
+  .lotus-bloom {
+    animation: lotus-emerge 2s ease-out;
+  }
+  
+  .om-pulse {
+    animation: om-vibration 3s ease-in-out infinite;
+  }
+}
+
+@keyframes chakra-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes lotus-emerge {
+  0% { transform: scale(0.8) rotate(-5deg); opacity: 0; }
+  50% { transform: scale(1.05) rotate(2deg); opacity: 0.8; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes om-vibration {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
