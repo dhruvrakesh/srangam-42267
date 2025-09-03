@@ -7,13 +7,14 @@ export default function EmpiresExchange() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Dharmic Background Layers */}
-      <div className="fixed inset-0 -z-10">
+      {/* Dharmic Background Layers - Enhanced Visibility */}
+      <div className="absolute inset-0 -z-10">
         {/* Royal Gradient Base */}
-        <div className="absolute inset-0 bg-gradient-to-br from-burgundy via-background to-gold/20" />
+        <div className="absolute inset-0 bg-gradient-to-br from-burgundy/35 via-gold-warm/20 to-saffron/15" />
+        <div className="absolute inset-0 bg-gradient-to-tl from-terracotta/15 via-transparent to-burgundy/25" />
         
-        {/* Mandala Patterns */}
-        <div className="absolute inset-0 opacity-5">
+        {/* Mandala Patterns - Enhanced Visibility */}
+        <div className="absolute inset-0 opacity-20">
           <svg className="absolute top-1/4 left-1/4 w-96 h-96 text-gold animate-slow-spin" viewBox="0 0 200 200">
             <circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.3"/>
             <circle cx="100" cy="100" r="60" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.4"/>
@@ -34,11 +35,13 @@ export default function EmpiresExchange() {
           </svg>
         </div>
 
-        {/* Imperial Motifs */}
-        <div className="absolute inset-0 opacity-3">
-          <div className="absolute top-20 right-20 w-32 h-32 border border-gold/20 rounded-full" />
-          <div className="absolute bottom-20 left-20 w-24 h-24 border border-saffron/20 rounded-full" />
-          <div className="absolute top-1/2 left-10 w-16 h-16 border border-burgundy/20 rounded-full" />
+        {/* Imperial Motifs - Enhanced Visibility */}
+        <div className="absolute inset-0 opacity-15">
+          <div className="absolute top-20 right-20 w-32 h-32 border-2 border-gold-warm/40 rounded-full shadow-lg shadow-gold-warm/20" />
+          <div className="absolute bottom-20 left-20 w-24 h-24 border-2 border-saffron/40 rounded-full shadow-lg shadow-saffron/20" />
+          <div className="absolute top-1/2 left-10 w-16 h-16 border-2 border-burgundy/40 rounded-full shadow-lg shadow-burgundy/20" />
+          <div className="absolute top-1/3 right-1/3 w-20 h-20 border border-terracotta/30 rounded-full" />
+          <div className="absolute bottom-1/3 left-1/2 w-12 h-12 border border-lotus-pink/30 rounded-full" />
         </div>
       </div>
 

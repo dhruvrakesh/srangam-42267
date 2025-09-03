@@ -7,11 +7,14 @@ export default function IndianOceanWorld() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Cosmic Ocean Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-ocean/15 via-peacock-blue/10 to-lotus-pink/5" />
-      <div className="absolute inset-0 opacity-[0.04]" 
+      {/* Cosmic Ocean Background - Enhanced Visibility */}
+      <div className="absolute inset-0 bg-gradient-to-br from-ocean/30 via-peacock-blue/25 to-lotus-pink/20" />
+      <div className="absolute inset-0 bg-gradient-to-tr from-indigo-dharma/10 via-transparent to-ocean/15" />
+      <div className="absolute inset-0 opacity-15" 
            style={{
-             backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%230066CC' stroke-width='1' opacity='0.3'%3E%3Cpath d='M20 20 Q50 10 80 20 Q90 50 80 80 Q50 90 20 80 Q10 50 20 20'/%3E%3Ccircle cx='50' cy='50' r='15' fill='none'/%3E%3Cpath d='M35 35 Q50 25 65 35 Q75 50 65 65 Q50 75 35 65 Q25 50 35 35' fill='%23FFB6C1' opacity='0.2'/%3E%3C/g%3E%3C/svg%3E")`,
+             backgroundImage: `url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23004D5C' stroke-width='1.5' opacity='0.6'%3E%3Cpath d='M20 20 Q60 10 100 20 Q110 60 100 100 Q60 110 20 100 Q10 60 20 20' fill='none'/%3E%3Ccircle cx='60' cy='60' r='25' fill='none' stroke='%230088B3'/%3E%3Cpath d='M30 30 Q60 15 90 30 Q105 60 90 90 Q60 105 30 90 Q15 60 30 30' fill='%23E79CC2' opacity='0.3'/%3E%3Cg stroke='%230E6F7C' stroke-width='0.8' opacity='0.4'%3E%3Cpath d='M45 45 L75 75 M75 45 L45 75' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+             backgroundSize: '160px 160px, 80px 80px',
+             backgroundPosition: '0 0, 40px 40px'
            }} />
       
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
