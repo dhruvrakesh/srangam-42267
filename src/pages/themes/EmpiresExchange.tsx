@@ -7,57 +7,74 @@ export default function EmpiresExchange() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Dharmic Background Layers - Enhanced Visibility */}
+      {/* Dharmic Background Layers - Maximum Visibility Enhancement */}
       <div className="absolute inset-0 -z-10">
-        {/* Royal Gradient Base */}
-        <div className="absolute inset-0 bg-gradient-to-br from-burgundy/35 via-gold-warm/20 to-saffron/15" />
-        <div className="absolute inset-0 bg-gradient-to-tl from-terracotta/15 via-transparent to-burgundy/25" />
+        {/* Royal Gradient Base - Strengthened */}
+        <div className="absolute inset-0 bg-gradient-to-br from-burgundy/50 via-gold-warm/30 to-saffron/25" />
+        <div className="absolute inset-0 bg-gradient-to-tl from-terracotta/25 via-transparent to-burgundy/40" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-gold-light/20 via-transparent to-lotus-pink/15" />
         
-        {/* Mandala Patterns - Enhanced Visibility */}
-        <div className="absolute inset-0 opacity-20">
-          <svg className="absolute top-1/4 left-1/4 w-96 h-96 text-gold animate-slow-spin" viewBox="0 0 200 200">
-            <circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.3"/>
-            <circle cx="100" cy="100" r="60" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.4"/>
-            <circle cx="100" cy="100" r="40" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.5"/>
-            <g stroke="currentColor" strokeWidth="0.3" opacity="0.6">
+        {/* Enhanced Mandala Patterns with Sacred Geometry */}
+        <div className="absolute inset-0 opacity-30">
+          <svg className="absolute top-1/4 left-1/4 w-96 h-96 text-gold-warm animate-slow-spin" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.5"/>
+            <circle cx="100" cy="100" r="60" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.6"/>
+            <circle cx="100" cy="100" r="40" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.7"/>
+            <circle cx="100" cy="100" r="20" fill="hsl(var(--saffron))" opacity="0.3"/>
+            <g stroke="currentColor" strokeWidth="1" opacity="0.8">
               {[...Array(8)].map((_, i) => (
-                <line key={i} x1="100" y1="20" x2="100" y2="40" transform={`rotate(${i * 45} 100 100)`} />
+                <line key={i} x1="100" y1="20" x2="100" y2="45" transform={`rotate(${i * 45} 100 100)`} />
+              ))}
+            </g>
+            <g fill="hsl(var(--burgundy))" opacity="0.4">
+              {[...Array(8)].map((_, i) => (
+                <circle key={i} cx="100" cy="30" r="3" transform={`rotate(${i * 45} 100 100)`} />
               ))}
             </g>
           </svg>
-          <svg className="absolute bottom-1/4 right-1/4 w-64 h-64 text-saffron animate-reverse-spin" viewBox="0 0 200 200">
-            <circle cx="100" cy="100" r="70" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.3"/>
-            <g stroke="currentColor" strokeWidth="0.3" opacity="0.4">
+          <svg className="absolute bottom-1/4 right-1/4 w-80 h-80 text-saffron animate-reverse-spin" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="70" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.5"/>
+            <circle cx="100" cy="100" r="50" fill="none" stroke="hsl(var(--gold-warm))" strokeWidth="1" opacity="0.6"/>
+            <g stroke="currentColor" strokeWidth="1" opacity="0.6">
               {[...Array(12)].map((_, i) => (
                 <line key={i} x1="100" y1="30" x2="100" y2="50" transform={`rotate(${i * 30} 100 100)`} />
+              ))}
+            </g>
+            <g fill="hsl(var(--terracotta))" opacity="0.5">
+              {[...Array(6)].map((_, i) => (
+                <circle key={i} cx="100" cy="35" r="2" transform={`rotate(${i * 60} 100 100)`} />
               ))}
             </g>
           </svg>
         </div>
 
-        {/* Imperial Motifs - Enhanced Visibility */}
-        <div className="absolute inset-0 opacity-15">
-          <div className="absolute top-20 right-20 w-32 h-32 border-2 border-gold-warm/40 rounded-full shadow-lg shadow-gold-warm/20" />
-          <div className="absolute bottom-20 left-20 w-24 h-24 border-2 border-saffron/40 rounded-full shadow-lg shadow-saffron/20" />
-          <div className="absolute top-1/2 left-10 w-16 h-16 border-2 border-burgundy/40 rounded-full shadow-lg shadow-burgundy/20" />
-          <div className="absolute top-1/3 right-1/3 w-20 h-20 border border-terracotta/30 rounded-full" />
-          <div className="absolute bottom-1/3 left-1/2 w-12 h-12 border border-lotus-pink/30 rounded-full" />
+        {/* Imperial Motifs - Enhanced Visibility & Animation */}
+        <div className="absolute inset-0 opacity-25">
+          <div className="absolute top-20 right-20 w-40 h-40 border-3 border-gold-warm/60 rounded-full shadow-xl shadow-gold-warm/30 animate-pulse-gentle" />
+          <div className="absolute bottom-20 left-20 w-32 h-32 border-3 border-saffron/60 rounded-full shadow-xl shadow-saffron/30 animate-float" />
+          <div className="absolute top-1/2 left-10 w-24 h-24 border-3 border-burgundy/60 rounded-full shadow-lg shadow-burgundy/25 animate-pulse-gentle" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-1/3 right-1/3 w-28 h-28 border-2 border-terracotta/50 rounded-full shadow-lg shadow-terracotta/20 animate-float" style={{ animationDelay: '0.5s' }} />
+          <div className="absolute bottom-1/3 left-1/2 w-20 h-20 border-2 border-lotus-pink/50 rounded-full shadow-lg shadow-lotus-pink/25 animate-pulse-gentle" style={{ animationDelay: '2s' }} />
+          
+          {/* Additional Sacred Geometry Elements */}
+          <div className="absolute top-10 left-1/4 w-16 h-16 border border-gold/40 rotate-45 animate-slow-spin" />
+          <div className="absolute bottom-10 right-1/4 w-12 h-12 border border-saffron/40 rotate-45 animate-reverse-spin" style={{ animationDelay: '1.5s' }} />
         </div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Enhanced Header */}
         <div className="text-center mb-16">
-          {/* Dharmic Icons Trinity */}
+          {/* Dharmic Icons Trinity - Enhanced Interactivity */}
           <div className="flex justify-center items-center gap-8 mb-8">
-            <div className="p-4 rounded-full bg-gold/10 backdrop-blur-sm border border-gold/20">
-              <IconSarnathLion size={48} className="text-gold animate-pulse" />
+            <div className="group p-6 rounded-full bg-gold-warm/25 backdrop-blur-sm border-2 border-gold-warm/40 hover:border-gold-warm/70 hover:bg-gold-warm/35 transition-all duration-300 hover:scale-110 cursor-pointer hover:animate-glow">
+              <IconSarnathLion size={52} className="text-gold-warm group-hover:text-gold animate-pulse-gentle group-hover:animate-float" />
             </div>
-            <div className="p-6 rounded-full bg-saffron/10 backdrop-blur-sm border border-saffron/20">
-              <IconDharmaChakra size={64} className="text-saffron chakra-spin" />
+            <div className="group p-8 rounded-full bg-saffron/25 backdrop-blur-sm border-2 border-saffron/40 hover:border-saffron/70 hover:bg-saffron/35 transition-all duration-300 hover:scale-110 cursor-pointer hover:animate-glow">
+              <IconDharmaChakra size={68} className="text-saffron group-hover:text-saffron/90 chakra-spin group-hover:animate-slow-spin" />
             </div>
-            <div className="p-4 rounded-full bg-burgundy/10 backdrop-blur-sm border border-burgundy/20">
-              <IconConch size={48} className="text-burgundy animate-pulse" />
+            <div className="group p-6 rounded-full bg-burgundy/25 backdrop-blur-sm border-2 border-burgundy/40 hover:border-burgundy/70 hover:bg-burgundy/35 transition-all duration-300 hover:scale-110 cursor-pointer hover:animate-glow">
+              <IconConch size={52} className="text-burgundy group-hover:text-burgundy-light animate-pulse-gentle group-hover:animate-float" />
             </div>
           </div>
 
