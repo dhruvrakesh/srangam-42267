@@ -147,5 +147,16 @@ export const ARTICLES = [
     readTime: 16,
     author: "Nartiang Foundation",
     date: "2024-03-25"
+  },
+  {
+    id: 11,
+    title: "Earth, Sea and Sangam: Geological Transformations and the Ancient Ports of South India",
+    excerpt: "How tectonic forces, river floods, and rising seas shaped—and reshaped—the maritime geography of Southern India. From Muziris' disappearance to Kochi's birth, geology tells the story of ports in motion.",
+    slug: "/earth-sea-sangam",
+    theme: "Geology & Deep Time",
+    tags: ["Geology & Deep Time", "Maritime Networks", "Coastal Change", "Ancient Ports"],
+    readTime: 16,
+    author: "Nartiang Foundation",
+    date: "2024-03-28"
   }
 ];

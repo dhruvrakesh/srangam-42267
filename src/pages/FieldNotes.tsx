@@ -113,35 +113,41 @@ export default function FieldNotes() {
             <CardHeader>
               <div className="flex items-start justify-between gap-4">
                 <CardTitle className="font-serif text-xl text-foreground">
-                  Geological Survey: Tectonic Movements & Port Locations
+                  Earth, Sea and Sangam: Geological Study Published
                 </CardTitle>
                 <TagChip variant="theme">
-                  Ongoing
+                  Published
                 </TagChip>
               </div>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <Calendar size={14} />
-                  <span>January 2024</span>
+                  <span>March 2024</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <MapPin size={14} />
-                  <span>Western Ghats</span>
+                  <span>Kerala Coast & Western Ghats</span>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                Investigating how geological changes over deep time affected the viability 
-                of ancient port sites. Preliminary findings suggest significant coastal 
-                changes that explain the abandonment of certain harbors.
+                Our comprehensive geological study reveals how tectonic forces, floods, and sea-level 
+                changes shaped South India's maritime geography. From Muziris' disappearance in 1341 CE 
+                to Puhār's submergence, geological evidence explains the rise and fall of ancient ports.
               </p>
-              <div className="flex gap-2">
-                <TagChip>geology</TagChip>
-                <TagChip>deep time</TagChip>
-                <TagChip>ports</TagChip>
-                <TagChip>coastal change</TagChip>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <TagChip>Geology</TagChip>
+                <TagChip>Coastal Change</TagChip>
+                <TagChip>Ancient Ports</TagChip>
+                <TagChip>Tectonic History</TagChip>
               </div>
+              <Link 
+                to="/earth-sea-sangam" 
+                className="text-ocean hover:text-ocean/80 font-medium"
+              >
+                → Read Full Article (16 min)
+              </Link>
             </CardContent>
           </Card>
         </div>
