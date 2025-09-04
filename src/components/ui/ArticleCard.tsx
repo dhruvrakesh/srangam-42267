@@ -21,12 +21,12 @@ interface ArticleCardProps {
 
 export function ArticleCard({ article }: ArticleCardProps) {
   return (
-    <Card className="group h-full bg-card/90 backdrop-blur-sm border border-border/50 transition-all duration-300 hover:bg-card hover:border-saffron/30 hover:shadow-xl hover:shadow-saffron/20 hover:-translate-y-1 relative overflow-hidden">
+    <Card className="group h-full bg-card/95 backdrop-blur-sm border border-border/70 transition-all duration-300 hover:bg-card hover:border-saffron/50 hover:shadow-xl hover:shadow-saffron/30 hover:-translate-y-1 relative overflow-hidden">
       {/* Dharmic Glow Effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-saffron/5 via-transparent to-lotus-pink/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="absolute inset-0 bg-gradient-to-r from-saffron/25 via-transparent to-lotus-pink/25 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       
       {/* Shimmer Effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gold-warm/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700 ease-out" />
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gold-warm/40 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700 ease-out" />
       
       <CardHeader className="relative z-10">
         <div className="flex items-start justify-between gap-3">

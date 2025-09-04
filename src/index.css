@@ -154,7 +154,7 @@ All colors MUST be HSL.
         hsl(var(--terracotta)),
         hsl(var(--saffron))
       );
-    opacity: 0.1;
+    opacity: 0.35;
   }
   
   .lotus-gradient {
