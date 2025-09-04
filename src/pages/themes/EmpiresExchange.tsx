@@ -11,7 +11,7 @@ export default function EmpiresExchange() {
       <div className="absolute inset-0 bg-gradient-to-br from-burgundy/8 via-gold-warm/6 to-saffron/5" />
       
       {/* Subtle Sacred Geometry Pattern */}
-      <div className="absolute inset-0 chakra-pattern opacity-20" />
+      <div className="absolute inset-0 dharma-scroll opacity-10" />
       
       {/* Minimal Dharmic Accents */}
       <div className="absolute top-20 right-20 w-32 h-32 border border-gold-warm/15 rounded-full animate-pulse-gentle" />
