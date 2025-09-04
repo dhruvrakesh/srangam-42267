@@ -2,7 +2,7 @@ import { ArticlePage } from "@/components/articles/ArticlePage";
 import { IconMonsoon } from "@/components/icons";
 import { ResponsiveImage } from "@/components/ui/ResponsiveImage";
 import { MonsoonMap } from "@/components/articles/MonsoonMap";
-import { MonsoonAnimation } from "@/components/interactive/MonsoonAnimation";
+import { LazyMonsoonAnimation } from "@/components/interactive/LazyMonsoonAnimation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NavigationBibliography } from "@/components/articles/NavigationBibliography";
 import { Button } from "@/components/ui/button";
@@ -135,7 +135,7 @@ export default function RidersOnMonsoon() {
           Explore how ancient navigators harnessed the predictable reversal of monsoon winds 
           to establish reliable trading routes across the Indian Ocean.
         </p>
-        <MonsoonAnimation onClose={() => {}} />
+        <LazyMonsoonAnimation onClose={() => {}} />
       </CardContent>
     </Card>,
 

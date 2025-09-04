@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TagChip } from "@/components/ui/TagChip";
-import { MapboxBujangNetwork } from '@/components/interactive/MapboxBujangNetwork';
+import { LazyMapboxBujangNetwork } from '@/components/interactive/LazyMapboxBujangNetwork';
 
 /**
  * Srangam — Ready React pages (single-file batch)
@@ -555,7 +555,7 @@ const BatchBujangNagapattinamOcean: React.FC = () => {
 
       {/* Enhanced Mapbox Components */}
       {showMapboxBujang && (
-        <MapboxBujangNetwork onClose={() => setShowMapboxBujang(false)} />
+        <LazyMapboxBujangNetwork onClose={() => setShowMapboxBujang(false)} />
       )}
     </div>
   );

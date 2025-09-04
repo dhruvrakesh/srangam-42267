@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { PORTS, MONSOON, PLATE_SPEED, PEPPER_CARGO } from "@/data/siteData";
-import { MapboxPortMap } from "@/components/interactive/MapboxPortMap";
-import { MonsoonAnimation } from "@/components/interactive/MonsoonAnimation";
+import { LazyMapboxPortMap } from "@/components/interactive/LazyMapboxPortMap";
+import { LazyMonsoonAnimation } from "@/components/interactive/LazyMonsoonAnimation";
 import { PlateTimeline } from "@/components/interactive/PlateTimeline";
 import { useState } from "react";
 import { IconConch, IconDharmaChakra } from "@/components/icons";
@@ -253,10 +253,10 @@ export default function MapsData() {
 
       {/* Interactive Modals */}
       {activeModal === 'ports' && (
-        <MapboxPortMap onClose={() => setActiveModal(null)} />
+        <LazyMapboxPortMap onClose={() => setActiveModal(null)} />
       )}
       {activeModal === 'monsoon' && (
-        <MonsoonAnimation onClose={() => setActiveModal(null)} />
+        <LazyMonsoonAnimation onClose={() => setActiveModal(null)} />
       )}
       {activeModal === 'timeline' && (
         <PlateTimeline onClose={() => setActiveModal(null)} />

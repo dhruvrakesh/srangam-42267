@@ -1,73 +1,108 @@
+import React, { Suspense, lazy } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
-import Home from "./pages/Home";
-import AncientIndia from "./pages/themes/AncientIndia";
-import IndianOceanWorld from "./pages/themes/IndianOceanWorld";
-import ScriptsInscriptions from "./pages/themes/ScriptsInscriptions";
-import GeologyDeepTime from "./pages/themes/GeologyDeepTime";
-import EmpiresExchange from "./pages/themes/EmpiresExchange";
-import FieldNotes from "./pages/FieldNotes";
-import MapsData from "./pages/MapsData";
-import ReadingRoom from "./pages/ReadingRoom";
-import About from "./pages/About";
-import NotFound from "./pages/NotFound";
-import MonsoonTradeClock from "./pages/articles/MonsoonTradeClock";
-import ScriptsThatSailed from "./pages/articles/ScriptsThatSailed";
-import GondwanaToHimalaya from "./pages/articles/GondwanaToHimalaya";
-import PepperAndBullion from "./pages/articles/PepperAndBullion";
-import CholaNavalRaid from "./pages/articles/CholaNavalRaid";
-import AshokaKandaharEdicts from "./pages/articles/AshokaKandaharEdicts";
-import KutaiYupaBorneo from "./pages/articles/KutaiYupaBorneo";
-import MaritimeMemoriesSouthIndia from "./pages/articles/MaritimeMemoriesSouthIndia";
-import RidersOnMonsoon from "./pages/articles/RidersOnMonsoon";
-import EarthSeaSangam from "./pages/articles/EarthSeaSangam";
-import BatchBujangNagapattinamOcean from "./pages/BatchBujangNagapattinamOcean";
-import BatchMuzirisKutaiAshoka from "./pages/BatchMuzirisKutaiAshoka";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Loader2 } from 'lucide-react';
 
-const queryClient = new QueryClient();
+// Immediate load for critical pages
+import Home from "./pages/Home";
+import NotFound from "./pages/NotFound";
+
+// Lazy load theme pages for better performance
+const AncientIndia = lazy(() => import("./pages/themes/AncientIndia"));
+const IndianOceanWorld = lazy(() => import("./pages/themes/IndianOceanWorld"));
+const ScriptsInscriptions = lazy(() => import("./pages/themes/ScriptsInscriptions"));
+const GeologyDeepTime = lazy(() => import("./pages/themes/GeologyDeepTime"));
+const EmpiresExchange = lazy(() => import("./pages/themes/EmpiresExchange"));
+
+// Lazy load secondary pages
+const FieldNotes = lazy(() => import("./pages/FieldNotes"));
+const MapsData = lazy(() => import("./pages/MapsData"));
+const ReadingRoom = lazy(() => import("./pages/ReadingRoom"));
+const About = lazy(() => import("./pages/About"));
+
+// Lazy load article pages
+const MonsoonTradeClock = lazy(() => import("./pages/articles/MonsoonTradeClock"));
+const ScriptsThatSailed = lazy(() => import("./pages/articles/ScriptsThatSailed"));
+const GondwanaToHimalaya = lazy(() => import("./pages/articles/GondwanaToHimalaya"));
+const PepperAndBullion = lazy(() => import("./pages/articles/PepperAndBullion"));
+const CholaNavalRaid = lazy(() => import("./pages/articles/CholaNavalRaid"));
+const AshokaKandaharEdicts = lazy(() => import("./pages/articles/AshokaKandaharEdicts"));
+const KutaiYupaBorneo = lazy(() => import("./pages/articles/KutaiYupaBorneo"));
+const MaritimeMemoriesSouthIndia = lazy(() => import("./pages/articles/MaritimeMemoriesSouthIndia"));
+const RidersOnMonsoon = lazy(() => import("./pages/articles/RidersOnMonsoon"));
+const EarthSeaSangam = lazy(() => import("./pages/articles/EarthSeaSangam"));
+const BatchBujangNagapattinamOcean = lazy(() => import("./pages/BatchBujangNagapattinamOcean"));
+const BatchMuzirisKutaiAshoka = lazy(() => import("./pages/BatchMuzirisKutaiAshoka"));
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+    },
+  },
+});
+
+// Optimized loading component
+function PageLoadingFallback() {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <div className="flex items-center justify-center mb-4">
+          <Loader2 className="animate-spin text-primary" size={32} />
+        </div>
+        <p className="text-muted-foreground">Loading sacred knowledge...</p>
+      </div>
+    </div>
+  );
+}
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/themes/ancient-india" element={<AncientIndia />} />
-            <Route path="/themes/indian-ocean-world" element={<IndianOceanWorld />} />
-            <Route path="/themes/scripts-inscriptions" element={<ScriptsInscriptions />} />
-            <Route path="/themes/geology-deep-time" element={<GeologyDeepTime />} />
-            <Route path="/themes/empires-exchange" element={<EmpiresExchange />} />
-            <Route path="/field-notes" element={<FieldNotes />} />
-            <Route path="/maps-data" element={<MapsData />} />
-            <Route path="/reading-room" element={<ReadingRoom />} />
-            <Route path="/about" element={<About />} />
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Layout>
+            <Suspense fallback={<PageLoadingFallback />}>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/themes/ancient-india" element={<AncientIndia />} />
+                <Route path="/themes/indian-ocean-world" element={<IndianOceanWorld />} />
+                <Route path="/themes/scripts-inscriptions" element={<ScriptsInscriptions />} />
+                <Route path="/themes/geology-deep-time" element={<GeologyDeepTime />} />
+                <Route path="/themes/empires-exchange" element={<EmpiresExchange />} />
+                <Route path="/field-notes" element={<FieldNotes />} />
+                <Route path="/maps-data" element={<MapsData />} />
+                <Route path="/reading-room" element={<ReadingRoom />} />
+                <Route path="/about" element={<About />} />
                 <Route path="/monsoon-trade-clock" element={<MonsoonTradeClock />} />
                 <Route path="/scripts-that-sailed" element={<ScriptsThatSailed />} />
                 <Route path="/gondwana-to-himalaya" element={<GondwanaToHimalaya />} />
                 <Route path="/pepper-and-bullion" element={<PepperAndBullion />} />
                 <Route path="/chola-srivijaya-1025" element={<CholaNavalRaid />} />
-            <Route path="/ashoka-kandahar-edicts" element={<AshokaKandaharEdicts />} />
-            <Route path="/kutai-yupa-borneo" element={<KutaiYupaBorneo />} />
-            <Route path="/maritime-memories-south-india" element={<MaritimeMemoriesSouthIndia />} />
-          <Route path="/riders-on-monsoon" element={<RidersOnMonsoon />} />
-          <Route path="/earth-sea-sangam" element={<EarthSeaSangam />} />
-            <Route path="/themes/ancient-india/pepper-routes" element={<PepperAndBullion />} />
-            <Route path="/batch/bujang-nagapattinam-ocean" element={<BatchBujangNagapattinamOcean />} />
-            <Route path="/batch/muziris-kutai-ashoka" element={<BatchMuzirisKutaiAshoka />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Layout>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+                <Route path="/ashoka-kandahar-edicts" element={<AshokaKandaharEdicts />} />
+                <Route path="/kutai-yupa-borneo" element={<KutaiYupaBorneo />} />
+                <Route path="/maritime-memories-south-india" element={<MaritimeMemoriesSouthIndia />} />
+                <Route path="/riders-on-monsoon" element={<RidersOnMonsoon />} />
+                <Route path="/earth-sea-sangam" element={<EarthSeaSangam />} />
+                <Route path="/themes/ancient-india/pepper-routes" element={<PepperAndBullion />} />
+                <Route path="/batch/bujang-nagapattinam-ocean" element={<BatchBujangNagapattinamOcean />} />
+                <Route path="/batch/muziris-kutai-ashoka" element={<BatchMuzirisKutaiAshoka />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </Layout>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

@@ -115,7 +115,45 @@ export default {
 						height: '0'
 					}
 				},
-				// Dharmic Animations
+				// Fade Animations
+				"fade-in": {
+					"0%": {
+						opacity: "0",
+						transform: "translateY(10px)"
+					},
+					"100%": {
+						opacity: "1",
+						transform: "translateY(0)"
+					}
+				},
+				"fade-out": {
+					"0%": {
+						opacity: "1",
+						transform: "translateY(0)"
+					},
+					"100%": {
+						opacity: "0",
+						transform: "translateY(10px)"
+					}
+				},
+				
+				// Scale Animations
+				"scale-in": {
+					"0%": {
+						transform: "scale(0.95)",
+						opacity: "0"
+					},
+					"100%": {
+						transform: "scale(1)",
+						opacity: "1"
+					}
+				},
+				"scale-out": {
+					from: { transform: "scale(1)", opacity: "1" },
+					to: { transform: "scale(0.95)", opacity: "0" }
+				},
+				
+				// Optimized Dharmic Animations
 				'slow-spin': {
 					'0%': { transform: 'rotate(0deg)' },
 					'100%': { transform: 'rotate(360deg)' }
@@ -127,11 +165,11 @@ export default {
 				'pulse-gentle': {
 					'0%, 100%': { 
 						transform: 'scale(1)',
-						opacity: '1'
+						opacity: '0.7'
 					},
 					'50%': { 
-						transform: 'scale(1.05)',
-						opacity: '0.8'
+						transform: 'scale(1.02)',
+						opacity: '1'
 					}
 				},
 				'float': {
@@ -154,12 +192,17 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
-				'slow-spin': 'slow-spin 20s linear infinite',
-				'reverse-spin': 'reverse-spin 15s linear infinite',
-				'pulse-gentle': 'pulse-gentle 2s ease-in-out infinite',
-				'float': 'float 3s ease-in-out infinite',
-				'glow': 'glow 2s ease-in-out infinite alternate',
-				'shimmer': 'shimmer 2s linear infinite'
+            "dharma-spin": "dharma-spin 12s linear infinite",
+            "chakra-spin": "chakra-spin 15s linear infinite",
+            "slow-spin": "slow-spin 20s linear infinite",
+            "reverse-spin": "reverse-spin 25s linear infinite",
+            "lotus-bloom": "lotus-bloom 0.8s ease-out forwards",
+            "om-pulse": "om-pulse 4s ease-in-out infinite",
+            "pulse-gentle": "pulse-gentle 3s ease-in-out infinite",
+            "sanskrit-glow": "sanskrit-glow 3s ease-in-out infinite alternate",
+            "sacred-float": "sacred-float 6s ease-in-out infinite",
+            "mandala-rotation": "mandala-rotation 30s linear infinite",
+            "gentle-bounce": "gentle-bounce 3s ease-in-out infinite"
 			}
 		}
 	},
