@@ -7,25 +7,15 @@ export default function IndianOceanWorld() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Cosmic Ocean Background - Maximum Visibility Enhancement */}
-      <div className="absolute inset-0 bg-gradient-to-br from-ocean/45 via-peacock-blue/35 to-lotus-pink/25" />
-      <div className="absolute inset-0 bg-gradient-to-tr from-indigo-dharma/20 via-transparent to-ocean/30" />
-      <div className="absolute inset-0 bg-gradient-to-bl from-saffron/15 via-transparent to-turmeric/20" />
+      {/* Simplified Ocean Background - Optimized for Text Visibility */}
+      <div className="absolute inset-0 bg-gradient-to-br from-ocean/8 via-peacock-blue/5 to-lotus-pink/6" />
       
-      {/* Enhanced Sacred Ocean Patterns */}
-      <div className="absolute inset-0 opacity-25" 
-           style={{
-             backgroundImage: `url("data:image/svg+xml,%3Csvg width='140' height='140' viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23004D5C' stroke-width='2' opacity='0.8'%3E%3Cpath d='M20 20 Q70 5 120 20 Q135 70 120 120 Q70 135 20 120 Q5 70 20 20' fill='none'/%3E%3Ccircle cx='70' cy='70' r='35' fill='none' stroke='%230088B3' stroke-width='2.5'/%3E%3Cpath d='M25 25 Q70 10 115 25 Q130 70 115 115 Q70 130 25 115 Q10 70 25 25' fill='%23E79CC2' opacity='0.4'/%3E%3Cg stroke='%230E6F7C' stroke-width='1.5' opacity='0.6'%3E%3Cpath d='M50 50 L90 90 M90 50 L50 90' /%3E%3Ccircle cx='35' cy='35' r='8' fill='%23FF8C00' opacity='0.5'/%3E%3Ccircle cx='105' cy='105' r='6' fill='%23E6B547' opacity='0.6'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-             backgroundSize: '200px 200px, 100px 100px',
-             backgroundPosition: '0 0, 50px 50px'
-           }} />
-
-      {/* Varuna's Divine Waters - Animated Waves */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute w-full h-32 bg-gradient-to-r from-transparent via-ocean/30 to-transparent animate-float" style={{ top: '20%' }} />
-        <div className="absolute w-full h-24 bg-gradient-to-r from-transparent via-peacock-blue/25 to-transparent animate-float" style={{ top: '60%', animationDelay: '1s' }} />
-        <div className="absolute w-full h-20 bg-gradient-to-r from-transparent via-lotus-pink/20 to-transparent animate-float" style={{ bottom: '10%', animationDelay: '2s' }} />
-      </div>
+      {/* Subtle Ocean Pattern */}
+      <div className="absolute inset-0 ocean-waves opacity-40" />
+      
+      {/* Minimal Accent Elements */}
+      <div className="absolute top-20 right-20 w-32 h-32 border border-ocean/10 rounded-full animate-pulse-gentle" />
+      <div className="absolute bottom-20 left-20 w-24 h-24 border border-peacock-blue/10 rounded-full animate-float" />
       
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Thematic Icons Trinity - Enhanced Interactivity */}

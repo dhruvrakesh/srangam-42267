@@ -7,60 +7,16 @@ export default function EmpiresExchange() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Dharmic Background Layers - Maximum Visibility Enhancement */}
-      <div className="absolute inset-0 -z-10">
-        {/* Royal Gradient Base - Strengthened */}
-        <div className="absolute inset-0 bg-gradient-to-br from-burgundy/50 via-gold-warm/30 to-saffron/25" />
-        <div className="absolute inset-0 bg-gradient-to-tl from-terracotta/25 via-transparent to-burgundy/40" />
-        <div className="absolute inset-0 bg-gradient-to-tr from-gold-light/20 via-transparent to-lotus-pink/15" />
-        
-        {/* Enhanced Mandala Patterns with Sacred Geometry */}
-        <div className="absolute inset-0 opacity-30">
-          <svg className="absolute top-1/4 left-1/4 w-96 h-96 text-gold-warm animate-slow-spin" viewBox="0 0 200 200">
-            <circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.5"/>
-            <circle cx="100" cy="100" r="60" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.6"/>
-            <circle cx="100" cy="100" r="40" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.7"/>
-            <circle cx="100" cy="100" r="20" fill="hsl(var(--saffron))" opacity="0.3"/>
-            <g stroke="currentColor" strokeWidth="1" opacity="0.8">
-              {[...Array(8)].map((_, i) => (
-                <line key={i} x1="100" y1="20" x2="100" y2="45" transform={`rotate(${i * 45} 100 100)`} />
-              ))}
-            </g>
-            <g fill="hsl(var(--burgundy))" opacity="0.4">
-              {[...Array(8)].map((_, i) => (
-                <circle key={i} cx="100" cy="30" r="3" transform={`rotate(${i * 45} 100 100)`} />
-              ))}
-            </g>
-          </svg>
-          <svg className="absolute bottom-1/4 right-1/4 w-80 h-80 text-saffron animate-reverse-spin" viewBox="0 0 200 200">
-            <circle cx="100" cy="100" r="70" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.5"/>
-            <circle cx="100" cy="100" r="50" fill="none" stroke="hsl(var(--gold-warm))" strokeWidth="1" opacity="0.6"/>
-            <g stroke="currentColor" strokeWidth="1" opacity="0.6">
-              {[...Array(12)].map((_, i) => (
-                <line key={i} x1="100" y1="30" x2="100" y2="50" transform={`rotate(${i * 30} 100 100)`} />
-              ))}
-            </g>
-            <g fill="hsl(var(--terracotta))" opacity="0.5">
-              {[...Array(6)].map((_, i) => (
-                <circle key={i} cx="100" cy="35" r="2" transform={`rotate(${i * 60} 100 100)`} />
-              ))}
-            </g>
-          </svg>
-        </div>
-
-        {/* Imperial Motifs - Enhanced Visibility & Animation */}
-        <div className="absolute inset-0 opacity-25">
-          <div className="absolute top-20 right-20 w-40 h-40 border-3 border-gold-warm/60 rounded-full shadow-xl shadow-gold-warm/30 animate-pulse-gentle" />
-          <div className="absolute bottom-20 left-20 w-32 h-32 border-3 border-saffron/60 rounded-full shadow-xl shadow-saffron/30 animate-float" />
-          <div className="absolute top-1/2 left-10 w-24 h-24 border-3 border-burgundy/60 rounded-full shadow-lg shadow-burgundy/25 animate-pulse-gentle" style={{ animationDelay: '1s' }} />
-          <div className="absolute top-1/3 right-1/3 w-28 h-28 border-2 border-terracotta/50 rounded-full shadow-lg shadow-terracotta/20 animate-float" style={{ animationDelay: '0.5s' }} />
-          <div className="absolute bottom-1/3 left-1/2 w-20 h-20 border-2 border-lotus-pink/50 rounded-full shadow-lg shadow-lotus-pink/25 animate-pulse-gentle" style={{ animationDelay: '2s' }} />
-          
-          {/* Additional Sacred Geometry Elements */}
-          <div className="absolute top-10 left-1/4 w-16 h-16 border border-gold/40 rotate-45 animate-slow-spin" />
-          <div className="absolute bottom-10 right-1/4 w-12 h-12 border border-saffron/40 rotate-45 animate-reverse-spin" style={{ animationDelay: '1.5s' }} />
-        </div>
-      </div>
+      {/* Simplified Imperial Background - Optimized for Text Visibility */}
+      <div className="absolute inset-0 bg-gradient-to-br from-burgundy/8 via-gold-warm/6 to-saffron/5" />
+      
+      {/* Subtle Sacred Geometry Pattern */}
+      <div className="absolute inset-0 chakra-pattern opacity-20" />
+      
+      {/* Minimal Dharmic Accents */}
+      <div className="absolute top-20 right-20 w-32 h-32 border border-gold-warm/15 rounded-full animate-pulse-gentle" />
+      <div className="absolute bottom-20 left-20 w-24 h-24 border border-saffron/15 rounded-full animate-float" />
+      <div className="absolute top-1/2 left-10 w-20 h-20 border border-burgundy/10 rounded-full animate-pulse-gentle" style={{ animationDelay: '1s' }} />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Enhanced Header */}
