@@ -35,12 +35,16 @@ export default {
         sandalwood: "hsl(var(--sandalwood))",
         "charcoal-om": "hsl(var(--charcoal-om))",
         
+        // Srangam Brand Colors
+        oceanTeal: "hsl(var(--ocean-teal))",
+        epigraphyMaroon: "hsl(var(--epigraphy-maroon))",
+        ink: "hsl(var(--ink))",
+        
         // Legacy Srangam colors
         ocean: "hsl(var(--ocean))",
         laterite: "hsl(var(--laterite))",
         sand: "hsl(var(--sand))",
-        gold: "hsl(var(--gold))",
-        ink: "hsl(var(--ink))",
+        gold: "hsl(var(--gold))"
         
         // Nartiang Foundation colors
         burgundy: "hsl(var(--burgundy))",

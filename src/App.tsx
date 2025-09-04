@@ -24,6 +24,7 @@ const FieldNotes = lazy(() => import("./pages/FieldNotes"));
 const MapsData = lazy(() => import("./pages/MapsData"));
 const ReadingRoom = lazy(() => import("./pages/ReadingRoom"));
 const About = lazy(() => import("./pages/About"));
+const Brand = lazy(() => import("./pages/Brand"));
 
 // Lazy load article pages
 const MonsoonTradeClock = lazy(() => import("./pages/articles/MonsoonTradeClock"));
@@ -82,6 +83,7 @@ const App = () => (
                 <Route path="/maps-data" element={<MapsData />} />
                 <Route path="/reading-room" element={<ReadingRoom />} />
                 <Route path="/about" element={<About />} />
+                <Route path="/brand" element={<Brand />} />
                 <Route path="/monsoon-trade-clock" element={<MonsoonTradeClock />} />
                 <Route path="/scripts-that-sailed" element={<ScriptsThatSailed />} />
                 <Route path="/gondwana-to-himalaya" element={<GondwanaToHimalaya />} />

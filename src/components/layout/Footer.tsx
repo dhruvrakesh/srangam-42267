@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { Mail, MapPin, BookOpen } from "lucide-react";
 import { IconMonsoon, IconScript, IconBasalt } from "@/components/icons";
+import { Logo } from "@/components/Logo";
 
 export function Footer() {
   const [email, setEmail] = useState("");
@@ -67,9 +68,12 @@ export function Footer() {
 
           {/* Project Info */}
           <div className="space-y-4">
-            <h3 className="font-serif text-lg font-semibold text-foreground">
-              About Srangam
-            </h3>
+            <div className="flex items-center gap-3">
+              <Logo variant="symbol" size={24} />
+              <h3 className="font-serif text-lg font-semibold text-foreground">
+                About Srangam
+              </h3>
+            </div>
             <p className="text-sm text-muted-foreground">
               Exploring the interconnected histories of the Indian Ocean through archaeology, 
               epigraphy, and deep time perspectives.
@@ -95,6 +99,9 @@ export function Footer() {
               <Link to="/contact" className="hover:text-ocean transition-colors">
                 <MapPin size={16} className="inline mr-1" />
                 Contact
+              </Link>
+              <Link to="/brand" className="hover:text-oceanTeal transition-colors">
+                Brand Assets
               </Link>
             </div>
           </div>

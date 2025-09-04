@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { SearchResults } from "./SearchResults";
+import { Logo } from "@/components/Logo";
 
 export function TopNavigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -41,8 +42,15 @@ export function TopNavigation() {
           <div className="flex justify-between h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <Link to="/" className="font-serif text-xl font-semibold text-foreground hover:text-ocean transition-colors">
-                Srangam
+              <Link 
+                to="/" 
+                className="flex items-center gap-3 group"
+                aria-label="Srangam home page"
+              >
+                <Logo variant="symbol" size={32} />
+                <span className="font-serif text-xl font-semibold text-epigraphyMaroon group-hover:text-oceanTeal transition-colors">
+                  Srangam
+                </span>
               </Link>
             </div>
 
