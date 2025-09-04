@@ -44,7 +44,7 @@ export default {
         ocean: "hsl(var(--ocean))",
         laterite: "hsl(var(--laterite))",
         sand: "hsl(var(--sand))",
-        gold: "hsl(var(--gold))"
+        gold: "hsl(var(--gold))",
         
         // Nartiang Foundation colors
         burgundy: "hsl(var(--burgundy))",
