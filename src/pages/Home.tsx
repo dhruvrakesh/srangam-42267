@@ -55,9 +55,9 @@ export default function Home() {
 
   return (
     <div className="bg-background relative overflow-hidden">
-      {/* Optimized Background Patterns - Reduced Complexity */}
-      <div className="fixed inset-0 mandala-bg opacity-3 pointer-events-none" />
-      <div className="fixed top-0 right-0 w-64 h-64 chakra-pattern rounded-full animate-slow-spin opacity-5 pointer-events-none" />
+      {/* Ocean-inspired Background Patterns */}
+      <div className="fixed inset-0 ocean-waves opacity-60 pointer-events-none" />
+      <div className="fixed top-0 right-0 w-96 h-96 ancient-navigation rounded-full opacity-20 pointer-events-none" />
       
       {/* Hero Section with Dharmic Aesthetics */}
       <section className="relative min-h-screen">
@@ -174,7 +174,7 @@ export default function Home() {
 
       {/* Themes Grid - Dharmic Mandala Layout */}
       <section className="py-16 bg-background relative">
-        <div className="absolute inset-0 mandala-bg opacity-20" />
+        <div className="absolute inset-0 ancient-navigation opacity-15" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-12">
             <div className="flex justify-center gap-4 mb-6">
@@ -269,7 +269,7 @@ export default function Home() {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Link to="/field-notes" className="group text-center p-8 bg-card rounded-lg border border-border hover:shadow-lg transition-all duration-200 animate-fade-in relative overflow-hidden">
-              <div className="absolute inset-0 mandala-bg opacity-3" />
+              <div className="absolute inset-0 manuscript-texture opacity-30" />
               <IconOm size={48} className="mx-auto text-saffron mb-6 group-hover:scale-105 transition-transform animate-pulse-gentle" />
               <h3 className="font-serif text-xl font-bold text-foreground mb-2">Field Notes</h3>
               <p className="text-muted-foreground mb-4">क्षेत्र अध्ययन</p>
