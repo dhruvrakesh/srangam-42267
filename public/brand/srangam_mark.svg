@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .outer { fill: none; stroke: #2A9D8F; stroke-width: 36; stroke-linecap: round; }
+      .wave  { fill: none; stroke: #7B2D26; stroke-width: 44; stroke-linecap: round; }
+      .strata{ fill: none; stroke: #7B2D26; stroke-width: 28; stroke-linecap: round; }
+    </style>
+  </defs>
+  <circle class="outer" cx="512" cy="512" r="460"/>
+  <path class="wave" d="M 260 310 C 420 180, 780 240, 720 420 C 660 600, 300 560, 360 740" />
+  <line class="strata" x1="620" y1="760" x2="820" y2="760"/>
+  <line class="strata" x1="620" y1="810" x2="800" y2="810"/>
+  <line class="strata" x1="620" y1="860" x2="760" y2="860"/>
+  <title>Srangam — confluence & strata mark</title>
+</svg>

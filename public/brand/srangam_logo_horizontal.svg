@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1800" height="600" viewBox="0 0 1800 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .outer { fill: none; stroke: #2A9D8F; stroke-width: 20; stroke-linecap: round; }
+      .wave  { fill: none; stroke: #7B2D26; stroke-width: 24; stroke-linecap: round; }
+      .word  { fill: #7B2D26; font-family: 'Georgia', 'Times New Roman', serif; font-size: 280px; font-weight: 600; letter-spacing: 6px; }
+      .tag   { fill: #111111; font-family: 'Georgia', 'Times New Roman', serif; font-size: 44px; opacity: 0.8; }
+    </style>
+  </defs>
+  <g transform="translate(40,40)">
+    <circle class="outer" cx="260" cy="260" r="230"/>
+    <path class="wave" d="M 140 160 C 230 95, 470 130, 440 220 C 410 310, 170 290, 200 380" />
+  </g>
+  <text x="580" y="250" class="word">SRANGAM</text>
+  <text x="580" y="345" class="tag">Indian Ocean • Epigraphy • Deep Time</text>
+  <title>Srangam — horizontal lockup</title>
+</svg>
