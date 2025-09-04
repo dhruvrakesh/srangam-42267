@@ -95,25 +95,14 @@ export const ARTICLES = [
   },
   {
     id: 6,
-    title: "Pepper and Bullion: The Malabar–Red Sea Circuit",
-    excerpt: "Sacks of spice eastbound; silver and gold westbound—the corridor that fed two worlds.",
-    slug: "/pepper-and-bullion",
-    theme: "Empires & Exchange",
-    tags: ["Empires & Exchange", "Malabar", "Roman World"],
-    readTime: 6,
-    author: "Dr. Maritime Historian",
-    date: "2024-03-08"
-  },
-  {
-    id: 7,
-    title: "Rajendra's Ocean: The Chola Strike on Srivijaya, 1025 CE",
-    excerpt: "A hard-power raid in a sea network bound by soft-power ties.",
-    slug: "/chola-srivijaya-1025",
-    theme: "Empires & Exchange",
-    tags: ["Empires & Exchange", "Chola", "Straits of Malacca"],
-    readTime: 7,
-    author: "Prof. Naval History",
-    date: "2024-03-15"
+    title: "Indian Ocean Power Networks: From the Malabar Spice Circuit to the Chola Expedition",
+    excerpt: "How trade in spices and bullion fueled ancient economies, and how medieval Indian naval expeditions projected power across the waves—revealing the interconnected world of the pre-modern Indian Ocean.",
+    slug: "/indian-ocean-power-networks",
+    theme: "Empires & Exchange", 
+    tags: ["Empires & Exchange", "Maritime Networks", "Ancient Economics", "Naval History", "Cultural Exchange"],
+    readTime: 24,
+    author: "Nartiang Foundation",
+    date: "2024-03-28"
   },
   {
     id: 8,

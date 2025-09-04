@@ -30,8 +30,7 @@ const Brand = lazy(() => import("./pages/Brand"));
 const MonsoonTradeClock = lazy(() => import("./pages/articles/MonsoonTradeClock"));
 const ScriptsThatSailed = lazy(() => import("./pages/articles/ScriptsThatSailed"));
 const GondwanaToHimalaya = lazy(() => import("./pages/articles/GondwanaToHimalaya"));
-const PepperAndBullion = lazy(() => import("./pages/articles/PepperAndBullion"));
-const CholaNavalRaid = lazy(() => import("./pages/articles/CholaNavalRaid"));
+const IndianOceanPowerNetworks = lazy(() => import("./pages/articles/IndianOceanPowerNetworks"));
 const AshokaKandaharEdicts = lazy(() => import("./pages/articles/AshokaKandaharEdicts"));
 const KutaiYupaBorneo = lazy(() => import("./pages/articles/KutaiYupaBorneo"));
 const MaritimeMemoriesSouthIndia = lazy(() => import("./pages/articles/MaritimeMemoriesSouthIndia"));
@@ -87,14 +86,13 @@ const App = () => (
                 <Route path="/monsoon-trade-clock" element={<MonsoonTradeClock />} />
                 <Route path="/scripts-that-sailed" element={<ScriptsThatSailed />} />
                 <Route path="/gondwana-to-himalaya" element={<GondwanaToHimalaya />} />
-                <Route path="/pepper-and-bullion" element={<PepperAndBullion />} />
-                <Route path="/chola-srivijaya-1025" element={<CholaNavalRaid />} />
+                <Route path="/indian-ocean-power-networks" element={<IndianOceanPowerNetworks />} />
                 <Route path="/ashoka-kandahar-edicts" element={<AshokaKandaharEdicts />} />
                 <Route path="/kutai-yupa-borneo" element={<KutaiYupaBorneo />} />
                 <Route path="/maritime-memories-south-india" element={<MaritimeMemoriesSouthIndia />} />
                 <Route path="/riders-on-monsoon" element={<RidersOnMonsoon />} />
                 <Route path="/earth-sea-sangam" element={<EarthSeaSangam />} />
-                <Route path="/themes/ancient-india/pepper-routes" element={<PepperAndBullion />} />
+                <Route path="/themes/ancient-india/pepper-routes" element={<IndianOceanPowerNetworks />} />
                 <Route path="/batch/bujang-nagapattinam-ocean" element={<BatchBujangNagapattinamOcean />} />
                 <Route path="/batch/muziris-kutai-ashoka" element={<BatchMuzirisKutaiAshoka />} />
                 <Route path="*" element={<NotFound />} />
