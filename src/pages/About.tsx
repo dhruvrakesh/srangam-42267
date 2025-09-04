@@ -6,28 +6,22 @@ import { IconMonsoon, IconScript, IconBasalt } from "@/components/icons";
 export default function About() {
   const team = [
     {
-      name: "Dr. Sarah Chennai",
-      role: "Principal Investigator",
-      expertise: "Maritime Archaeology, Roman-Indian Trade",
-      institution: "University of Kerala"
+      name: "Nartiang Foundation",
+      role: "CSR arm of DKEGL",
+      expertise: "Corporate Social Responsibility, Cultural Heritage",
+      institution: "Supporting Dharmic Research & Education"
     },
     {
-      name: "Prof. Ahmed Hassan",
-      role: "Co-Investigator", 
-      expertise: "Navigation History, Arabic Sources",
-      institution: "Cairo University"
+      name: "Kanika Rakesh",
+      role: "Research Contributor",
+      expertise: "Ancient Indian History & Maritime Studies", 
+      institution: "Lead Research Associate"
     },
     {
-      name: "Dr. Priya Venkat",
-      role: "Epigraphy Lead",
-      expertise: "South Indian Inscriptions, Paleography",
-      institution: "Deccan College"
-    },
-    {
-      name: "Dr. James Morton",
-      role: "Geological Consultant",
-      expertise: "Tectonic History, Deep Time Analysis",
-      institution: "Oxford University"
+      name: "Dhruv Rakesh", 
+      role: "Research Contributor",
+      expertise: "Historical Analysis & Digital Humanities",
+      institution: "Co-Research Associate"
     }
   ];
 
