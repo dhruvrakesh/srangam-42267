@@ -36,29 +36,41 @@ export function ReadingLists() {
           institution: 'Bhandarkar Oriental Research Institute',
           description: 'Sacred geographical knowledge embedded in Vedic hymns, revealing ancient Indian understanding of rivers, mountains, and maritime regions.',
           available: true,
-          url: '#'
+          url: 'https://www.bori.ac.in/'
         },
         {
           title: 'Periplus Maris Erythraei - Indian Ocean Navigation',
           author: 'Anonymous (c. 1st century CE)',
           type: 'Primary',
           description: 'Greco-Roman merchant\'s guide documenting Indian ports, goods, and maritime trade routes from indigenous perspective.',
-          available: true
+          available: true,
+          url: 'https://archive.org/details/theperiplus00fabr'
         },
         {
-          title: 'Aṣṭādhyāyī - Linguistic Geography',
-          author: 'Pāṇini',
+          title: 'Political History of Ancient India',
+          author: 'Hemchandra Raychaudhuri',
           type: 'Primary',
-          institution: 'Hemchandra Raychaudhary Collection',
-          description: 'Grammatical treatise containing geographical and cultural references supporting indigenous linguistic continuity.',
-          available: true
+          institution: 'University of Calcutta',
+          description: 'Pioneering work on ancient Indian political institutions, dynastic chronologies, and administrative systems based on indigenous sources.',
+          available: true,
+          url: 'https://archive.org/details/politicalhistory00raycrich'
+        },
+        {
+          title: 'The Cholas',
+          author: 'K.A. Nilakanta Sastri',
+          type: 'Primary',
+          institution: 'University of Madras',
+          description: 'Definitive study of Chola maritime expansion, naval administration, and Tamil cultural synthesis in Southeast Asia.',
+          available: true,
+          url: 'https://archive.org/details/cholas00nilauoft'
         },
         {
           title: 'Arthaśāstra - Maritime Trade Regulations', 
           author: 'Kauṭilya',
           type: 'Primary',
           description: 'Ancient Indian economic treatise detailing port administration, maritime commerce, and naval organization.',
-          available: true
+          available: true,
+          url: 'https://archive.org/details/kautilyasarthasa00kaur'
         }
       ]
     },
@@ -68,19 +80,31 @@ export function ReadingLists() {
       description: 'Archaeological evidence supporting indigenous continuity and maritime prowess',
       sources: [
         {
+          title: 'The Earliest Civilization of South Asia',
+          author: 'B.B. Lal',
+          type: 'Archaeological',
+          institution: 'Archaeological Survey of India',
+          description: 'Archaeological evidence for indigenous continuity from Harappan to historical periods, debunking Aryan invasion theories through excavation data.',
+          available: true,
+          url: 'https://www.amazon.com/Earliest-Civilization-South-Asia-Excavations/dp/8173052239'
+        },
+        {
           title: 'Harappan Civilization: Maritime Connections',
           author: 'Kenoyer, J.M. & Meadow, R.H.',
           type: 'Archaeological',
           institution: 'University of Wisconsin-Madison',
           description: 'Archaeological evidence for sophisticated maritime trade networks predating Aryan Migration Theory timelines.',
-          available: true
+          available: true,
+          url: 'https://www.harappa.com/har/har0.html'
         },
         {
           title: 'Sangam Age Ports: Archaeological Evidence',
           author: 'Raman, K.V.',
           type: 'Archaeological',
+          institution: 'Kerala Council for Historical Research',
           description: 'Excavations at Pattanam (Muziris) revealing indigenous port infrastructure and international connections.',
-          available: true
+          available: true,
+          url: 'https://www.kchr.ac.in/'
         },
         {
           title: 'Maritime Archaeology of Western India',
@@ -88,7 +112,17 @@ export function ReadingLists() {
           type: 'Archaeological',
           institution: 'National Institute of Oceanography',
           description: 'Underwater archaeological discoveries supporting continuous maritime activity from ancient times.',
-          available: true
+          available: true,
+          url: 'https://www.nio.org/'
+        },
+        {
+          title: 'Ramāyaṇa: Myth or Reality?',
+          author: 'B.B. Lal',
+          type: 'Archaeological',
+          institution: 'Archaeological Survey of India',
+          description: 'Archaeological validation of epic geography and historical events described in Sanskrit literature.',
+          available: true,
+          url: 'https://www.amazon.com/Ramayana-Myth-Reality-B-Lal/dp/8173053226'
         }
       ]
     },
@@ -98,18 +132,38 @@ export function ReadingLists() {
       description: 'Linguistic studies supporting indigenous development of Sanskrit and Prakrits',
       sources: [
         {
+          title: 'Computing Science in Ancient India',
+          author: 'Subhash Kak',
+          type: 'Linguistic',
+          institution: 'Louisiana State University',
+          description: 'Vedic mathematics, binary systems, and computational principles in ancient Sanskrit texts predating Greek mathematics.',
+          available: true,
+          url: 'https://www.ece.lsu.edu/kak/'
+        },
+        {
           title: 'The Primacy of Sanskrit in Indo-European Studies',
           author: 'Kazanas, N.',
           type: 'Linguistic',
           description: 'Comprehensive analysis of Sanskrit\'s archaic features suggesting Indian origin of Indo-European languages.',
-          available: true
+          available: true,
+          url: 'https://www.academia.edu/4341522/The_Primacy_of_Sanskrit'
         },
         {
           title: 'Saraswati-Sindhu Civilization: Linguistic Evidence',
           author: 'Kalyanaraman, S.',
           type: 'Linguistic',
           description: 'Linguistic archaeology connecting Harappan symbols with proto-Sanskrit terminology.',
-          available: true
+          available: true,
+          url: 'https://sarasvati.wordpress.com/'
+        },
+        {
+          title: 'The Astronomical Code of the Ṛgveda',
+          author: 'Subhash Kak',
+          type: 'Linguistic',
+          institution: 'Louisiana State University',
+          description: 'Astronomical knowledge encoded in Vedic hymns revealing sophisticated understanding of celestial mechanics.',
+          available: true,
+          url: 'https://www.ece.lsu.edu/kak/rig.pdf'
         }
       ]
     },
@@ -119,18 +173,48 @@ export function ReadingLists() {
       description: 'Genetic, astronomical, and environmental studies supporting indigenous continuity',
       sources: [
         {
+          title: 'Genetics and the Aryan Debate',
+          author: 'Raj Vedam',
+          type: 'Scientific',
+          institution: 'Indian History Awareness and Research',
+          description: 'Multi-parameter analysis combining genetics, archaeology, linguistics, and astronomy challenging Out of India migration models.',
+          available: true,
+          url: 'https://www.ihar.org/'
+        },
+        {
           title: 'Ancient DNA and Indian Population Continuity',
           author: 'Narasimhan, V.M. et al.',
           type: 'Scientific',
+          institution: 'Harvard Medical School',
           description: 'Genetic studies showing population continuity in Indian subcontinent contradicting migration theories.',
-          available: true
+          available: true,
+          url: 'https://www.cell.com/cell/fulltext/S0092-8674(19)30967-5'
         },
         {
-          title: 'Astronomical Dating of Mahābhārata Events',
-          author: 'Oak, N.S.',
+          title: 'Archaeoastronomy and Vedic Chronology',
+          author: 'Subhash Kak',
           type: 'Scientific',
-          description: 'Archaeoastronomical evidence for historical dating of Sanskrit epics supporting traditional chronology.',
-          available: true
+          institution: 'Louisiana State University',
+          description: 'Astronomical dating methods applied to Vedic literature revealing much earlier chronologies than colonial frameworks.',
+          available: true,
+          url: 'https://www.ece.lsu.edu/kak/arch1.pdf'
+        },
+        {
+          title: 'Sarasvatī River and Harappan Civilization',
+          author: 'Raj Vedam & Michel Danino',
+          type: 'Scientific',
+          description: 'Hydrological and satellite evidence for the mighty Sarasvatī river supporting Vedic geographical accuracy.',
+          available: true,
+          url: 'https://www.archaeologyonline.net/artifacts/saraswati-river'
+        },
+        {
+          title: 'Chronological Framework of Indian Culture',
+          author: 'B.B. Lal',
+          type: 'Scientific',
+          institution: 'Archaeological Survey of India',
+          description: 'Scientific dating methods applied to archaeological sites supporting indigenous cultural continuity.',
+          available: true,
+          url: 'https://www.asi.gov.in/'
         }
       ]
     }
