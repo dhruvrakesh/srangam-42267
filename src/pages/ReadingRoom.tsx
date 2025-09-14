@@ -109,14 +109,14 @@ This work examines ${resource.tags.join(', ').toLowerCase()} through a comprehen
     
     // Epigraphic & Script Studies
     {
-      title: "Scripts that Sailed: From Southern Brāhmī to Kawi, Khmer, and Thai",
-      author: "Dr. Priya Venkat",
-      type: "Epigraphic Study",
-      description: "Letterforms as shipping records: how Indic scripts adapted to new languages around the Bay of Bengal. Trace the maritime networks that carried writing systems across the ocean.",
-      tags: ["Scripts & Inscriptions", "Epigraphy", "SE Asia", "Cultural Exchange"],
+      title: "Riding the Monsoon Winds: Commerce, Culture and the Ancient Indian Ocean",
+      author: "Kanika Rakesh",
+      type: "Research Article",
+      description: "How seasonal wind patterns powered the world's first globalized trade network, shaping cultures from East Africa to Southeast Asia. From the Hermapollon cargo to Chola naval expeditions, discover how monsoon winds became the engine of early globalization.",
+      tags: ["Indian Ocean World", "Maritime Trade", "Monsoon Navigation", "Cultural Exchange", "Ancient Globalization"],
       available: true,
       slug: "/scripts-that-sailed",
-      readTime: 12
+      readTime: 28
     },
     {
       title: "Stones that Speak: Ashoka's Greek and Aramaic at Kandahar",

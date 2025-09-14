@@ -73,13 +73,13 @@ export const ARTICLES = [
   },
   {
     id: 4,
-    title: "Scripts that Sailed: From Southern Brāhmī to Kawi, Khmer, and Thai",
-    excerpt: "Letterforms as shipping records: how Indic scripts adapted to new languages around the Bay of Bengal.",
+    title: "Riding the Monsoon Winds: Commerce, Culture and the Ancient Indian Ocean",
+    excerpt: "How seasonal wind patterns powered the world's first globalized trade network, shaping cultures from East Africa to Southeast Asia. From the Hermapollon cargo to Chola naval expeditions, discover how monsoon winds became the engine of early globalization.",
     slug: "/scripts-that-sailed",
-    theme: "Scripts & Inscriptions",
-    tags: ["Scripts & Inscriptions", "Epigraphy", "SE Asia"],
-    readTime: 12,
-    author: "Dr. Priya Venkat",
+    theme: "Indian Ocean World",
+    tags: ["Indian Ocean World", "Maritime Trade", "Monsoon Navigation", "Cultural Exchange", "Ancient Globalization"],
+    readTime: 28,
+    author: "Kanika Rakesh",
     date: "2024-03-08"
   },
   {
