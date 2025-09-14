@@ -9,29 +9,56 @@ import { toast } from "sonner";
 
 export default function ReadingRoom() {
   const handleDownload = async (resource: any) => {
+    toast("Generating PDF with Srangam watermark...");
+
     try {
-      toast.info("Generating PDF with Srangam watermark...");
+      // Import the content extractor
+      const { extractContentForPDF } = await import('@/lib/articleContentExtractor');
       
-      // Create sample content for the PDF
-      const content = `${resource.description}\n\nThis is a preview of the article content. The full text contains detailed research, analysis, and scholarly references.\n\nKey topics covered:\n${resource.tags.map((tag: string) => `• ${tag}`).join('\n')}\n\nFor the complete article with images, interactive elements, and full citations, please visit srangam.org and read the online version.`;
+      // Get the real article content
+      const articleContent = extractContentForPDF(resource.slug);
       
-      await generateArticlePDF({
-        title: resource.title,
-        author: resource.author,
-        content: content,
-        tags: resource.tags,
-        readTime: resource.readTime,
-        date: new Date().toLocaleDateString('en-US', { 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
-        })
-      });
-      
-      toast.success("PDF downloaded successfully!");
+      if (!articleContent) {
+        // Fallback for articles not yet mapped
+        await generateArticlePDF({
+          title: resource.title,
+          author: resource.author,
+          content: `# ${resource.title}
+
+## Overview
+${resource.description}
+
+*This article is being prepared for full digital publication. Please check back soon for the complete scholarly content.*
+
+### About This Research
+${resource.description}
+
+### Research Focus
+This work examines ${resource.tags.join(', ').toLowerCase()} through a comprehensive analysis of historical sources and material evidence.
+
+---
+
+*Complete content will be available soon in the Srangam Digital Archive.*`,
+          tags: resource.tags,
+          readTime: resource.readTime,
+          date: new Date().toLocaleDateString()
+        });
+      } else {
+        // Use the real article content
+        await generateArticlePDF({
+          title: articleContent.title,
+          author: articleContent.author,
+          content: articleContent.content,
+          tags: articleContent.tags,
+          readTime: articleContent.readTime,
+          date: new Date().toLocaleDateString()
+        });
+      }
+
+      toast("PDF downloaded successfully!");
     } catch (error) {
       console.error('Error generating PDF:', error);
-      toast.error("Failed to generate PDF. Please try again.");
+      toast("Failed to generate PDF. Please try again.");
     }
   };
 
