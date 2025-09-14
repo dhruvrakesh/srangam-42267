@@ -163,14 +163,14 @@ This work examines ${resource.tags.join(', ').toLowerCase()} through a comprehen
   ];
 
   return (
-    <div className="min-h-screen relative overflow-hidden lotus-mandala">
+    <div className="min-h-screen relative overflow-hidden">
       {/* Sacred Manuscript Background with Enhanced Geometry */}
       <div className="absolute inset-0 bg-gradient-to-br from-sandalwood via-cream to-sandalwood/80" />
-      <div className="absolute inset-0 dharma-chakra-subtle opacity-10" />
-      <div className="absolute inset-0 temple-kolam opacity-5" />
-      <div className="absolute top-20 left-20 w-40 h-40 sri-yantra-pattern opacity-5 rounded-full" />
-      <div className="absolute bottom-20 right-20 w-60 h-60 cosmic-yantra opacity-5 rounded-full" />
-      <div className="absolute inset-0 bg-gradient-to-t from-background/10 via-transparent to-background/5" />
+      <div className="absolute inset-0 dharma-chakra-subtle opacity-30" />
+      <div className="absolute inset-0 temple-kolam opacity-20" />
+      <div className="absolute top-20 left-20 w-40 h-40 sri-yantra-pattern opacity-25 rounded-full lotus-mandala-bg" />
+      <div className="absolute bottom-20 right-20 w-60 h-60 cosmic-yantra opacity-20 rounded-full" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background/5 via-transparent to-background/3" />
       
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Dharmic Header - Saraswati's Manuscript Hall */}
