@@ -78,9 +78,10 @@ export function ResearchCentre() {
       </Tabs>
 
       {/* Call to Action */}
-      <Card className="bg-gradient-to-br from-ocean/10 to-peacock-blue/10 border-2 border-ocean/20">
+      <Card className="bg-gradient-to-br from-saffron/5 to-lotus-pink/5 border border-saffron/20 mandala-vatika">
         <CardHeader>
-          <CardTitle className="font-serif text-2xl text-foreground text-center">
+          <CardTitle className="font-serif text-2xl text-foreground text-center flex items-center justify-center gap-2">
+            <Scroll className="h-6 w-6 text-saffron" />
             Join the Indigenous Research Movement
           </CardTitle>
         </CardHeader>
@@ -143,6 +144,26 @@ export function ResearchCentre() {
                   </Button>
                 </CardContent>
               </Card>
+            </div>
+          </div>
+          
+          {/* Sacred Geometry Design Philosophy */}
+          <div className="mt-8 pt-6 border-t border-saffron/10">
+            <h4 className="text-lg font-semibold text-indigo-dharma mb-3 flex items-center justify-center gap-2">
+              <Award className="w-4 h-4" />
+              Sacred Geometry in Our Design
+            </h4>
+            <div className="grid md:grid-cols-2 gap-4 text-sm text-muted-foreground">
+              <div className="space-y-2">
+                <p><strong className="text-saffron">Mandala Vatika:</strong> Concentric patterns representing cosmic harmony and the cyclical nature of knowledge</p>
+                <p><strong className="text-lotus-pink">Sri Yantra Elements:</strong> Interlocking triangular forms symbolizing the union of consciousness and energy</p>
+                <p><strong className="text-terracotta">Temple Kolam:</strong> Dotted geometric patterns from South Indian temple traditions, representing divine order</p>
+              </div>
+              <div className="space-y-2">
+                <p><strong className="text-peacock-blue">Lotus Mandala:</strong> Radiating petal designs symbolizing the unfolding of wisdom from the spiritual center</p>
+                <p><strong className="text-indigo-dharma">Dharma Chakra:</strong> Spoke patterns representing the eternal wheel of cosmic law and righteous knowledge</p>
+                <p className="text-xs italic pt-2">These patterns serve as subtle reminders of the sophisticated mathematical and spiritual understanding embedded in Sanatan civilization.</p>
+              </div>
             </div>
           </div>
         </CardContent>

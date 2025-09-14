@@ -163,13 +163,13 @@ This work examines ${resource.tags.join(', ').toLowerCase()} through a comprehen
   ];
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Sacred Manuscript Background */}
+    <div className="min-h-screen relative overflow-hidden lotus-mandala">
+      {/* Sacred Manuscript Background with Enhanced Geometry */}
       <div className="absolute inset-0 bg-gradient-to-br from-sandalwood via-cream to-sandalwood/80" />
-      <div className="absolute inset-0 opacity-[0.04]" 
-           style={{
-             backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%238B4513' stroke-width='0.8' opacity='0.3'%3E%3Cpath d='M10 10 Q50 30 90 10 Q70 50 90 90 Q50 70 10 90 Q30 50 10 10' fill='none'/%3E%3Ccircle cx='50' cy='50' r='8' fill='none'/%3E%3C/g%3E%3C/svg%3E")`,
-           }} />
+      <div className="absolute inset-0 dharma-chakra-subtle opacity-10" />
+      <div className="absolute inset-0 temple-kolam opacity-5" />
+      <div className="absolute top-20 left-20 w-40 h-40 sri-yantra-pattern opacity-5 rounded-full" />
+      <div className="absolute bottom-20 right-20 w-60 h-60 cosmic-yantra opacity-5 rounded-full" />
       <div className="absolute inset-0 bg-gradient-to-t from-background/10 via-transparent to-background/5" />
       
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

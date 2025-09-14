@@ -1,4 +1,50 @@
-# Welcome to your Lovable project
+# Srangam Digital - Indigenous Knowledge & Civilizational Continuity
+
+**A comprehensive digital platform preserving and presenting evidence for India's role as a primary source of global civilization, maritime innovation, and cultural dissemination.**
+
+## Project Mission & Philosophy
+
+### Core Mission
+Srangam Digital serves as a scholarly repository and interactive platform documenting the "Out of India" framework - presenting compelling interdisciplinary evidence that positions ancient India not as a recipient of external cultural influences, but as a vibrant source civilization that profoundly shaped the ancient world through maritime networks, philosophical traditions, and technological innovations.
+
+### Theoretical Framework: "Out of India"
+Our research methodology challenges prevailing academic narratives by:
+
+**1. Indigenous Continuity Emphasis**
+- Demonstrating unbroken cultural and intellectual traditions from ancient to modern India
+- Highlighting sophisticated indigenous knowledge systems in astronomy, mathematics, navigation, and metallurgy
+- Presenting genetic, archaeological, and linguistic evidence supporting autochthonous development
+
+**2. Maritime Centrality**
+- Documenting India's role as the hub of ancient Indian Ocean trade networks
+- Showcasing indigenous navigation techniques and monsoon mastery
+- Revealing the extent of Indian cultural and commercial influence across Southeast Asia, East Africa, and the Mediterranean
+
+**3. Primary Source Integration**
+- Prioritizing Sanskrit, Prakrit, Tamil, and other indigenous textual traditions
+- Incorporating archaeological evidence from Indian Ocean sites
+- Utilizing epigraphic data from inscriptions across the Indo-Pacific region
+
+**4. Interdisciplinary Convergence**
+- Combining archaeology, linguistics, genetics, astronomy, and geological data
+- Correlating traditional knowledge with modern scientific findings
+- Bridging ancient wisdom traditions with contemporary research methodologies
+
+### Institutional Partnerships
+- **Bhandarkar Oriental Research Institute**: Manuscript traditions and epigraphic collections
+- **Hemchandra Raychaudhary Archives**: Historical and linguistic resources
+- **Deccan College**: Archaeological and anthropological research
+- **Regional Oriental Research Centers**: Collaborative scholarship network
+
+### Sacred Geometry in Design
+Our visual design incorporates traditional Indian sacred geometry patterns including:
+- **Mandala Vatika**: Concentric circle patterns representing cosmic harmony
+- **Sri Yantra Elements**: Triangular interlocking designs symbolizing divine geometry  
+- **Temple Kolam Patterns**: Dotted geometric designs from South Indian temple traditions
+- **Lotus Mandala**: Radiating petal patterns representing spiritual unfolding
+- **Dharma Chakra**: Spoke patterns representing the wheel of cosmic order
+
+These patterns serve not merely as decoration but as subtle reminders of the sophisticated mathematical and spiritual understanding embedded in Indian civilization.
 
 ## Project info
 

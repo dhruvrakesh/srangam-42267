@@ -61,9 +61,16 @@ const ArticleContent = React.memo(({
       <ReadingProgressBar />
       
       <article className="max-w-4xl mx-auto px-4 py-8 relative">
-        {/* Enhanced Background */}
+        {/* Contextual Sacred Geometry Background */}
         <div className="absolute inset-0 bg-gradient-to-b from-cream/40 via-sandalwood/30 to-cream/40 rounded-3xl -z-10" />
-        <div className="absolute inset-0 mandala-bg opacity-20 rounded-3xl -z-10" />
+        <div className={cn(
+          "absolute inset-0 opacity-20 rounded-3xl -z-10",
+          title.toLowerCase().includes('maritime') || title.toLowerCase().includes('ocean') || title.toLowerCase().includes('monsoon') ? 'ocean-waves' :
+          title.toLowerCase().includes('temple') || title.toLowerCase().includes('inscription') || title.toLowerCase().includes('edict') ? 'temple-kolam' :
+          title.toLowerCase().includes('trade') || title.toLowerCase().includes('pepper') || title.toLowerCase().includes('exchange') ? 'sri-yantra-pattern' :
+          title.toLowerCase().includes('geological') || title.toLowerCase().includes('earth') || title.toLowerCase().includes('himalaya') ? 'cosmic-yantra' :
+          'mandala-vatika'
+        )} />
         
         {/* Breadcrumb */}
         <nav className="mb-8 relative z-10">
