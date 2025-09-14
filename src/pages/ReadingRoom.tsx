@@ -4,8 +4,37 @@ import { Button } from "@/components/ui/button";
 import { TagChip } from "@/components/ui/TagChip";
 import { IconLotus, IconOm } from "@/components/icons";
 import { Link } from "react-router-dom";
+import { generateArticlePDF } from "@/lib/pdfGenerator";
+import { toast } from "sonner";
 
 export default function ReadingRoom() {
+  const handleDownload = async (resource: any) => {
+    try {
+      toast.info("Generating PDF with Srangam watermark...");
+      
+      // Create sample content for the PDF
+      const content = `${resource.description}\n\nThis is a preview of the article content. The full text contains detailed research, analysis, and scholarly references.\n\nKey topics covered:\n${resource.tags.map((tag: string) => `• ${tag}`).join('\n')}\n\nFor the complete article with images, interactive elements, and full citations, please visit srangam.org and read the online version.`;
+      
+      await generateArticlePDF({
+        title: resource.title,
+        author: resource.author,
+        content: content,
+        tags: resource.tags,
+        readTime: resource.readTime,
+        date: new Date().toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        })
+      });
+      
+      toast.success("PDF downloaded successfully!");
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error("Failed to generate PDF. Please try again.");
+    }
+  };
+
   const resources = [
     // Maritime & Navigation Studies
     {
@@ -225,9 +254,13 @@ export default function ReadingRoom() {
                           Read Online
                         </Link>
                       </Button>
-                      <Button size="sm" className="bg-ocean hover:bg-ocean/90">
+                      <Button 
+                        size="sm" 
+                        className="bg-ocean hover:bg-ocean/90"
+                        onClick={() => handleDownload(resource)}
+                      >
                         <Download size={14} className="mr-1" />
-                        Download
+                        Download PDF
                       </Button>
                     </div>
                   )}

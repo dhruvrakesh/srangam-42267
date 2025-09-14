@@ -120,7 +120,7 @@ export default function RidersOnMonsoon() {
   const dataComponents = [
     <ResponsiveImage
       key="palm-leaf"
-      src="/lovable-uploads/95bb424f-42a7-4a5f-be3b-83c0a71ef127.png"
+      src="/images/flatlay_scripts-that-sailed_4x3_v3.png"
       alt="Ancient palm-leaf manuscript with navigation instructions in Malayalam script, similar to those discovered in Kerala archives containing monsoon timing and stellar navigation data"
       className="rounded-lg shadow-lg"
       caption="Palm-leaf manuscripts like this preserved indigenous maritime knowledge across South India. The Kerala discovery contains detailed monsoon navigation instructions in Sanskrit and Malayalam."
