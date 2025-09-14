@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -312,19 +313,19 @@ export default function SourcesMethod() {
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button asChild>
-              <a href="/themes/ancient-india" className="flex items-center gap-2">
+              <Link to="/themes/ancient-india" className="flex items-center gap-2">
                 Ancient India <ArrowRight className="h-4 w-4" />
-              </a>
+              </Link>
             </Button>
             <Button variant="outline" asChild>
-              <a href="/themes/indian-ocean-world" className="flex items-center gap-2">
+              <Link to="/themes/indian-ocean-world" className="flex items-center gap-2">
                 Indian Ocean World <ArrowRight className="h-4 w-4" />
-              </a>
+              </Link>
             </Button>
             <Button variant="outline" asChild>
-              <a href="/reading-room" className="flex items-center gap-2">
+              <Link to="/reading-room" className="flex items-center gap-2">
                 Reading Room <ArrowRight className="h-4 w-4" />
-              </a>
+              </Link>
             </Button>
           </div>
         </section>
