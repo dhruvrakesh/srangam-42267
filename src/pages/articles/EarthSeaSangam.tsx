@@ -4,6 +4,9 @@ import { ResponsiveImage } from '@/components/ui/ResponsiveImage';
 import { PlateSpeedChart } from '@/components/articles/PlateSpeedChart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ExpandableSection } from '@/components/articles/enhanced/ExpandableSection';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown } from 'lucide-react';
 
 const content = `In January 2024, a joint team of geologists and archaeologists conducted a survey along Kerala's coastline and the foothills of the Western Ghats. Their mission: to map ancient shorelines and sediment deposits that might pinpoint the locations of long-lost ports. Using ground-penetrating radar and sediment core analysis, the team discovered evidence of a paleo-shoreline several kilometers inland from the present coast, as well as sand deposits high up the Periyar River valley. These findings suggest that massive floods and tectonic movements over centuries have dramatically reshaped South India's coastal geography. Indeed, one of the enduring mysteries of Indian history is how a port as prominent as Muziris "disappeared so completely" from the map. Geology holds part of the answer.
 
@@ -37,65 +40,117 @@ For the people of medieval Kerala, it must have been shocking: their premier por
 
 ## The Great Flood of 1341: A Geological Turning Point
 
-The flood of 1341 CE stands as one of the most dramatic examples of how geological events reshape maritime history. According to contemporary accounts and geological evidence, the Periyar River experienced an unprecedented flood that fundamentally altered Kerala's coastline and port geography.
+The flood of 1341 CE stands as one of the most dramatic examples of how geological events reshape maritime history. According to contemporary accounts and geological evidence, the Periyar River experienced an unprecedented flood that fundamentally altered Kerala's coastline and port geography.`;
 
-What caused this catastrophic event? Modern geological analysis suggests multiple factors converged:
+// Enhanced Flood Consequences Component
+const FloodConsequences = () => (
+  <div className="space-y-4">
+    <h3 className="font-serif text-lg font-semibold text-foreground mb-4">
+      Consequences of the 1341 Flood
+    </h3>
+    <div className="grid md:grid-cols-2 gap-4">
+      <Card className="bg-card border-destructive/20">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base font-semibold text-destructive flex items-center gap-2">
+            <div className="w-2 h-2 bg-destructive rounded-full"></div>
+            Muziris Abandoned
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <p className="text-sm text-muted-foreground">
+            The ancient port was completely silted over, ending nearly 2,000 years of continuous maritime trade
+          </p>
+        </CardContent>
+      </Card>
 
-**Tectonic Trigger**: Seismic activity in the Western Ghats may have triggered massive landslides upstream, creating natural dams that eventually burst.
+      <Card className="bg-card border-ocean/20">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base font-semibold text-ocean flex items-center gap-2">
+            <div className="w-2 h-2 bg-ocean rounded-full"></div>
+            Kochi's Birth
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <p className="text-sm text-muted-foreground">
+            The new river mouth created the protected harbor that would become modern Kochi
+          </p>
+        </CardContent>
+      </Card>
 
-**Extreme Monsoon**: The flood coincided with an exceptionally intense southwest monsoon, saturating the Western Ghats and causing widespread erosion.
+      <Card className="bg-card border-sage/20">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base font-semibold text-sage flex items-center gap-2">
+            <div className="w-2 h-2 bg-sage rounded-full"></div>
+            New Landforms Created
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <p className="text-sm text-muted-foreground">
+            Islands like Vypin were formed from deposited sediments, reshaping the coastline
+          </p>
+        </CardContent>
+      </Card>
 
-**River Dynamics**: The massive sediment load overwhelmed the Periyar's existing channel, forcing it to carve an entirely new course to the sea.
+      <Card className="bg-card border-amber/20">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base font-semibold text-amber flex items-center gap-2">
+            <div className="w-2 h-2 bg-amber rounded-full"></div>
+            Commercial Shift
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <p className="text-sm text-muted-foreground">
+            Merchant families relocated from Kodungallur to the new port facilities
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  </div>
+);
 
-The consequences were immediate and lasting:
-- **Muziris Abandoned**: The ancient port was completely silted over, ending nearly 2,000 years of continuous maritime trade
-- **New Landforms Created**: Islands like Vypin were formed from deposited sediments
-- **Kochi's Birth**: The new river mouth created the protected harbor that would become modern Kochi
-- **Commercial Shift**: Merchant families relocated from Kodungallur to the new port facilities
-
-This geological event demonstrates how natural forces could instantly reshape the economic geography of entire regions, forcing human communities to adapt or perish.
-
-## Human Responses and Cultural Memory
-
-The people of South India did not passively endure these changes; they responded and remembered. Ancient Tamils encoded the loss of land in mythic terms – the "Land Between the Rivers Pahruli and Kumari" taken by the sea, as mourned in Silappatikaram, is one such memory. This alludes to a stretch of the Pandyan coastline that was inundated. 
-
-Modern geology confirms post-glacial sea-level rise of about 60m between 11,000 and 7,000 years ago in the Gulf of Mannar, which indeed would have drowned large areas that might match the literary "Kumari Kandam" lore. While some have romantically spun tales of a lost continent, scientists and historians together interpret these as rooted in real events of gradual coastal submergence and perhaps a few sudden disasters.
-
-The Tamil cultural memory is rich with these references: even the dual fish emblem of the Pandyan kings is speculated to symbolize the sea's embrace (or the Matsya avatar saving the land from flood). Such symbols and stories show a remarkable continuity of memory about environmental change spanning thousands of years.
-
-> IMAGE SLOT (Pandyan fish emblem and coastal symbolism)
-
-Another interesting note is that port cities often moved rather than vanished outright. When one harbor mouth silted, activity would shift up or down the coast. For instance, after Muziris's demise, Kochi (Cochin) rose just south; when Kaveripattinam was lost, the Cholas developed Nagapattinam further up the coast in later centuries.
-
-In Kerala, the great flood of 1341 not only destroyed but also created – the port of Kochi (Cochin) was literally born from the new estuary that the flood carved. Medieval records say Kochi was a minor village until then; by the late 14th century it was a major spice port, filled with many of the same merchant families who relocated from Kodungallur (Muziris) to take advantage of the new safer harbor.
-
-## Geoarchaeology – Reconstructing the Past Coast
-
-The emerging field of geoarchaeology has helped reconstruct these past landscapes. Techniques like Optically Stimulated Luminescence (OSL) dating of beach sand ridges show where ancient shorelines were. For instance, in Kerala's Vembanad lagoon region, OSL dating reveals that the barrier beach that now separates the lagoon from the Arabian Sea formed around 1000–1200 CE, just a couple of centuries before the 1341 flood reshaped it again.
-
-In Tamil Nadu, sediment cores from the Cauvery delta show a layer of marine sand (indicative of a storm surge or tsunami) around the mid-2nd millennium BP, which could correlate to a known sea incursion event. Meanwhile, marine archaeology using sonar scanning has mapped submerged river channels on the continental shelf – off Tamil Nadu, one such paleo-channel suggests the Palar River once extended much farther offshore when sea levels were lower (during the last Ice Age).
-
-As sea levels rose (~15,000 to 7000 years ago), those channels drowned. By 4000–3000 BCE, sea level in South India likely stabilized near current levels; however, there have been smaller fluctuations (±1 to 2 meters) since. A slight high stand around 2000 years ago may have made some low-lying areas prone to marine flooding, whereas a slight drop later could have stranded some port facilities above water.
-
-## Impacts on Maritime History
-
-The geological transformations had direct economic and political effects. When a key port like Muziris or Puhār went down, it could shift regional power balances. The Chera dynasty of Kerala, which had thrived on Muziris, saw its influence wane after the port's closure, while the Kingdom of Cochin ascended by capitalizing on the new harbor.
-
-In Tamilakam, the flooding of Puhār (if around 300 CE) may have contributed to a period of turmoil and the eventual rise of the Pallavas further north (since the Cholas lost a vital urban center). On the flip side, a new island or spit created by nature could become an advantageous harbor – for example, the formation of Pamban Island and Rameswaram's spits in Tamil Nadu provided sheltered waters that facilitated the medieval port of Kayal (near present Thoothukudi) mentioned by Marco Polo.
-
-Also, changing coastlines might have affected what foreign sailors wrote or mapped. The Greek and Roman maps become hazier beyond the first few centuries CE, possibly because the guides (like the Periplus) were outdated as coastlines evolved and new ports like Nilkindia or Comari (Kanyakumari region) emerged while others vanished.
-
-Additionally, some ancient ports became landlocked due to river delta growth but remained inhabited as inland towns, preserving their names. In South India, Muchiri (Muziris) turned into Mahodayapuram inland, and the seat of Chera power shifted slightly away from the coast as a result. Travelers like the Venetian Niccolò de' Conti in the 15th century noted that many places in India known in classical times were hard to identify, precisely because "rivers have made new lands."
-
-## The Resilience of Maritime Communities
-
-Understanding these geological transformations deepens our appreciation of South India's resilience. Maritime communities adjusted to shifting sands and waters, relocating ports, and sometimes mythologizing their losses but moving on. It also highlights the interdisciplinary nature of studying the past – only by correlating literary sources, archaeology, and geology can we fully reconstruct the milieus of ancient ports.
-
-The coastline of Southern India is as much a protagonist in its history as the people who sailed from it. Geological forces – from the cataclysmic (earthquakes, tsunamis, mega-floods) to the gradual (erosion, sedimentation, sea-level change) – have ceaselessly remodeled the stage on which maritime history played out. Ancient South Indians witnessed and recorded some of these changes in poems and puranas, attributing them to gods or curses, yet effectively keeping a chronicle of geological events.
-
-Today, science allows us to read those events with greater precision: we can drill into sediments and deduce that "the cruel sea took away the lands" indeed, as Ilango Adigal lamented. We find that every drowned harbor and every stranded wharf has a story – Muziris' silting in 1341, Puhār's tsunami in ca. 300 CE, and more.
-
-In sum, the ebb and flow of the Indian Ocean did not just carry ships, but also periodically redrew the map. As modern climate change raises concerns about coastal stability, the story of ancient South India reminds us that coastlines have never been static. They are living, shifting boundaries. The great poet Kalim (16th c.) once wrote, "Cities rise and fall by the work of waves and earth, but the ocean remains path to all riches." South India's experience bears that out: nature may alter the harbors, but it never dimmed the region's maritime spirit. Traders adapted, knowledge evolved, and new harbors emerged – allowing South India to remain a vital maritime crossroads through antiquity and beyond. The bond between the landsmen and the sea endured, proving as cyclical and enduring as the monsoons themselves.`;
+// Geological Triggers Component
+const GeologicalTriggers = () => (
+  <ExpandableSection 
+    title="Geological Causes of the 1341 Flood"
+    type="detail"
+    defaultExpanded={false}
+  >
+    <div className="space-y-4">
+      <div className="flex items-start gap-3">
+        <Badge variant="destructive" className="mt-1">Tectonic</Badge>
+        <div>
+          <h4 className="font-medium text-foreground mb-1">Seismic Trigger</h4>
+          <p className="text-sm text-muted-foreground">
+            Seismic activity in the Western Ghats may have triggered massive landslides upstream, 
+            creating natural dams that eventually burst.
+          </p>
+        </div>
+      </div>
+      
+      <div className="flex items-start gap-3">
+        <Badge variant="secondary" className="mt-1">Climate</Badge>
+        <div>
+          <h4 className="font-medium text-foreground mb-1">Extreme Monsoon</h4>
+          <p className="text-sm text-muted-foreground">
+            The flood coincided with an exceptionally intense southwest monsoon, 
+            saturating the Western Ghats and causing widespread erosion.
+          </p>
+        </div>
+      </div>
+      
+      <div className="flex items-start gap-3">
+        <Badge variant="outline" className="mt-1">Hydraulic</Badge>
+        <div>
+          <h4 className="font-medium text-foreground mb-1">River Dynamics</h4>
+          <p className="text-sm text-muted-foreground">
+            The massive sediment load overwhelmed the Periyar's existing channel, 
+            forcing it to carve an entirely new course to the sea.
+          </p>
+        </div>
+      </div>
+    </div>
+  </ExpandableSection>
+);
 
 // Coastal Evolution Timeline Component
 const CoastalEvolutionTimeline = () => (
@@ -297,7 +352,8 @@ export default function EarthSeaSangam() {
           alt="Ancient coastal survey manuscript showing geological observations"
           caption="Ancient palm-leaf manuscript containing geological observations of coastal changes, from the Kerala State Archives"
         />,
-        <CoastalEvolutionTimeline key="timeline" />,
+        <GeologicalTriggers key="triggers" />,
+        <FloodConsequences key="consequences" />,
         <PortMigrationMap key="migration" />,
         <SeaLevelChart key="sea-level" />,
         <PlateSpeedChart key="plate-speed" />,
