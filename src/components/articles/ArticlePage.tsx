@@ -42,7 +42,7 @@ const ArticleContent = React.memo(({
   readTime, 
   author, 
   date, 
-  dataComponents 
+  dataComponents = []
 }: ArticlePageProps) => {
   const { mark, measure } = usePerformanceMonitor({ 
     componentName: 'ArticlePage',
@@ -64,7 +64,7 @@ const ArticleContent = React.memo(({
         {/* Contextual Sacred Geometry Background */}
         <div className="absolute inset-0 bg-gradient-to-b from-cream/40 via-sandalwood/30 to-cream/40 rounded-3xl -z-10" />
         <div className={cn(
-          "absolute inset-0 opacity-20 rounded-3xl -z-10",
+          "absolute inset-0 opacity-40 rounded-3xl -z-10",
           title.toLowerCase().includes('maritime') || title.toLowerCase().includes('ocean') || title.toLowerCase().includes('monsoon') ? 'ocean-waves' :
           title.toLowerCase().includes('temple') || title.toLowerCase().includes('inscription') || title.toLowerCase().includes('edict') ? 'temple-kolam' :
           title.toLowerCase().includes('trade') || title.toLowerCase().includes('pepper') || title.toLowerCase().includes('exchange') ? 'sri-yantra-pattern' :
@@ -165,18 +165,14 @@ const ArticleContent = React.memo(({
               ),
               ul: ({ children }) => (
                 <ul className="list-none pl-0 mb-6 space-y-3">
-                  {React.Children.map(children, (child, index) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <span className="w-2 h-2 bg-burgundy rounded-full mt-3 flex-shrink-0"></span>
-                      <div className="flex-1">{child}</div>
-                    </li>
-                  ))}
+                  {children}
                 </ul>
               ),
               li: ({ children }) => (
-                <div className="text-foreground leading-relaxed">
-                  {children}
-                </div>
+                <li className="flex items-start gap-3 text-foreground leading-relaxed">
+                  <span className="w-2 h-2 bg-burgundy rounded-full mt-3 flex-shrink-0"></span>
+                  <div className="flex-1">{children}</div>
+                </li>
               ),
               strong: ({ children }) => (
                 <strong className="font-semibold text-burgundy bg-saffron/20 px-1 rounded">
