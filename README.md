@@ -46,6 +46,24 @@ Our visual design incorporates traditional Indian sacred geometry patterns inclu
 
 These patterns serve not merely as decoration but as subtle reminders of the sophisticated mathematical and spiritual understanding embedded in Indian civilization.
 
+## Book Compilation Framework
+
+### Academic Publication Strategy
+This platform serves as the foundational research environment for a comprehensive academic publication documenting India's role as a primary civilizational source. The digital platform enables:
+
+- **Rigorous Source Verification**: Multi-tier evidence validation protocols
+- **Peer Review Integration**: Collaborative academic review processes  
+- **Interactive Research Tools**: Enhanced visualization and cross-referencing
+- **Cultural Authenticity Validation**: Indigenous knowledge holder consultation
+- **Print-Ready Compilation**: Systematic organization for academic publication
+
+### Publication Structure
+- **Volume I**: Foundations (Geological, Archaeological, Textual Authority)
+- **Volume II**: Maritime Expansion (Navigation, Trade Networks, Cultural Transmission)  
+- **Volume III**: Contemporary Validation (Genetics, Linguistics, Recent Discoveries)
+
+For detailed methodology and implementation framework, see [SRANGAM_PROJECT.md](./SRANGAM_PROJECT.md)
+
 ## Project info
 
 **URL**: https://lovable.dev/projects/a6140a68-ddd3-43be-a146-7ea5c8bfcf7d
