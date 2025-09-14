@@ -3,48 +3,106 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TagChip } from "@/components/ui/TagChip";
 import { IconLotus, IconOm } from "@/components/icons";
+import { Link } from "react-router-dom";
 
 export default function ReadingRoom() {
   const resources = [
+    // Maritime & Navigation Studies
     {
-      title: "The Periplus of the Erythraean Sea",
-      author: "Anonymous (1st-3rd c. CE)",
-      type: "Primary Source",
-      description: "Ancient navigational guide to Indian Ocean trade routes, describing ports, peoples, and commodities.",
-      tags: ["navigation", "trade", "Roman", "geography"],
-      available: true
+      title: "Riders on the Monsoon: Indigenous Navigation and Maritime Knowledge",
+      author: "Nartiang Foundation",
+      type: "Research Article",
+      description: "Long before European exploration, South Asian navigators developed sophisticated monsoon-based navigation systems. Recent palm-leaf manuscript discoveries reveal the scientific depth of indigenous maritime knowledge.",
+      tags: ["Navigation", "Indigenous Knowledge", "Monsoon", "Palm-leaf Manuscripts"],
+      available: true,
+      slug: "/riders-on-monsoon",
+      readTime: 16
     },
     {
-      title: "Inscriptions of Ancient India: A Select Bibliography",
-      author: "Srangam Research Team",
-      type: "Bibliography",
-      description: "Comprehensive bibliography of epigraphic sources across South and Southeast Asia.",
-      tags: ["epigraphy", "inscriptions", "bibliography"],
-      available: true
+      title: "Riding the Monsoon: How Winds Became an Engine of Commerce",
+      author: "Prof. Ahmed Hassan",
+      type: "Research Article", 
+      description: "A logistics revolution long before steam—sailing the Arabian Sea on a seasonal clock. Discover how ancient mariners turned seasonal winds into reliable trade networks.",
+      tags: ["Indian Ocean World", "Trade", "Monsoon", "Navigation"],
+      available: true,
+      slug: "/monsoon-trade-clock",
+      readTime: 8
+    },
+    
+    // Archaeological & Historical Studies
+    {
+      title: "Maritime Memories of South India: Emporia of the Ocean",
+      author: "Nartiang Foundation",
+      type: "Research Article",
+      description: "Recent archaeological breakthroughs at Berenike confirm the vast scale of Indo-Roman maritime trade. From pepper markets to desert ports, this exploration traces how South India became a pivotal hub of the ancient world.",
+      tags: ["Indo-Roman Trade", "Muziris", "Berenike", "Maritime Networks"],
+      available: true,
+      slug: "/maritime-memories-south-india",
+      readTime: 18
     },
     {
-      title: "Monsoon Navigation in Medieval Arabic Sources",
-      author: "Ibn Majid & Al-Idrisi",
-      type: "Primary Source",
-      description: "Medieval Arabic texts on seasonal navigation and port descriptions.",
-      tags: ["Arabic", "navigation", "medieval", "monsoon"],
-      available: false
+      title: "Indian Ocean Power Networks: From the Malabar Spice Circuit to the Chola Expedition",
+      author: "Nartiang Foundation",
+      type: "Research Analysis",
+      description: "How trade in spices and bullion fueled ancient economies, and how medieval Indian naval expeditions projected power across the waves—revealing the interconnected world of the pre-modern Indian Ocean.",
+      tags: ["Empires & Exchange", "Maritime Networks", "Ancient Economics", "Naval History"],
+      available: true,
+      slug: "/indian-ocean-power-networks",
+      readTime: 24
+    },
+    
+    // Epigraphic & Script Studies
+    {
+      title: "Scripts that Sailed: From Southern Brāhmī to Kawi, Khmer, and Thai",
+      author: "Dr. Priya Venkat",
+      type: "Epigraphic Study",
+      description: "Letterforms as shipping records: how Indic scripts adapted to new languages around the Bay of Bengal. Trace the maritime networks that carried writing systems across the ocean.",
+      tags: ["Scripts & Inscriptions", "Epigraphy", "SE Asia", "Cultural Exchange"],
+      available: true,
+      slug: "/scripts-that-sailed",
+      readTime: 12
     },
     {
-      title: "Archaeological Reports: Muziris Excavations 2020-2024",
-      author: "Various Contributors",
-      type: "Research Report",
-      description: "Recent archaeological findings from the ancient port of Muziris.",
-      tags: ["archaeology", "Muziris", "excavation", "Kerala"],
-      available: true
+      title: "Stones that Speak: Ashoka's Greek and Aramaic at Kandahar",
+      author: "Dr. Epigraphy Specialist",
+      type: "Epigraphic Study",
+      description: "Imperial ethics in multiple languages at a cultural crossroads. Explore how Ashoka's multilingual edicts connected ancient India to the Hellenistic world.",
+      tags: ["Ancient India", "Edicts", "Hellenistic Links", "Multilingual"],
+      available: true,
+      slug: "/ashoka-kandahar-edicts",
+      readTime: 5
     },
     {
-      title: "Geological Survey: Western Ghats Formation",
-      author: "Geological Society of India",
-      type: "Scientific Report",
-      description: "Tectonic history and formation of the Western Ghats mountain range.",
-      tags: ["geology", "Western Ghats", "tectonics", "deep time"],
-      available: true
+      title: "Rainforest Prashastis: The Kutai Yūpa Inscriptions of Borneo",
+      author: "Dr. Epigraphic Studies",
+      type: "Epigraphic Study",
+      description: "Sanskrit verse and Vedic ritual vocabulary on sacrificial posts at the edge of the equator. Ancient Indian cultural influence reaches into the heart of Southeast Asia.",
+      tags: ["Scripts & Inscriptions", "Sanskrit", "SE Asia", "Vedic Rituals"],
+      available: true,
+      slug: "/kutai-yupa-borneo",
+      readTime: 8
+    },
+    
+    // Geological & Environmental Studies
+    {
+      title: "India on the Move: From Gondwana to the Himalaya",
+      author: "Dr. Geological Survey",
+      type: "Scientific Study",
+      description: "A plate that sprinted, a flood basalt that roared, a mountain range still rising. Discover how 200 million years of geological drama shaped the Indian subcontinent.",
+      tags: ["Geology & Deep Time", "Plate Tectonics", "Deccan", "Himalayas"],
+      available: true,
+      slug: "/gondwana-to-himalaya",
+      readTime: 10
+    },
+    {
+      title: "Earth, Sea and Sangam: Geological Transformations and the Ancient Ports of South India",
+      author: "Nartiang Foundation",
+      type: "Interdisciplinary Study",
+      description: "How tectonic forces, river floods, and rising seas shaped—and reshaped—the maritime geography of Southern India. From Muziris' disappearance to Kochi's birth, geology tells the story of ports in motion.",
+      tags: ["Geology & Deep Time", "Maritime Networks", "Coastal Change", "Ancient Ports"],
+      available: true,
+      slug: "/earth-sea-sangam",
+      readTime: 16
     }
   ];
 
@@ -107,9 +165,10 @@ export default function ReadingRoom() {
                 <span className="text-sm font-medium text-foreground">Filter by type:</span>
                 <div className="flex flex-wrap gap-2">
                   <TagChip>All Sources</TagChip>
-                  <TagChip>Primary Sources</TagChip>
-                  <TagChip>Research Reports</TagChip>
-                  <TagChip>Bibliographies</TagChip>
+                  <TagChip>Research Articles</TagChip>
+                  <TagChip>Epigraphic Studies</TagChip>
+                  <TagChip>Scientific Studies</TagChip>
+                  <TagChip>Interdisciplinary</TagChip>
                 </div>
               </div>
             </CardContent>
@@ -143,6 +202,12 @@ export default function ReadingRoom() {
                   {resource.description}
                 </p>
                 
+                {resource.readTime && (
+                  <p className="text-sm text-muted-foreground mb-4">
+                    📖 {resource.readTime} min read
+                  </p>
+                )}
+                
                 <div className="flex items-center justify-between">
                   <div className="flex flex-wrap gap-2">
                     {resource.tags.map((tag) => (
@@ -154,9 +219,11 @@ export default function ReadingRoom() {
                   
                   {resource.available && (
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline">
-                        <ExternalLink size={14} className="mr-1" />
-                        Read Online
+                      <Button size="sm" variant="outline" asChild>
+                        <Link to={resource.slug}>
+                          <ExternalLink size={14} className="mr-1" />
+                          Read Online
+                        </Link>
                       </Button>
                       <Button size="sm" className="bg-ocean hover:bg-ocean/90">
                         <Download size={14} className="mr-1" />
