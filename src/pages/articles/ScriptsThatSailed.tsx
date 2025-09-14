@@ -1,98 +1,94 @@
 import React from 'react';
 import { ArticlePage } from '@/components/articles/ArticlePage';
-import { IconScript } from '@/components/icons';
+import { IconMonsoon } from '@/components/icons';
 import { ResponsiveImage } from '@/components/ui/ResponsiveImage';
+import { HermapollonCargo } from '@/components/articles/HermapollonCargo';
+import { SeasonalWindPattern } from '@/components/articles/SeasonalWindPattern';
+import { CulturalDiffusionMap } from '@/components/articles/CulturalDiffusionMap';
+import { FestivalCalendar } from '@/components/articles/FestivalCalendar';
 
-const content = `When merchants, monks, and artisans moved, **scripts moved with them**. From late Southern Brāhmī and **Pallava/Grantha** hands emerged local daughters—**Khmer**, **Cham**, **Old Javanese Kawi**—each tuned to native phonologies.
+const content = `From the earliest times, Indian Ocean mariners lived by the calendar of the monsoons. Every year, the winds reverse: summer brings the Southwest Monsoon (blowing northeast from Africa/Arabia toward India–Southeast Asia) and winter the Northeast Monsoon (blowing southwest back toward Africa). This seasonal "clock" knit together East Africa, Arabia, India and Southeast Asia in regular trade. 
 
-## What traveled?
+## The Monsoon Engine of Commerce
 
-- **Ductus** (stroke habits), not just shapes.  
-- **Scribal kit**: palm leaves, stylus/ink, layout conventions.  
-- **Liturgical and legal genres**: donatives, land grants, prashastis.
+In practice this meant two annual sailing windows: about November–January, ships could sail from India to Africa on the northeast winds, and April–August the reverse. Navigators treated the monsoons as an engine of commerce – the great natural conveyer belts of antiquity.
 
-## What changed?
+Under these winds, ancient mariners could plan precise voyages. The 1st-century Greek merchant **Periplus of the Erythraean Sea** (a navigation guide) repeatedly notes the importance of the monsoons for timing trade. Ships bound east from the Red Sea set out when the southwest winds ("Indian Etesian") began, typically around Epiphi (July–August). The Periplus credits a navigator named **Hippalus** with discovering the direct open-ocean route: *"on the shores of India the wind sets in from the ocean, and this southwest wind is called Hippalus, from the name of him who first discovered the passage across."*
 
-- New consonant clusters and vowel signs to fit Austroasiatic and Malayo-Polynesian sounds.  
-- Orthographic habits like virāma usage shift with context.  
-- Multilingual stones—Sanskrit prestige alongside local languages.
+With favourable summer winds, ships could cross from Arabia to India in a matter of weeks instead of months. The result was a vast maritime network where every year slaves, textiles, spices, and exotic goods flowed along the monsoon corridors.
 
-## A case in stone
+## Port Cities and Navigational Methods
 
-The **Kutai yūpa** pillars (Borneo) preserve Sanskrit in early Pallava/Grantha letterforms, anchoring Vedic ritual vocabulary far from the Ganga plains. Script is **soft power turned hard**, chiselled into rainforest rock.
+The monsoons shaped the very geography of trade: emporiums grew where winds and currents met the shore. On India's west coast were the ancient ports of **Muziris** (Kerala), **Barygaza** (Bharuch, Gujarat), **Barbarikon** (Sindh) and many others. On the east coast **Tamralipti** (Odisha), **Kaveripattinam** (Tamil Nadu) and **Palur** were major embarkation points for voyages to Southeast Asia.
 
-## Why it matters
+At these ports, complex logistics developed around the monsoon cycle. Merchants would amass cargoes to ship out, then wait months for the right wind. The Roman **Muziris Papyrus** (2nd century CE) vividly documents such trade: it records a single vessel, the Hermapollon, whose 220-ton cargo from Muziris contained extraordinary wealth in ivory, aromatic oils, and fine textiles.
 
-Scripts are **infrastructure**. Where they land, schools, courts, and ritual calendars follow. Inscriptions give us pins on the cultural map—names, dates, lineages—when texts are silent.`;
+Navigators relied on astronomy and climate lore to ride these winds. Knowledge of star positions and seasonal skies was crucial. Ancient Indian treatises (like the **Surya Siddhanta**) codified celestial knowledge, and even temple architecture encoded astronomical norms. Indian mariners from Odisha and Bengal knew to depart in Kartik (Oct–Nov) when the Northeast monsoon set in, and return under the Southwest monsoon – effectively making trade a two-way seasonal loop.
 
-const ScriptLineageComponent = () => (
-  <div className="space-y-4">
-    <h3 className="font-serif text-lg font-semibold text-foreground">Script Lineage</h3>
-    <div className="bg-white p-6 rounded-lg border">
-      <svg viewBox="0 0 600 300" className="w-full h-64">
-        <defs>
-          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="3" markerWidth="10" markerHeight="10" orient="auto">
-            <path d="M0,0 L0,6 L9,3 z" fill="hsl(var(--ocean))" />
-          </marker>
-        </defs>
-        
-        {/* Southern Brahmi */}
-        <rect x="50" y="50" width="120" height="40" rx="8" fill="hsl(var(--sand))" stroke="hsl(var(--border))" />
-        <text x="110" y="75" textAnchor="middle" className="text-sm font-medium fill-current">Southern Brāhmī</text>
-        
-        {/* Pallava */}
-        <rect x="250" y="50" width="100" height="40" rx="8" fill="hsl(var(--gold)/0.2)" stroke="hsl(var(--gold))" />
-        <text x="300" y="75" textAnchor="middle" className="text-sm font-medium fill-current">Pallava</text>
-        
-        {/* Arrows */}
-        <line x1="170" y1="70" x2="240" y2="70" stroke="hsl(var(--ocean))" strokeWidth="2" markerEnd="url(#arrow)" />
-        
-        {/* Daughter scripts */}
-        <rect x="180" y="150" width="80" height="30" rx="6" fill="hsl(var(--laterite)/0.2)" stroke="hsl(var(--laterite))" />
-        <text x="220" y="170" textAnchor="middle" className="text-xs font-medium fill-current">Khmer</text>
-        
-        <rect x="280" y="150" width="80" height="30" rx="6" fill="hsl(var(--laterite)/0.2)" stroke="hsl(var(--laterite))" />
-        <text x="320" y="170" textAnchor="middle" className="text-xs font-medium fill-current">Cham</text>
-        
-        <rect x="380" y="150" width="80" height="30" rx="6" fill="hsl(var(--laterite)/0.2)" stroke="hsl(var(--laterite))" />
-        <text x="420" y="170" textAnchor="middle" className="text-xs font-medium fill-current">Kawi</text>
-        
-        {/* Connection lines */}
-        <line x1="280" y1="90" x2="220" y2="140" stroke="hsl(var(--ocean))" strokeWidth="1" markerEnd="url(#arrow)" />
-        <line x1="300" y1="90" x2="320" y2="140" stroke="hsl(var(--ocean))" strokeWidth="1" markerEnd="url(#arrow)" />
-        <line x1="320" y1="90" x2="420" y2="140" stroke="hsl(var(--ocean))" strokeWidth="1" markerEnd="url(#arrow)" />
-        
-        {/* Timeline */}
-        <text x="50" y="230" className="text-xs text-muted-foreground fill-current">3rd-6th c. CE</text>
-        <text x="250" y="230" className="text-xs text-muted-foreground fill-current">6th-8th c. CE</text>
-        <text x="380" y="200" className="text-xs text-muted-foreground fill-current">8th+ c. CE</text>
-      </svg>
-    </div>
-  </div>
-);
+## Spiritual Navigation: Calendars and Festivals
+
+The monsoon did not just drive trade; it governed society. Calendars, festivals and rituals often mark the changing winds. In Odisha, the great **Bali Jātra** (or Bāliyātra) festival on Kartika Purnima (Oct–Nov) celebrates ancient voyages. On that full-moon night, Odias float small votive boats on rivers and lakes to ask the sea gods for safe passage.
+
+Crucially, this date "coincides with the onset of the northeasterly winds that were harnessed by the mariners to set sail across the Bay of Bengal towards our southeast Asian neighbours – Bali, Sumatra, Java, Cambodia and also present-day Sri Lanka." Hence Bali Jatra means "Voyage to Bali," recalling how Kalinga (ancient Odisha) ships sailed to the Indonesian archipelago with the northeast monsoon.
+
+## Cultural Diffusion Across the Seas
+
+The same winds that carried cargoes also carried ideas, deities and art. Merchant fleets became vectors of culture. From the early centuries CE onwards, Indian religious and artistic traditions spread throughout Southeast Asia. Temple ruins from Khmer Cambodia (**Angkor Wat**) to Javanese Indonesia (**Borobudur**, **Prambanan**) reflect clearly Indic roots.
+
+In Cambodia's capital Angkor, kings built "temple-mountains" directly modeled on Hindu cosmology: stepped pyramids symbolizing Mount Meru, the abode of the gods. Inscriptions and art from Java to Thailand show Sanskrit and Pallava script, Ramayana and Mahabharata legends, Hindu deities and Mahayana Buddhist iconography arriving with Indian traders and pilgrims.
+
+The contextual blending was remarkable. In Bali even today one hears Sanskrit-derived epithets: Balinese people may chant **"Ya Śiva! Ya Buddha!"** meaning "He who is Shiva is also Buddha," reflecting a fusion of Shaivism and Buddhism brought by ancient sailors. These exchanges were two-way. East African coastal towns saw the influence of Indian ideas too.
+
+## Indian Navies and Long-Distance Ventures
+
+By the first millennium CE, Indian kingdoms were not only traders but also naval powers. The imperial **Cholas of South India** (9th–13th centuries) forged a formidable blue-water fleet. **Rajaraja Chola I** and his son **Rajendra I** famously launched naval expeditions into Southeast Asia, attacking Srivijaya (Sumatra) and projecting power across the Bay of Bengal.
+
+According to inscriptions and modern studies, "the Imperial Cholas…boasted a formidable naval force, which proved instrumental in their triumphant invasions of territories spanning from the Maldives and Sri Lanka to Indonesia, Myanmar, Thailand, Java and Sumatra." Chola warships carried soldiers, elephants and even horses across the ocean on merchant vessels adapted for war.
+
+Behind these voyages lay advanced astronomical and climatic knowledge. Indian and Arab seafarers compiled star charts and weather lore to time their journeys. Ancient navigators treated the ocean as a seasonal beast to be mastered: they observed sky and sea, building mariner calendars and ritual observances to mitigate the risks of the high seas.
+
+## Legacy and Conclusion
+
+By the late medieval era, the monsoon corridor was a well‑trodden superhighway. Ports from Kilwa to Kashgar were linked, and goods from Indian muslin to Chinese silk reached all shores. Even after the Portuguese circumnavigated Africa, they were struck by how perfectly the Indians and Arabs had mapped and exploited these winds.
+
+Indian Ocean trade shaped entire societies: East African Swahili culture, Persian Gulf city-states, and Southeast Asian kingdoms all emerged from this network. Today the monsoon still dictates life in South Asia: farmers pray for its rains and societies still mark its arrival. The ancient seafarers' lore lives on in coastal festivals and in place names.
+
+Monuments like the temples of Cambodia, Indonesia and Bali stand as silent beacons to an age when the trade winds were the main engine of globalization. The story of the monsoons is at once scientific and poetic: it is a tale of wind and wave, of starlight and navigation, but above all of people reaching out across the waves.`;
 
 export default function ScriptsThatSailed() {
   return (
     <ArticlePage
-      title="Scripts that Sailed: From Southern Brāhmī to Kawi, Khmer, and Thai"
-      dek="Letterforms as shipping records: how Indic scripts adapted to new languages around the Bay of Bengal."
+      title="Riding the Monsoon Winds: Commerce, Culture and the Ancient Indian Ocean"
+      dek="How seasonal wind patterns powered the world's first globalized trade network, shaping cultures from East Africa to Southeast Asia"
       content={content}
-      tags={["Scripts & Inscriptions", "Epigraphy", "SE Asia"]}
-      icon={IconScript}
-      readTime={12}
-      author="Dr. Priya Venkat"
+      tags={["Indian Ocean World", "Maritime Trade", "Monsoon Navigation", "Cultural Exchange", "Ancient Globalization"]}
+      icon={IconMonsoon}
+      readTime={28}
+      author="Kanika Rakesh"
       date="2024-03-08"
       dataComponents={[
         <ResponsiveImage 
-          key="scripts-hero"
-          src="/images/flatlay_scripts-that-sailed_4x3_v3.png"
-          alt="Collection of ancient scripts and manuscripts showing the evolution from Southern Brahmi to Southeast Asian scripts"
-          aspectRatio="landscape"
-          caption="Evolution of Indic scripts across maritime Southeast Asia, from palm-leaf manuscripts to stone inscriptions"
-          credit="Script Documentation Archive"
+          key="monsoon-hero"
+          src="/images/hero_indian-ocean_aerial_21x9_v1.png"
+          alt="Aerial view of the Indian Ocean showing monsoon wind patterns and ancient trade routes"
+          aspectRatio="ultrawide"
+          caption="The vast Indian Ocean, where seasonal monsoon winds created humanity's first global trade superhighway"
+          credit="Historical Maritime Archives"
           className="mb-8"
         />,
-        <ScriptLineageComponent key="script-lineage" />
+        <SeasonalWindPattern key="wind-patterns" />,
+        <HermapollonCargo key="hermapollon-cargo" />,
+        <CulturalDiffusionMap key="cultural-diffusion" />,
+        <FestivalCalendar key="festival-calendar" />,
+        <ResponsiveImage 
+          key="monsoon-map"
+          src="/images/map_monsoon-trade_parchment_v2.png"
+          alt="Historical map showing monsoon trade routes connecting the Indian Ocean rim"
+          aspectRatio="landscape"
+          caption="Ancient monsoon trade routes: the seasonal superhighways that connected three continents"
+          credit="Cartographic Heritage Collection"
+          className="mt-8"
+        />
       ]}
     />
   );
