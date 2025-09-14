@@ -2,6 +2,7 @@ import { Users, Mail, MapPin, BookOpen, Globe, Target } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { IconMonsoon, IconScript, IconBasalt } from "@/components/icons";
+import { ResearchCentre } from "@/components/research/ResearchCentre";
 
 export default function About() {
   const team = [
@@ -120,37 +121,8 @@ export default function About() {
           </div>
         </div>
 
-        {/* Contact Section */}
-        <div className="text-center">
-          <Card className="bg-gradient-to-br from-sandalwood/80 to-lotus-pink/20 border-2 border-saffron/30 max-w-3xl mx-auto relative overflow-hidden shadow-2xl">
-            <CardHeader>
-              <CardTitle className="font-serif text-3xl text-foreground mb-4">
-                सहयोग आमंत्रण | Sacred Collaboration
-              </CardTitle>
-              <div className="text-indigo-dharma text-lg mb-4 font-serif">
-                आगच्छन्तु विद्वांसः | आगच्छन्तु जिज्ञासवः
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-8 text-lg leading-relaxed">
-                Interested in joining our dharmic scholarly community? We welcome collaborations 
-                from researchers, students, and seekers of knowledge who share our vision of 
-                integrative, respectful scholarship rooted in Indian Ocean wisdom traditions.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-6 justify-center">
-                <Button className="bg-saffron hover:bg-saffron/90 text-charcoal shadow-xl">
-                  Join Our आश्रम
-                </Button>
-                <Button variant="outline" className="border-2 border-indigo-dharma text-indigo-dharma hover:bg-indigo-dharma hover:text-sandalwood shadow-xl">
-                  Visit Research Centre
-                </Button>
-                <Button variant="outline" className="border-2 border-turmeric text-turmeric hover:bg-turmeric hover:text-charcoal shadow-xl">
-                  Access Sacred Texts
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Research Centre Section */}
+        <ResearchCentre />
       </div>
     </div>
   );
