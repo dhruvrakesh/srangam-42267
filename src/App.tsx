@@ -23,6 +23,7 @@ const EmpiresExchange = lazy(() => import("./pages/themes/EmpiresExchange"));
 const FieldNotes = lazy(() => import("./pages/FieldNotes"));
 const MapsData = lazy(() => import("./pages/MapsData"));
 const ReadingRoom = lazy(() => import("./pages/ReadingRoom"));
+const SourcesMethod = lazy(() => import("./pages/SourcesMethod"));
 const About = lazy(() => import("./pages/About"));
 const Brand = lazy(() => import("./pages/Brand"));
 
@@ -81,6 +82,7 @@ const App = () => (
                 <Route path="/field-notes" element={<FieldNotes />} />
                 <Route path="/maps-data" element={<MapsData />} />
                 <Route path="/reading-room" element={<ReadingRoom />} />
+                <Route path="/sources-method" element={<SourcesMethod />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/brand" element={<Brand />} />
                 <Route path="/monsoon-trade-clock" element={<MonsoonTradeClock />} />
