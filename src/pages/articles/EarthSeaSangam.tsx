@@ -18,7 +18,13 @@ The Indian subcontinent's geological story is one of grand tectonic movements. O
 
 Yet, "stable" is not static: the very rifting that sent India careening north also created the Western Ghats and the coastal outline we know. The Western Ghats mountain range is essentially a monumental rift escarpment – it marks where India's western margin was once connected to Madagascar and Africa, and was raised when the western edge of India split off during the late Cretaceous. The coastline of Kerala, Karnataka and Tamil Nadu's west – running parallel to the Ghats – is thus a classic rifted continental margin, characterized by straight coastlines and an offshore shelf that dips steeply.
 
-> IMAGE SLOT (Cross-section showing Western Ghats as rift escarpment)
+<ResponsiveImage 
+  src="/images/geology/western-ghats-cross-section.jpg"
+  alt="Geological cross-section of the Western Ghats showing the ancient rift escarpment structure with granite-gneiss foundation and how the mountains formed when India separated from Madagascar"
+  aspectRatio="landscape"
+  caption="The Western Ghats rift escarpment - geological evidence of India's separation from Gondwana"
+  credit="Geological Survey visualization"
+/>
 
 Geological evidence shows that in deep prehistory, large tracts of what are now coastal plains were under the sea (when global sea levels were higher), and conversely at times the sea retreated far out. By the Quaternary period (last 2.5 million years), the broad shape of South India's coasts had formed and remained relatively stable in terms of tectonics. Unlike the Pacific "Ring of Fire," the Indian Ocean's midsection has fewer active plate boundaries near India (the closest major one is the Sunda Trench near Indonesia). However, the Indian plate's collision stress does manifest in peninsular India through occasional intraplate earthquakes and slight warping of the crust.
 
@@ -30,7 +36,13 @@ A prime example is the Cauvery River in Tamil Nadu. In antiquity, the Cauvery de
 
 The National Institute of Oceanography (NIO) conducted underwater excavations off present-day Poompuhar and indeed found man-made structures (wharf remains, brick walls, ring wells) in 6–8 meters depth. Radiocarbon dating of these showed they were last above water around the 2nd century CE. This aligns with the literary date of Puhār's fall, strongly suggesting that coastal erosion and sudden marine transgression swallowed parts of the city. Today, Poompuhar is an open beach with only scant archaeological remains on land – the rest lies under the waves.
 
-> IMAGE SLOT (Underwater archaeology at Poompuhar showing submerged structures)
+<ResponsiveImage 
+  src="/images/archaeology/poompuhar-underwater.jpg"
+  alt="Underwater archaeological excavation at Poompuhar showing submerged brick walls, ring wells and stone structures from the ancient Chola port of Kaveripattinam"
+  aspectRatio="landscape"
+  caption="Submerged ruins of Kaveripattinam (Puhār) discovered by NIO at 6-8m depth in the Bay of Bengal"
+  credit="National Institute of Oceanography archives"
+/>
 
 The Periyar River in Kerala offers another case. Muziris was situated on its banks about 20 km from the Arabian Sea. For centuries it thrived, but then essentially vanished. Local folklore and some records pointed to a devastating flood in 1341 CE as the culprit. Geological studies confirm that in 1341, a massive flood (possibly linked to an earthquake triggering a landslide upriver, or just an extreme monsoon event) dumped colossal amounts of silt, choking the Periyar's old channel.
 
@@ -38,7 +50,23 @@ The river violently changed course, carving a new outlet to the sea farther nort
 
 For the people of medieval Kerala, it must have been shocking: their premier port rendered unusable almost overnight by nature's fury. Yet, in an adaptive twist, the new port of Kochi soon rose in the aftermath, illustrating how geological change closed one chapter (Muziris) and opened another (Cochin).
 
+<ResponsiveImage 
+  src="/images/reconstructions/muziris-flood-1341.jpg"
+  alt="Historical reconstruction of the catastrophic 1341 CE Periyar flood showing the destruction of Muziris port and the birth of modern Kochi harbor"
+  aspectRatio="wide"
+  caption="The Great Flood of 1341 CE: How geological forces transformed Kerala's maritime landscape overnight"
+  credit="Historical reconstruction based on geological evidence"
+/>
+
 ## The Great Flood of 1341: A Geological Turning Point
+
+<ResponsiveImage 
+  src="/images/coastal/kochi-formation-aerial.jpg"
+  alt="Aerial satellite view of Kochi harbor and Periyar delta showing the complex backwater system, Vypin Island, and geographic features created by the 1341 flood"
+  aspectRatio="wide"
+  caption="Modern Kochi harbor system: Islands and backwaters formed by the massive sedimentation of 1341 CE"
+  credit="Satellite imagery analysis"
+/>
 
 The flood of 1341 CE stands as one of the most dramatic examples of how geological events reshape maritime history. According to contemporary accounts and geological evidence, the Periyar River experienced an unprecedented flood that fundamentally altered Kerala's coastline and port geography.`;
 
@@ -351,6 +379,13 @@ export default function EarthSeaSangam() {
           src="/lovable-uploads/22a4564d-b68b-4de5-891a-57f148d12703.png"
           alt="Ancient coastal survey manuscript showing geological observations"
           caption="Ancient palm-leaf manuscript containing geological observations of coastal changes, from the Kerala State Archives"
+        />,
+        <ResponsiveImage 
+          src="/images/geology/sea-level-rise-gulf-mannar.jpg"
+          alt="Scientific visualization of post-glacial sea level rise in the Gulf of Mannar showing submerged landbridge between India and Sri Lanka"
+          aspectRatio="landscape"
+          caption="Submerged landscapes of the Gulf of Mannar: Evidence for the 'Kumari Kandam' tradition"
+          credit="Oceanographic survey data"
         />,
         <GeologicalTriggers key="triggers" />,
         <FloodConsequences key="consequences" />,
