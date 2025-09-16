@@ -39,6 +39,7 @@ const RidersOnMonsoon = lazy(() => import("./pages/articles/RidersOnMonsoon"));
 const EarthSeaSangam = lazy(() => import("./pages/articles/EarthSeaSangam"));
 const BatchBujangNagapattinamOcean = lazy(() => import("./pages/BatchBujangNagapattinamOcean"));
 const BatchMuzirisKutaiAshoka = lazy(() => import("./pages/BatchMuzirisKutaiAshoka"));
+const Sitemap = lazy(() => import("./pages/Sitemap"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -97,6 +98,7 @@ const App = () => (
                 <Route path="/themes/ancient-india/pepper-routes" element={<IndianOceanPowerNetworks />} />
                 <Route path="/batch/bujang-nagapattinam-ocean" element={<BatchBujangNagapattinamOcean />} />
                 <Route path="/batch/muziris-kutai-ashoka" element={<BatchMuzirisKutaiAshoka />} />
+                <Route path="/sitemap" element={<Sitemap />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>

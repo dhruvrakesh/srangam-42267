@@ -63,6 +63,9 @@ export function Footer() {
               <Link to="/sources-method" className="block text-sm text-muted-foreground hover:text-ocean transition-colors font-medium">
                 Sources & Method
               </Link>
+              <Link to="/sitemap" className="block text-sm text-muted-foreground hover:text-ocean transition-colors">
+                साइट मानचित्र | Site Map
+              </Link>
             </nav>
           </div>
 

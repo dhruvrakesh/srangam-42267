@@ -66,10 +66,39 @@ export function TopNavigation() {
               </Link>
 
               <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-foreground hover:text-saffron transition-colors">
+                  संग्रह | Collections <ChevronDown size={14} />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-64 bg-background border-border z-50">
+                  <DropdownMenuItem asChild>
+                    <Link 
+                      to="/batch/muziris-kutai-ashoka"
+                      className="text-sm text-foreground hover:text-saffron transition-colors"
+                    >
+                      लेख संग्रह | Scripts & Trade Empire
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link 
+                      to="/batch/bujang-nagapattinam-ocean"
+                      className="text-sm text-foreground hover:text-saffron transition-colors"
+                    >
+                      सागर जाल | Ocean Networks
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem disabled>
+                    <span className="text-sm text-muted-foreground">
+                      पुरातत्व दर्शन | Archaeological Insights (Coming Soon)
+                    </span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-foreground hover:text-ocean transition-colors">
                   Themes <ChevronDown size={14} />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 bg-background border-border">
+                <DropdownMenuContent className="w-56 bg-background border-border z-50">
                   {themeLinks.map((theme) => (
                     <DropdownMenuItem key={theme.path} asChild>
                       <Link 

@@ -2,6 +2,15 @@ import React, { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TagChip } from "@/components/ui/TagChip";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Link } from "react-router-dom";
 
 /**
  * Srangam — Ready React pages (Batch 2)
@@ -383,6 +392,29 @@ const BatchMuzirisKutaiAshoka: React.FC = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8 px-4">
+        {/* Dharmic Breadcrumb Navigation */}
+        <div className="mb-8">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/">मुख्य | Home</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator>🪷</BreadcrumbSeparator>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/batch/muziris-kutai-ashoka">संग्रह | Collections</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator>☸</BreadcrumbSeparator>
+              <BreadcrumbItem>
+                <BreadcrumbPage>लेख संग्रह | Scripts & Trade Empire</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-serif font-bold text-ink mb-4">

@@ -172,6 +172,83 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Featured Collections Section - विशेष संग्रह */}
+      <section className="py-16 bg-turmeric/5 relative">
+        <div className="absolute inset-0 chakra-pattern opacity-20" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-12">
+            <div className="flex justify-center mb-4">
+              <IconScript size={48} className="text-turmeric animate-pulse-gentle" />
+            </div>
+            <h2 className="font-serif text-3xl font-bold text-foreground mb-4">
+              विशेष संग्रह | Featured Collections
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Curated research collections exploring interconnected themes across space and time
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Scripts & Trade Empire Collection */}
+            <Link
+              to="/batch/muziris-kutai-ashoka"
+              className="group block p-8 bg-card rounded-lg border border-border hover:shadow-lg transition-all duration-200 hover:border-saffron/50 relative overflow-hidden animate-fade-in"
+            >
+              <div className="absolute inset-0 manuscript-texture opacity-30" />
+              <div className="relative z-10">
+                <div className="flex items-center justify-center mb-6">
+                  <div className="text-saffron animate-pulse-gentle">
+                    <IconEdict size={40} />
+                  </div>
+                </div>
+                <h3 className="font-serif text-xl font-bold text-foreground group-hover:text-saffron transition-colors mb-2 text-center">
+                  लेख संग्रह | Scripts & Trade Empire
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4 text-center">
+                  Kandahar Edicts • Kutai Yūpa • Muziris Trade Corridors
+                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed text-center">
+                  Exploring the nexus of script, stone, and commerce across ancient trade networks from 
+                  Afghanistan to Borneo, revealing the cultural foundations of economic exchange.
+                </p>
+                <div className="flex justify-center mt-4">
+                  <ArrowRight size={20} className="text-saffron group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </Link>
+
+            {/* Ocean Networks Collection */}
+            <Link
+              to="/batch/bujang-nagapattinam-ocean"
+              className="group block p-8 bg-card rounded-lg border border-border hover:shadow-lg transition-all duration-200 hover:border-peacock-blue/50 relative overflow-hidden animate-fade-in"
+              style={{ animationDelay: '0.1s' }}
+            >
+              <div className="absolute inset-0 ocean-waves opacity-30" />
+              <div className="relative z-10">
+                <div className="flex items-center justify-center mb-6">
+                  <div className="text-peacock-blue animate-pulse-gentle">
+                    <IconPort size={40} />
+                  </div>
+                </div>
+                <h3 className="font-serif text-xl font-bold text-foreground group-hover:text-peacock-blue transition-colors mb-2 text-center">
+                  सागर जाल | Ocean Networks
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4 text-center">
+                  Bujang Valley • Nagapattinam • Maritime Archaeology
+                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed text-center">
+                  Mapping the maritime connections that bound ancient Asia, from the Malacca Straits 
+                  to the Coromandel Coast, through ports, guilds, and monsoon rhythms.
+                </p>
+                <div className="flex justify-center mt-4">
+                  <ArrowRight size={20} className="text-peacock-blue group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Themes Grid - Dharmic Mandala Layout */}
       <section className="py-16 bg-background relative">
         <div className="absolute inset-0 ancient-navigation opacity-15" />

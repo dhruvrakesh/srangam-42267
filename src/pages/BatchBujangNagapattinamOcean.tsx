@@ -3,6 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TagChip } from "@/components/ui/TagChip";
 import { LazyMapboxBujangNetwork } from '@/components/interactive/LazyMapboxBujangNetwork';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Link } from "react-router-dom";
 
 /**
  * Srangam — Ready React pages (single-file batch)
@@ -425,6 +434,29 @@ const BatchBujangNagapattinamOcean: React.FC = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8 px-4">
+        {/* Dharmic Breadcrumb Navigation */}
+        <div className="mb-8">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/">मुख्य | Home</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator>🪷</BreadcrumbSeparator>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/batch/bujang-nagapattinam-ocean">संग्रह | Collections</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator>☸</BreadcrumbSeparator>
+              <BreadcrumbItem>
+                <BreadcrumbPage>सागर जाल | Ocean Networks</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-serif font-bold text-ink mb-4">
