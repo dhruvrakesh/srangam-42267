@@ -1,4 +1,4 @@
-import { BookOpen, FileText, Users, CheckCircle, Clock, Download } from "lucide-react";
+import { BookOpen, FileText, Users, CheckCircle, Clock, Download, GraduationCap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -244,6 +244,10 @@ export default function BookCompilation() {
             </Button>
             <Button variant="outline">
               Review Guidelines
+            </Button>
+            <Button variant="outline">
+              <GraduationCap className="w-4 h-4 mr-2" />
+              Academic Tools
             </Button>
             <Button className="bg-saffron hover:bg-saffron/90 text-white">
               Editorial Board
