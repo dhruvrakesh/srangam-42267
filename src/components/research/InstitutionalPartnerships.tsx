@@ -5,6 +5,32 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 export function InstitutionalPartnerships() {
+  const corporatePartners = [
+    {
+      name: 'DKEGL (Dhruv Kumar Energy Group Ltd)',
+      location: 'Mumbai, Maharashtra & Pan-India Operations',
+      type: 'Primary Corporate Sponsor',
+      specialization: 'Corporate Social Responsibility, Energy Infrastructure, Dharmic Research Patronage',
+      description: 'Fortune 500 energy corporation committed to supporting traditional knowledge systems through comprehensive CSR initiatives. Leading patron of dharmic scholarship and cultural heritage preservation.',
+      collections: ['Research Infrastructure Funding', 'Scholar Fellowship Programs', 'Digital Archive Development', 'Academic Publication Support'],
+      website: 'https://dkegl.com',
+      established: '1995',
+      csrCommitment: '₹10 crores annually for dharmic research initiatives',
+      culturalRole: 'मुख्य संरक्षक | Primary Patron of Dharmic Studies'
+    },
+    {
+      name: 'Nartiang Foundation',
+      location: 'Pan-India Heritage Sites',
+      type: 'CSR Implementation Partner',
+      specialization: 'Cultural Heritage Preservation, Academic Grant Management, Traditional Knowledge Documentation',
+      description: 'DKEGL\'s dedicated CSR arm focusing on dharmic research, manuscript digitization, and traditional scholar support. Bridges corporate resources with indigenous knowledge systems.',
+      collections: ['Manuscript Digitization Projects', 'Heritage Documentation', 'Scholar Grant Administration', 'Traditional Knowledge Archives'],
+      established: '2020',
+      csrCommitment: 'Direct implementation of ₹5 crores in cultural preservation',
+      culturalRole: 'सांस्कृतिक संरक्षण प्रमुख | Cultural Preservation Leader'
+    }
+  ];
+
   const partnerships = [
     {
       name: 'Bhandarkar Oriental Research Institute',
@@ -100,8 +126,98 @@ export function InstitutionalPartnerships() {
           संस्थागत सहयोग | Institutional Partnerships
         </h3>
         <p className="text-muted-foreground max-w-3xl mx-auto">
-          Collaborating with leading Oriental research institutes and traditional scholarship centers across Bharat and internationally
+          Corporate social responsibility meeting dharmic scholarship through partnerships with leading Oriental research institutes and traditional knowledge centers
         </p>
+      </div>
+
+      {/* Corporate Sponsors Section */}
+      <div className="space-y-6 mb-12">
+        <div className="text-center">
+          <h4 className="font-serif text-xl font-bold text-terracotta mb-2">
+            कॉर्पोरेट संरक्षक | Corporate Patrons
+          </h4>
+          <p className="text-muted-foreground max-w-2xl mx-auto text-sm">
+            Leading corporations supporting dharmic research through comprehensive CSR initiatives
+          </p>
+        </div>
+        
+        {corporatePartners.map((partner, index) => (
+          <Card key={index} className="bg-gradient-to-br from-saffron/10 via-sandalwood/20 to-lotus-pink/10 border-2 border-saffron/30 relative overflow-hidden shadow-xl">
+            <div className="absolute inset-0 opacity-5" 
+                 style={{
+                   backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23FF8C00' stroke-width='1'%3E%3Ccircle cx='40' cy='40' r='30'/%3E%3Cpath d='M40 10 L50 30 L40 50 L30 30 Z'/%3E%3C/g%3E%3C/svg%3E")`,
+                 }} />
+            <CardHeader className="relative z-10">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="bg-saffron/20 p-3 rounded-lg">
+                      <Building className="h-6 w-6 text-saffron" />
+                    </div>
+                    <div>
+                      <CardTitle className="font-serif text-2xl text-foreground">
+                        {partner.name}
+                      </CardTitle>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                        <MapPin className="h-3 w-3" />
+                        {partner.location}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <Badge variant="outline" className="bg-saffron/20 text-saffron border-saffron/30 font-medium">
+                      {partner.type}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      Est. {partner.established}
+                    </Badge>
+                  </div>
+                  <p className="text-peacock-blue font-medium text-sm mb-2">{partner.culturalRole}</p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="relative z-10">
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium text-foreground mb-1">Specialization</h4>
+                  <p className="text-sm text-peacock-blue">{partner.specialization}</p>
+                </div>
+                
+                <p className="text-muted-foreground">
+                  {partner.description}
+                </p>
+
+                <div>
+                  <h4 className="font-medium text-foreground mb-2">CSR Commitment & Key Initiatives</h4>
+                  <div className="bg-sandalwood/20 p-3 rounded-lg mb-3">
+                    <p className="text-saffron font-semibold">{partner.csrCommitment}</p>
+                  </div>
+                  <ul className="space-y-1">
+                    {partner.collections.map((collection, colIndex) => (
+                      <li key={colIndex} className="flex items-center gap-2 text-sm">
+                        <BookOpen className="h-3 w-3 text-turmeric" />
+                        <span className="text-muted-foreground">{collection}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" className="border-saffron text-saffron hover:bg-saffron hover:text-charcoal">
+                    <Users className="h-4 w-4 mr-1" />
+                    CSR Partnership
+                  </Button>
+                  {partner.website && (
+                    <Button size="sm" variant="outline">
+                      <Globe className="h-4 w-4 mr-1" />
+                      Corporate Website
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Collaboration Areas */}
@@ -203,30 +319,55 @@ export function InstitutionalPartnerships() {
         ))}
       </div>
 
-      {/* Partnership Invitation */}
-      <Card className="bg-gradient-to-br from-sandalwood/80 to-lotus-pink/20 border-2 border-saffron/30">
+      {/* Enhanced Partnership Invitation */}
+      <Card className="bg-gradient-to-br from-saffron/20 via-sandalwood/30 to-lotus-pink/20 border-2 border-saffron/40">
         <CardHeader>
           <CardTitle className="font-serif text-2xl text-foreground text-center">
             संस्थागत सहयोग आमंत्रण | Partnership Invitation
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center space-y-4">
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Srangam meets Nartiang: Where corporate social responsibility supports dharmic research excellence. 
-              Institutions interested in supporting indigenous scholarship frameworks are invited to join our network.
+          <div className="text-center space-y-6">
+            <p className="text-muted-foreground max-w-3xl mx-auto text-lg">
+              <strong>Srangam meets Nartiang:</strong> Where corporate social responsibility supports dharmic research excellence through 
+              comprehensive funding, academic partnerships, and cultural preservation initiatives. DKEGL's commitment to traditional 
+              knowledge systems creates new pathways for institutional collaboration.
             </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="bg-sandalwood/20 p-4 rounded-lg">
+                <h4 className="font-semibold text-terracotta mb-2">Corporate CSR</h4>
+                <p className="text-sm text-muted-foreground">Multi-crore funding for dharmic research initiatives</p>
+              </div>
+              <div className="bg-sandalwood/20 p-4 rounded-lg">
+                <h4 className="font-semibold text-terracotta mb-2">Academic Integration</h4>
+                <p className="text-sm text-muted-foreground">Bridge traditional knowledge with modern scholarship</p>
+              </div>
+              <div className="bg-sandalwood/20 p-4 rounded-lg">
+                <h4 className="font-semibold text-terracotta mb-2">Heritage Preservation</h4>
+                <p className="text-sm text-muted-foreground">Comprehensive manuscript digitization programs</p>
+              </div>
+            </div>
+            
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button className="bg-saffron hover:bg-saffron/90 text-charcoal">
                 <Award className="h-4 w-4 mr-2" />
-                Become a Partner
-              </Button>
-              <Button variant="outline" className="border-2 border-indigo-dharma text-indigo-dharma hover:bg-indigo-dharma hover:text-cream">
-                Partnership Guidelines
+                Corporate Partnership
               </Button>
               <Button variant="outline" className="border-2 border-peacock-blue text-peacock-blue hover:bg-peacock-blue hover:text-cream">
-                Research Collaboration
+                <Users className="h-4 w-4 mr-2" />
+                Academic Collaboration
               </Button>
+              <Button variant="outline" className="border-2 border-terracotta text-terracotta hover:bg-terracotta hover:text-cream">
+                <BookOpen className="h-4 w-4 mr-2" />
+                Heritage Partnership
+              </Button>
+            </div>
+            
+            <div className="mt-6 p-4 bg-sandalwood/30 rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                <strong>Next Application Cycle:</strong> March 2025 | Partnership proposals welcome year-round
+              </p>
             </div>
           </div>
         </CardContent>
