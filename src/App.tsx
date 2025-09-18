@@ -27,6 +27,11 @@ const SourcesMethod = lazy(() => import("./pages/SourcesMethod"));
 const About = lazy(() => import("./pages/About"));
 const Brand = lazy(() => import("./pages/Brand"));
 
+// Lazy load research pages
+const ResearchSubmission = lazy(() => import("./pages/ResearchSubmission"));
+const Partnership = lazy(() => import("./pages/Partnership"));
+const SupportResearch = lazy(() => import("./pages/SupportResearch"));
+
 // Lazy load article pages
 const MonsoonTradeClock = lazy(() => import("./pages/articles/MonsoonTradeClock"));
 const ScriptsThatSailed = lazy(() => import("./pages/articles/ScriptsThatSailed"));
@@ -98,6 +103,9 @@ const App = () => (
                 <Route path="/themes/ancient-india/pepper-routes" element={<IndianOceanPowerNetworks />} />
                 <Route path="/batch/bujang-nagapattinam-ocean" element={<BatchBujangNagapattinamOcean />} />
                 <Route path="/batch/muziris-kutai-ashoka" element={<BatchMuzirisKutaiAshoka />} />
+                <Route path="/research-submission" element={<ResearchSubmission />} />
+                <Route path="/partnership" element={<Partnership />} />
+                <Route path="/support-research" element={<SupportResearch />} />
                 <Route path="/sitemap" element={<Sitemap />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

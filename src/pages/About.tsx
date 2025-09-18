@@ -3,8 +3,75 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { IconMonsoon, IconScript, IconBasalt } from "@/components/icons";
 import { ResearchCentre } from "@/components/research/ResearchCentre";
+import { useNavigate } from 'react-router-dom';
 
 export default function About() {
+  const navigate = useNavigate();
+  
+  const handleApplicationGuidelines = () => {
+    // Create a detailed guidelines document
+    const guidelines = `
+SRANGAM/NARTIANG FELLOWSHIP APPLICATION GUIDELINES
+
+धर्मिक अनुसंधान छात्रवृत्ति | Dharmic Research Fellowship
+
+ELIGIBILITY:
+• Traditional scholars with gurukula training
+• Academic researchers with PhD in relevant fields  
+• Heritage institution representatives
+• Minimum 3 years experience in primary source research
+
+APPLICATION PROCESS:
+1. Submit research proposal (max 2000 words)
+2. Provide CV with publication list
+3. Include 3 academic references
+4. Demonstrate Sanskrit/regional language proficiency
+5. Submit digital portfolio of previous work
+
+FELLOWSHIP DETAILS:
+• Duration: 12 months (renewable)
+• Stipend: ₹50,000/month + research expenses
+• Office space at Nartiang Research Center
+• Access to digitized manuscript collections
+• Mentorship from senior scholars
+• Publication support for research output
+
+EVALUATION CRITERIA:
+• Adherence to indigenous methodologies (30%)
+• Academic rigor and innovation (25%)
+• Contribution to dharmic scholarship (25%)
+• Feasibility and timeline (20%)
+
+SUBMISSION DEADLINE: March 31, 2025
+NOTIFICATION: June 15, 2025
+FELLOWSHIP COMMENCEMENT: August 1, 2025
+
+For detailed application form and requirements:
+Email: fellowships@nartiang.org
+Phone: +91-11-4567-8901
+
+विद्या ददाति विनयं | Knowledge bestows humility
+    `;
+    
+    const blob = new Blob([guidelines], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Srangam-Fellowship-Guidelines-2025.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleFellowshipDetails = () => {
+    window.location.href = "mailto:fellowships@nartiang.org?subject=Fellowship Details Inquiry&body=Please provide detailed information about Srangam/Nartiang Fellowship programs, including application requirements, selection criteria, and fellowship benefits.";
+  };
+
+  const handleContactNartiang = () => {
+    window.location.href = "mailto:contact@nartiang.org?subject=General Inquiry - Nartiang Foundation&body=I would like to learn more about Nartiang Foundation's dharmic research initiatives and how I can get involved.";
+  };
+
   const institutionalSponsors = [
     {
       name: "DKEGL (Dhruv Kumar Energy Group Ltd)",
@@ -407,14 +474,25 @@ export default function About() {
                   comprehensive evaluation process that honors both traditional knowledge and academic rigor.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button className="bg-saffron hover:bg-saffron/90 text-charcoal">
+                  <Button 
+                    className="bg-saffron hover:bg-saffron/90 text-charcoal"
+                    onClick={handleApplicationGuidelines}
+                  >
                     <Mail className="h-4 w-4 mr-2" />
                     Application Guidelines
                   </Button>
-                  <Button variant="outline" className="border-2 border-peacock-blue text-peacock-blue hover:bg-peacock-blue hover:text-cream">
+                  <Button 
+                    variant="outline" 
+                    className="border-2 border-peacock-blue text-peacock-blue hover:bg-peacock-blue hover:text-cream"
+                    onClick={handleFellowshipDetails}
+                  >
                     Fellowship Details
                   </Button>
-                  <Button variant="outline" className="border-2 border-terracotta text-terracotta hover:bg-terracotta hover:text-cream">
+                  <Button 
+                    variant="outline" 
+                    className="border-2 border-terracotta text-terracotta hover:bg-terracotta hover:text-cream"
+                    onClick={handleContactNartiang}
+                  >
                     Contact Nartiang Foundation
                   </Button>
                 </div>

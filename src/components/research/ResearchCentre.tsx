@@ -4,8 +4,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ReadingLists, SubmissionGuidelines, InstitutionalPartnerships } from '@/components/research';
+import { useNavigate } from 'react-router-dom';
 
 export function ResearchCentre() {
+  const navigate = useNavigate();
+
+  const handleSubmitResearch = () => {
+    navigate('/research-submission');
+  };
+
+  const handlePartnership = () => {
+    navigate('/partnership');
+  };
+
+  const handleSupport = () => {
+    navigate('/support-research');
+  };
+
   return (
     <div className="space-y-8">
       {/* Research Centre Header */}
@@ -105,7 +120,10 @@ export function ResearchCentre() {
                   <p className="text-sm text-muted-foreground text-center mb-4">
                     Submit original research based on primary sources and indigenous methodologies
                   </p>
-                  <Button className="w-full bg-saffron hover:bg-saffron/90 text-charcoal">
+                  <Button 
+                    className="w-full bg-saffron hover:bg-saffron/90 text-charcoal"
+                    onClick={handleSubmitResearch}
+                  >
                     Submit Research
                   </Button>
                 </CardContent>
@@ -122,7 +140,11 @@ export function ResearchCentre() {
                   <p className="text-sm text-muted-foreground text-center mb-4">
                     Academic institutions supporting indigenous scholarship frameworks
                   </p>
-                  <Button variant="outline" className="w-full border-peacock-blue text-peacock-blue hover:bg-peacock-blue hover:text-white">
+                  <Button 
+                    variant="outline" 
+                    className="w-full border-peacock-blue text-peacock-blue hover:bg-peacock-blue hover:text-white"
+                    onClick={handlePartnership}
+                  >
                     Partner With Us
                   </Button>
                 </CardContent>
@@ -139,7 +161,11 @@ export function ResearchCentre() {
                   <p className="text-sm text-muted-foreground text-center mb-4">
                     Corporate and individual support for dharmic research initiatives
                   </p>
-                  <Button variant="outline" className="w-full border-turmeric text-turmeric hover:bg-turmeric hover:text-charcoal">
+                  <Button 
+                    variant="outline" 
+                    className="w-full border-turmeric text-turmeric hover:bg-turmeric hover:text-charcoal"
+                    onClick={handleSupport}
+                  >
                     Support Research
                   </Button>
                 </CardContent>
