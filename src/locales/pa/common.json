@@ -86,6 +86,21 @@
     "ridersOnMonsoon": "ਮਾਨਸੂਨ ਦੇ ਸਵਾਰ",
     "ridersOnMonsoonDesc": "ਮਾਨਸੂਨੀ ਹਵਾਵਾਂ ਅਤੇ ਵਪਾਰਕ ਯਾਤਰਾਵਾਂ ਦਾ ਇਤਿਹਾਸ"
   },
+  "article": {
+    "readTime": "{{minutes}} ਮਿੰਟ ਵਿੱਚ ਪੜ੍ਹੋ",
+    "author": "ਲੇਖਕ",
+    "published": "ਪ੍ਰਕਾਸ਼ਿਤ",
+    "updated": "ਅੱਪਡੇਟ",
+    "tags": "ਟੈਗ",
+    "relatedArticles": "ਸੰਬੰਧਿਤ ਲੇਖ"
+  },
+  "themes": {
+    "ancientindia": "ਪ੍ਰਾਚੀਨ ਭਾਰਤ",
+    "indianoceanworld": "ਹਿੰਦ ਮਹਾਸਾਗਰ ਸੰਸਾਰ", 
+    "geologydeeptime": "ਭੂਵਿਗਿਆਨ ਅਤੇ ਮਹਾਂਕਾਲ",
+    "empiresexchange": "ਸਾਮਰਾਜ ਅਤੇ ਵਟਾਂਦਰਾ",
+    "scriptsinscriptions": "ਲਿਪੀ ਅਤੇ ਅਭਿਲੇਖ"
+  },
   "cultural": {
     "dharma": "ਧਰਮ - ਜੀਵਨ ਦਾ ਨੈਤਿਕ ਅਤੇ ਅਧਿਆਤਮਿਕ ਮਾਰਗ",
     "sangam": "ਸੰਗਮ - ਪਵਿੱਤਰ ਨਦੀਆਂ ਦਾ ਮੇਲ ਸਥਾਨ",

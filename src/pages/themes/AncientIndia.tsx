@@ -1,9 +1,11 @@
 import { ArticleCard } from "@/components/ui/ArticleCard";
-import { ARTICLES } from "@/data/siteData";
+import { getArticlesByTheme } from "@/lib/multilingualArticleUtils";
+import { useLanguage } from "@/components/language/LanguageProvider";
 import { IconScript, IconSarnathLion, IconOm } from "@/components/icons";
 
 export default function AncientIndia() {
-  const themeArticles = ARTICLES.filter(article => article.theme === "Ancient India");
+  const { currentLanguage } = useLanguage();
+  const themeArticles = getArticlesByTheme("Ancient India", currentLanguage);
 
   return (
     <div className="min-h-screen relative overflow-hidden">

@@ -1,9 +1,11 @@
 import { ArticleCard } from "@/components/ui/ArticleCard";
-import { ARTICLES } from "@/data/siteData";
+import { getArticlesByTheme } from "@/lib/multilingualArticleUtils";
+import { useLanguage } from "@/components/language/LanguageProvider";
 import { IconEdict, IconOm, IconScript } from "@/components/icons";
 
 export default function ScriptsInscriptions() {
-  const themeArticles = ARTICLES.filter(article => article.theme === "Scripts & Inscriptions");
+  const { currentLanguage } = useLanguage();
+  const themeArticles = getArticlesByTheme("Scripts & Inscriptions", currentLanguage);
 
   return (
     <div className="min-h-screen relative overflow-hidden">

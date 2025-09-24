@@ -1,9 +1,11 @@
 import { ArticleCard } from "@/components/ui/ArticleCard";
-import { ARTICLES } from "@/data/siteData";
+import { getArticlesByTheme } from "@/lib/multilingualArticleUtils";
+import { useLanguage } from "@/components/language/LanguageProvider";
 import { IconBasalt, IconDharmaChakra, IconLotus } from "@/components/icons";
 
 export default function GeologyDeepTime() {
-  const themeArticles = ARTICLES.filter(article => article.theme === "Geology & Deep Time");
+  const { currentLanguage } = useLanguage();
+  const themeArticles = getArticlesByTheme("Geology & Deep Time", currentLanguage);
 
   return (
     <div className="min-h-screen relative overflow-hidden">

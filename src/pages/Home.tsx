@@ -2,16 +2,18 @@ import React, { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { ArticleCard } from "@/components/ui/ArticleCard";
 import { Button } from "@/components/ui/button";
-import { ARTICLES } from "@/data/siteData";
+import { getFeaturedArticles } from "@/lib/multilingualArticleUtils";
+import { useLanguage } from "@/components/language/LanguageProvider";
 import { IconMonsoon, IconScript, IconBasalt, IconPort, IconEdict, IconDharmaChakra, IconSarnathLion, IconLotus, IconConch, IconOm } from "@/components/icons";
 import { Link } from "react-router-dom";
 import { ArrowRight, Waves, Mountain, BookOpen, Map, Users } from "lucide-react";
 
 export default function Home() {
   const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
   
-  // Memoize expensive calculations for performance
-  const featuredArticles = useMemo(() => ARTICLES.slice(0, 3), []);
+  // Memoize multilingual featured articles for performance
+  const featuredArticles = useMemo(() => getFeaturedArticles(currentLanguage), [currentLanguage]);
   
   const themes = useMemo(() => [
     {

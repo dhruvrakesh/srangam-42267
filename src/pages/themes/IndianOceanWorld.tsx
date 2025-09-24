@@ -1,9 +1,11 @@
 import { ArticleCard } from "@/components/ui/ArticleCard";
-import { ARTICLES } from "@/data/siteData";
+import { getArticlesByTheme } from "@/lib/multilingualArticleUtils";
+import { useLanguage } from "@/components/language/LanguageProvider";
 import { IconMonsoon, IconConch, IconLotus } from "@/components/icons";
 
 export default function IndianOceanWorld() {
-  const themeArticles = ARTICLES.filter(article => article.theme === "Indian Ocean World");
+  const { currentLanguage } = useLanguage();
+  const themeArticles = getArticlesByTheme("Indian Ocean World", currentLanguage);
 
   return (
     <div className="min-h-screen relative overflow-hidden">

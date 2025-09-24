@@ -37,17 +37,20 @@
     "beginJourney": "यात्रा प्रारम्भ | Begin Journey",
     "aboutProject": "About the Project"
   },
+  "article": {
+    "readTime": "Read in {{minutes}} min",
+    "author": "By",
+    "published": "Published",
+    "updated": "Updated",
+    "tags": "Tags",
+    "relatedArticles": "Related Articles"
+  },
   "themes": {
-    "ancientIndia": "Ancient India",
-    "ancientIndiaDesc": "सनातन परम्परा - Archaeological and textual evidence for early Indian Ocean trade networks",
-    "geology": "Geology & Deep Time", 
-    "geologyDesc": "कालचक्र - Tectonic histories and the geological foundations of cultural exchange",
-    "empires": "Empires & Exchange",
-    "empiresDesc": "राजधर्म - Political networks and economic flows from local to imperial scales",
-    "scripts": "Scripts & Inscriptions",
-    "scriptsDesc": "शिलालेख विद्या - Reading stone voices: epigraphy across languages and centuries",
-    "indianOcean": "Indian Ocean World",
-    "indianOceanDesc": "सागर संस्कृति - Monsoon rhythms and maritime cultures across the vast oceanic space"
+    "ancientindia": "Ancient India",
+    "indianoceanworld": "Indian Ocean World", 
+    "geologydeeptime": "Geology & Deep Time",
+    "empiresexchange": "Empires & Exchange",
+    "scriptsinscriptions": "Scripts & Inscriptions"
   },
   "research": {
     "submitResearch": "Submit Research",
