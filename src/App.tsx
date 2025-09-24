@@ -110,8 +110,8 @@ const App = () => (
                 <Route path="/support-research" element={<SupportResearch />} />
                 <Route path="/sitemap" element={<Sitemap />} />
                 <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
+                </Routes>
+              </Suspense>
           </Layout>
         </BrowserRouter>
       </TooltipProvider>

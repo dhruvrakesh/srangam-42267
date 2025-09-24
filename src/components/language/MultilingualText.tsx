@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Info } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { MultilingualContent } from '@/types/multilingual';
 import { SupportedLanguage, supportedLanguages } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -77,35 +77,33 @@ export const MultilingualText: React.FC<MultilingualTextProps> = ({
     >
       {text}
       {hasContext && (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Info 
-                size={14} 
-                className="inline ml-1 text-muted-foreground cursor-help hover:text-foreground transition-colors" 
-              />
-            </TooltipTrigger>
-            <TooltipContent className="max-w-xs">
-              <div className="space-y-2">
-                {transliteration && (
-                  <div>
-                    <strong>Transliteration:</strong> {transliteration}
-                  </div>
-                )}
-                {culturalTerms.length > 0 && (
-                  <div>
-                    <strong>Cultural Context:</strong>
-                    <ul className="mt-1 text-xs space-y-1">
-                      {culturalTerms.map((term, index) => (
-                        <li key={index} className="text-muted-foreground">• {term}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Info 
+              size={14} 
+              className="inline ml-1 text-muted-foreground cursor-help hover:text-foreground transition-colors" 
+            />
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs">
+            <div className="space-y-2">
+              {transliteration && (
+                <div>
+                  <strong>Transliteration:</strong> {transliteration}
+                </div>
+              )}
+              {culturalTerms.length > 0 && (
+                <div>
+                  <strong>Cultural Context:</strong>
+                  <ul className="mt-1 text-xs space-y-1">
+                    {culturalTerms.map((term, index) => (
+                      <li key={index} className="text-muted-foreground">• {term}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </TooltipContent>
+        </Tooltip>
       )}
     </Component>
   );
