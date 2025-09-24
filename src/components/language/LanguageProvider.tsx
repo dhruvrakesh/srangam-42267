@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLanguagePreferences } from '@/hooks/useLanguagePreferences';
 import { SupportedLanguage, supportedLanguages } from '@/lib/i18n';
+import { normalizeLanguageCode, getScriptFont as getScriptFontUtil } from '@/lib/languageUtils';
 import { LanguagePreferences } from '@/types/multilingual';
 import { I18nLoadingBoundary } from './I18nLoadingBoundary';
 
@@ -32,7 +33,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
   const { preferences, updatePreferences } = useLanguagePreferences();
   const [isInitialized, setIsInitialized] = useState(false);
   
-  const currentLanguage = (i18n.language || 'en') as SupportedLanguage;
+  const currentLanguage = normalizeLanguageCode(i18n.language || 'en');
 
   useEffect(() => {
     if (i18n.isInitialized) {
@@ -50,16 +51,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
   };
 
   const getScriptFont = (language: SupportedLanguage = currentLanguage) => {
-    const script = supportedLanguages[language]?.script;
-    const fontMap = {
-      tamil: 'font-tamil',
-      telugu: 'font-telugu',
-      kannada: 'font-kannada',
-      bengali: 'font-bengali',
-      assamese: 'font-assamese',
-      latin: 'font-sans'
-    };
-    return fontMap[script as keyof typeof fontMap] || 'font-sans';
+    return getScriptFontUtil(language);
   };
 
   // Apply font size adjustments

@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { supportedLanguages, SupportedLanguage } from '@/lib/i18n';
+import { normalizeLanguageCode, getLanguageInfo, getScriptFont } from '@/lib/languageUtils';
 import { cn } from '@/lib/utils';
 
 interface LanguageSwitcherProps {
@@ -21,24 +22,13 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   variant = 'default' 
 }) => {
   const { i18n } = useTranslation();
-  const currentLanguage = i18n.language as SupportedLanguage;
+  const currentLanguage = normalizeLanguageCode(i18n.language || 'en');
+  const currentLangInfo = getLanguageInfo(currentLanguage);
 
   const changeLanguage = (lng: SupportedLanguage) => {
     i18n.changeLanguage(lng);
     // All our supported languages are LTR
     document.documentElement.dir = 'ltr';
-  };
-
-  const getScriptFont = (script: string) => {
-    const fontMap = {
-      tamil: 'font-tamil',
-      telugu: 'font-telugu', 
-      kannada: 'font-kannada',
-      bengali: 'font-bengali',
-      assamese: 'font-assamese',
-      latin: 'font-sans'
-    };
-    return fontMap[script as keyof typeof fontMap] || 'font-sans';
   };
 
   if (variant === 'compact') {
@@ -48,7 +38,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
           <Button variant="ghost" size="sm" className={cn('gap-1', className)}>
             <Globe size={16} />
             <span className="hidden sm:inline">
-              {supportedLanguages[currentLanguage].nativeName}
+              {currentLangInfo.nativeName}
             </span>
             <ChevronDown size={14} />
           </Button>
@@ -81,8 +71,8 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="gap-2 min-w-[140px]">
-            <span className={getScriptFont(supportedLanguages[currentLanguage].script)}>
-              {supportedLanguages[currentLanguage].nativeName}
+            <span className={getScriptFont(currentLanguage)}>
+              {currentLangInfo.nativeName}
             </span>
             <ChevronDown size={14} />
           </Button>
