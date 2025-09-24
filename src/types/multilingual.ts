@@ -1,5 +1,7 @@
 import { SupportedLanguage } from '@/lib/i18n';
 
+export type { SupportedLanguage };
+
 export interface MultilingualContent {
   [key: string]: string | MultilingualContent;
 }

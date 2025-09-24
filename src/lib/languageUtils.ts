@@ -38,6 +38,8 @@ export const getScriptFont = (languageCode: string): string => {
     kannada: 'font-kannada',
     bengali: 'font-bengali',
     assamese: 'font-assamese',
+    devanagari: 'font-hindi',
+    gurmukhi: 'font-punjabi',
     latin: 'font-sans'
   };
   return fontMap[langInfo.script as keyof typeof fontMap] || 'font-sans';

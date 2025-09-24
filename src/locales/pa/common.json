@@ -1,0 +1,96 @@
+{
+  "navigation": {
+    "home": "ਮੁੱਖ ਸਫ਼ਾ",
+    "articles": "ਲੇਖ",
+    "themes": "ਵਿਸ਼ੇ",
+    "research": "ਖੋਜ",
+    "about": "ਬਾਰੇ",
+    "maps": "ਨਕਸ਼ੇ ਅਤੇ ਡੇਟਾ",
+    "partnership": "ਸਾਂਝੇਦਾਰੀ",
+    "support": "ਖੋਜ ਸਹਾਇਤਾ",
+    "fieldNotes": "ਖੇਤੀ ਨੋਟਸ",
+    "readingRoom": "ਅਧਿਐਨ ਕਮਰਾ",
+    "collections": "ਸੰਗ੍ਰਹਿ",
+    "scriptsTradeEmpire": "ਲਿਪੀ ਵਪਾਰ ਸਾਮਰਾਜ",
+    "oceanNetworks": "ਸਮੁੰਦਰੀ ਨੈੱਟਵਰਕ",
+    "archaeologicalInsights": "ਪੁਰਾਤੱਤਵ ਸਮਝ",
+    "searchPlaceholder": "ਖੋਜੋ..."
+  },
+  "common": {
+    "readMore": "ਹੋਰ ਪੜ੍ਹੋ",
+    "loading": "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...",
+    "error": "ਗਲਤੀ",
+    "search": "ਖੋਜ",
+    "share": "ਸਾਂਝਾ ਕਰੋ",
+    "print": "ਛਾਪੋ",
+    "download": "ਡਾਊਨਲੋਡ",
+    "back": "ਵਾਪਸ",
+    "next": "ਅਗਲਾ",
+    "previous": "ਪਿਛਲਾ",
+    "beginJourney": "ਯਾਤਰਾ ਸ਼ੁਰੂ ਕਰੋ",
+    "aboutProject": "ਪ੍ਰੋਜੈਕਟ ਬਾਰੇ"
+  },
+  "hero": {
+    "title": "ਸੰਗਮ",
+    "sanskritBlessing": "शास्त्रं वा सत्यमेव वा | ਸ਼ਾਸਤ੍ਰਂ ਵਾ ਸਤਿਅਮੇਵ ਵਾ",
+    "sanskritTranslation": "ਗਿਆਨ ਵਿੱਚ ਸੱਚ, ਸੱਚ ਵਿੱਚ ਗਿਆਨ (ਗਿਆਨ ਅਤੇ ਸੱਚ ਅਵਿਭਾਜਿਤ ਹਨ)",
+    "subtitle": "ਪ੍ਰਾਚੀਨ ਦੱਖਣੀ ਏਸ਼ੀਆ ਵਿੱਚ ਸਮੁੰਦਰੀ ਨੈੱਟਵਰਕ",
+    "description": "ਪੁਰਾਤੱਤਵ ਸਬੂਤ, ਭੂਗੋਲਿਕ ਬਣਤਰਾਂ ਅਤੇ ਪਸ਼ਤਕ ਪਰੰਪਰਾਵਾਂ ਰਾਹੀਂ ਜ਼ਮੀਨ, ਸਮੁੰਦਰ ਅਤੇ ਸਭਿਆਚਾਰ ਦੇ ਮੇਲ ਦੀ ਖੋਜ ਜੋ ਹਿੰਦ ਮਹਾਸਾਗਰ ਸੰਸਾਰ ਨੂੰ ਆਕਾਰ ਦਿੰਦੀ ਹੈ।",
+    "subtitle2": "ਸੰਗਮ - ਗਿਆਨ ਅਤੇ ਸੱਚ ਦਾ ਮੇਲ",
+    "description2": "ਪੁਰਾਤੱਤਵ ਸਬੂਤ, ਭੂਗੋਲਿਕ ਬਣਤਰਾਂ ਅਤੇ ਪਸ਼ਤਕ ਪਰੰਪਰਾਵਾਂ ਰਾਹੀਂ ਜ਼ਮੀਨ, ਸਮੁੰਦਰ ਅਤੇ ਸਭਿਆਚਾਰ ਦੀ ਸਮਝ ਜੋ ਹਿੰਦ ਮਹਾਸਾਗਰ ਸੰਸਾਰ ਨੂੰ ਗਿਆਨ ਅਤੇ ਸੱਚ ਦੇ ਮੇਲ ਨਾਲ ਆਕਾਰ ਦਿੰਦੀ ਹੈ।"
+  },
+  "themes": {
+    "ancientIndia": "ਪ੍ਰਾਚੀਨ ਭਾਰਤ",
+    "ancientIndiaDesc": "हरिहरो हरिः | ਪ੍ਰਾਚੀਨ ਭਾਰਤ ਦਾ ਗਿਆਨ ਅਤੇ ਧਰਮ",
+    "geology": "ਭੂਵਿਗਿਆਨ ਅਤੇ ਮਹਾਂਕਾਲ",
+    "geologyDesc": "ਧਰਤੀ ਦੀ ਬਣਤਰ ਅਤੇ ਸਮੇਂ ਦੀ ਡੂੰਘਾਈ",
+    "empires": "ਸਾਮਰਾਜ ਅਤੇ ਵਟਾਂਦਰਾ",
+    "empiresDesc": "ਵਪਾਰਕ ਨੈੱਟਵਰਕ ਅਤੇ ਸਭਿਆਚਾਰਕ ਅਦਾਨ-ਪ੍ਰਦਾਨ",
+    "scripts": "ਲਿਪੀ ਅਤੇ ਅਭਿਲੇਖ",
+    "scriptsDesc": "प्राचीन लिपि | ਪ੍ਰਾਚੀਨ ਲਿਪੀ ਅਤੇ ਗਿਆਨ ਪਰੰਪਰਾ",
+    "indianOcean": "ਹਿੰਦ ਮਹਾਸਾਗਰ ਸੰਸਾਰ",
+    "indianOceanDesc": "ਸਮੁੰਦਰੀ ਵਪਾਰ ਨੈੱਟਵਰਕ ਅਤੇ ਸਭਿਆਚਾਰਕ ਧਰਮ"
+  },
+  "research": {
+    "submitResearch": "ਖੋਜ ਪੇਸ਼ ਕਰੋ",
+    "partnerWithUs": "ਸਾਡੇ ਨਾਲ ਸਹਿਯੋਗ ਕਰੋ",
+    "supportResearch": "ਖੋਜ ਦਾ ਸਮਰਥਨ ਕਰੋ",
+    "guidelines": "ਪੇਸ਼ਕਾਰੀ ਦਿਸ਼ਾ-ਨਿਰਦੇਸ਼",
+    "process": "ਸਮੀਖਿਆ ਪ੍ਰਕਿਰਿਆ",
+    "criteria": "ਵਿਦਿਅਕ ਮਾਪਦੰਡ"
+  },
+  "sections": {
+    "recentResearch": "ਹਾਲ ਦੀ ਖੋਜ",
+    "featuredCollections": "ਵਿਸ਼ੇਸ਼ ਸੰਗ੍ਰਹਿ",
+    "researchThemes": "ਖੋਜ ਵਿਸ਼ੇ",
+    "sacredPaths": "पवित्र पथ | ਪਵਿੱਤਰ ਮਾਰਗ",
+    "allResearch": "ਸਾਰੀ ਖੋਜ ਵੇਖੋ"
+  },
+  "collections": {
+    "scriptsTradeEmpire": "ਲਿਪੀ ਵਪਾਰ ਸਾਮਰਾਜ",
+    "scriptsTradeEmpireItems": "ਕੰਧਾਰ ਅਭਿਲੇਖ, ਕੁਟੈ ਯੂਪ ਅਭਿਲੇਖ, ਮੁਜ਼ਿਰਿਸ ਵਪਾਰ ਮਾਰਗ",
+    "scriptsTradeEmpireDesc": "ਪ੍ਰਾਚੀਨ ਵਪਾਰਕ ਨੈੱਟਵਰਕ ਅਤੇ ਲਿਪੀ ਪਰੰਪਰਾ ਉੱਤੇ ਖੋਜ",
+    "oceanNetworks": "ਸਮੁੰਦਰੀ ਨੈੱਟਵਰਕ",
+    "oceanNetworksItems": "ਬੁਜੰਗ ਘਾਟੀ, ਨਾਗਪਟਟੀਨਮ, ਸਮੁੰਦਰੀ ਪੁਰਾਤੱਤਵ",
+    "oceanNetworksDesc": "ਪ੍ਰਾਚੀਨ ਹਿੰਦ ਮਹਾਸਾਗਰ ਵਿੱਚ ਵਪਾਰਕ ਅਤੇ ਸਭਿਆਚਾਰਕ ਨੈੱਟਵਰਕ"
+  },
+  "articles": {
+    "ashokaKandaharEdicts": "ਅਸ਼ੋਕ ਦੇ ਕੰਧਾਰ ਅਭਿਲੇਖ",
+    "ashokaKandaharEdictsDesc": "ਅਫਗਾਨਿਸਤਾਨ ਵਿੱਚ ਪ੍ਰਾਚੀਨ ਭਾਰਤੀ ਧਰਮ ਅਤੇ ਰਾਜਨੀਤਿ",
+    "scriptsThatSailed": "ਯਾਤਰਾ ਕਰਨ ਵਾਲੀਆਂ ਲਿਪੀਆਂ",
+    "scriptsThatSailedDesc": "ਹਿੰਦ ਮਹਾਸਾਗਰ ਵਪਾਰ ਵਿੱਚ ਲਿਪੀ ਪਰੰਪਰਾਵਾਂ ਦੀ ਭੂਮਿਕਾ",
+    "kutaiYupaBorneo": "ਕੁਟੈ ਯੂਪ ਬੋਰਨੀਓ",
+    "kutaiYupaBorneoDesc": "ਬੋਰਨੀਓ ਵਿੱਚ ਪ੍ਰਾਚੀਨ ਸੰਸਕ੍ਰਿਤ ਅਭਿਲੇਖ",
+    "pepperAndBullion": "ਕਾਲੀ ਮਿਰਚ ਅਤੇ ਸੋਨਾ",
+    "pepperAndBullionDesc": "ਪ੍ਰਾਚੀਨ ਮਸਾਲਾ ਵਪਾਰ ਅਤੇ ਆਰਥਿਕ ਨੈੱਟਵਰਕ",
+    "ridersOnMonsoon": "ਮਾਨਸੂਨ ਦੇ ਸਵਾਰ",
+    "ridersOnMonsoonDesc": "ਮਾਨਸੂਨੀ ਹਵਾਵਾਂ ਅਤੇ ਵਪਾਰਕ ਯਾਤਰਾਵਾਂ ਦਾ ਇਤਿਹਾਸ"
+  },
+  "cultural": {
+    "dharma": "ਧਰਮ - ਜੀਵਨ ਦਾ ਨੈਤਿਕ ਅਤੇ ਅਧਿਆਤਮਿਕ ਮਾਰਗ",
+    "sangam": "ਸੰਗਮ - ਪਵਿੱਤਰ ਨਦੀਆਂ ਦਾ ਮੇਲ ਸਥਾਨ",
+    "shastra": "ਸ਼ਾਸਤਰ - ਪਵਿੱਤਰ ਗਿਆਨ ਅਤੇ ਸਿੱਖਿਆ",
+    "yupa": "ਯੂਪ - ਵੈਦਿਕ ਯਗ੍ਯ ਸਤੰਭ",
+    "vihara": "ਵਿਹਾਰ - ਬੁੱਧ ਮੱਠ ਅਤੇ ਨਿਵਾਸ ਸਥਾਨ"
+  }
+}
