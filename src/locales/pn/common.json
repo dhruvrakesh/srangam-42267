@@ -1,44 +1,77 @@
 {
   "navigation": {
     "home": "Home",
-    "articles": "Articles",
-    "themes": "Themes",
-    "research": "Research",
-    "about": "About",
-    "maps": "Maps & Data",
-    "partnership": "Partnership",
-    "support": "Support Research"
+    "articles": "U khana kham",
+    "themes": "U jingsngew",
+    "research": "Ka pynkadir",
+    "about": "Bad",
+    "maps": "U naksa bad u nongkhroh",
+    "partnership": "Ka shai jingjop",
+    "support": "Pynkshai ka pynkadir",
+    "fieldNotes": "U nota ha ka ri",
+    "readingRoom": "U kmie pyllait",
+    "collections": "U thaw",
+    "scriptsTradeEmpire": "U akhar bad u raj sngewbha",
+    "oceanNetworks": "U jingthaw ha ka um",
+    "archaeologicalInsights": "U jingkham ha puranthaw",
+    "searchPlaceholder": "Sha noh..."
   },
   "common": {
-    "readMore": "Read More",
-    "loading": "Loading...",
-    "error": "An error occurred",
-    "search": "Search",
-    "share": "Share",
+    "readMore": "Lait nang",
+    "loading": "Ka dai ban lait...",
+    "error": "Ka duai halor",
+    "search": "Sha noh",
+    "share": "Pynwad",
     "print": "Print",
-    "download": "Download",
-    "back": "Back",
-    "next": "Next",
-    "previous": "Previous"
+    "download": "Dem",
+    "back": "Kyrteng",
+    "next": "U shipara",
+    "previous": "U suki",
+    "beginJourney": "Jied ka lamlynti",
+    "aboutProject": "Bad ka pynlur"
   },
   "hero": {
-    "title": "Srangam",
+    "title": "Sangam",
+    "sanskritBlessing": "शास्त्रं वा सत्यमेव वा | Shastra wa satyameva wa",
+    "sanskritTranslation": "Jingieit ha thlen, thlen ha jingieit (jingieit bad thlen ym kaba pynkhana)",
     "subtitle": "Ka Maritime Networks ha Ancient South Asia",
-    "description": "Ka exploration ha confluence ha land, sea, bad culture through archaeological evidence, geological formations, bad textual traditions ki shaphang ka Indian Ocean world."
+    "description": "Ka exploration ha confluence ha land, sea, bad culture through archaeological evidence, geological formations, bad textual traditions ki shaphang ka Indian Ocean world.",
+    "subtitle2": "Sangam - Ka jingieit pynkhah ruh",
+    "description2": "Ka pynkhana ha land, sea bad culture through archaeological evidence, geological formations bad textual traditions ki bnah ka Indian Ocean world ha ka jingieit pynkhah ruh."
   },
   "themes": {
     "ancientIndia": "Ancient India",
+    "ancientIndiaDesc": "हरिहरो हरिः | Ka purani India jingieit bad niam",
     "geology": "Geology & Deep Time",
+    "geologyDesc": "Ka jingthaw ha ka bnei bad ka kharai kti",
     "empires": "Empires & Exchange",
+    "empiresDesc": "Ka jingsngewbha bad ka jingwad pynwad", 
     "scripts": "Scripts & Inscriptions",
-    "indianOcean": "Indian Ocean World"
+    "scriptsDesc": "प्राचीन लिपि | Ka purani akhar bad ka jingieit ka long",
+    "indianOcean": "Indian Ocean World",
+    "indianOceanDesc": "Ka lamlynti sngewbha ha ka um bad ka jingpynwad niam"
   },
   "research": {
-    "submitResearch": "Submit Research",
-    "partnerWithUs": "Partner With Us",
-    "supportResearch": "Support Research",
-    "guidelines": "Submission Guidelines",
-    "process": "Review Process",
-    "criteria": "Academic Criteria"
+    "submitResearch": "Pynei ka pynkadir",
+    "partnerWithUs": "Jop ngaka",
+    "supportResearch": "Pynkshai ka pynkadir",
+    "guidelines": "Ka lamlynti pynei",
+    "process": "Ka lamlynti khasi",
+    "criteria": "Ka jingmut ha jingjait"
+  },
+  "sections": {
+    "recentResearch": "Ka pynkadir thymnoh",
+    "featuredCollections": "Ka thaw pynbna",
+    "researchThemes": "U jingsngew pynkadir",
+    "sacredPaths": "पवित्र पथ | Ka lamlynti blei",
+    "allResearch": "Kylla ka pynkadir"
+  },
+  "collections": {
+    "scriptsTradeEmpire": "U akhar bad u raj sngewbha",
+    "scriptsTradeEmpireItems": "Kandahar jinglong, Kutai Yupa jinglong, Muziris lamlynti sngewbha",
+    "scriptsTradeEmpireDesc": "Ka pynkadir ha ka sngewbha network purani bad ka jingpynwad akhar",
+    "oceanNetworks": "U jingthaw ha ka um",
+    "oceanNetworksItems": "Bujang Valley, Nagapattinam, maritime archaeology",
+    "oceanNetworksDesc": "Ka sngewbha bad niam jingthaw ha ka Indian Ocean purani"
   }
 }
