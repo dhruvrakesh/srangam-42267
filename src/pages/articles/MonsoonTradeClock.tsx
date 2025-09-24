@@ -4,6 +4,7 @@ import { IconMonsoon } from '@/components/icons';
 import { MonsoonMap } from '@/components/articles/MonsoonMap';
 import { PepperCargoTable } from '@/components/articles/PepperCargoTable';
 import { ResponsiveImage } from '@/components/ui/ResponsiveImage';
+import { monsoonTradeClock } from '@/data/articles/monsoon-trade-clock';
 
 const content = `The Indian Ocean is unusual: a **reversing wind machine**. Summer westerlies carry ships east; winter easterlies bring them home. By the first centuries CE, pilots and merchants timed departures to this rhythm, turning climate into a schedule.
 
@@ -33,10 +34,10 @@ Maritime India didn't ride the world by conquering distance with force—it **co
 export default function MonsoonTradeClock() {
   return (
     <ArticlePage
-      title="Riding the Monsoon: How Winds Became an Engine of Commerce"
-      dek="A logistics revolution long before steam—sailing the Arabian Sea on a seasonal clock."
-      content={content}
-      tags={["Indian Ocean World", "Trade", "Monsoon"]}
+      title={monsoonTradeClock.title}
+      dek={monsoonTradeClock.dek}
+      content={monsoonTradeClock.content}
+      tags={monsoonTradeClock.tags}
       icon={IconMonsoon}
       readTime={8}
       author="Prof. Ahmed Hassan"

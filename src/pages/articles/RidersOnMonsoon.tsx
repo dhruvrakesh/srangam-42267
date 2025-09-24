@@ -8,6 +8,7 @@ import { NavigationBibliography } from "@/components/articles/NavigationBibliogr
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ridersOnMonsoon } from '@/data/articles/riders-on-monsoon';
 
 const content = `
 ## Monsoon Masters of the Ancient World
@@ -230,10 +231,10 @@ export default function RidersOnMonsoon() {
 
   return (
     <ArticlePage
-      title="Riders on the Monsoon: Indigenous Navigation and Maritime Knowledge in Southern India"
-      dek="Long before European exploration, South Asian navigators developed sophisticated monsoon-based navigation systems. Recent palm-leaf manuscript discoveries reveal the scientific depth of indigenous maritime knowledge that enabled Indian Ocean trade networks millennia before Hippalus or da Gama."
-      content={content}
-      tags={["Navigation", "Indigenous Knowledge", "Monsoon", "Palm-leaf Manuscripts", "Ancient Science"]}
+      title={ridersOnMonsoon.title}
+      dek={ridersOnMonsoon.dek}
+      content={ridersOnMonsoon.content}
+      tags={ridersOnMonsoon.tags}
       icon={IconMonsoon}
       readTime={16}
       author="Nartiang Foundation"

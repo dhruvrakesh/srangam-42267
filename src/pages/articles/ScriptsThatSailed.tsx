@@ -6,6 +6,7 @@ import { HermapollonCargo } from '@/components/articles/HermapollonCargo';
 import { SeasonalWindPattern } from '@/components/articles/SeasonalWindPattern';
 import { CulturalDiffusionMap } from '@/components/articles/CulturalDiffusionMap';
 import { FestivalCalendar } from '@/components/articles/FestivalCalendar';
+import { scriptsThatSailed } from '@/data/articles/scripts-that-sailed';
 
 const content = `From the earliest times, Indian Ocean mariners lived by the calendar of the monsoons. Every year, the winds reverse: summer brings the Southwest Monsoon (blowing northeast from Africa/Arabia toward India–Southeast Asia) and winter the Northeast Monsoon (blowing southwest back toward Africa). This seasonal "clock" knit together East Africa, Arabia, India and Southeast Asia in regular trade. 
 
@@ -58,10 +59,10 @@ Monuments like the temples of Cambodia, Indonesia and Bali stand as silent beaco
 export default function ScriptsThatSailed() {
   return (
     <ArticlePage
-      title="Riding the Monsoon Winds: Commerce, Culture and the Ancient Indian Ocean"
-      dek="How seasonal wind patterns powered the world's first globalized trade network, shaping cultures from East Africa to Southeast Asia"
-      content={content}
-      tags={["Indian Ocean World", "Maritime Trade", "Monsoon Navigation", "Cultural Exchange", "Ancient Globalization"]}
+      title={scriptsThatSailed.title}
+      dek={scriptsThatSailed.dek}
+      content={scriptsThatSailed.content}
+      tags={scriptsThatSailed.tags}
       icon={IconMonsoon}
       readTime={28}
       author="Kanika Rakesh"

@@ -2,6 +2,7 @@ import React from 'react';
 import { ArticlePage } from '@/components/articles/ArticlePage';
 import { IconPort } from '@/components/icons';
 import { ResponsiveImage } from '@/components/ui/ResponsiveImage';
+import { cholaNavalRaid } from '@/data/articles/chola-naval-raid';
 
 const content = `In 1025 CE, **Rajendra I** hit the Srivijayan nexus across the Straits of Malacca. The action was surgical—harbor targets, shipping, tribute nodes—and strategic: a signal that the Cholas could project **sea power** along their trading arteries.
 
@@ -78,10 +79,10 @@ const ConvoyLanesComponent = () => (
 export default function CholaNavalRaid() {
   return (
     <ArticlePage
-      title="Rajendra's Ocean: The Chola Strike on Srivijaya, 1025 CE"
-      dek="A hard-power raid in a sea network bound by soft-power ties."
-      content={content}
-      tags={["Empires & Exchange", "Chola", "Straits of Malacca"]}
+      title={cholaNavalRaid.title}
+      dek={cholaNavalRaid.dek}
+      content={cholaNavalRaid.content}
+      tags={cholaNavalRaid.tags}
       icon={IconPort}
       readTime={7}
       author="Prof. Naval History"

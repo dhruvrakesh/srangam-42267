@@ -13,6 +13,7 @@ import romanAmphora from '@/assets/roman-amphora_archaeology_4x3_v1.jpg';
 import romanCoins from '@/assets/roman-coins_numismatics_3x2_v1.jpg';
 import monsoonRoutes from '@/assets/monsoon-routes_historical-map_16x9_v1.jpg';
 import berenikeArtifacts from '@/assets/berenike-artifacts_archaeology_4x3_v1.jpg';
+import { pepperAndBullion } from '@/data/articles/pepper-and-bullion';
 
 const content = `India's maritime trade in antiquity was legendary, forging links across oceans long before the age of European exploration. Central to this vast exchange was the humble peppercorn – the "black gold" that drew traders to India's shores for centuries. From the fabled port of Muziris on India's southwest coast, fleets laden with spices set sail across the Arabian Sea, binding South India with the Roman world in a thriving commerce.
 
@@ -64,10 +65,10 @@ For India, the pepper trade enriched port cities and contributed to a thriving o
 export default function PepperAndBullion() {
   return (
     <ArticlePage
-      title="Pepper and Bullion: The Malabar–Red Sea Circuit"
-      dek="Tracing the spice networks across the Arabian Sea that connected ancient India with the Roman world—a story of monsoon winds, merchant empires, and the 'black gold' that changed history."
-      content={content}
-      tags={["Empires & Exchange", "Malabar", "Roman World", "Maritime Trade", "Ancient Economics"]}
+      title={pepperAndBullion.title}
+      dek={pepperAndBullion.dek}
+      content={pepperAndBullion.content}
+      tags={pepperAndBullion.tags}
       icon={IconPort}
       readTime={18}
       author="Nartiang Foundation"

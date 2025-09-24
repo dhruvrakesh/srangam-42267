@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { IconScript } from '@/components/icons';
 import { ResponsiveImage } from '@/components/ui/ResponsiveImage';
+import { kutaiYupaBorneo } from '@/data/articles/kutai-yupa-borneo';
 
 const PillarSilhouetteComponent = () => {
   const pillars = Array.from({ length: 7 }, (_, i) => i + 1);
@@ -78,10 +79,10 @@ The pillars mention King Mūlavarman and his father Aśvavarman, rulers of the K
 export default function KutaiYupaBorneo() {
   return (
     <ArticlePage
-      title="Rainforest Prashastis: The Kutai Yūpa Inscriptions of Borneo"
-      dek="Sanskrit verse and Vedic ritual vocabulary on sacrificial posts at the edge of the equator."
-      content={content}
-      tags={["Scripts & Inscriptions", "Sanskrit", "SE Asia"]}
+      title={kutaiYupaBorneo.title}
+      dek={kutaiYupaBorneo.dek}
+      content={kutaiYupaBorneo.content}
+      tags={kutaiYupaBorneo.tags}
       icon={IconScript}
       readTime={8}
       author="Dr. Epigraphic Studies"
