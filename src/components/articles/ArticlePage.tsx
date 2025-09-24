@@ -139,60 +139,14 @@ const ArticleContent = React.memo(({
 
         {/* Enhanced Article Content */}
         <div className="prose prose-lg max-w-none relative z-10">
-          <div className="article-content">
+          <div className="article-content space-y-6">
             <EnhancedMultilingualText 
               content={content} 
               enableCulturalTerms={true}
               as="div"
-              className="space-y-6"
+              className="prose prose-lg max-w-none [&>h2]:font-serif [&>h2]:text-2xl [&>h2]:font-bold [&>h2]:text-burgundy [&>h2]:mt-12 [&>h2]:mb-6 [&>h2]:pb-3 [&>h2]:border-b-2 [&>h2]:border-burgundy/30 [&>h3]:font-serif [&>h3]:text-xl [&>h3]:font-semibold [&>h3]:text-saffron [&>h3]:mt-8 [&>h3]:mb-4 [&>p]:text-foreground [&>p]:leading-relaxed [&>p]:mb-6 [&>p]:text-lg [&>blockquote]:border-l-4 [&>blockquote]:border-burgundy/60 [&>blockquote]:pl-6 [&>blockquote]:my-8 [&>blockquote]:italic [&>blockquote]:text-charcoal/80 [&>blockquote]:bg-sandalwood/40 [&>blockquote]:py-6 [&>blockquote]:rounded-r-lg [&>blockquote]:backdrop-blur-sm [&>ul]:list-none [&>ul]:pl-0 [&>ul]:mb-6 [&>ul]:space-y-3 [&>li]:flex [&>li]:items-start [&>li]:gap-3 [&>li]:text-foreground [&>li]:leading-relaxed [&>strong]:font-semibold [&>strong]:text-burgundy [&>strong]:bg-saffron/20 [&>strong]:px-1 [&>strong]:rounded"
             />
           </div>
-          <ReactMarkdown
-            components={{
-              h2: ({ children }) => (
-                <h2 className="font-serif text-2xl font-bold text-burgundy mt-12 mb-6 pb-3 border-b-2 border-burgundy/30">
-                  {children}
-                </h2>
-              ),
-              h3: ({ children }) => (
-                <h3 className="font-serif text-xl font-semibold text-saffron mt-8 mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-saffron rounded-full"></span>
-                  {children}
-                </h3>
-              ),
-              p: ({ children }) => (
-                <p className="text-foreground leading-relaxed mb-6 text-lg">
-                  {children}
-                </p>
-              ),
-              blockquote: ({ children }) => (
-                <blockquote className="border-l-4 border-burgundy/60 pl-6 my-8 italic text-charcoal/80 bg-sandalwood/40 py-6 rounded-r-lg backdrop-blur-sm">
-                  <div className="relative">
-                    <div className="absolute -top-2 -left-2 text-burgundy/40 text-6xl font-serif">"</div>
-                    {children}
-                  </div>
-                </blockquote>
-              ),
-              ul: ({ children }) => (
-                <ul className="list-none pl-0 mb-6 space-y-3">
-                  {children}
-                </ul>
-              ),
-              li: ({ children }) => (
-                <li className="flex items-start gap-3 text-foreground leading-relaxed">
-                  <span className="w-2 h-2 bg-burgundy rounded-full mt-3 flex-shrink-0"></span>
-                  <div className="flex-1">{children}</div>
-                </li>
-              ),
-              strong: ({ children }) => (
-                <strong className="font-semibold text-burgundy bg-saffron/20 px-1 rounded">
-                  {children}
-                </strong>
-              ),
-            }}
-          >
-            {typeof content === 'string' ? content : ''}
-          </ReactMarkdown>
 
           {/* Enhanced Data Components */}
           {dataComponents.length > 0 && (
