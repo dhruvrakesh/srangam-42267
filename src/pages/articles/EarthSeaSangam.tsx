@@ -1,5 +1,6 @@
 import { ArticlePage } from '@/components/articles/ArticlePage';
 import { IconBasalt } from '@/components/icons';
+import { earthSeaSangam } from '@/data/articles/earth-sea-sangam';
 import { ResponsiveImage } from '@/components/ui/ResponsiveImage';
 import { PlateSpeedChart } from '@/components/articles/PlateSpeedChart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -365,10 +366,10 @@ const SeaLevelChart = () => (
 export default function EarthSeaSangam() {
   return (
     <ArticlePage
-      title="Earth, Sea and Sangam: Geological Transformations and the Ancient Ports of South India"
-      dek="How tectonic forces, river floods, and rising seas shaped—and reshaped—the maritime geography of Southern India. The third paper in our Maritime Memories trilogy."
-      content={content}
-      tags={["Geology & Deep Time", "Maritime Networks", "Coastal Change", "Ancient Ports"]}
+      title={earthSeaSangam.title}
+      dek={earthSeaSangam.dek}
+      content={earthSeaSangam.content}
+      tags={earthSeaSangam.tags}
       icon={IconBasalt}
       readTime={16}
       author="Nartiang Foundation"

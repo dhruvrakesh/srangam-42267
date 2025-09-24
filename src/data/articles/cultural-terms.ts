@@ -1,7 +1,10 @@
 import { CulturalTerm } from '@/types/multilingual';
 
 // Comprehensive database of dharmic and bharatiya terms with cultural context
+import { enhancedCulturalTerms } from './enhanced-cultural-terms';
+
 export const culturalTermsDatabase: Record<string, CulturalTerm> = {
+  ...enhancedCulturalTerms,
   'dharma': {
     term: 'dharma',
     translations: {
@@ -16,6 +19,18 @@ export const culturalTermsDatabase: Record<string, CulturalTerm> = {
         transliteration: 'dharmam',
         etymology: 'சமஸ்கிருத dhṛ (நிலைநிறுத்த, பேணுதல்)',
         culturalContext: 'நீதிக்கடமை, இயற்கை விதி, பிரபஞ்ச ஒழுங்கு என்ற அடிப்படைக் கொள்கை'
+      },
+      hi: {
+        translation: 'धर्म',
+        transliteration: 'dharma',
+        etymology: 'संस्कृत धृ (धारणा करना, पालन करना) से',
+        culturalContext: 'न्याय, कर्तव्य, प्राकृतिक नियम और ब्रह्मांडीय व्यवस्था का मूलभूत सिद्धांत'
+      },
+      pa: {
+        translation: 'ਧਰਮ',
+        transliteration: 'dharam',
+        etymology: 'ਸੰਸਕ੍ਰਿਤ ਧ੃ (ਧਾਰਨ ਕਰਨਾ, ਪਾਲਣ ਕਰਨਾ) ਤੋਂ',
+        culturalContext: 'ਨਿਆਂ, ਫਰਜ਼, ਕੁਦਰਤੀ ਨਿਯਮ ਅਤੇ ਬ੍ਰਹਿਮੰਡੀ ਵਿਵਸਥਾ ਦਾ ਬੁਨਿਆਦੀ ਸਿਧਾਂਤ'
       }
     }
   },
@@ -33,6 +48,18 @@ export const culturalTermsDatabase: Record<string, CulturalTerm> = {
         transliteration: 'yugam',
         etymology: 'சமஸ்கிருத yuga (இணைப்பு, காலம்)',
         culturalContext: 'இந்து அண்ட சிந்தனையில் காலத்தின் மாபெரும் சுழற்சிகள்'
+      },
+      hi: {
+        translation: 'युग',
+        transliteration: 'yuga',
+        etymology: 'संस्कृत युग (जुड़ना, काल) से',
+        culturalContext: 'हिंदू ब्रह्मांड विज्ञान में समय के विशाल चक्र'
+      },
+      pa: {
+        translation: 'ਯੁਗ',
+        transliteration: 'yug',
+        etymology: 'ਸੰਸਕ੍ਰਿਤ ਯੁਗ (ਜੋੜਨਾ, ਸਮਾਂ) ਤੋਂ',
+        culturalContext: 'ਹਿੰਦੂ ਬ੍ਰਹਿਮੰਡ ਵਿਗਿਆਨ ਵਿੱਚ ਸਮੇਂ ਦੇ ਵਿਸ਼ਾਲ ਚੱਕਰ'
       }
     }
   },

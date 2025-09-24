@@ -2,6 +2,7 @@ import React from 'react';
 import { ArticlePage } from '@/components/articles/ArticlePage';
 import { IconBasalt } from '@/components/icons';
 import { PlateSpeedChart } from '@/components/articles/PlateSpeedChart';
+import { gondwanaToHimalaya } from '@/data/articles/gondwana-to-himalaya';
 
 const content = `> IMAGE SLOT (Himalaya skyline)
 
@@ -54,10 +55,10 @@ const DeccanStepsComponent = () => (
 export default function GondwanaToHimalaya() {
   return (
     <ArticlePage
-      title="India on the Move: From Gondwana to the Himalaya"
-      dek="A plate that sprinted, a flood basalt that roared, a mountain range still rising."
-      content={content}
-      tags={["Geology & Deep Time", "Plate Tectonics", "Deccan"]}
+      title={gondwanaToHimalaya.title}
+      dek={gondwanaToHimalaya.dek}
+      content={gondwanaToHimalaya.content}
+      tags={gondwanaToHimalaya.tags}
       icon={IconBasalt}
       readTime={10}
       author="Dr. Geological Survey"

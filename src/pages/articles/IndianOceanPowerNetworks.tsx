@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArticlePage } from '@/components/articles/ArticlePage';
 import { IconPort, IconMonsoon, IconDharmaChakra } from '@/components/icons';
+import { indianOceanPowerNetworks } from '@/data/articles/indian-ocean-power-networks';
 import { ResponsiveImage } from '@/components/ui/ResponsiveImage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -234,10 +235,10 @@ export default function IndianOceanPowerNetworks() {
       <ContextualSidebar items={sidebarItems} position="right" />
       
       <ArticlePage
-        title="Indian Ocean Power Networks: From the Malabar Spice Circuit to the Chola Expedition"
-        dek="How trade in spices and bullion fueled ancient economies, and how medieval Indian naval expeditions projected power across the waves—revealing the interconnected world of the pre-modern Indian Ocean."
-        content={content}
-        tags={["Empires & Exchange", "Maritime Networks", "Ancient Economics", "Naval History", "Cultural Exchange"]}
+        title={indianOceanPowerNetworks.title}
+        dek={indianOceanPowerNetworks.dek}
+        content={indianOceanPowerNetworks.content}
+        tags={indianOceanPowerNetworks.tags}
         icon={IconDharmaChakra}
         readTime={24}
         author="Nartiang Foundation"
