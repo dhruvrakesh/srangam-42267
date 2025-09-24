@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { ArticleCard } from "@/components/ui/ArticleCard";
 import { Button } from "@/components/ui/button";
 import { ARTICLES } from "@/data/siteData";
@@ -7,51 +8,53 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Waves, Mountain, BookOpen, Map, Users } from "lucide-react";
 
 export default function Home() {
+  const { t } = useTranslation();
+  
   // Memoize expensive calculations for performance
   const featuredArticles = useMemo(() => ARTICLES.slice(0, 3), []);
   
   const themes = useMemo(() => [
     {
-      title: "Ancient India",
-      description: "सनातन परम्परा - Archaeological and textual evidence for early Indian Ocean trade networks",
+      title: t('themes.ancientIndia'),
+      description: t('themes.ancientIndiaDesc'),
       path: "/themes/ancient-india",
       icon: IconSarnathLion,
       color: "text-saffron",
       bgPattern: "mandala-bg"
     },
     {
-      title: "Indian Ocean World", 
-      description: "सागर संस्कृति - Monsoon rhythms and maritime cultures across the vast oceanic space",
+      title: t('themes.indianOcean'), 
+      description: t('themes.indianOceanDesc'),
       path: "/themes/indian-ocean-world",
       icon: IconConch,
       color: "text-peacock-blue",
       bgPattern: "chakra-pattern"
     },
     {
-      title: "Scripts & Inscriptions",
-      description: "शिलालेख विद्या - Reading stone voices: epigraphy across languages and centuries",
+      title: t('themes.scripts'),
+      description: t('themes.scriptsDesc'),
       path: "/themes/scripts-inscriptions", 
       icon: IconOm,
       color: "text-indigo-dharma",
       bgPattern: "dharma-scroll"
     },
     {
-      title: "Geology & Deep Time",
-      description: "कालचक्र - Tectonic histories and the geological foundations of cultural exchange",
+      title: t('themes.geology'),
+      description: t('themes.geologyDesc'),
       path: "/themes/geology-deep-time",
       icon: IconBasalt,
       color: "text-terracotta",
       bgPattern: "mandala-bg"
     },
     {
-      title: "Empires & Exchange",
-      description: "राजधर्म - Political networks and economic flows from local to imperial scales",
+      title: t('themes.empires'),
+      description: t('themes.empiresDesc'),
       path: "/themes/empires-exchange",
       icon: IconDharmaChakra,
       color: "text-turmeric",
       bgPattern: "chakra-pattern"
     }
-  ], []);
+  ], [t]);
 
   return (
     <div className="bg-background relative overflow-hidden">
@@ -89,25 +92,23 @@ export default function Home() {
             <div className="animate-fade-in">
               {/* Sanskrit blessing above title */}
               <div className="text-saffron/80 text-lg mb-4 font-serif">
-                ॐ सरस्वत्यै नमः
+                {t('hero.sanskritBlessing')}
               </div>
               
               <h1 className="font-serif text-5xl lg:text-7xl font-bold text-sandalwood mb-6 drop-shadow-2xl tracking-wide">
-                Srangam
+                {t('hero.title')}
               </h1>
               
               {/* Sanskrit subtitle */}
               <div className="text-turmeric/90 text-xl mb-4 font-serif">
-                सागर इतिहास संग्रह
+                {t('hero.sanskritSubtitle')}
               </div>
               
               <h2 className="font-serif text-2xl lg:text-3xl text-sandalwood/95 mb-8 max-w-3xl mx-auto drop-shadow-lg font-medium">
-                Histories of the Indian Ocean World
+                {t('hero.subtitle')}
               </h2>
               <p className="text-lg lg:text-xl text-sandalwood/85 mb-12 max-w-2xl mx-auto leading-relaxed drop-shadow-md font-light">
-                धर्म, अर्थ, काम, मोक्ष — Exploring the interconnected histories through archaeology, 
-                epigraphy, and deep time perspectives. From monsoon cycles to stone inscriptions, 
-                from spice routes to tectonic drift across the sacred waters.
+                {t('hero.description')}
               </p>
             </div>
             
@@ -116,13 +117,13 @@ export default function Home() {
               <Button asChild size="lg" className="bg-saffron hover:bg-saffron-light text-charcoal-om border-0 shadow-lg hover:shadow-saffron/20 transition-all duration-200 hover:scale-[1.02]">
                 <Link to="/themes/ancient-india">
                   <IconSarnathLion size={20} className="mr-2" />
-                  यात्रा प्रारम्भ | Begin Journey
+                  {t('hero.beginJourney')}
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="border-2 border-sandalwood text-sandalwood hover:bg-sandalwood hover:text-charcoal-om shadow-lg hover:shadow-sandalwood/20 transition-all duration-200 hover:scale-[1.02] backdrop-blur-sm bg-indigo-dharma/20">
                 <Link to="/about">
                   <IconLotus size={20} className="mr-2" />
-                  About the Project
+                  {t('hero.aboutProject')}
                 </Link>
               </Button>
             </div>
@@ -146,10 +147,10 @@ export default function Home() {
               <IconConch size={48} className="text-peacock-blue om-pulse" />
             </div>
             <h2 className="font-serif text-3xl font-bold text-foreground mb-4">
-              नवीन अनुसंधान | Recent Research
+              {t('sections.recentResearch')}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Latest findings from our ongoing research into Indian Ocean histories through dharmic lens
+              {t('sections.recentResearchDesc')}
             </p>
           </div>
 
@@ -165,7 +166,7 @@ export default function Home() {
             <Button asChild variant="outline" size="lg" className="border-2 border-saffron text-saffron hover:bg-saffron hover:text-charcoal-om transition-all duration-200 hover:scale-[1.02]">
               <Link to="/field-notes">
                 <IconLotus size={20} className="mr-2" />
-                सर्वे अध्ययनम् | View All Research
+                {t('sections.viewAllResearch')}
               </Link>
             </Button>
           </div>
@@ -181,10 +182,10 @@ export default function Home() {
               <IconScript size={48} className="text-turmeric animate-pulse-gentle" />
             </div>
             <h2 className="font-serif text-3xl font-bold text-foreground mb-4">
-              विशेष संग्रह | Featured Collections
+              {t('sections.featuredCollections')}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Curated research collections exploring interconnected themes across space and time
+              {t('sections.featuredCollectionsDesc')}
             </p>
           </div>
 
@@ -202,14 +203,13 @@ export default function Home() {
                   </div>
                 </div>
                 <h3 className="font-serif text-xl font-bold text-foreground group-hover:text-saffron transition-colors mb-2 text-center">
-                  लेख संग्रह | Scripts & Trade Empire
+                  {t('collections.scriptsTradeTitle')}
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4 text-center">
-                  Kandahar Edicts • Kutai Yūpa • Muziris Trade Corridors
+                  {t('collections.scriptsTradeItems')}
                 </p>
                 <p className="text-sm text-muted-foreground leading-relaxed text-center">
-                  Exploring the nexus of script, stone, and commerce across ancient trade networks from 
-                  Afghanistan to Borneo, revealing the cultural foundations of economic exchange.
+                  {t('collections.scriptsTradeDesc')}
                 </p>
                 <div className="flex justify-center mt-4">
                   <ArrowRight size={20} className="text-saffron group-hover:translate-x-1 transition-transform" />
@@ -231,14 +231,13 @@ export default function Home() {
                   </div>
                 </div>
                 <h3 className="font-serif text-xl font-bold text-foreground group-hover:text-peacock-blue transition-colors mb-2 text-center">
-                  सागर जाल | Ocean Networks
+                  {t('collections.oceanNetworksTitle')}
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4 text-center">
-                  Bujang Valley • Nagapattinam • Maritime Archaeology
+                  {t('collections.oceanNetworksItems')}
                 </p>
                 <p className="text-sm text-muted-foreground leading-relaxed text-center">
-                  Mapping the maritime connections that bound ancient Asia, from the Malacca Straits 
-                  to the Coromandel Coast, through ports, guilds, and monsoon rhythms.
+                  {t('collections.oceanNetworksDesc')}
                 </p>
                 <div className="flex justify-center mt-4">
                   <ArrowRight size={20} className="text-peacock-blue group-hover:translate-x-1 transition-transform" />

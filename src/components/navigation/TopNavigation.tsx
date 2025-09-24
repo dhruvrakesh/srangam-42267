@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Search, Menu, X, ChevronDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
@@ -14,6 +15,7 @@ import { Logo } from "@/components/Logo";
 import { LanguageSwitcher } from "@/components/language";
 
 export function TopNavigation() {
+  const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -22,18 +24,18 @@ export function TopNavigation() {
   const isActive = (path: string) => location.pathname === path;
 
   const themeLinks = [
-    { title: "Ancient India", path: "/themes/ancient-india" },
-    { title: "Indian Ocean World", path: "/themes/indian-ocean-world" },
-    { title: "Scripts & Inscriptions", path: "/themes/scripts-inscriptions" },
-    { title: "Geology & Deep Time", path: "/themes/geology-deep-time" },
-    { title: "Empires & Exchange", path: "/themes/empires-exchange" }
+    { title: t('themes.ancientIndia'), path: "/themes/ancient-india" },
+    { title: t('themes.indianOcean'), path: "/themes/indian-ocean-world" },
+    { title: t('themes.scripts'), path: "/themes/scripts-inscriptions" },
+    { title: t('themes.geology'), path: "/themes/geology-deep-time" },
+    { title: t('themes.empires'), path: "/themes/empires-exchange" }
   ];
 
   const mainNavItems = [
-    { title: "Field Notes", path: "/field-notes" },
-    { title: "Maps & Data", path: "/maps-data" },
-    { title: "Reading Room", path: "/reading-room" },
-    { title: "About", path: "/about" }
+    { title: t('navigation.fieldNotes'), path: "/field-notes" },
+    { title: t('navigation.maps'), path: "/maps-data" },
+    { title: t('navigation.readingRoom'), path: "/reading-room" },
+    { title: t('navigation.about'), path: "/about" }
   ];
 
   return (
@@ -63,12 +65,12 @@ export function TopNavigation() {
                   isActive('/') ? 'text-ocean' : 'text-foreground'
                 }`}
               >
-                Home
+                {t('navigation.home')}
               </Link>
 
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-foreground hover:text-saffron transition-colors">
-                  संग्रह | Collections <ChevronDown size={14} />
+                  {t('navigation.collections')} <ChevronDown size={14} />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-64 bg-background border-border z-50">
                   <DropdownMenuItem asChild>
@@ -76,7 +78,7 @@ export function TopNavigation() {
                       to="/batch/muziris-kutai-ashoka"
                       className="text-sm text-foreground hover:text-saffron transition-colors"
                     >
-                      लेख संग्रह | Scripts & Trade Empire
+                      {t('navigation.scriptsTradeEmpire')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -84,12 +86,12 @@ export function TopNavigation() {
                       to="/batch/bujang-nagapattinam-ocean"
                       className="text-sm text-foreground hover:text-saffron transition-colors"
                     >
-                      सागर जाल | Ocean Networks
+                      {t('navigation.oceanNetworks')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem disabled>
                     <span className="text-sm text-muted-foreground">
-                      पुरातत्व दर्शन | Archaeological Insights (Coming Soon)
+                      {t('navigation.archaeologicalInsights')}
                     </span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -97,7 +99,7 @@ export function TopNavigation() {
 
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-foreground hover:text-ocean transition-colors">
-                  Themes <ChevronDown size={14} />
+                  {t('navigation.themes')} <ChevronDown size={14} />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56 bg-background border-border z-50">
                   {themeLinks.map((theme) => (
@@ -134,7 +136,7 @@ export function TopNavigation() {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
                   <Input
                     type="text"
-                    placeholder="Search articles..."
+                    placeholder={t('navigation.searchPlaceholder')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onFocus={() => setIsSearchFocused(true)}
@@ -177,11 +179,11 @@ export function TopNavigation() {
                 className="block px-3 py-2 text-sm font-medium text-foreground hover:text-ocean transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Home
+                {t('navigation.home')}
               </Link>
               
               <div className="px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Themes
+                {t('navigation.themes')}
               </div>
               {themeLinks.map((theme) => (
                 <Link

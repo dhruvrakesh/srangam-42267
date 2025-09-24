@@ -1,13 +1,20 @@
 {
   "navigation": {
     "home": "Home",
-    "articles": "Articles",
+    "articles": "Articles", 
     "themes": "Themes",
     "research": "Research",
     "about": "About",
     "maps": "Maps & Data",
     "partnership": "Partnership",
-    "support": "Support Research"
+    "support": "Support Research",
+    "fieldNotes": "Field Notes",
+    "readingRoom": "Reading Room",
+    "collections": "संग्रह | Collections",
+    "scriptsTradeEmpire": "लेख संग्रह | Scripts & Trade Empire",
+    "oceanNetworks": "सागर जाल | Ocean Networks",
+    "archaeologicalInsights": "पुरातत्व दर्शन | Archaeological Insights (Coming Soon)",
+    "searchPlaceholder": "Search articles..."
   },
   "common": {
     "readMore": "Read More",
@@ -23,22 +30,50 @@
   },
   "hero": {
     "title": "Srangam",
-    "subtitle": "The Maritime Networks of Ancient South Asia",
-    "description": "Exploring the confluence of land, sea, and culture through archaeological evidence, geological formations, and textual traditions that shaped the Indian Ocean world."
+    "sanskritBlessing": "ॐ सरस्वत्यै नमः",
+    "sanskritSubtitle": "सागर इतिहास संग्रह",
+    "subtitle": "Histories of the Indian Ocean World",
+    "description": "धर्म, अर्थ, काम, मोक्ष — Exploring the interconnected histories through archaeology, epigraphy, and deep time perspectives. From monsoon cycles to stone inscriptions, from spice routes to tectonic drift across the sacred waters.",
+    "beginJourney": "यात्रा प्रारम्भ | Begin Journey",
+    "aboutProject": "About the Project"
   },
   "themes": {
     "ancientIndia": "Ancient India",
-    "geology": "Geology & Deep Time",
+    "ancientIndiaDesc": "सनातन परम्परा - Archaeological and textual evidence for early Indian Ocean trade networks",
+    "geology": "Geology & Deep Time", 
+    "geologyDesc": "कालचक्र - Tectonic histories and the geological foundations of cultural exchange",
     "empires": "Empires & Exchange",
+    "empiresDesc": "राजधर्म - Political networks and economic flows from local to imperial scales",
     "scripts": "Scripts & Inscriptions",
-    "indianOcean": "Indian Ocean World"
+    "scriptsDesc": "शिलालेख विद्या - Reading stone voices: epigraphy across languages and centuries",
+    "indianOcean": "Indian Ocean World",
+    "indianOceanDesc": "सागर संस्कृति - Monsoon rhythms and maritime cultures across the vast oceanic space"
   },
   "research": {
     "submitResearch": "Submit Research",
-    "partnerWithUs": "Partner With Us",
+    "partnerWithUs": "Partner With Us", 
     "supportResearch": "Support Research",
     "guidelines": "Submission Guidelines",
     "process": "Review Process",
     "criteria": "Academic Criteria"
+  },
+  "sections": {
+    "recentResearch": "नवीन अनुसंधान | Recent Research",
+    "recentResearchDesc": "Latest findings from our ongoing research into Indian Ocean histories through dharmic lens",
+    "featuredCollections": "विशेष संग्रह | Featured Collections", 
+    "featuredCollectionsDesc": "Curated research collections exploring interconnected themes across space and time",
+    "researchThemes": "अनुसंधान विषयाः | Research Themes",
+    "researchThemesDesc": "Explore our interdisciplinary approach to Indian Ocean studies through dharmic wisdom",
+    "sacredPaths": "त्रिमार्ग | Sacred Paths",
+    "sacredPathsDesc": "Three pillars of knowledge in the dharmic tradition",
+    "viewAllResearch": "सर्वे अध्ययनम् | View All Research"
+  },
+  "collections": {
+    "scriptsTradeTitle": "लेख संग्रह | Scripts & Trade Empire",
+    "scriptsTradeItems": "Kandahar Edicts • Kutai Yūpa • Muziris Trade Corridors",
+    "scriptsTradeDesc": "Exploring the nexus of script, stone, and commerce across ancient trade networks from Afghanistan to Borneo, revealing the cultural foundations of economic exchange.",
+    "oceanNetworksTitle": "सागर जाल | Ocean Networks",
+    "oceanNetworksItems": "Bujang Valley • Nagapattinam • Maritime Archaeology", 
+    "oceanNetworksDesc": "Mapping the maritime connections that bound ancient Asia, from the Malacca Straits to the Coromandel Coast, through ports, guilds, and monsoon rhythms."
   }
 }
