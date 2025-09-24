@@ -1,7 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
+import { useTranslation } from 'react-i18next';
 import { TagChip } from '@/components/ui/TagChip';
+import { EnhancedMultilingualText } from '@/components/language/EnhancedMultilingualText';
+import { MultilingualContent } from '@/types/multilingual';
 import { cn } from '@/lib/utils';
 import { ArticleProvider, useReadingProgress } from '@/components/context/ArticleContext';
 import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
@@ -22,10 +25,10 @@ const ReadingProgressBar = React.memo(() => {
 ReadingProgressBar.displayName = 'ReadingProgressBar';
 
 interface ArticlePageProps {
-  title: string;
-  dek: string;
-  content: string;
-  tags: string[];
+  title: MultilingualContent | string;
+  dek: MultilingualContent | string;
+  content: MultilingualContent | string;
+  tags: (MultilingualContent | string)[];
   icon: React.ComponentType<{ className?: string; size?: number }>;
   readTime?: number;
   author?: string;
@@ -44,6 +47,7 @@ const ArticleContent = React.memo(({
   date, 
   dataComponents = []
 }: ArticlePageProps) => {
+  const { t } = useTranslation();
   const { mark, measure } = usePerformanceMonitor({ 
     componentName: 'ArticlePage',
     trackMemory: true 
@@ -65,11 +69,7 @@ const ArticleContent = React.memo(({
         <div className="absolute inset-0 bg-gradient-to-b from-cream/40 via-sandalwood/30 to-cream/40 rounded-3xl -z-10" />
         <div className={cn(
           "absolute inset-0 opacity-40 rounded-3xl -z-10",
-          title.toLowerCase().includes('maritime') || title.toLowerCase().includes('ocean') || title.toLowerCase().includes('monsoon') ? 'ocean-waves' :
-          title.toLowerCase().includes('temple') || title.toLowerCase().includes('inscription') || title.toLowerCase().includes('edict') ? 'temple-kolam' :
-          title.toLowerCase().includes('trade') || title.toLowerCase().includes('pepper') || title.toLowerCase().includes('exchange') ? 'sri-yantra-pattern' :
-          title.toLowerCase().includes('geological') || title.toLowerCase().includes('earth') || title.toLowerCase().includes('himalaya') ? 'cosmic-yantra' :
-          'mandala-vatika'
+          'ocean-waves'
         )} />
         
         {/* Breadcrumb */}
@@ -78,7 +78,7 @@ const ArticleContent = React.memo(({
             to="/" 
             className="inline-flex items-center gap-2 text-muted-foreground hover:text-burgundy transition-all duration-300 hover:translate-x-1"
           >
-            ← Back to Home
+            ← {t('navigation.backToHome', 'Back to Home')}
           </Link>
         </nav>
 
@@ -93,33 +93,35 @@ const ArticleContent = React.memo(({
           
           <h1 className="font-serif text-4xl md:text-6xl font-bold mb-6 leading-tight">
             <span className="bg-gradient-to-r from-burgundy via-saffron to-gold-warm bg-clip-text text-transparent">
-              {title}
+              <EnhancedMultilingualText content={title} />
             </span>
           </h1>
           
           <p className="text-xl text-charcoal/80 mb-8 leading-relaxed max-w-3xl mx-auto font-medium">
-            {dek}
+            <EnhancedMultilingualText content={dek} />
           </p>
 
           {/* Enhanced Tags */}
           <div className="flex flex-wrap justify-center gap-3 mb-8">
             {tags.map((tag, index) => (
               <TagChip 
-                key={tag} 
+                key={typeof tag === 'string' ? tag : JSON.stringify(tag)} 
                 variant="theme"
                 className={cn(
                   "hover:scale-105 transition-transform duration-200 animate-fade-in",
                   `[animation-delay:${index * 100}ms]`
                 )}
               >
-                {tag}
+                <EnhancedMultilingualText content={tag} />
               </TagChip>
             ))}
           </div>
 
           {/* Enhanced Meta */}
           <div className="flex justify-center items-center gap-6 text-sm bg-sandalwood/40 rounded-full px-6 py-3 backdrop-blur-sm border border-burgundy/30">
-            <span className="text-burgundy font-medium">{readTime} min read</span>
+            <span className="text-burgundy font-medium">
+              {readTime} {t('article.minRead', 'min read')}
+            </span>
             {author && (
               <>
                 <span className="text-burgundy/60">•</span>
@@ -137,6 +139,14 @@ const ArticleContent = React.memo(({
 
         {/* Enhanced Article Content */}
         <div className="prose prose-lg max-w-none relative z-10">
+          <div className="article-content">
+            <EnhancedMultilingualText 
+              content={content} 
+              enableCulturalTerms={true}
+              as="div"
+              className="space-y-6"
+            />
+          </div>
           <ReactMarkdown
             components={{
               h2: ({ children }) => (
@@ -181,7 +191,7 @@ const ArticleContent = React.memo(({
               ),
             }}
           >
-            {content}
+            {typeof content === 'string' ? content : ''}
           </ReactMarkdown>
 
           {/* Enhanced Data Components */}
@@ -206,8 +216,11 @@ const ArticleContent = React.memo(({
 ArticleContent.displayName = 'ArticleContent';
 
 export function ArticlePage(props: ArticlePageProps) {
+  const titleString = typeof props.title === 'string' ? props.title : 
+    (typeof props.title === 'object' && props.title.en ? props.title.en as string : 'Article');
+  
   return (
-    <ArticleProvider articleId={props.title}>
+    <ArticleProvider articleId={titleString}>
       <ArticleContent {...props} />
     </ArticleProvider>
   );

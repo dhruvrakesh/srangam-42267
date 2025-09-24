@@ -6,6 +6,7 @@ import { Bibliography } from '@/components/articles/Bibliography';
 import { IconPort } from '@/components/icons';
 import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
+import { maritimeMemoriesSouthIndiaArticle } from '@/data/articles/maritime-memories-south-india';
 
 const content = `
 ## Introduction
@@ -96,10 +97,10 @@ In following the trail of black pepper from the Western Ghats to the Roman Forum
 export default function MaritimeMemoriesSouthIndia() {
   return (
     <ArticlePage
-      title="Maritime Memories of South India: Emporia of the Ocean"
-      dek="Recent archaeological breakthroughs at Berenike confirm the vast scale of Indo-Roman maritime trade. From pepper markets to desert ports, this exploration traces how South India became a pivotal hub of the ancient world's trade networks."
-      content={content}
-      tags={["Indo-Roman Trade", "Muziris", "Berenike", "Maritime Networks"]}
+      title={maritimeMemoriesSouthIndiaArticle.title}
+      dek={maritimeMemoriesSouthIndiaArticle.dek}
+      content={maritimeMemoriesSouthIndiaArticle.content}
+      tags={maritimeMemoriesSouthIndiaArticle.tags}
       icon={IconPort}
       readTime={18}
       author="Nartiang Foundation"
