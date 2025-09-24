@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { LanguageProvider } from "@/components/language/LanguageProvider";
 import { Loader2 } from 'lucide-react';
 
 // Immediate load for critical pages
@@ -72,13 +73,14 @@ function PageLoadingFallback() {
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Layout>
-            <Suspense fallback={<PageLoadingFallback />}>
-              <Routes>
+      <LanguageProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Layout>
+              <Suspense fallback={<PageLoadingFallback />}>
+                <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/themes/ancient-india" element={<AncientIndia />} />
                 <Route path="/themes/indian-ocean-world" element={<IndianOceanWorld />} />
@@ -113,6 +115,7 @@ const App = () => (
           </Layout>
         </BrowserRouter>
       </TooltipProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   </ErrorBoundary>
 );

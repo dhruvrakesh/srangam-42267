@@ -21,6 +21,12 @@ export default {
 			fontFamily: {
 				serif: ['IBM Plex Serif', 'serif'],
 				sans: ['Inter', 'system-ui', 'sans-serif'],
+				tamil: ['Noto Sans Tamil', 'sans-serif'],
+				telugu: ['Noto Sans Telugu', 'sans-serif'],
+				kannada: ['Noto Sans Kannada', 'sans-serif'],
+				bengali: ['Noto Sans Bengali', 'sans-serif'],
+				assamese: ['Noto Sans Bengali', 'sans-serif'], // Assamese uses Bengali script
+				devanagari: ['Noto Serif Devanagari', 'serif'],
 			},
 			colors: {
         // Dharmic & Sanatan colors

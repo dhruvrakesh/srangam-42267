@@ -1,0 +1,44 @@
+{
+  "navigation": {
+    "home": "Home",
+    "articles": "Articles",
+    "themes": "Themes",
+    "research": "Research",
+    "about": "About",
+    "maps": "Maps & Data",
+    "partnership": "Partnership",
+    "support": "Support Research"
+  },
+  "common": {
+    "readMore": "Read More",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "search": "Search",
+    "share": "Share",
+    "print": "Print",
+    "download": "Download",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous"
+  },
+  "hero": {
+    "title": "Srangam",
+    "subtitle": "The Maritime Networks of Ancient South Asia",
+    "description": "Exploring the confluence of land, sea, and culture through archaeological evidence, geological formations, and textual traditions that shaped the Indian Ocean world."
+  },
+  "themes": {
+    "ancientIndia": "Ancient India",
+    "geology": "Geology & Deep Time",
+    "empires": "Empires & Exchange",
+    "scripts": "Scripts & Inscriptions",
+    "indianOcean": "Indian Ocean World"
+  },
+  "research": {
+    "submitResearch": "Submit Research",
+    "partnerWithUs": "Partner With Us",
+    "supportResearch": "Support Research",
+    "guidelines": "Submission Guidelines",
+    "process": "Review Process",
+    "criteria": "Academic Criteria"
+  }
+}

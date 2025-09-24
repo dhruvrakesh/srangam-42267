@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SearchResults } from "./SearchResults";
 import { Logo } from "@/components/Logo";
+import { LanguageSwitcher } from "@/components/language";
 
 export function TopNavigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -149,6 +150,11 @@ export function TopNavigation() {
                 )}
               </div>
 
+              {/* Language Switcher */}
+              <div className="hidden sm:block">
+                <LanguageSwitcher variant="compact" />
+              </div>
+
               {/* Mobile menu button */}
               <Button
                 variant="ghost"
@@ -198,6 +204,11 @@ export function TopNavigation() {
                   {item.title}
                 </Link>
               ))}
+              
+              {/* Mobile Language Switcher */}
+              <div className="px-3 py-2">
+                <LanguageSwitcher variant="compact" />
+              </div>
             </div>
           </div>
         )}
