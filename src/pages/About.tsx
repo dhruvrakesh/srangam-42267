@@ -114,13 +114,13 @@ Phone: +91-11-4567-8901
 
   const subjectMatterExperts = [
     {
-      name: "Prof. Ahmed Hassan",
+      name: "Mrs. Rekha Bansal, MA History",
       role: "Subject Matter Expert",
-      expertise: "Indian Ocean Maritime Systems, Monsoon Navigation, Environmental History",
-      institution: "Maritime Studies Specialist",
+      expertise: "Indian Ocean Maritime Systems, Historical Navigation, Cultural History",
+      institution: "Historical Research Specialist",
       culturalRole: "विषय विशेषज्ञ | Domain Expert",
       articles: ["Monsoon Trade Clock"],
-      specializations: ["Oceanographic Analysis", "Wind Pattern Studies", "Environmental Archaeology"]
+      specializations: ["Historical Analysis", "Maritime Studies", "Cultural Documentation"]
     },
     {
       name: "Dr. Geological Survey Team",

@@ -177,7 +177,7 @@ This work examines ${resource.tags.join(', ').toLowerCase()} through a comprehen
     },
     {
       title: "Riding the Monsoon: How Winds Became an Engine of Commerce",
-      author: "Prof. Ahmed Hassan",
+      author: "Mrs. Rekha Bansal, MA History",
       type: "Research Article", 
       description: "A logistics revolution long before steam—sailing the Arabian Sea on a seasonal clock. Discover how ancient mariners turned seasonal winds into reliable trade networks.",
       tags: ["Indian Ocean World", "Trade", "Monsoon", "Navigation"],

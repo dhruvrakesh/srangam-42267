@@ -40,7 +40,7 @@ export default function MonsoonTradeClock() {
       tags={monsoonTradeClock.tags}
       icon={IconMonsoon}
       readTime={8}
-      author="Prof. Ahmed Hassan"
+      author="Mrs. Rekha Bansal, MA History"
       date="2024-03-12"
       dataComponents={[
         <ResponsiveImage 

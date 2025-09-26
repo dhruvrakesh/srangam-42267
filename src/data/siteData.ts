@@ -68,7 +68,7 @@ export const ARTICLES = [
     theme: "Indian Ocean World",
     tags: ["Indian Ocean World", "Trade", "Monsoon"],
     readTime: 8,
-    author: "Prof. Ahmed Hassan",
+    author: "Mrs. Rekha Bansal, MA History",
     date: "2024-03-12"
   },
   {

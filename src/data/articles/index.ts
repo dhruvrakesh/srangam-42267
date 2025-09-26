@@ -68,7 +68,7 @@ export const ARTICLE_METADATA: Record<string, {
   },
   'monsoon-trade-clock': {
     readTime: 8,
-    author: 'Prof. Ahmed Hassan',
+    author: 'Mrs. Rekha Bansal, MA History',
     date: '2024-03-12',
     theme: 'Indian Ocean World'
   },
