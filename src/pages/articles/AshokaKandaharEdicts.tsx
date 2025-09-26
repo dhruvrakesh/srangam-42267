@@ -4,7 +4,7 @@ import { IconScript } from '@/components/icons';
 import { ResponsiveImage } from '@/components/ui/ResponsiveImage';
 import { AncientIndiaTimeline } from '@/components/articles/AncientIndiaTimeline';
 import { IndoIranianMap } from '@/components/articles/IndoIranianMap';
-import { ashokaKandaharEdicts } from '@/data/articles/ashoka-kandahar-edicts';
+import { ashokaKandaharEdictsComplete } from '@/data/articles/ashoka-kandahar-edicts-complete';
 
 const content = `Long before Emperor Ashoka's 3rd-century BCE rock edicts, the civilization of **Bharat** (India) had already left its mark across a vast geography and timeline. Early urban centers of the **Indus Valley** (2600–1900 BCE) produced the oldest inscriptions in South Asia, with the Indus script appearing on seals, tablets, and pottery. Though still undeciphered, these ancient symbols – found not only in India but even on clay tags in far-off Mesopotamia – attest to extensive trade and cultural contacts **millennia before the Mauryan Empire**.
 
@@ -134,10 +134,10 @@ const BilingualEdictComponent = () => (
 export default function AshokaKandaharEdicts() {
   return (
     <ArticlePage
-      title={ashokaKandaharEdicts.title}
-      dek={ashokaKandaharEdicts.dek}
-      content={ashokaKandaharEdicts.content}
-      tags={ashokaKandaharEdicts.tags}
+      title={ashokaKandaharEdictsComplete.title}
+      dek={ashokaKandaharEdictsComplete.dek}
+      content={ashokaKandaharEdictsComplete.content}
+      tags={ashokaKandaharEdictsComplete.tags}
       icon={IconScript}
       readTime={18}
       author="Nartiang Foundation"

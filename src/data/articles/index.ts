@@ -1,13 +1,13 @@
 import { LocalizedArticle } from '@/types/multilingual';
-import { ashokaKandaharEdicts } from './ashoka-kandahar-edicts';
+import { ashokaKandaharEdictsComplete } from './ashoka-kandahar-edicts-complete';
 import { scriptsThatSailed } from './scripts-that-sailed';
 import { kutaiYupaBorneo } from './kutai-yupa-borneo';
 import { monsoonTradeClock } from './monsoon-trade-clock';
 import { pepperAndBullion } from './pepper-and-bullion';
 import { cholaNavalRaid } from './chola-naval-raid';
-import { ridersOnMonsoon } from './riders-on-monsoon';
+import { ridersOnMonsoonComplete } from './riders-on-monsoon-complete';
 import { gondwanaToHimalaya } from './gondwana-to-himalaya';
-import { indianOceanPowerNetworks } from './indian-ocean-power-networks';
+import { indianOceanPowerNetworksComplete } from './indian-ocean-power-networks-complete';
 import { earthSeaSangam } from './earth-sea-sangam';
 import { maritimeMemoriesSouthIndiaComplete } from './maritime-memories-south-india-complete';
 
@@ -15,11 +15,11 @@ import { maritimeMemoriesSouthIndiaComplete } from './maritime-memories-south-in
 export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
   maritimeMemoriesSouthIndiaComplete,
   scriptsThatSailed,
-  ridersOnMonsoon,
+  ridersOnMonsoonComplete,
   monsoonTradeClock,
   gondwanaToHimalaya,
-  indianOceanPowerNetworks,
-  ashokaKandaharEdicts,
+  indianOceanPowerNetworksComplete,
+  ashokaKandaharEdictsComplete,
   kutaiYupaBorneo,
   cholaNavalRaid,
   pepperAndBullion,

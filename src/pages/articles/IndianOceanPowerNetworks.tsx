@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ArticlePage } from '@/components/articles/ArticlePage';
 import { IconPort, IconMonsoon, IconDharmaChakra } from '@/components/icons';
-import { indianOceanPowerNetworks } from '@/data/articles/indian-ocean-power-networks';
+import { indianOceanPowerNetworksComplete } from '@/data/articles/indian-ocean-power-networks-complete';
 import { ResponsiveImage } from '@/components/ui/ResponsiveImage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -235,10 +235,10 @@ export default function IndianOceanPowerNetworks() {
       <ContextualSidebar items={sidebarItems} position="right" />
       
       <ArticlePage
-        title={indianOceanPowerNetworks.title}
-        dek={indianOceanPowerNetworks.dek}
-        content={indianOceanPowerNetworks.content}
-        tags={indianOceanPowerNetworks.tags}
+        title={indianOceanPowerNetworksComplete.title}
+        dek={indianOceanPowerNetworksComplete.dek}
+        content={indianOceanPowerNetworksComplete.content}
+        tags={indianOceanPowerNetworksComplete.tags}
         icon={IconDharmaChakra}
         readTime={24}
         author="Nartiang Foundation"
