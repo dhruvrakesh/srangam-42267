@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import ReactMarkdown from 'react-markdown';
 import { useTranslation } from 'react-i18next';
 import { TagChip } from '@/components/ui/TagChip';
 import { EnhancedMultilingualText } from '@/components/language/EnhancedMultilingualText';
+import { ProfessionalTextFormatter } from '@/components/articles/enhanced/ProfessionalTextFormatter';
 import { MultilingualContent } from '@/types/multilingual';
 import { cn } from '@/lib/utils';
 import { ArticleProvider, useReadingProgress } from '@/components/context/ArticleContext';
@@ -137,16 +137,14 @@ const ArticleContent = React.memo(({
           </div>
         </header>
 
-        {/* Enhanced Article Content */}
-        <div className="prose prose-lg max-w-none relative z-10">
-          <div className="article-content space-y-6">
-            <EnhancedMultilingualText 
-              content={content} 
-              enableCulturalTerms={true}
-              as="div"
-              className="prose prose-lg max-w-none [&>h2]:font-serif [&>h2]:text-2xl [&>h2]:font-bold [&>h2]:text-burgundy [&>h2]:mt-12 [&>h2]:mb-6 [&>h2]:pb-3 [&>h2]:border-b-2 [&>h2]:border-burgundy/30 [&>h3]:font-serif [&>h3]:text-xl [&>h3]:font-semibold [&>h3]:text-saffron [&>h3]:mt-8 [&>h3]:mb-4 [&>p]:text-foreground [&>p]:leading-relaxed [&>p]:mb-6 [&>p]:text-lg [&>blockquote]:border-l-4 [&>blockquote]:border-burgundy/60 [&>blockquote]:pl-6 [&>blockquote]:my-8 [&>blockquote]:italic [&>blockquote]:text-charcoal/80 [&>blockquote]:bg-sandalwood/40 [&>blockquote]:py-6 [&>blockquote]:rounded-r-lg [&>blockquote]:backdrop-blur-sm [&>ul]:list-none [&>ul]:pl-0 [&>ul]:mb-6 [&>ul]:space-y-3 [&>li]:flex [&>li]:items-start [&>li]:gap-3 [&>li]:text-foreground [&>li]:leading-relaxed [&>strong]:font-semibold [&>strong]:text-burgundy [&>strong]:bg-saffron/20 [&>strong]:px-1 [&>strong]:rounded"
-            />
-          </div>
+        {/* Professional Article Content */}
+        <div className="relative z-10">
+          <ProfessionalTextFormatter 
+            content={typeof content === 'string' ? { en: content } : content} 
+            enableCulturalTerms={true}
+            enableDropCap={true}
+            className="mb-12"
+          />
 
           {/* Enhanced Data Components */}
           {dataComponents.length > 0 && (

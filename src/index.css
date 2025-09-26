@@ -138,7 +138,6 @@ All colors MUST be HSL.
 
 /* Sacred Geometry & Dharmic Patterns */
 @layer components {
-  .ocean-waves {
     background-image: 
       linear-gradient(90deg, transparent 0%, hsl(var(--ocean-teal) / 0.15) 50%, transparent 100%),
       linear-gradient(180deg, transparent 0%, hsl(var(--peacock-blue) / 0.08) 50%, transparent 100%);
@@ -260,7 +259,6 @@ All colors MUST be HSL.
     background-size: 200px 200px, 200px 200px, 200px 200px, 200px 200px, 100px 100px;
     background-position: center, center, center, center, 50px 50px;
   }
-}
 
 /* Dharmic Animations */
 @layer components {
