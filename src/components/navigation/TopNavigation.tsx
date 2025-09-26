@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SearchResults } from "./SearchResults";
 import { Logo } from "@/components/Logo";
-import { LanguageSwitcher } from "@/components/language";
+import { EnhancedLanguageSwitcher } from "@/components/language/EnhancedLanguageSwitcher";
+import { MultilingualSearchResults } from "@/components/language/MultilingualSearchResults";
 
 export function TopNavigation() {
   const { t } = useTranslation();
@@ -145,16 +146,16 @@ export function TopNavigation() {
                   />
                 </div>
                 {searchQuery && isSearchFocused && (
-                  <SearchResults 
+                  <MultilingualSearchResults 
                     query={searchQuery} 
                     onClose={() => setSearchQuery("")}
                   />
                 )}
               </div>
 
-              {/* Language Switcher */}
+              {/* Enhanced Language Switcher */}
               <div className="hidden sm:block">
-                <LanguageSwitcher variant="compact" />
+                <EnhancedLanguageSwitcher variant="compact" showAvailability={true} />
               </div>
 
               {/* Mobile menu button */}
@@ -207,9 +208,9 @@ export function TopNavigation() {
                 </Link>
               ))}
               
-              {/* Mobile Language Switcher */}
+              {/* Mobile Enhanced Language Switcher */}
               <div className="px-3 py-2">
-                <LanguageSwitcher variant="compact" />
+                <EnhancedLanguageSwitcher variant="compact" showAvailability={true} />
               </div>
             </div>
           </div>

@@ -1,10 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TagChip } from "@/components/ui/TagChip";
-import { Clock } from "lucide-react";
+import { Clock, Globe } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { EnhancedMultilingualText } from "@/components/language/EnhancedMultilingualText";
+import { LanguageAvailabilityBadge } from "@/components/language/LanguageAvailabilityBadge";
 import { MultilingualContent } from "@/types/multilingual";
+import { normalizeLanguageCode } from "@/lib/languageUtils";
+import { SupportedLanguage } from "@/lib/i18n";
 
 interface MultilingualArticle {
   id: string;
@@ -23,7 +26,8 @@ interface ArticleCardProps {
 }
 
 export function ArticleCard({ article }: ArticleCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLanguage = normalizeLanguageCode(i18n.language || 'en') as SupportedLanguage;
 
   return (
     <Card className="group h-full bg-card/95 backdrop-blur-sm border border-border/70 transition-all duration-300 hover:bg-card hover:border-saffron/50 hover:shadow-xl hover:shadow-saffron/30 hover:-translate-y-1 relative overflow-hidden">
@@ -35,16 +39,29 @@ export function ArticleCard({ article }: ArticleCardProps) {
       
       <CardHeader className="relative z-10">
         <div className="flex items-start justify-between gap-3">
-          <CardTitle className="font-serif text-xl leading-tight text-foreground group-hover:text-saffron transition-all duration-300">
-            <Link to={article.slug} className="relative">
-              <EnhancedMultilingualText 
+          <div className="flex-1 min-w-0">
+            <CardTitle className="font-serif text-xl leading-tight text-foreground group-hover:text-saffron transition-all duration-300">
+              <Link to={article.slug} className="relative">
+                <EnhancedMultilingualText 
+                  content={article.title}
+                  enableCulturalTerms={true}
+                  fallback={`Article ${article.id}`}
+                />
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-saffron to-gold-warm group-hover:w-full transition-all duration-300" />
+              </Link>
+            </CardTitle>
+            
+            {/* Language availability indicator */}
+            <div className="mt-2 flex items-center gap-2">
+              <LanguageAvailabilityBadge
                 content={article.title}
-                enableCulturalTerms={true}
-                fallback={`Article ${article.id}`}
+                currentLanguage={currentLanguage}
+                className="text-xs"
               />
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-saffron to-gold-warm group-hover:w-full transition-all duration-300" />
-            </Link>
-          </CardTitle>
+              <Globe size={12} className="text-muted-foreground" />
+            </div>
+          </div>
+          
           <TagChip variant="theme" className="flex-shrink-0 group-hover:scale-105 transition-transform duration-200">
             {t(`themes.${article.theme.toLowerCase().replace(/\s+/g, '').replace('&', '')}`)}
           </TagChip>

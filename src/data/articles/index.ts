@@ -9,11 +9,11 @@ import { ridersOnMonsoon } from './riders-on-monsoon';
 import { gondwanaToHimalaya } from './gondwana-to-himalaya';
 import { indianOceanPowerNetworks } from './indian-ocean-power-networks';
 import { earthSeaSangam } from './earth-sea-sangam';
-import { maritimeMemoriesSouthIndiaArticle } from './maritime-memories-south-india';
+import { maritimeMemoriesSouthIndiaComplete } from './maritime-memories-south-india-complete';
 
 // Complete multilingual article registry
 export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
-  maritimeMemoriesSouthIndiaArticle,
+  maritimeMemoriesSouthIndiaComplete,
   scriptsThatSailed,
   ridersOnMonsoon,
   monsoonTradeClock,
