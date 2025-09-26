@@ -168,22 +168,6 @@ Phone: +91-11-4567-8901
       funding: "₹25 lakhs for institutional partnerships",
       culturalFocus: "पुस्तक संरक्षण | Manuscript Preservation"
     },
-    {
-      name: "DKEGL Cultural Heritage Grants",
-      type: "Archaeological Research Support",
-      description: "Corporate funding for excavations, epigraphic surveys, and multidisciplinary archaeological research", 
-      eligibility: ["Archaeological institutes", "University research centers", "Independent researchers"],
-      funding: "₹15 lakhs per major project",
-      culturalFocus: "पुरातत्व अनुसंधान | Archaeological Research"
-    },
-    {
-      name: "Traditional Scholar Exchange Program",
-      type: "Academic Collaboration Initiative", 
-      description: "Facilitation of knowledge exchange between traditional gurukulas and modern universities",
-      eligibility: ["Traditional scholars", "Academic institutions", "Research centers"],
-      funding: "₹10 lakhs for exchange programs",
-      culturalFocus: "गुरुकुल-विश्वविद्यालय संगम | Gurukula-University Integration"
-    }
   ];
 
   return (
