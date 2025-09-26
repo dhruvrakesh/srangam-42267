@@ -10,69 +10,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { ridersOnMonsoon } from '@/data/articles/riders-on-monsoon';
 
-const content = `
-## Monsoon Masters of the Ancient World
-
-The term "monsoon" itself comes from the Arabic *mausim* (season), a reminder that sailors from Arabia and India knew these seasonal winds intimately and early. In fact, modern research confirms that Indian navigators were exploiting monsoon wind patterns as far back as the Bronze Age. A study by India's National Institute of Oceanography found evidence that the people of the Indus Valley Civilization (c. 2500 BCE) already utilized monsoon winds and currents for maritime trade.
-
-Archaeological finds at sites like Lothal (in Gujarat) – a Harappan port with a tide dock – and references in Mesopotamian records of Meluhha (Indus region) traders, suggest that sailing with the seasonal wind reversal was an established practice. Dr. Sila Tripati, a marine archaeologist, notes that the Harappans likely timed voyages to Mesopotamia with the winter northeast monsoon outbound and the summer southwest monsoon for return, mirroring practices continued later in Odisha and Tamil Nadu.
-
-This overturns the old belief that a Greek mariner Hippalus "discovered" the monsoon route in the 1st century BCE. Instead, Indian Ocean peoples knew it "much before him."
-
-## Indigenous Knowledge in Ancient Texts
-
-Classical Indian texts reinforce this maritime awareness. The *Ṛig Veda* (c. 1200 BCE), the oldest Indian scripture, contains hymns that vividly describe winds, rains, and ocean phenomena. It personifies monsoon storm winds as the Maruts, indicating their recognized importance in nature's cycle.
-
-Later Vedic texts and epics continue this maritime awareness. The Sanskrit epic *Ramayana* (c. 500 BCE) mentions the sea voyage of merchants and cautions about seasonal winds. In South India, the Sangam literature (c. 300 BCE–300 CE) has numerous references to ocean trade and weather. One Tamil poem advises a trader to "set forth when the Pleiades rise" – likely alluding to timing voyages with certain star risings that coincided with predictable weather windows.
-
-The Tamil epics *Silappatikaram* and *Manimekalai* (1st–3rd century CE) both depict the sea and its caprices; notably, *Manimekalai* describes how the great port of Puhār was swallowed by the sea when the king neglected the ocean god – a tale that encodes respect for the sea's power and perhaps a memory of a tsunami or storm surge.
-
-## Navigational Science in Palm-Leaf Manuscripts
-
-The newly found Kerala palm-leaf manuscript appears to belong to a genre known as *navīgati-śāstra* (navigation science) that we now know existed in pre-modern India. While direct textual evidence is scant due to perishability of palm-leaf and secrecy within guilds, secondary citations and later writings give clues.
-
-One famous work often cited is the *Yuktikalpataru* (c. 11th century CE) attributed to King Bhoja, which included chapters on shipbuilding and possibly navigation. Unfortunately, that section is lost, but the surviving contents discuss rigging and proportions of vessels, indicating a formal study of maritime technology.
-
-The Kerala manuscript, according to initial reports, includes tables correlating the *nakṣatras* (lunar constellations in Indian astronomy) with phases of weather and sea condition – essentially an astronomical calendar for sailors. This resonates with known tradition: farmers in India have long used Nakṣatra-based rainfall predictions, dividing the monsoon season by star positions. Sailors likely adopted similar star guides for departures and landfalls.
-
-## The Science Behind Indigenous Navigation
-
-What did this knowledge encompass? First, an intuitive grasp of seasonal climate science: Indian scholars understood that the monsoons were cyclic. Later texts like Varāhamihira's *Bṛhat Saṃhitā* (6th century CE) include chapters on predicting the monsoon onset by cloud patterns and winds – vital for planning agriculture, but equally applicable to voyage timing.
-
-The concept of the evaporation-rainfall cycle was clearly articulated – ancient Indians knew the sun's heat caused water to rise and later fall as rain. This proto-meteorology, couched in mythic language, nevertheless demonstrates systematic observation.
-
-Second, a highly developed astronomy/astrology tradition provided star charts. The Sanskrit text *Jyotiṣa Vedāṅga* (c. 1st millennium BCE) dealt with calendars and could be used to know months and *nakṣatras*. Tamil seafarers likely consulted almanacs (*pañcāṅgams*) that gave the phases of the moon, auspicious dates for sailing, and astronomical guidance.
-
-## From Science to Practice: Real-World Navigation
-
-With their knowledge, South Indian mariners could undertake impressive voyages. Tamil and Malayalam records speak of regular trips to the Persian Gulf and Red Sea for trade in pearls and spices. An inscription from 2nd century CE at Pattanam (Muziris) refers to a local chief Nahapana and his donation to sea gods for safe journeys – suggesting formal recognition of sea travel's importance.
-
-Fast-forward to medieval times, and we have clearer records: The Cholas (11th century) famously sent large naval expeditions to Srivijaya (Indonesia) and even across the Bay of Bengal. They could not have done this without accumulated knowledge of monsoon timing and navigation. Indeed, the Chola inscription in Thanjavur depicting their overseas conquests coincides with known monsoon windows; it appears they set sail with the winter monsoon to surprise Srivijaya.
-
-## Continuity and Global Impact
-
-We also see continuity of indigenous techniques right into the colonial era. In the 15th century, when Vasco da Gama reached Kerala, he relied on an Indian pilot, Kanji Malam, to guide his ships from Africa to Calicut on the summer monsoon. European records praise these pilots' skill – one account by the Portuguese says "the Gujarati pilot needs no compass for he has the Rekha (lines) of the winds in his head." The "Rekha" likely refers to a mental map or algorithm of monsoon routes.
-
-Even after compasses became common, Indian sailors, especially those in the Arabian Sea dhow trade, preferred traditional navigation well into the 19th century, trusting the lore of winds passed down from their forefathers.
-
-This knowledge contributed to global navigation. Arab sailors who dominated the Indian Ocean in medieval times learned from Indians and vice versa. The cumulative knowledge ultimately flowed to Europe – for example, when the Portuguese came, Arab-Indian guides led them; when the Dutch and English charted monsoon routes, they relied on centuries of compiled data that was first gathered by indigenous observers.
-
-## The Role of Indigenous Knowledge Systems
-
-South India's indigenous knowledge systems were holistic – astronomy, meteorology, geography, and even religious ritual all blended to guide navigation. The monsoon itself became part of cultural consciousness. In Kerala's Hindu tradition, the onset of the southwest monsoon (in June) is marked by the festival of Āṣāḍha, and auspicious activities (including sea voyages) begin after the first rains.
-
-The Tamil calendar similarly has specific "launch" dates for ships blessed by priests. Local knowledge about the currents (for instance, the powerful Equatorial Current and seasonal Lakshadweep currents) was encoded in sayings – a Tamil proverb warns, "Don't fight the Seven Seas when the tiger crawls," likely referring to a dangerous current or weather phenomenon in a certain season.
-
-By integrating this environmental knowledge with practical boat craftsmanship (South Indian shipbuilders excelled in constructing ocean-worthy teakwood ships, sewn with coir and caulked with indigenous resins), the region's mariners were singularly well-equipped to dominate transoceanic trade.
-
-## Legacy and Modern Recognition
-
-The legacy of South India's maritime knowledge is still evident today. The Indian Navy's training includes modules on historical navigation techniques, acknowledging the skill of ancient mariners. Cultural practices like the annual Nāvīkāra Samāroham (Sailors' fair) in coastal Andhra Pradesh pay homage to Vishnu's avatar as a fish (Matsya), echoing old myths of flood and navigation.
-
-The Palm-Leaf Manuscript Museum in Thiruvananthapuram, inaugurated in 2023, even has a dedicated gallery on "Navigational and Astronomical Texts," featuring reproductions of star charts from old Malayalam manuscripts and explanations of how sailors read the wind and waves. Such institutional recognition shows a growing appreciation of the scientific heritage outside the Eurocentric narrative.
-
-If the ancient ports of India were the body of maritime trade, then indigenous knowledge was its soul – invisible yet indispensable. By rigorously observing nature, South Indian navigators democratized the seas long before the age of the compass. The recently unearthed Kerala manuscript is thus more than a curiosity; it is a testament to an advanced, home-grown tradition of science and exploration.
-`;
+// Using multilingual content from data file instead of hardcoded English
 
 const navigationSources = [
   {

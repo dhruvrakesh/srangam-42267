@@ -21,12 +21,15 @@ export default {
 			fontFamily: {
 				serif: ['IBM Plex Serif', 'serif'],
 				sans: ['Inter', 'system-ui', 'sans-serif'],
-				tamil: ['Noto Sans Tamil', 'sans-serif'],
-				telugu: ['Noto Sans Telugu', 'sans-serif'],
-				kannada: ['Noto Sans Kannada', 'sans-serif'],
-				bengali: ['Noto Sans Bengali', 'sans-serif'],
-				assamese: ['Noto Sans Bengali', 'sans-serif'], // Assamese uses Bengali script
+				tamil: ['Noto Sans Tamil', 'serif', 'sans-serif'],
+				telugu: ['Noto Sans Telugu', 'serif', 'sans-serif'],
+				kannada: ['Noto Sans Kannada', 'serif', 'sans-serif'],
+				bengali: ['Noto Sans Bengali', 'Noto Serif Bengali', 'serif', 'sans-serif'],
+				assamese: ['Noto Serif Bengali', 'Noto Sans Bengali', 'serif', 'sans-serif'], // Enhanced Assamese support
 				devanagari: ['Noto Serif Devanagari', 'serif'],
+				hindi: ['Noto Serif Devanagari', 'serif'],
+				punjabi: ['Noto Sans Gurmukhi', 'sans-serif'],
+				gurmukhi: ['Noto Sans Gurmukhi', 'sans-serif'],
 			},
 			colors: {
         // Dharmic & Sanatan colors
