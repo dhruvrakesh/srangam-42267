@@ -74,10 +74,10 @@ Phone: +91-11-4567-8901
 
   const institutionalSponsors = [
     {
-      name: "DKEGL (Dhruv Kumar Energy Group Ltd)",
+      name: "DKEGL (D K Enterprises Global Limited)",
       role: "Primary Institutional Sponsor",
-      expertise: "Corporate Social Responsibility, Dharmic Research Patronage, Energy & Infrastructure",
-      institution: "Fortune 500 Energy Corporation",
+      expertise: "Sustainable Packaging Solutions, Corporate Social Responsibility, Dharmic Research Patronage",
+      institution: "NSE-Listed SME Manufacturing Corporation (Market Cap: ₹48.8 crores)",
       culturalRole: "मुख्य संरक्षक | Primary Patron",
       contributions: ["Research Infrastructure", "Scholar Fellowships", "Digital Archive Development", "Publication Support"]
     },
@@ -157,7 +157,7 @@ Phone: +91-11-4567-8901
       type: "Academic Scholarship Program",
       description: "Annual fellowships supporting graduate and post-doctoral research in dharmic studies and indigenous knowledge systems",
       eligibility: ["PhD candidates in Indology", "Post-docs in Archaeological Sciences", "Traditional Sanskrit scholars"],
-      funding: "₹15 lakhs per fellowship annually",
+      funding: "₹10 lakhs per fellowship annually",
       culturalFocus: "परम्परागत विद्या | Traditional Knowledge Systems"
     },
     {
@@ -165,7 +165,7 @@ Phone: +91-11-4567-8901
       type: "Digital Heritage Program",
       description: "Comprehensive digitization of palm-leaf manuscripts, temple archives, and traditional knowledge repositories",
       eligibility: ["Heritage institutions", "Traditional libraries", "Gurukula archives"],
-      funding: "₹50 lakhs for institutional partnerships",
+      funding: "₹25 lakhs for institutional partnerships",
       culturalFocus: "पुस्तक संरक्षण | Manuscript Preservation"
     },
     {
@@ -173,7 +173,7 @@ Phone: +91-11-4567-8901
       type: "Archaeological Research Support",
       description: "Corporate funding for excavations, epigraphic surveys, and multidisciplinary archaeological research", 
       eligibility: ["Archaeological institutes", "University research centers", "Independent researchers"],
-      funding: "₹25 lakhs per major project",
+      funding: "₹15 lakhs per major project",
       culturalFocus: "पुरातत्व अनुसंधान | Archaeological Research"
     },
     {

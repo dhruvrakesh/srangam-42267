@@ -7,15 +7,15 @@ import { Badge } from '@/components/ui/badge';
 export function InstitutionalPartnerships() {
   const corporatePartners = [
     {
-      name: 'DKEGL (Dhruv Kumar Energy Group Ltd)',
+      name: 'DKEGL (D K Enterprises Global Limited)',
       location: 'Mumbai, Maharashtra & Pan-India Operations',
       type: 'Primary Corporate Sponsor',
-      specialization: 'Corporate Social Responsibility, Energy Infrastructure, Dharmic Research Patronage',
-      description: 'Fortune 500 energy corporation committed to supporting traditional knowledge systems through comprehensive CSR initiatives. Leading patron of dharmic scholarship and cultural heritage preservation.',
+      specialization: 'Sustainable Packaging Solutions, Corporate Social Responsibility, Dharmic Research Patronage',
+      description: 'NSE-listed (SME) manufacturer of flexible and sustainable packaging materials committed to supporting traditional knowledge systems through comprehensive CSR initiatives. Leading patron of dharmic scholarship and cultural heritage preservation.',
       collections: ['Research Infrastructure Funding', 'Scholar Fellowship Programs', 'Digital Archive Development', 'Academic Publication Support'],
       website: 'https://dkegl.com',
       established: '1995',
-      csrCommitment: '₹10 crores annually for dharmic research initiatives',
+      csrCommitment: '₹2 crores annually for dharmic research initiatives',
       culturalRole: 'मुख्य संरक्षक | Primary Patron of Dharmic Studies'
     },
     {
@@ -26,7 +26,7 @@ export function InstitutionalPartnerships() {
       description: 'DKEGL\'s dedicated CSR arm focusing on dharmic research, manuscript digitization, and traditional scholar support. Bridges corporate resources with indigenous knowledge systems.',
       collections: ['Manuscript Digitization Projects', 'Heritage Documentation', 'Scholar Grant Administration', 'Traditional Knowledge Archives'],
       established: '2020',
-      csrCommitment: 'Direct implementation of ₹5 crores in cultural preservation',
+      csrCommitment: 'Direct implementation of ₹1 crore in cultural preservation',
       culturalRole: 'सांस्कृतिक संरक्षण प्रमुख | Cultural Preservation Leader'
     }
   ];
@@ -329,15 +329,15 @@ export function InstitutionalPartnerships() {
         <CardContent>
           <div className="text-center space-y-6">
             <p className="text-muted-foreground max-w-3xl mx-auto text-lg">
-              <strong>Srangam meets Nartiang:</strong> Where corporate social responsibility supports dharmic research excellence through 
-              comprehensive funding, academic partnerships, and cultural preservation initiatives. DKEGL's commitment to traditional 
-              knowledge systems creates new pathways for institutional collaboration.
+              <strong>Srangam meets Nartiang:</strong> Where sustainable business practices meet dharmic research excellence through 
+              comprehensive funding, academic partnerships, and cultural preservation initiatives. DKEGL's commitment as a packaging 
+              industry leader to traditional knowledge systems creates new pathways for responsible corporate-academic collaboration.
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="bg-sandalwood/20 p-4 rounded-lg">
-                <h4 className="font-semibold text-terracotta mb-2">Corporate CSR</h4>
-                <p className="text-sm text-muted-foreground">Multi-crore funding for dharmic research initiatives</p>
+                <h4 className="font-semibold text-terracotta mb-2">Sustainable Corporate CSR</h4>
+                <p className="text-sm text-muted-foreground">Packaging industry leadership enabling cultural preservation funding</p>
               </div>
               <div className="bg-sandalwood/20 p-4 rounded-lg">
                 <h4 className="font-semibold text-terracotta mb-2">Academic Integration</h4>
