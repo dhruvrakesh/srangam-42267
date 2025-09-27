@@ -15,7 +15,7 @@ import {
 
 // Import data
 import sourcebookCSV from "@/data/oceanic_bhasha_sample_dataset.csv?raw";
-import geoData from "@/data/ocean_gis_pins.geojson";
+import { oceanGisData } from "@/data/ocean_gis_pins";
 
 export default function IndianOceanWorld() {
   const { currentLanguage } = useLanguage();
@@ -109,7 +109,7 @@ export default function IndianOceanWorld() {
           </TabsContent>
 
           <TabsContent value="atlas" className="mt-8">
-            <RouteAtlas geoData={geoData} />
+            <RouteAtlas geoData={oceanGisData} />
           </TabsContent>
 
           <TabsContent value="calendar" className="mt-8">

@@ -1,0 +1,308 @@
+// Indian Ocean GIS Pins - Port locations and historical sites
+// Converted from GeoJSON for TypeScript compatibility
+
+export interface GeoFeature {
+  type: "Feature";
+  properties: {
+    name: string;
+    type: string;
+    country: string;
+    era_tags: string;
+    notes: string;
+  };
+  geometry: {
+    type: "Point";
+    coordinates: [number, number];
+  };
+}
+
+export interface GeoData {
+  type: "FeatureCollection";
+  features: GeoFeature[];
+}
+
+export const oceanGisData: GeoData = {
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Puhar (Kāveripattinam)",
+        "type": "Ancient port",
+        "country": "India",
+        "era_tags": "Sangam;Chola",
+        "notes": "Sangam-era emporium on the Kāveri delta."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [79.841, 11.142]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Muziris (Kodungallur)",
+        "type": "Ancient port",
+        "country": "India",
+        "era_tags": "Classical;Roman trade",
+        "notes": "Malabar hub; pepper trade."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [76.201, 10.225]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Barygaza (Bharuch)",
+        "type": "Ancient port",
+        "country": "India",
+        "era_tags": "Classical",
+        "notes": "Periplus mentions as Barygaza."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [72.995, 21.705]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lothal",
+        "type": "Harappan port-town",
+        "country": "India",
+        "era_tags": "Harappan",
+        "notes": "Dockyard remains."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [72.248, 22.521]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Masulipatnam (Machilipatnam)",
+        "type": "Port",
+        "country": "India",
+        "era_tags": "Early modern",
+        "notes": "Coromandel textile trade."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [81.13, 16.179]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kalingapatnam",
+        "type": "Port",
+        "country": "India",
+        "era_tags": "Early modern",
+        "notes": "Eastern seaboard node."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [84.133, 18.349]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kochi (Cochin)",
+        "type": "Port",
+        "country": "India",
+        "era_tags": "Early modern;modern",
+        "notes": "Arab-European-Indic node."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [76.283, 9.967]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kozhikode (Calicut)",
+        "type": "Port",
+        "country": "India",
+        "era_tags": "Medieval",
+        "notes": "Zamorin's port; spice trade."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [75.78, 11.258]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Goa (Old Goa)",
+        "type": "Port",
+        "country": "India",
+        "era_tags": "Early modern",
+        "notes": "Lusophone creole worlds."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [73.912, 15.5]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tamralipta (Tamluk)",
+        "type": "Ancient port",
+        "country": "India",
+        "era_tags": "Classical",
+        "notes": "Bengal delta outlet."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [87.92, 22.3]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Chittagong",
+        "type": "Port",
+        "country": "Bangladesh",
+        "era_tags": "Early modern;modern",
+        "notes": "Bay of Bengal gateway."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [91.783, 22.356]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Gopalpur-on-Sea",
+        "type": "Port",
+        "country": "India",
+        "era_tags": "Colonial",
+        "notes": "Coastal trading post."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [84.905, 19.275]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Galle",
+        "type": "Port",
+        "country": "Sri Lanka",
+        "era_tags": "Early modern",
+        "notes": "Dutch fort; shipping."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [80.217, 6.036]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Trincomalee",
+        "type": "Port",
+        "country": "Sri Lanka",
+        "era_tags": "Ancient;modern",
+        "notes": "Deep natural harbor."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [81.233, 8.571]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jaffna",
+        "type": "Port",
+        "country": "Sri Lanka",
+        "era_tags": "Medieval;modern",
+        "notes": "Palk Strait node."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [80.025, 9.661]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Port Louis",
+        "type": "Port",
+        "country": "Mauritius",
+        "era_tags": "Indenture;modern",
+        "notes": "Indenture diaspora hub."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [57.501, -20.16]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Zanzibar (Stone Town)",
+        "type": "Port",
+        "country": "Tanzania",
+        "era_tags": "Medieval;early modern",
+        "notes": "Swahili coast trade."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [39.191, -6.162]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Mombasa",
+        "type": "Port",
+        "country": "Kenya",
+        "era_tags": "Medieval;modern",
+        "notes": "Indian Ocean corridor."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [39.668, -4.043]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Muscat",
+        "type": "Port",
+        "country": "Oman",
+        "era_tags": "Medieval;modern",
+        "notes": "Arabian Sea hub."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [58.408, 23.588]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Malacca (Melaka)",
+        "type": "Port",
+        "country": "Malaysia",
+        "era_tags": "Medieval;early modern",
+        "notes": "Straits crossroads."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [102.25, 2.189]
+      }
+    }
+  ]
+};
