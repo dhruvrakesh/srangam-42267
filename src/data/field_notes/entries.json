@@ -1,0 +1,26 @@
+{
+  "entries": [
+    {
+      "title": "Maritime Memories of South India: Major Publication Released",
+      "dateLabel": "March 2024",
+      "location": "Berenike, Egypt & Muziris, India",
+      "summary": "Our comprehensive study on Indo-Roman maritime trade networks integrates recent finds at Berenike with Tamil Sangam literature to reassess the scale of Indian Ocean exchange.",
+      "readingMinutes": 18,
+      "tags": ["indo-roman-trade", "berenike", "muziris", "maritime-networks"],
+      "status": "published",
+      "slug": "/articles/maritime-memories-south-india",
+      "cta": { "en": "Read Full Article →", "hi": "लेख पढ़ें →" }
+    },
+    {
+      "title": "Riders on the Monsoon: Indigenous Navigation Study Published", 
+      "dateLabel": "March 2024",
+      "location": "Kerala Archives & Maritime India",
+      "summary": "Analysis of palm-leaf manuscripts shows sophisticated indigenous navigation systems that leveraged monsoon winds and stellar bearings long before European 'discoveries'.",
+      "readingMinutes": 16,
+      "tags": ["navigation", "kerala-archives", "maritime-networks"],
+      "status": "published", 
+      "slug": "/articles/riders-on-monsoon",
+      "cta": { "en": "Read Full Article →", "hi": "लेख पढ़ें →" }
+    }
+  ]
+}

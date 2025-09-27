@@ -1,0 +1,11 @@
+{
+  "chips": [
+    { "hi": "शिलालेख", "en": "Inscriptions", "slug": "inscriptions" },
+    { "hi": "मज़िरिस", "en": "Muziris", "slug": "muziris" },
+    { "hi": "बिरेनीके", "en": "Berenike", "slug": "berenike" },
+    { "hi": "समुद्री जाल", "en": "Maritime Networks", "slug": "maritime-networks" },
+    { "hi": "इंडो-रोमन व्यापार", "en": "Indo-Roman Trade", "slug": "indo-roman-trade" },
+    { "hi": "नेविगेशन", "en": "Navigation", "slug": "navigation" },
+    { "hi": "केरल अभिलेखागार", "en": "Kerala Archives", "slug": "kerala-archives" }
+  ]
+}

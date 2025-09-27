@@ -74,6 +74,23 @@
     "oceanNetworksItems": "बुजंग घाटी, नागपट्टिनम, सामुद्रिक पुरातत्व",
     "oceanNetworksDesc": "प्राचीन हिंद महासागर में व्यापारिक और सांस्कृतिक संजाल"
   },
+  "fieldNotes": {
+    "hero": {
+      "title_hi": "सागरपथ की सनातन स्मृतियाँ",
+      "title_en": "Ocean-routes, enduring memories",
+      "subtitle_short_hi": "शिलालेख, वस्तु-सामग्री और समुद्री मार्गों में दर्ज धर्म की कथा।",
+      "subtitle_short_en": "Dharma traced in inscriptions, material culture, and sea-routes.",
+      "subtitle_long_en": "Field notes where literary memory meets archaeological proof across the Indian Ocean world."
+    },
+    "section_badge": {
+      "label_hi": "धर्मवाङ्मये पुरातत्त्वम्",
+      "label_en": "Archaeology within the corpus of dharma"
+    },
+    "labels": {
+      "published": "प्रकाशित",
+      "minutes": "मिनट"
+    }
+  },
   "articles": {
     "ashokaKandaharEdicts": "अशोक के कंधार अभिलेख",
     "ashokaKandaharEdictsDesc": "अफगानिस्तान में प्राचीन भारतीय धर्म और राजनीति",

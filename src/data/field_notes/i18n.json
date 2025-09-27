@@ -1,0 +1,35 @@
+{
+  "hero": {
+    "title_hi": "सागरपथ की सनातन स्मृतियाँ",
+    "title_tr": "Sāgar-path kī sanātan smṛtiyāṅ",
+    "title_en": "Ocean-routes, enduring memories",
+    "subtitle_short_hi": "शिलालेख, वस्तु-सामग्री और समुद्री मार्गों में दर्ज धर्म की कथा।",
+    "subtitle_short_en": "Dharma traced in inscriptions, material culture, and sea-routes.",
+    "subtitle_long_en": "Field notes where literary memory meets archaeological proof across the Indian Ocean world.",
+    "aria_label": "Field Notes — Ocean routes and enduring memories"
+  },
+  "section_badge": {
+    "label_hi": "धर्मवाङ्मये पुरातत्त्वम्",
+    "label_tr": "Dharmavāṅmaye purātattvam",
+    "label_en": "Archaeology within the corpus of dharma",
+    "tooltip_en": "Studies at the intersection of dharma texts and archaeology"
+  },
+  "labels": {
+    "published": "Published",
+    "read_field_note_en": "Read Field Note →",
+    "read_field_note_hi": "फ़ील्ड नोट देखें →",
+    "minutes": "min"
+  },
+  "seo": {
+    "slug": "sagarpath-ki-sanatan-smritiyan",
+    "keywords": [
+      "Muziris",
+      "Berenike", 
+      "Indian Ocean",
+      "maritime networks",
+      "shilalekha",
+      "dharma archaeology"
+    ],
+    "meta_en": "Maritime dharma archives—inscriptions, artifacts, and sea-routes across the Indian Ocean."
+  }
+}
