@@ -1,0 +1,69 @@
+{
+  "timeline": {
+    "title": "Water-First Spine Across Periods",
+    "title_hi": "कालखंडों में जल-प्रथम रीढ़",
+    "description": "From riverine sovereignty to oceanic empire - the evolution of Bharatiya maritime consciousness",
+    "periods": [
+      {
+        "period": "Vedic/Kuru (1500-500 BCE)",
+        "title": "Riverine Sovereignty",
+        "title_hi": "नदी संप्रभुता", 
+        "key_figures": ["Sudas", "Janamejaya"],
+        "key_concepts": ["Sarasvati-Sindhu civilization", "Riverine trade networks"],
+        "maritime_connection": "Rivers as highways to oceanic consciousness",
+        "sources": ["Rigveda", "Brahamanas"],
+        "archaeological": ["Harappan port sites", "River channel studies"]
+      },
+      {
+        "period": "Magadha/Maurya (600-200 BCE)", 
+        "title": "Port Governance Systems",
+        "title_hi": "बंदरगाह शासन प्रणालियाँ",
+        "key_figures": ["Chandragupta", "Ashoka"],
+        "key_concepts": ["Navādhyakṣa (ship superintendent)", "Coastal administration"],
+        "maritime_connection": "Systematic regulation of maritime trade",
+        "sources": ["Arthaśāstra", "Ashoka edicts"],
+        "archaeological": ["Tamralipti excavations", "Port installations"]
+      },
+      {
+        "period": "Gupta (300-600 CE)",
+        "title": "Guild Networks & Expansion", 
+        "title_hi": "श्रेणी नेटवर्क और विस्तार",
+        "key_figures": ["Chandragupta II", "Kalidasa"],
+        "key_concepts": ["Merchant guilds", "Southeast Asian expansion"],
+        "maritime_connection": "Organized commercial maritime ventures",
+        "sources": ["Gupta inscriptions", "Fa-hien accounts"],
+        "archaeological": ["Tamralipti coin hoards", "Southeast Asian sites"]
+      },
+      {
+        "period": "Chola (850-1250 CE)",
+        "title": "Monsoon Navy Supremacy",
+        "title_hi": "मानसूनी नौसेना सर्वोच्चता", 
+        "key_figures": ["Rajaraja I", "Rajendra I"],
+        "key_concepts": ["Naval expeditions", "Maritime empire"],
+        "maritime_connection": "Systematic naval power projection",
+        "sources": ["Thanjavur inscriptions", "Chinese chronicles"],
+        "archaeological": ["Nagapattinam port", "Southeast Asian temples"]
+      },
+      {
+        "period": "Maratha (1650-1818 CE)",
+        "title": "Fort-Fleet Littoral Defense",
+        "title_hi": "किला-बेड़ा तटीय रक्षा",
+        "key_figures": ["Shivaji", "Kanhoji Angre"],
+        "key_concepts": ["Coastal fortification", "Naval guerrilla warfare"],
+        "maritime_connection": "Indigenous naval resistance to European colonialism", 
+        "sources": ["Marathi chronicles", "European factory records"],
+        "archaeological": ["Sindhudurg fort", "Konkan coastal defenses"]
+      },
+      {
+        "period": "SAGAR (2015-present)",
+        "title": "Security and Growth for All in the Region",
+        "title_hi": "क्षेत्र में सभी के लिए सुरक्षा और विकास",
+        "key_figures": ["Modern Indian leadership"],
+        "key_concepts": ["Blue economy", "Maritime security cooperation"],
+        "maritime_connection": "Contemporary Indian Ocean strategy",
+        "sources": ["Policy documents", "Naval doctrines"],
+        "archaeological": ["Modern port development", "Maritime infrastructure"]
+      }
+    ]
+  }
+}
