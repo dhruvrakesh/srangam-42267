@@ -58,23 +58,7 @@ const PillarSilhouetteComponent = () => {
   );
 };
 
-const content = `Seven **yūpa** pillars at Kutai (East Kalimantan) bear **Sanskrit** inscriptions cut in early southern Brahmic forms often grouped with **Pallava/Grantha**. They praise donors, ritual acts, and lineages—the same genres known from the subcontinent, adapted to local courts.
-
-## Why a yūpa matters
-
-A yūpa is not generic stone: it's a **sacrificial post**. To raise one abroad is to transplant a ritual grammar—priests, meters, offerings, and royal patronage. Scripts are the tracks; **rituals are the trains**.
-
-## Continuity and change
-
-Language of praise remains Sanskritic; political ecology is Bornean. This combination—old verse, new forest—captures how Indic worlds braided with island Southeast Asia.
-
-> **Why it matters:** The Kutai yūpa inscriptions show us how Sanskrit ritual culture took root far from its homeland, adapting Vedic ceremonial forms to equatorial rainforest kingdoms. They're evidence of cultural translation in action—not mere copying, but creative adaptation.
-
-## The inscribed record
-
-The pillars mention King Mūlavarman and his father Aśvavarman, rulers of the Kutai kingdom. The Sanskrit verses follow classical *prashasti* conventions: genealogy, royal virtues, and ceremonial donations. But the context is unmistakably Bornean—river networks, forest resources, and local political structures.
-
-**Further Reading:** *Early Indonesian Commerce* by Kenneth Hall; *The Indianized States of Southeast Asia* by George Coedès.`;
+// Multilingual content is properly loaded from data file - no hardcoded content needed
 
 export default function KutaiYupaBorneo() {
   return (

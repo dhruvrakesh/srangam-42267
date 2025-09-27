@@ -15,52 +15,7 @@ import monsoonRoutes from '@/assets/monsoon-routes_historical-map_16x9_v1.jpg';
 import berenikeArtifacts from '@/assets/berenike-artifacts_archaeology_4x3_v1.jpg';
 import { pepperAndBullion } from '@/data/articles/pepper-and-bullion';
 
-const content = `India's maritime trade in antiquity was legendary, forging links across oceans long before the age of European exploration. Central to this vast exchange was the humble peppercorn – the "black gold" that drew traders to India's shores for centuries. From the fabled port of Muziris on India's southwest coast, fleets laden with spices set sail across the Arabian Sea, binding South India with the Roman world in a thriving commerce.
-
-> **Easter Egg:** Around 1300 BCE, Egyptians mummified the pharaoh Ramesses II with peppercorns in his nostrils – a hint that Indian pepper had made its way to the Nile far earlier than one might imagine. Such tantalizing facts remind us just how old and far-reaching India's spice connections were.
-
-## Muziris: India's Gateway to the West
-
-On the Malabar Coast of South India lay **Muziris**, the most celebrated port of its age. Described in Tamil Sangam literature and identified by Greek and Roman accounts, Muziris was the doorway through which pepper and other spices flowed out to the West. According to the *Periplus of the Erythraean Sea*, Muziris "abounded in ships sent there with cargoes from Arabia and by the Greeks."
-
-Large Roman vessels would arrive bearing gold and wine, and depart "laden with pepper and the rare products of the sea and mountain" of India. The author remarks that while not all items were shipped in huge quantities, pepper was produced in quantity in only one region – the "Cottonara" district of Kerala – making Muziris indispensable for anyone seeking this spice.
-
-**Archaeological Evidence:** Excavations at Pattanam (likely ancient Muziris) have unearthed Roman amphorae, coins, beads, and even a massive hoard of Roman copper coins, underscoring a robust foreign presence.
-
-## Pepper: "Black Gold" and Economic Powerhouse
-
-Why was pepper so special that it spurred a transoceanic trade boom? In antiquity, pepper was much more than a kitchen spice – it was a luxury, a medicine, a status symbol, even a unit of wealth. Native to India's Western Ghats, black pepper (*Piper nigrum*) became one of the most sought-after commodities in the Roman Empire.
-
-The Elder Pliny, writing in the 1st century CE, famously complained that India was "the sink of the world's most precious metals," absorbing Roman gold in exchange for "wares we cannot do without." He calculated that the empire was sending at least 50 million sesterces annually to India – a huge sum.
-
-**Economic Impact:**
-- Pepper's value earned it the nickname "Black Gold"
-- In 408 CE, Visigothic king Alaric demanded 3,000 pounds of pepper as part of Rome's ransom
-- Custom duties on Indo-Roman spice trade contributed up to one-third of the Roman Empire's revenue in the 1st century CE
-- Hundreds of ships plied the route annually at the trade's zenith
-
-Indian navigators had mastered monsoon wind patterns for millennia, as evidenced by ancient migrations from the subcontinent to Southeast Asia and Australia that required sophisticated understanding of seasonal wind systems. Tamil Sangam literature describes detailed knowledge of seasonal navigation long before Greek contact. The Greek navigator Hippalus, rather than "discovering" these winds, learned from Indian merchants who had been using monsoon patterns for direct Arabian Sea crossings for centuries—just as Vasco da Gama would later follow established Indian trade routes to reach Calicut.
-
-## Cultural and Economic Exchange
-
-The pepper routes were not just conduits of commerce; they were channels of cultural exchange. Roman writers like Pliny and Ptolemy described Indian ports and products with remarkable accuracy, indicating substantial knowledge of the subcontinent. Tamil Sangam poetry refers to the Yavanas (Greeks/Romans) and their strange ways, marveling at their ships arriving with gold and departing with pepper.
-
-**Cross-Cultural Impact:**
-- Indian maritime traditions predated Greek contact by millennia (evidenced by ancient migrations to Southeast Asia)
-- Tamil Sangam literature shows sophisticated understanding of seasonal trade winds and navigation
-- Indian merchants established trade networks from Africa to China, carrying Buddhism and Hinduism across oceans
-- Early Christianity likely reached South India via established Indian Ocean trade routes
-- Cultural exchange flowed in all directions, with Indian mathematical and astronomical knowledge spreading westward
-
-The exchange was truly bidirectional – Indian kings dined off Roman wine while Roman nobles spiced their meats with Indian pepper, creating a proto-globalized world.
-
-## The Legacy of Ancient Trade Networks
-
-India's ancient spice networks across the Arabian Sea established sophisticated global trade millennia before European expansion. When Vasco da Gama reached Calicut in 1498, he followed Indian merchants who guided him along established routes—just as Hippalus had learned monsoon navigation from Indian masters centuries earlier. These patterns reflect how Indigenous knowledge systems were systematically appropriated and reframed as European "discoveries."
-
-For India, the pepper trade enriched port cities and contributed to a thriving oceanic economy long before colonial times. It connected the subcontinent to a wider world, fostering cosmopolitan societies on its coasts. The story of the pepper routes across the Arabian Sea is a potent antidote to the misconception that international trade and globalization began only with European colonialism.
-
-**Modern Context:** In Kerala today, pepper vines still twine around tall trees, and pepper remains a staple crop – a humble reminder of past glory. Villagers may not realize that the pepper in their backyard once perfumed Roman palaces and was fought over by kings and pirates.`;
+// Multilingual content is properly loaded from data file - no hardcoded content needed
 
 export default function PepperAndBullion() {
   return (

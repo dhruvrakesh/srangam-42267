@@ -4,19 +4,7 @@ import { IconPort } from '@/components/icons';
 import { ResponsiveImage } from '@/components/ui/ResponsiveImage';
 import { cholaNavalRaid } from '@/data/articles/chola-naval-raid';
 
-const content = `In 1025 CE, **Rajendra I** hit the Srivijayan nexus across the Straits of Malacca. The action was surgical—harbor targets, shipping, tribute nodes—and strategic: a signal that the Cholas could project **sea power** along their trading arteries.
-
-## The logistics behind the blow
-
-- Deep coastal **temple-port** infrastructure on the Coromandel.  
-- Guilds (Ayyavole 500 etc.) with credit and convoy practices.  
-- Shipyards and copper-plate bureaucracies that knit it together.
-
-## Outcome, not myth
-
-The raid didn't plant colonies; it **tilted leverage**. Convoys moved with less toll risk, and rivals recalculated. In an ocean held together by monsoon timing and shared ritual calendars, a decisive strike had oversized effects.
-
-**Why it matters:** It's a rare glimpse of **hard power** in a domain usually ruled by **knowledge power**.`;
+// Multilingual content is properly loaded from data file - no hardcoded content needed
 
 const ConvoyLanesComponent = () => (
   <div className="space-y-4">

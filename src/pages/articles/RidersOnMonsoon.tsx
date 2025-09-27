@@ -86,8 +86,8 @@ export default function RidersOnMonsoon() {
       </CardHeader>
       <CardContent>
         <p className="text-muted-foreground mb-4">
-          Ancient Indian navigators used the 27 lunar constellations (*nakṣatras*) to determine 
-          sailing seasons and predict weather patterns. Each nakṣatra corresponded to roughly 
+          Ancient Indian navigators used the 27 lunar constellations (**nakṣatras**) to determine 
+          sailing seasons and predict weather patterns. Each **nakṣatra** corresponded to roughly 
           13-14 days, creating a precise astronomical calendar for maritime activities.
         </p>
         <div className="grid grid-cols-3 gap-4 mt-4">
@@ -119,7 +119,7 @@ export default function RidersOnMonsoon() {
           </div>
           <div className="border-l-2 border-ocean pl-4">
             <div className="font-semibold">1200 BCE - Vedic Period</div>
-            <div className="text-muted-foreground">*Ṛig Veda* describes monsoon winds (Maruts) and ocean phenomena</div>
+            <div className="text-muted-foreground">**Ṛig Veda** describes **monsoon** winds (**Maruts**) and ocean phenomena</div>
           </div>
           <div className="border-l-2 border-ocean pl-4">
             <div className="font-semibold">300 BCE-300 CE - Sangam Era</div>
@@ -127,7 +127,7 @@ export default function RidersOnMonsoon() {
           </div>
           <div className="border-l-2 border-ocean pl-4">
             <div className="font-semibold">6th Century CE</div>
-            <div className="text-muted-foreground">Varāhamihira's *Bṛhat Saṃhitā* codifies monsoon prediction methods</div>
+            <div className="text-muted-foreground">**Varāhamihira's** **Bṛhat Saṃhitā** codifies **monsoon** prediction methods</div>
           </div>
           <div className="border-l-2 border-ocean pl-4">
             <div className="font-semibold">11th Century CE</div>

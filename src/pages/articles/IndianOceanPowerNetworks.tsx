@@ -204,9 +204,7 @@ const EconomicImpactChart = () => (
   </Card>
 );
 
-const content = `The Indian Ocean has long served as a highway of commerce and cultural exchange, linking distant civilizations from Rome to China. This article examines two pivotal episodes that illuminate the maritime world of ancient and medieval Asia: the Malabar–Red Sea spice circuit that connected India with the Roman world, and the Chola naval expedition of 1025 CE that projected South Indian power across Southeast Asian waters.
-
-Through monsoon winds and strategic ports, spices flowed westward while gold and silver returned eastward. Later, medieval Indian naval forces would demonstrate that the ocean could carry not just merchants but also military might. These interconnected stories reveal how trade networks, cultural exchange, and geopolitical power shaped the ancient world's first truly global economy.`;
+// Using multilingual content from data file - no hardcoded content needed
 
 const sidebarItems = [
   ...createHistoricalContext(

@@ -4,23 +4,7 @@ import { IconBasalt } from '@/components/icons';
 import { PlateSpeedChart } from '@/components/articles/PlateSpeedChart';
 import { gondwanaToHimalaya } from '@/data/articles/gondwana-to-himalaya';
 
-const content = `> IMAGE SLOT (Himalaya skyline)
-
-## The sprint
-
-The Indian Plate rifted from Gondwana and raced north at exceptional speeds (up to ~18 cm/yr). Think: geological Ferrari. As it collided with Eurasia, the **Himalaya** rose—and continues to rise.
-
-## The roar
-
-Just before collision, western India erupted as the **Deccan Traps**. Stair-step basalts flowed in pulses that straddle the K–Pg boundary. Debates continue about how volcanism and a Chicxulub-scale impact jointly shook ecosystems.
-
-## Rivers as witnesses
-
-Uplift rerouted drainages, loaded foreland basins with sediments, and fed monsoon feedbacks. When you read a Himalayan gravel bar, you're reading a mountain building logbook.
-
-## Why it matters
-
-Civilizations sit on **moving floors**. Ports, soils, and storm tracks follow the Earth system's long tempo. To study culture here is to study crust, mantle, and monsoon—together.`;
+// Multilingual content is properly loaded from data file - no hardcoded content needed
 
 const DeccanStepsComponent = () => (
   <div className="space-y-4">
