@@ -7,66 +7,141 @@
     "journal": "Proceedings of the National Academy of Sciences",
     "year": 2012,
     "doi": "10.1073/pnas.1112743109",
-    "url": "https://doi.org/10.1073/pnas.1112743109",
+    "url": "https://www.pnas.org/doi/10.1073/pnas.1112743109",
     "confidence": "green"
   },
   {
     "id": "singh2017",
-    "type": "article", 
+    "type": "article",
     "title": "Counter-intuitive influence of Himalayan river morphodynamics on Indus Civilisation urban settlements",
     "authors": "Singh, A., et al.",
     "journal": "Nature Communications",
     "year": 2017,
-    "doi": "10.1038/s41467-017-00618-8",
-    "url": "https://doi.org/10.1038/s41467-017-00618-8",
+    "doi": "10.1038/s41467-017-01643-9",
+    "url": "https://www.nature.com/articles/s41467-017-01643-9",
     "confidence": "green"
   },
   {
-    "id": "burbank1983",
+    "id": "hu2016",
     "type": "article",
-    "title": "The Karewa Group of Kashmir",
-    "authors": "Burbank, D.W. & Johnson, G.D.",
-    "journal": "Nature",
-    "year": 1983,
-    "doi": "10.1038/306238a0",
-    "url": "https://doi.org/10.1038/306238a0",
-    "confidence": "green"
-  },
-  {
-    "id": "basavaiah2010",
-    "type": "article",
-    "title": "Magnetostratigraphy of the Karewa Group",
-    "authors": "Basavaiah, N., et al.",
-    "journal": "Current Science",
-    "year": 2010,
+    "title": "The timing of India–Asia collision onset – Facts, theories, controversies",
+    "authors": "Hu, X., et al.",
+    "journal": "Earth-Science Reviews",
+    "year": 2016,
+    "doi": "10.1016/j.earscirev.2016.07.014",
+    "url": "https://es.nju.edu.cn/_upload/article/files/01/b4/a58f3a9a45208702f8465f9257f4/4b0bab46-22a6-4fd5-9822-abffa23502c7.pdf",
     "confidence": "green"
   },
   {
     "id": "vanhinsbergen2012",
     "type": "article",
-    "title": "Greater India Basin hypothesis and a two-stage Cenozoic collision",
+    "title": "Greater India Basin hypothesis and a two-stage Cenozoic collision between India and Asia",
     "authors": "van Hinsbergen, D.J.J., et al.",
     "journal": "Proceedings of the National Academy of Sciences",
     "year": 2012,
     "doi": "10.1073/pnas.1117262109",
-    "url": "https://doi.org/10.1073/pnas.1117262109",
+    "url": "https://www.pnas.org/doi/10.1073/pnas.1117262109",
     "confidence": "green"
   },
   {
-    "id": "nilamata",
-    "type": "text",
-    "title": "Nilamata Purana",
+    "id": "basavaiah2010",
+    "type": "article",
+    "title": "Revised magnetostratigraphy and characteristics of the fluviolacustrine sedimentation of the Kashmir basin, India during Pliocene–Pleistocene",
+    "authors": "Basavaiah, N., et al.",
+    "journal": "Journal of Geophysical Research",
+    "year": 2010,
+    "doi": "10.1029/2009JB006858",
+    "url": "https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2009JB006858",
+    "confidence": "green"
+  },
+  {
+    "id": "burbank1983",
+    "type": "article",
+    "title": "The late Cenozoic chronologic and stratigraphic development of the Kashmir intermontane basin, northwestern Himalaya",
+    "authors": "Burbank, D.W. & Johnson, G.D.",
+    "journal": "Palaeogeography, Palaeoclimatology, Palaeoecology",
+    "year": 1983,
+    "doi": "10.1016/0031-0182(83)90012-3",
+    "url": "https://burbank.faculty.geol.ucsb.edu/Site/Publications_files/Burbank-Johnson%20Kashmir%20basin%20Palaeo3%201983.pdf",
+    "confidence": "green"
+  },
+  {
+    "id": "jamisonbrereton2014",
+    "type": "book",
+    "title": "The Rigveda: The Earliest Religious Poetry of India (3 vols.)",
+    "authors": "Jamison, S.W. & Brereton, J.P.",
+    "publisher": "Oxford University Press",
+    "year": 2014,
+    "url": "https://global.oup.com/academic/product/the-rigveda-9780190685003",
+    "confidence": "green"
+  },
+  {
+    "id": "nilamata_ghai1968",
+    "type": "primary_text",
+    "title": "The Nilamata Purana (Text with English Translation)",
     "authors": "Ved Kumari Ghai (trans.)",
     "publisher": "J&K Academy of Art, Culture and Languages",
-    "year": 1973,
+    "year": 1968,
+    "url": "https://archive.org/details/the-nilamata-purana-vol-1-dr.-ved-kumari-ghai",
     "confidence": "amber"
   },
   {
-    "id": "rigveda10_75",
-    "type": "text", 
-    "title": "Rigveda 10.75 (Nadistuti - River Hymn)",
-    "authors": "Various translators",
+    "id": "project_madurai_pattinappalai",
+    "type": "primary_text",
+    "title": "Paṭṭiṉappālai (Tamil text; Project Madurai)",
+    "authors": "Project Madurai",
+    "year": 2000,
+    "url": "http://www.projectmadurai.org/pm_etexts/utf8/pmuni0077.html",
     "confidence": "green"
+  },
+  {
+    "id": "gaur2004_dwarka",
+    "type": "article",
+    "title": "An ancient harbour at Dwarka: study based on the recent underwater explorations",
+    "authors": "Gaur, A.S., et al.",
+    "journal": "Current Science",
+    "year": 2004,
+    "url": "https://drs.nio.res.in/drs/bitstream/handle/2264/317/Curr_Sci_86_1256.pdf?sequence=1",
+    "confidence": "amber"
+  },
+  {
+    "id": "nio1991_poompuhar",
+    "type": "article",
+    "title": "Marine archaeological explorations of Tranquebar–Poompuhar region on Tamil Nadu coast",
+    "authors": "Gaur, A.S. & Sundaresh",
+    "journal": "Marine Archaeology",
+    "year": 1991,
+    "url": "https://drs.nio.res.in/drs/bitstream/2264/3295/2/Mar_Archaeol_2_5.pdf",
+    "confidence": "amber"
+  },
+  {
+    "id": "nio1993_tech_poompuhar",
+    "type": "report",
+    "title": "Marine Archaeological Explorations in Poompuhar Waters (Technical Report NIO/SP/13/93)",
+    "authors": "NIO Marine Archaeology",
+    "year": 1993,
+    "url": "https://www.themua.org/collections/files/original/d7a46a40fffd7b7c0efe02709b5a81c1.pdf",
+    "confidence": "amber"
+  },
+  {
+    "id": "vora_gaur2006",
+    "type": "article",
+    "title": "Archaeological Sites as Indicators of Ancient Shorelines",
+    "authors": "Vora, K.H. & Gaur, A.S.",
+    "journal": "Geological Society of India",
+    "year": 2006,
+    "url": "https://www.ancientportsantiques.com/wp-content/uploads/Documents/PLACES/IndOc-Gulf/IndianOcean-Vora%26Gaur2006.pdf",
+    "confidence": "amber"
+  },
+  {
+    "id": "ramasamy2020_poompuhar",
+    "type": "article",
+    "title": "Detection of submerged harbour using GEBCO and MBES in the offshore region of ancient port city Poompuhar, South India",
+    "authors": "Ramasamy, S.M., et al.",
+    "journal": "Journal of Archaeological Science",
+    "year": 2020,
+    "url": "https://www.ancientportsantiques.com/wp-content/uploads/Documents/PLACES/IndOc-Gulf/Poompuhar-Ramasamy2020a.pdf",
+    "confidence": "amber"
   },
   {
     "id": "pranaylal2016",
@@ -77,14 +152,5 @@
     "year": 2016,
     "confidence": "amber",
     "note": "Popular science interpretation"
-  },
-  {
-    "id": "tilak1903",
-    "type": "book",
-    "title": "The Arctic Home in the Vedas",
-    "authors": "B.G. Tilak",
-    "year": 1903,
-    "confidence": "amber",
-    "note": "Historical interpretation - debated"
   }
 ]

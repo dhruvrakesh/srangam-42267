@@ -1,164 +1,92 @@
 [
   {
-    "slug": "gondwana-himalaya",
-    "title": "From Gondwana to Himalaya: India's Long Voyage",
-    "summary": "India rifted from Gondwana in the Cretaceous, raced north, and collided with Eurasia in a multi-stage process beginning ~59–50 Ma, lifting the Himalaya/Tibet—an ongoing tectonic engine that shapes climate, rivers, soils, biodiversity.",
+    "slug": "sutlej-sarasvati",
+    "title": "Śutudrī to Satadru: Sutlej Avulsions & the Sarasvatī Question",
+    "summary": "How a Himalayan river abandoned the Ghaggar–Hakra and what that means for Vedic to Harappan geographies.",
     "claims": [
       {
-        "text": "India rifted from Gondwana ~120-130 Ma during Cretaceous breakup.",
-        "evidence": ["vanhinsbergen2012"],
-        "confidence": "green"
-      },
-      {
-        "text": "Initial India-Asia collision began ~59-50 Ma with ongoing convergence.",
-        "evidence": ["vanhinsbergen2012"],
-        "confidence": "green"
-      },
-      {
-        "text": "Himalayan uplift intensified monsoon systems from ~23 Ma.",
-        "evidence": ["vanhinsbergen2012"],
-        "confidence": "amber"
-      }
-    ],
-    "texts": [
-      {
-        "tradition": "Hiranyagarbha Sukta",
-        "excerpt": "हिरण्यगर्भः समवर्तताग्रे भूतस्य जातः पतिरेक आसीत्",
-        "translation": "Hiranyagarbha arose first - the golden cosmic egg from which all existence emerged",
-        "limitWords": 25
-      }
-    ],
-    "assets": ["/images/geology/india-drift-timeline.svg"]
-  },
-  {
-    "slug": "sutlej-sarasvati", 
-    "title": "Śutudrī to Satadru: Sutlej's Many Beds",
-    "summary": "Rigveda's Nadīstuti lists Sarasvatī between Yamunā and Śutudrī/Vipāśā, anchoring a northwest geography. Modern work shows the Ghaggar–Hakra palaeochannel is an old course of the Sutlej and that Harappan-era streams east of the Indus were largely monsoon-fed.",
-    "claims": [
-      {
-        "text": "Ghaggar–Hakra is a former Sutlej valley with pre-urban Harappan avulsion.",
+        "text": "The Ghaggar–Hakra palaeovalley records an abandoned course of the Himalayan-fed Sutlej prior to Mature Harappan urbanism.",
         "evidence": ["singh2017", "giosan2012"],
         "confidence": "green"
       },
       {
-        "text": "Harappan Ghaggar flows were monsoon-fed, not perennial glacial.",
+        "text": "Harappan-period flows on the Ghaggar were predominantly monsoon-fed rather than perennial glacial discharge.",
         "evidence": ["giosan2012"],
         "confidence": "amber"
-      },
-      {
-        "text": "Major avulsion completed before mature Harappan urbanism (~4.5 ka).",
-        "evidence": ["singh2017"],
-        "confidence": "green"
       }
     ],
     "texts": [
       {
-        "tradition": "Rigveda 10.75.5",
-        "excerpt": "सरस्वती यमुना शुतुद्री विपाशा",
-        "translation": "Sarasvatī, Yamunā, Śutudrī, Vipāśā",
-        "limitWords": 20
+        "tradition": "Rigveda 10.75 (Nadīstuti)",
+        "reference": "RV 10.75.5–6",
+        "excerpt": "Śutudrī and Vipāśā are named among the rivers.",
+        "source": "jamisonbrereton2014",
+        "limitWords": 25
       }
     ],
-    "assets": ["/images/geology/ghaggar-palaeochannel.png", "/images/geology/vedic-rivers-map.svg"]
+    "assets": [
+      "/images/geodeep/ghaggar-palaeochannel.png",
+      "/images/geodeep/sutlej-avulsion-schematic.svg"
+    ]
   },
   {
     "slug": "satisar-kashmir",
-    "title": "Kāśyapa Drains Satisar: Kashmir's Karewa Lake & Jhelum Outlet", 
-    "summary": "Nilamata Purāṇa remembers a great lake (Satisar) drained by sage Kāśyapa. Geology documents thick Plio-Pleistocene Karewa lacustrine–fluvial deposits and later incision as the Jhelum cut a gorge.",
+    "title": "Satisar Remembered: Karewa Lakefill & Jhelum Outlet",
+    "summary": "Nilamata's memory of Satisar (a great lake) aligns with Kashmir Valley's lacustrine Karewa deposits and later incision via the Jhelum gorge.",
     "claims": [
       {
-        "text": "Plio-Pleistocene Karewa deposits record a long-lived lacustrine basin.",
+        "text": "Plio–Pleistocene Karewa Group records long-lived lacustrine–deltaic sedimentation in the Kashmir basin.",
         "evidence": ["burbank1983", "basavaiah2010"],
         "confidence": "green"
       },
       {
-        "text": "Jhelum incision through Baramulla gorge drained the ancient lake system.",
+        "text": "Subsequent incision at the Baramulla gorge enabled basin drainage, consistent with a lake-to-valley transition.",
         "evidence": ["burbank1983"],
         "confidence": "green"
-      },
-      {
-        "text": "Lake drainage timeline aligns with Puranic memory of Kāśyapa's intervention.",
-        "evidence": ["nilamata"],
-        "confidence": "amber"
       }
     ],
     "texts": [
       {
-        "tradition": "Nilamata Purana",
-        "excerpt": "Once the valley was Satisar, a lake; sage Kāśyapa made it fit for men",
-        "translation": "Kashmir valley transformation from lake to habitable land",
+        "tradition": "Nilamata Purāṇa",
+        "reference": "selected passages",
+        "excerpt": "Satisar, once a vast lake, is drained by sage Kaśyapa.",
+        "source": "nilamata_ghai1968",
         "limitWords": 20
       }
     ],
-    "assets": ["/images/geology/kashmir-karewa-section.svg", "/images/geology/satisar-reconstruction.png"]
+    "assets": [
+      "/images/geodeep/kashmir-karewa-section.svg",
+      "/images/geodeep/jhelum-baramulla-outlet.png"
+    ]
   },
   {
-    "slug": "earth-sea-sangam",
-    "title": "Earth–Sea Saṅgam: Ports That Moved with the Shoreline",
-    "summary": "Sangam poems celebrate Kaveripūmpattinam; marine archaeology off Poompuhar shows partial submergence and shoreline shift. Off Dwarka, surveys report structures interpreted as port remains with scholarly caution on interpretations.",
+    "slug": "ports-shorelines",
+    "title": "Earth–Sea Saṅgam: Shoreline Change and Ancient Ports",
+    "summary": "Textual memories of harbours (Puhār/Kāveripūmpattinam, Dvārakā) examined alongside bathymetry, anchors and coastal change.",
     "claims": [
       {
-        "text": "Poompuhar shoreline has migrated seaward with Cauvery delta progradation.",
-        "evidence": [],
-        "confidence": "green"
-      },
-      {
-        "text": "Submerged structures off Poompuhar indicate former coastal settlements.",
-        "evidence": [],
+        "text": "Offshore surveys near Poompuhar record submerged structures and a migrated shoreline along the Cauvery delta.",
+        "evidence": ["nio1991_poompuhar", "nio1993_tech_poompuhar", "ramasamy2020_poompuhar", "vora_gaur2006"],
         "confidence": "amber"
       },
       {
-        "text": "Dwarka underwater archaeology interpretations remain debated among scholars.",
-        "evidence": [],
+        "text": "Marine archaeology off Dwarka/Bet Dwarka has documented stone/lead anchors and cultural material associated with harbour activity.",
+        "evidence": ["gaur2004_dwarka"],
         "confidence": "amber"
       }
     ],
     "texts": [
       {
-        "tradition": "Paṭṭiṉappālai",
-        "excerpt": "கவிரி பூம்பட்டினம் கடல் துறையில்",
-        "translation": "Kaveri's Poompattinam at the sea port",
-        "limitWords": 15
+        "tradition": "Paṭṭiṉappālai (Sangam)",
+        "reference": "opening city/harbour section",
+        "excerpt": "A bustling seaport where ships crowd the estuary at Kāveripūmpattinam.",
+        "source": "project_madurai_pattinappalai",
+        "limitWords": 25
       }
     ],
-    "assets": ["/images/geology/poompuhar-bathymetry.png", "/images/reconstructions/muziris-flood-1341.jpg"]
-  },
-  {
-    "slug": "monsoon-deltas",
-    "title": "Monsoons, Deltas, and Civilizational Corridors",
-    "summary": "Late-Holocene aridification stabilized Indus plains and nudged settlement shifts; connects to coastal trade corridors documented in Sangam and archaeology.",
-    "claims": [
-      {
-        "text": "Late Holocene aridification (~4.2 ka event) affected Harappan settlements.",
-        "evidence": ["giosan2012"],
-        "confidence": "green"
-      },
-      {
-        "text": "Coastal trade networks adapted to changing river-delta systems.",
-        "evidence": [],
-        "confidence": "amber"
-      }
-    ],
-    "texts": [],
-    "assets": ["/images/geology/monsoon-delta-evolution.svg"]
-  },
-  {
-    "slug": "reading-room",
-    "title": "Reading Room: Influences & Debates",
-    "summary": "Showcase scholarly approaches from rigorous geology to interpretive frameworks, distinguishing evidence-based claims from speculative reconstructions.",
-    "claims": [
-      {
-        "text": "Pranay Lal's Indica provides accessible natural history narrative.",
-        "evidence": ["pranaylal2016"],
-        "confidence": "amber"
-      },
-      {
-        "text": "Tilak's Arctic Home represents historical interpretation requiring critical evaluation.",
-        "evidence": ["tilak1903"],
-        "confidence": "amber"
-      }
-    ],
-    "texts": [],
-    "assets": []
+    "assets": [
+      "/images/geodeep/poompuhar-bathymetry.png",
+      "/images/geodeep/dwarka-anchors-gallery.jpg"
+    ]
   }
 ]

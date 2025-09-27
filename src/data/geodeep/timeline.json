@@ -36,6 +36,12 @@
     "type": "collision"
   },
   {
+    "ageMa": 25,
+    "label": "Major Crustal Thickening",
+    "description": "Later phase of collision with ongoing uplift and basin evolution",
+    "type": "collision"
+  },
+  {
     "ageMa": 23,
     "label": "Monsoon Intensification",
     "description": "Himalayan uplift strengthens monsoon circulation patterns",
