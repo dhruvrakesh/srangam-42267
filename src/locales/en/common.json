@@ -95,5 +95,15 @@
       "published": "Published",
       "minutes": "min"
     }
+  },
+  "oceanNetworks": {
+    "title": "Maritime Networks of the Indian Ocean",
+    "subtitle": "Explore ancient maritime exchange through three lenses: the Bujang Valley network, Nagapattinam merchant guilds, and the 'Ocean of Churn'.",
+    "bujangValley": "Bujang Valley",
+    "nagapattinamGuilds": "Nagapattinam Guilds",
+    "oceanOfChurn": "Ocean of Churn",
+    "enhancedMap": "View Enhanced Geographic Map",
+    "needsCitation": "Needs citation",
+    "schematicNote": "Map is schematic; coordinates are approximate centroids."
   }
 }

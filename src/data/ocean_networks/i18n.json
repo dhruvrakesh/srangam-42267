@@ -1,0 +1,44 @@
+{
+  "hero": {
+    "title_hi": "भारतीय महासागर के समुद्री जाल",
+    "title_en": "Maritime Networks of the Indian Ocean",
+    "title_tr": "Bhāratīya Mahāsāgar ke samudrī jāl",
+    "subtitle_hi": "प्राचीन समुद्री व्यापार—बुजंग घाटी, नागपट्टिनम व्यापारी संघ और 'Ocean of Churn' के परिप्रेक्ष्यों से।",
+    "subtitle_en": "Explore ancient maritime exchange through three lenses: the Bujang Valley network, Nagapattinam merchant guilds, and the 'Ocean of Churn'.",
+    "aria_label": "Ocean Networks — Indian Ocean maritime exchange"
+  },
+  "labels": {
+    "published": "Published",
+    "read_more_en": "Read More →",
+    "read_more_hi": "और पढ़ें →",
+    "minutes": "min",
+    "needs_citation": "Needs citation"
+  },
+  "chips": [
+    { "hi": "शिलालेख", "en": "Inscriptions", "slug": "inscriptions" },
+    { "hi": "बुजंग घाटी", "en": "Bujang Valley", "slug": "bujang" },
+    { "hi": "नागपट्टिनम", "en": "Nagapattinam", "slug": "nagapattinam" },
+    { "hi": "समुद्री जाल", "en": "Maritime Networks", "slug": "maritime-networks" },
+    { "hi": "मानचित्र", "en": "Maps", "slug": "maps" }
+  ],
+  "cta": {
+    "enhanced_map_en": "View Enhanced Geographic Map",
+    "enhanced_map_hi": "उन्नत मानचित्र देखें"
+  },
+  "seo": {
+    "slug": "maritime-networks-indian-ocean",
+    "keywords": [
+      "Bujang Valley",
+      "Nagapattinam",
+      "Indian Ocean",
+      "Maritime Networks",
+      "Bay of Bengal",
+      "Malacca Straits"
+    ],
+    "meta_en": "A bilingual, evidence-first view of Indian Ocean maritime networks with schematic maps and curated sources."
+  },
+  "footnotes": [
+    "Map is schematic; coordinates are approximate centroids.",
+    "Items marked 'Needs citation' will be updated as sources are verified in Reading Room."
+  ]
+}

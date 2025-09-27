@@ -1,0 +1,43 @@
+{
+  "graphs": {
+    "bujang": {
+      "nodes": [
+        { "id": "kedah_bujang", "name": "Kedah (Bujang Valley)", "lat": 5.60, "lon": 100.37, "tags": ["bujang"], "needs_citation": false },
+        { "id": "kuala_merbok", "name": "Kuala Merbok (river mouth)", "lat": 5.72, "lon": 100.40, "tags": ["bujang"], "needs_citation": true },
+        { "id": "melaka", "name": "Melaka", "lat": 2.19, "lon": 102.25, "tags": ["maritime-networks"], "needs_citation": false },
+        { "id": "barus_sumatra", "name": "Barus (Sumatra)", "lat": 2.07, "lon": 98.38, "tags": ["maritime-networks"], "needs_citation": false },
+        { "id": "andaman_waypoint", "name": "Andaman Waypoint", "lat": 12.00, "lon": 93.00, "tags": ["maps"], "needs_citation": false },
+        { "id": "nagapattinam", "name": "Nagapattinam", "lat": 10.77, "lon": 79.84, "tags": ["nagapattinam"], "needs_citation": false }
+      ],
+      "edges": [
+        { "from": "kedah_bujang", "to": "melaka", "note": "Straits linkage (schematic)", "needs_citation": true },
+        { "from": "kedah_bujang", "to": "andaman_waypoint", "note": "Open-sea leg toward Bay of Bengal (schematic)", "needs_citation": true },
+        { "from": "andaman_waypoint", "to": "nagapattinam", "note": "Waypoint to Coromandel (schematic)", "needs_citation": true },
+        { "from": "kedah_bujang", "to": "barus_sumatra", "note": "Sumatran connection (schematic)", "needs_citation": true },
+        { "from": "kedah_bujang", "to": "kuala_merbok", "note": "River mouth access", "needs_citation": true }
+      ]
+    },
+    "nagapattinam": {
+      "nodes": [
+        { "id": "nagapattinam", "name": "Nagapattinam", "lat": 10.77, "lon": 79.84, "tags": ["nagapattinam"], "needs_citation": false },
+        { "id": "puhar", "name": "Kaveripattinam (Puhar)", "lat": 11.08, "lon": 79.85, "tags": ["nagapattinam"], "needs_citation": true },
+        { "id": "tamralipti", "name": "Tamralipti", "lat": 21.90, "lon": 87.75, "tags": ["maritime-networks"], "needs_citation": true },
+        { "id": "muziris", "name": "Muziris (Kodungallur)", "lat": 10.22, "lon": 76.20, "tags": ["maritime-networks"], "needs_citation": true }
+      ],
+      "edges": [
+        { "from": "nagapattinam", "to": "puhar", "note": "Coromandel linkage (schematic)", "needs_citation": true },
+        { "from": "nagapattinam", "to": "tamralipti", "note": "Bay of Bengal coastwise (schematic)", "needs_citation": true },
+        { "from": "nagapattinam", "to": "muziris", "note": "Peninsular circuit (schematic)", "needs_citation": true }
+      ]
+    },
+    "churn": {
+      "nodes": [
+        { "id": "bay_bengal", "name": "Bay of Bengal sector", "lat": 14.0, "lon": 90.0, "tags": ["maps"], "needs_citation": false },
+        { "id": "arabian_sea", "name": "Arabian Sea sector", "lat": 16.0, "lon": 67.0, "tags": ["maps"], "needs_citation": false }
+      ],
+      "edges": [
+        { "from": "bay_bengal", "to": "arabian_sea", "note": "Indicative monsoon reversal (conceptual)", "needs_citation": true }
+      ]
+    }
+  }
+}

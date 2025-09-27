@@ -1,0 +1,89 @@
+{
+  "tabs": [
+    {
+      "id": "bujang",
+      "title": "Bujang Valley",
+      "heading": "Bujang Valley: Gateway to the Bay of Bengal",
+      "intro_en": "Archaeological sites in the Kedah region (Malaysia) indicate a port-industrial landscape connected to the Malacca Straits and, by extension, the Bay of Bengal. The schematic below visualizes key nodes often discussed in relation to Bujang Valley's maritime sphere.",
+      "intro_hi": "मलेशिया के केदाह क्षेत्र (बुजंग घाटी) में पाए गए पुरातात्त्विक साक्ष्य एक बंदरगाह-औद्योगिक परिदृश्य की ओर संकेत करते हैं, जो मलक्का जलडमरूमध्य और आगे बंगाल की खाड़ी से जुड़ा था। नीचे का मानचित्र चर्चा में आने वाले मुख्य नोड्स का संक्षिप्त दृश्य देता है।",
+      "features": [
+        {
+          "title": "Bujang Valley Network",
+          "summary": "Schematic network centered on Kedah with waypoints toward Nagapattinam, the Andamans, Melaka, and Barus (Sumatra).",
+          "readingMinutes": 4,
+          "tags": ["bujang", "maritime-networks", "maps"],
+          "slug": "/maps/bujang-valley",
+          "status": "published"
+        },
+        {
+          "title": "Field Note: Industrial Activity at Riverine Sites",
+          "summary": "Annotated gallery of furnaces, beads, and ritual structures mentioned in site reports.",
+          "readingMinutes": 7,
+          "tags": ["bujang", "inscriptions", "maritime-networks"],
+          "slug": "/field-notes/bujang-industrial-sites",
+          "status": "draft",
+          "needs_citation": true
+        }
+      ],
+      "cta": {
+        "label_en": "Explore Bujang Sources",
+        "label_hi": "बुजंग संदर्भ देखें",
+        "href": "/reading-room?topic=bujang-valley"
+      }
+    },
+    {
+      "id": "nagapattinam",
+      "title": "Nagapattinam Guilds",
+      "heading": "Nagapattinam: Merchant Guilds on the Coromandel",
+      "intro_en": "Nagapattinam on the Coromandel coast functioned as a major node for merchant guilds operating across the Bay of Bengal. This tab collates inscriptions, port mentions, and routes discussed in secondary literature.",
+      "intro_hi": "कोरोमंडल तट पर नागपट्टिनम व्यापारी संघों का प्रमुख नोड था। यह टैब शिलालेखों, बंदरगाह संदर्भों और मार्गों को एक साथ रखता है।",
+      "features": [
+        {
+          "title": "Guild Networks (Schematic)",
+          "summary": "Routes and partner ports associated with Nagapattinam as represented in inscriptions and secondary compilations.",
+          "readingMinutes": 5,
+          "tags": ["nagapattinam", "inscriptions", "maritime-networks"],
+          "slug": "/maps/nagapattinam-ocean",
+          "status": "draft",
+          "needs_citation": true
+        },
+        {
+          "title": "Reading Dossier",
+          "summary": "Curated references (inscriptions, translations, site reports) to be verified and linked.",
+          "readingMinutes": 3,
+          "tags": ["inscriptions"],
+          "slug": "/reading-room?topic=nagapattinam",
+          "status": "published"
+        }
+      ],
+      "cta": {
+        "label_en": "Open Dossier",
+        "label_hi": "डोज़ियर खोलें",
+        "href": "/reading-room?topic=nagapattinam"
+      }
+    },
+    {
+      "id": "churn",
+      "title": "Ocean of Churn",
+      "heading": "Currents, Monsoons, and Littoral Exchange",
+      "intro_en": "A conceptual lens on monsoonal timing, currents, and littoral ecologies that structured maritime seasonality and exchange across the Indian Ocean.",
+      "intro_hi": "मानसूनी समय, धाराओं और तटीय पारिस्थितिकी के वैचारिक पक्ष—जिन्होंने समुद्री मौसम और विनिमय को आकार दिया।",
+      "features": [
+        {
+          "title": "Monsoon Windows",
+          "summary": "Interactive explainer of sailing windows and indicative route arrows for Bay of Bengal and Arabian Sea sectors.",
+          "readingMinutes": 6,
+          "tags": ["maritime-networks", "maps"],
+          "slug": "/maps/monsoon-windows",
+          "status": "draft",
+          "needs_citation": true
+        }
+      ],
+      "cta": {
+        "label_en": "View Enhanced Geographic Map",
+        "label_hi": "उन्नत मानचित्र देखें",
+        "href": "/maps"
+      }
+    }
+  ]
+}
