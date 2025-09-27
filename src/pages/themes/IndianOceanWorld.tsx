@@ -1,11 +1,34 @@
+import React, { useState } from 'react';
 import { ArticleCard } from "@/components/ui/ArticleCard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getArticlesByTheme } from "@/lib/multilingualArticleUtils";
 import { useLanguage } from "@/components/language/LanguageProvider";
 import { IconMonsoon, IconConch, IconLotus } from "@/components/icons";
+import { 
+  Sourcebook, 
+  RouteAtlas, 
+  RitualCalendar, 
+  MaritimeLexicon, 
+  ObjectGallery,
+  parseSourcebookCSV 
+} from "@/components/modules";
+
+// Import data
+import sourcebookCSV from "@/data/oceanic_bhasha_sample_dataset.csv?raw";
+import geoData from "@/data/ocean_gis_pins.geojson";
 
 export default function IndianOceanWorld() {
   const { currentLanguage } = useLanguage();
   const themeArticles = getArticlesByTheme("Indian Ocean World", currentLanguage);
+  
+  const sourcebookData = React.useMemo(() => {
+    try {
+      return parseSourcebookCSV(sourcebookCSV);
+    } catch (error) {
+      console.error('Error parsing sourcebook CSV:', error);
+      return [];
+    }
+  }, []);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -40,12 +63,10 @@ export default function IndianOceanWorld() {
               </span>
             </h1>
             <h2 className="font-serif text-2xl lg:text-3xl font-semibold text-ocean mb-8">
-              Samudra Manthan — The Cosmic Ocean
+              वरुण क्षेत्र — Varuṇa's Realm
             </h2>
             <p className="text-lg text-charcoal/80 max-w-4xl mx-auto leading-relaxed font-medium">
-              वरुण का क्षेत्र — Varuna's sacred realm where monsoon rhythms dance with maritime dharma. 
-              From seasonal trading cycles guided by celestial movements to cultural practices emerging 
-              around waiting, weather, and the eternal dance of ocean and sky.
+              Varuṇa's realm where monsoon rhythms meet maritime dharma. From seasonal trade cycles and celestial navigation to ritual memory, the Indian Ocean is a civilizational commons binding Sangam ports, Vedic sky-waters, and far-flung inscriptions.
             </p>
             <div className="mt-6 h-1 w-32 bg-gradient-to-r from-ocean via-peacock-blue to-lotus-pink mx-auto rounded-full"></div>
             
@@ -59,19 +80,50 @@ export default function IndianOceanWorld() {
           </div>
         </div>
 
-        {/* Articles Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {themeArticles.map((article) => (
-            <ArticleCard key={article.id} article={article} />
-          ))}
-        </div>
+        {/* Five Authoritative Modules */}
+        <Tabs defaultValue="articles" className="w-full">
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="articles">Articles</TabsTrigger>
+            <TabsTrigger value="sourcebook">Sourcebook</TabsTrigger>
+            <TabsTrigger value="atlas">Route Atlas</TabsTrigger>
+            <TabsTrigger value="calendar">Ritual Calendar</TabsTrigger>
+            <TabsTrigger value="lexicon">Maritime Lexicon</TabsTrigger>
+            <TabsTrigger value="gallery">Object Gallery</TabsTrigger>
+          </TabsList>
 
-        {/* Placeholder for more content */}
-        {themeArticles.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">More articles coming soon...</p>
-          </div>
-        )}
+          <TabsContent value="articles" className="mt-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {themeArticles.map((article) => (
+                <ArticleCard key={article.id} article={article} />
+              ))}
+            </div>
+            {themeArticles.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">More articles coming soon...</p>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="sourcebook" className="mt-8">
+            <Sourcebook sources={sourcebookData} />
+          </TabsContent>
+
+          <TabsContent value="atlas" className="mt-8">
+            <RouteAtlas geoData={geoData} />
+          </TabsContent>
+
+          <TabsContent value="calendar" className="mt-8">
+            <RitualCalendar />
+          </TabsContent>
+
+          <TabsContent value="lexicon" className="mt-8">
+            <MaritimeLexicon />
+          </TabsContent>
+
+          <TabsContent value="gallery" className="mt-8">
+            <ObjectGallery />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
