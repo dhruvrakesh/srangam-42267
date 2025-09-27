@@ -45,8 +45,14 @@ class CorrelationEngine {
 
   private async loadCorrelationData() {
     try {
-      // Load the CSV data - in a real implementation this would be dynamic
-      // For now, we'll return mock data that matches the structure
+      // Load expanded CSV data with 69 correlation points
+      const response = await fetch('/src/data/oceanic_bharat/correlation_matrix_expanded.csv');
+      const csvText = await response.text();
+      
+      this.correlationData = this.parseCSV(csvText);
+    } catch (error) {
+      console.error('Failed to load correlation data:', error);
+      // Fallback to key Ancient India correlations
       this.correlationData = [
         {
           page_or_card: "Ancient India",
@@ -54,43 +60,61 @@ class CorrelationEngine {
           evidence_primary: "Arthaśāstra navādhyakṣa provisions",
           evidence_archaeology: "Tamralipti harbor installations",
           pin_place: "Tamralipti",
-          lat: "22.28",
+          lat: "22.3",
           lon: "87.92",
-          suggested_article: "Bharats Ancient Heritage",
-          mla_primary: "Olivelle, Patrick. King, Governance, and Law in Ancient India. Oxford UP, 2013.",
-          confidence: 'high',
-          needs_citation: false
-        },
-        {
-          page_or_card: "Indian Ocean World",
-          claim: "Roman-Indian pepper trade transformed imperial finances",
-          evidence_primary: "Periplus Maris Erythraei price records",
-          evidence_archaeology: "Berenike spice containers",
-          pin_place: "Muziris",
-          lat: "10.21",
-          lon: "76.26",
-          suggested_article: "Pepper and Bullion",
-          mla_primary: "Casson, Lionel. The Periplus Maris Erythraei. Princeton UP, 1989.",
-          confidence: 'medium',
-          needs_citation: true
-        },
-        {
-          page_or_card: "Empires & Exchange",
-          claim: "Chola naval expedition restructured Southeast Asian trade",
-          evidence_primary: "Thanjavur inscription details",
-          evidence_archaeology: "Sungai Batu occupation layers",
-          pin_place: "Kedah",
-          lat: "5.69",
-          lon: "100.50",
-          suggested_article: "The Chola Naval Raid",
-          mla_primary: "Nilakanta Sastri, K.A. The Cōḷas. University of Madras, 1955.",
-          confidence: 'high',
-          needs_citation: false
+          suggested_article: "Bharat's Ancient Heritage",
+          mla_primary: "Olivelle, Patrick. King, Governance, and Law in Ancient India. Oxford UP, 2013."
         }
       ];
-    } catch (error) {
-      console.error('Failed to load correlation data:', error);
     }
+  }
+
+  private parseCSV(csvText: string): CorrelationData[] {
+    const lines = csvText.trim().split('\n');
+    const headers = lines[0].split(',');
+    const data: CorrelationData[] = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+      const values = this.parseCSVLine(lines[i]);
+      if (values.length >= 9) {
+        data.push({
+          page_or_card: values[0],
+          claim: values[1],
+          evidence_primary: values[2],
+          evidence_archaeology: values[3],
+          pin_place: values[4],
+          lat: values[5],
+          lon: values[6],
+          suggested_article: values[7],
+          mla_primary: values[8],
+          confidence: values[4]?.includes('[approx.]') ? 'low' : 'high',
+          needs_citation: values[2] === '—' || values[3] === '—'
+        });
+      }
+    }
+    
+    return data;
+  }
+
+  private parseCSVLine(line: string): string[] {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    result.push(current.trim());
+    
+    return result;
   }
 
   public getSourcesAndPins(pageOrCard: string): SourcesAndPins {
@@ -138,20 +162,24 @@ class CorrelationEngine {
   }
 
   private categorizePin(pageOrCard: string): string {
-    const categories = {
-      'ports': ['port', 'emporia', 'harbor'],
-      'inscription': ['edict', 'inscription', 'kandahar'],
-      'archaeology': ['archaeology', 'excavation', 'find'],
-      'governance': ['mauryan', 'governance', 'administration'],
-      'naval': ['chola', 'naval', 'fleet', 'raid']
+    const categoryMap: Record<string, string> = {
+      'Ports & Emporia': 'ports',
+      'Transoceanic Hubs': 'transoceanic',
+      'Epigraphy & Guilds': 'inscription',
+      'Red Sea Gateways': 'red-sea',
+      'Arabian Littoral': 'arabian',
+      'Horn of Africa': 'horn-africa',
+      'Western Indian Ocean': 'western-ocean',
+      'Governance & Edicts': 'governance',
+      'Court & Diplomacy': 'court',
+      'Coin Hoards': 'coins',
+      'Forts & Naval': 'naval',
+      'Waypoints': 'waypoints',
+      'Interior Corridors': 'interior',
+      'Ritual Memory': 'ritual'
     };
 
-    for (const [category, keywords] of Object.entries(categories)) {
-      if (keywords.some(keyword => pageOrCard.toLowerCase().includes(keyword))) {
-        return category;
-      }
-    }
-    return 'general';
+    return categoryMap[pageOrCard] || 'general';
   }
 
   public getPinsByCategory(category: string): Pin[] {
@@ -168,6 +196,10 @@ class CorrelationEngine {
       }));
 
     return category === 'all' ? allPins : allPins.filter(pin => pin.category === category);
+  }
+
+  public getAllCorrelationData(): CorrelationData[] {
+    return this.correlationData;
   }
 }
 

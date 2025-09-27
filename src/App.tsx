@@ -47,6 +47,9 @@ const BatchBujangNagapattinamOcean = lazy(() => import("./pages/BatchBujangNagap
 const BatchMuzirisKutaiAshoka = lazy(() => import("./pages/BatchMuzirisKutaiAshoka"));
 const Sitemap = lazy(() => import("./pages/Sitemap"));
 
+// Lazy load oceanic article system
+const OceanicRouter = lazy(() => import("./pages/oceanic/OceanicRouter"));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -109,6 +112,10 @@ const App = () => (
                 <Route path="/partnership" element={<Partnership />} />
                 <Route path="/support-research" element={<SupportResearch />} />
                 <Route path="/sitemap" element={<Sitemap />} />
+                
+                {/* Oceanic Bharat article system */}
+                <Route path="/oceanic/*" element={<OceanicRouter />} />
+                
                 <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>

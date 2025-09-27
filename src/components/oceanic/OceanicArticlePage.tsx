@@ -6,14 +6,15 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Clock, MapPin, BookOpen, ExternalLink } from 'lucide-react';
 import { SourcesAndPins } from './SourcesAndPins';
 import { useLanguage } from '@/components/language/LanguageProvider';
-import oceanicCardsData from '@/data/oceanic_bharat/oceanic_cards_8.json';
+import { getOceanicCardBySlug, getOceanicCards } from '@/lib/oceanicCardsLoader';
 
 export const OceanicArticlePage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { currentLanguage } = useLanguage();
 
-  const article = oceanicCardsData.cards.find(card => card.slug === slug);
+  const article = getOceanicCardBySlug(slug);
+  const allCards = getOceanicCards();
 
   if (!article) {
     return (
@@ -182,7 +183,7 @@ export const OceanicArticlePage: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {oceanicCardsData.cards
+                  {allCards
                     .filter(card => card.slug !== slug)
                     .slice(0, 3)
                     .map((relatedCard, index) => (

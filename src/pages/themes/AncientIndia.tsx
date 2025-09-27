@@ -2,6 +2,8 @@ import { ArticleCard } from "@/components/ui/ArticleCard";
 import { getArticlesByTheme } from "@/lib/multilingualArticleUtils";
 import { useLanguage } from "@/components/language/LanguageProvider";
 import { IconScript, IconSarnathLion, IconOm } from "@/components/icons";
+import { SourcesAndPins } from "@/components/oceanic/SourcesAndPins";
+import { CorrelationTable } from "@/components/oceanic/CorrelationTable";
 
 export default function AncientIndia() {
   const { currentLanguage } = useLanguage();
@@ -78,6 +80,16 @@ export default function AncientIndia() {
             <p className="text-muted-foreground">More articles coming soon...</p>
           </div>
         )}
+
+        {/* Sources & Pins Integration */}
+        <div className="mt-16 border-t border-saffron/20 pt-12">
+          <SourcesAndPins pageOrCard="Ancient India" />
+        </div>
+
+        {/* QA Correlation Table */}
+        <div className="mt-12">
+          <CorrelationTable />
+        </div>
       </div>
     </div>
   );
