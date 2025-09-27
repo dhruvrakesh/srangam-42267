@@ -1,0 +1,56 @@
+[
+  {
+    "ageMa": 150,
+    "label": "Gondwana Unity",
+    "description": "India united with Antarctica, Australia in southern supercontinent",
+    "type": "tectonic"
+  },
+  {
+    "ageMa": 130,
+    "label": "Rift Initiation", 
+    "description": "India begins rifting from Gondwana, Madagascar separates",
+    "type": "tectonic"
+  },
+  {
+    "ageMa": 88,
+    "label": "India-Seychelles Split",
+    "description": "India separates from Seychelles, begins northward journey",
+    "type": "tectonic"
+  },
+  {
+    "ageMa": 66,
+    "label": "Deccan Volcanism",
+    "description": "Massive volcanic eruptions form Deccan Traps, K-Pg boundary",
+    "type": "volcanic"
+  },
+  {
+    "ageMa": 59,
+    "label": "Initial Contact",
+    "description": "India's northern margin first contacts Eurasian plate",
+    "type": "collision"
+  },
+  {
+    "ageMa": 50,
+    "label": "Hard Collision",
+    "description": "Major India-Asia collision begins, Himalayan uplift initiates",
+    "type": "collision"
+  },
+  {
+    "ageMa": 23,
+    "label": "Monsoon Intensification",
+    "description": "Himalayan uplift strengthens monsoon circulation patterns",
+    "type": "climate"
+  },
+  {
+    "ageMa": 5,
+    "label": "River Reorganization",
+    "description": "Major river systems establish modern courses, Sutlej avulsion",
+    "type": "fluvial"
+  },
+  {
+    "ageMa": 0,
+    "label": "Present Day",
+    "description": "Ongoing collision, 50mm/year convergence continues",
+    "type": "active"
+  }
+]

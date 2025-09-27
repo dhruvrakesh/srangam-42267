@@ -1,0 +1,90 @@
+[
+  {
+    "id": "giosan2012",
+    "type": "article",
+    "title": "Fluvial landscapes of the Harappan civilization",
+    "authors": "Giosan, L., et al.",
+    "journal": "Proceedings of the National Academy of Sciences",
+    "year": 2012,
+    "doi": "10.1073/pnas.1112743109",
+    "url": "https://doi.org/10.1073/pnas.1112743109",
+    "confidence": "green"
+  },
+  {
+    "id": "singh2017",
+    "type": "article", 
+    "title": "Counter-intuitive influence of Himalayan river morphodynamics on Indus Civilisation urban settlements",
+    "authors": "Singh, A., et al.",
+    "journal": "Nature Communications",
+    "year": 2017,
+    "doi": "10.1038/s41467-017-00618-8",
+    "url": "https://doi.org/10.1038/s41467-017-00618-8",
+    "confidence": "green"
+  },
+  {
+    "id": "burbank1983",
+    "type": "article",
+    "title": "The Karewa Group of Kashmir",
+    "authors": "Burbank, D.W. & Johnson, G.D.",
+    "journal": "Nature",
+    "year": 1983,
+    "doi": "10.1038/306238a0",
+    "url": "https://doi.org/10.1038/306238a0",
+    "confidence": "green"
+  },
+  {
+    "id": "basavaiah2010",
+    "type": "article",
+    "title": "Magnetostratigraphy of the Karewa Group",
+    "authors": "Basavaiah, N., et al.",
+    "journal": "Current Science",
+    "year": 2010,
+    "confidence": "green"
+  },
+  {
+    "id": "vanhinsbergen2012",
+    "type": "article",
+    "title": "Greater India Basin hypothesis and a two-stage Cenozoic collision",
+    "authors": "van Hinsbergen, D.J.J., et al.",
+    "journal": "Proceedings of the National Academy of Sciences",
+    "year": 2012,
+    "doi": "10.1073/pnas.1117262109",
+    "url": "https://doi.org/10.1073/pnas.1117262109",
+    "confidence": "green"
+  },
+  {
+    "id": "nilamata",
+    "type": "text",
+    "title": "Nilamata Purana",
+    "authors": "Ved Kumari Ghai (trans.)",
+    "publisher": "J&K Academy of Art, Culture and Languages",
+    "year": 1973,
+    "confidence": "amber"
+  },
+  {
+    "id": "rigveda10_75",
+    "type": "text", 
+    "title": "Rigveda 10.75 (Nadistuti - River Hymn)",
+    "authors": "Various translators",
+    "confidence": "green"
+  },
+  {
+    "id": "pranaylal2016",
+    "type": "book",
+    "title": "Indica: A Deep Natural History of the Indian Subcontinent",
+    "authors": "Pranay Lal",
+    "publisher": "Allen Lane",
+    "year": 2016,
+    "confidence": "amber",
+    "note": "Popular science interpretation"
+  },
+  {
+    "id": "tilak1903",
+    "type": "book",
+    "title": "The Arctic Home in the Vedas",
+    "authors": "B.G. Tilak",
+    "year": 1903,
+    "confidence": "amber",
+    "note": "Historical interpretation - debated"
+  }
+]

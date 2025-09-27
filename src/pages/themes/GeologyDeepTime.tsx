@@ -2,10 +2,33 @@ import { ArticleCard } from "@/components/ui/ArticleCard";
 import { getArticlesByTheme } from "@/lib/multilingualArticleUtils";
 import { useLanguage } from "@/components/language/LanguageProvider";
 import { IconBasalt, IconDharmaChakra, IconLotus } from "@/components/icons";
+import { getCaseStudies, getTimeline } from "@/lib/geodeep";
+import { TimelineDeepTime } from "@/components/geodeep/TimelineDeepTime";
+import { CaseStudyCard } from "@/components/geodeep/CaseStudyCard";
+import { EvidenceDrawer } from "@/components/geodeep/EvidenceDrawer";
+import { ReadingRoomGeology } from "@/components/geodeep/ReadingRoomGeology";
+import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function GeologyDeepTime() {
   const { currentLanguage } = useLanguage();
   const themeArticles = getArticlesByTheme("Geology & Deep Time", currentLanguage);
+  const caseStudies = getCaseStudies();
+  const timeline = getTimeline();
+  const [selectedStudy, setSelectedStudy] = useState<string | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const handleOpenDetails = (slug: string) => {
+    setSelectedStudy(slug);
+    setIsDrawerOpen(true);
+  };
+
+  const handleCloseDrawer = () => {
+    setIsDrawerOpen(false);
+    setSelectedStudy(null);
+  };
+
+  const selectedCaseStudy = selectedStudy ? caseStudies.find(cs => cs.slug === selectedStudy) : null;
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -100,22 +123,80 @@ export default function GeologyDeepTime() {
           </div>
         </div>
 
-        {/* Articles Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {themeArticles.map((article) => (
-            <ArticleCard key={article.id} article={article} />
-          ))}
-        </div>
+        {/* Deep Time Timeline */}
+        <TimelineDeepTime events={timeline} />
 
-        {/* Placeholder for more content */}
-        {themeArticles.length === 0 && (
-          <div className="text-center py-16">
-            <div className="p-8 rounded-lg bg-indigo-dharma/5 backdrop-blur-sm border border-laterite/20">
-              <IconBasalt size={48} className="mx-auto mb-4 text-laterite/50" />
-              <p className="text-muted-foreground">More geological dharma studies coming soon...</p>
+        {/* Main Content Tabs */}
+        <Tabs defaultValue="case-studies" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-8">
+            <TabsTrigger value="case-studies">Case Studies</TabsTrigger>
+            <TabsTrigger value="articles">Articles</TabsTrigger>
+            <TabsTrigger value="reading-room">Reading Room</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="case-studies">
+            <div className="space-y-8">
+              <div className="text-center">
+                <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-4">
+                  Geological Case Studies
+                </h2>
+                <p className="text-muted-foreground max-w-3xl mx-auto">
+                  Six rigorous correlations between sacred text memories and peer-reviewed earth science. 
+                  Each study pairs Vedic, Puranic, or Sangam sources with modern geological evidence.
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {caseStudies.map((caseStudy) => (
+                  <CaseStudyCard 
+                    key={caseStudy.slug} 
+                    caseStudy={caseStudy}
+                    onOpenDetails={handleOpenDetails}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          </TabsContent>
+
+          <TabsContent value="articles">
+            <div className="space-y-8">
+              <div className="text-center">
+                <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-4">
+                  Featured Articles
+                </h2>
+                <p className="text-muted-foreground max-w-3xl mx-auto">
+                  Deep-dive articles exploring the geological foundations of cultural exchange and sacred geography.
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {themeArticles.map((article) => (
+                  <ArticleCard key={article.id} article={article} />
+                ))}
+              </div>
+
+              {themeArticles.length === 0 && (
+                <div className="text-center py-16">
+                  <div className="p-8 rounded-lg bg-indigo-dharma/5 backdrop-blur-sm border border-laterite/20">
+                    <IconBasalt size={48} className="mx-auto mb-4 text-laterite/50" />
+                    <p className="text-muted-foreground">More geological dharma studies coming soon...</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="reading-room">
+            <ReadingRoomGeology />
+          </TabsContent>
+        </Tabs>
+
+        {/* Evidence Drawer */}
+        <EvidenceDrawer 
+          caseStudy={selectedCaseStudy}
+          isOpen={isDrawerOpen}
+          onClose={handleCloseDrawer}
+        />
       </div>
     </div>
   );
