@@ -1,0 +1,40 @@
+{
+  "map": {
+    "default_center": [12.0, 78.0],
+    "default_zoom": 4,
+    "layers": [
+      { "id": "ports", "label": "Ports", "enabled": true, "source": "cosmic_ocean.ports.json" },
+      { "id": "monsoon", "label": "Monsoon", "enabled": true, "source": "cosmic_ocean.monsoon.json" },
+      { "id": "routes", "label": "Schematic Routes", "enabled": false, "source": "#inline" }
+    ],
+    "routes": [
+      { 
+        "from": "kedah_bujang", 
+        "to": "nagapattinam", 
+        "note": "Schematic Bay of Bengal leg", 
+        "needs_citation": true,
+        "period_band": "4th–10th c."
+      },
+      { 
+        "from": "muziris", 
+        "to": "myos_hormos", 
+        "note": "Conceptual Red Sea connection", 
+        "needs_citation": true,
+        "period_band": "1st c. CE–"
+      },
+      {
+        "from": "nagapattinam",
+        "to": "muziris",
+        "note": "Peninsular coastal route",
+        "needs_citation": true,
+        "period_band": "Chola"
+      }
+    ],
+    "filters": {
+      "chips": ["malabar", "red-sea", "coromandel", "inscriptions", "archaeology"],
+      "period_bands": ["1st c. CE–", "4th–10th c.", "Chola"],
+      "evidence_types": ["inscriptions", "archaeology", "texts"]
+    },
+    "disclaimer": "Schematic visualization; coordinates are approximate."
+  }
+}

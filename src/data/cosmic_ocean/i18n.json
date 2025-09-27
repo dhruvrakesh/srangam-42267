@@ -1,0 +1,38 @@
+{
+  "hero": {
+    "title_hi": "भौगोलिक डेटा",
+    "title_en": "Cosmic Ocean Visualizations",
+    "title_tr": "Bhaugōlik ḍeṭā",
+    "subtitle_hi": "समुद्र मंथन — भारतीय महासागर जगत की स्थानिक और कालिक प्रतिमाएँ: पवित्र बंदरगाह ज्यामिति से लेकर मानसूनी मण्डलों तक।",
+    "subtitle_en": "Interactive cosmographic visualizations of the Indian Ocean world—from sacred port geometries to monsoon mandalas.",
+    "aria_label": "Maps & Data — Cosmic Ocean Visualizations"
+  },
+  "labels": {
+    "historical_ports": "Historical Ports",
+    "monsoon_patterns": "Monsoon Patterns",
+    "view_map_en": "View Interactive Map",
+    "view_map_hi": "इंटरऐक्टिव मानचित्र देखें",
+    "view_animation_en": "View Seasonal Animation",
+    "view_animation_hi": "मौसमी एनिमेशन देखें",
+    "minutes": "min",
+    "narrative": "Narrative",
+    "evidence": "Evidence",
+    "needs_citation": "Needs citation",
+    "download_json": "Download JSON",
+    "sources": "Sources",
+    "open_reading_room": "Open in Reading Room",
+    "time_period": "Time Period",
+    "layers": "Map Layers"
+  },
+  "chips": [
+    { "label_hi": "मलाबार", "label_en": "Malabar", "slug": "malabar" },
+    { "label_hi": "रेड सी", "label_en": "Red Sea", "slug": "red-sea" },
+    { "label_hi": "कोरोमंडल", "label_en": "Coromandel", "slug": "coromandel" },
+    { "label_hi": "शिलालेख", "label_en": "Inscriptions", "slug": "inscriptions" },
+    { "label_hi": "पुरातत्व", "label_en": "Archaeology", "slug": "archaeology" }
+  ],
+  "footnotes": [
+    "Schematic visualization; coordinates are approximate centroids.",
+    "Items marked 'Needs citation' link to Reading Room stubs until verification is complete."
+  ]
+}

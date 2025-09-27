@@ -1,16 +1,76 @@
-import { Map, Database, BarChart3, Globe } from "lucide-react";
+import { Map, Database, BarChart3, Globe, Download } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { PORTS, MONSOON, PLATE_SPEED, PEPPER_CARGO } from "@/data/siteData";
 import { LazyMapboxPortMap } from "@/components/interactive/LazyMapboxPortMap";
 import { LazyMonsoonAnimation } from "@/components/interactive/LazyMonsoonAnimation";
 import { PlateTimeline } from "@/components/interactive/PlateTimeline";
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { useTranslation } from 'react-i18next';
 import { IconConch, IconDharmaChakra } from "@/components/icons";
+import { 
+  CosmicOceanHero, 
+  FilterChips, 
+  EvidenceToggle, 
+  TimeSlider, 
+  LayerControls, 
+  PortCard 
+} from '@/components/cosmic-ocean';
+import portsData from '@/data/cosmic_ocean/ports.json';
+import monsoonData from '@/data/cosmic_ocean/monsoon.json';
+import cosmicOceanI18n from '@/data/cosmic_ocean/i18n.json';
 
 export default function MapsData() {
   const [activeModal, setActiveModal] = useState<'ports' | 'monsoon' | 'timeline' | null>(null);
+  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+  const [showEvidence, setShowEvidence] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState('all');
+  const [enabledLayers, setEnabledLayers] = useState(['ports', 'monsoon']);
+  const { i18n } = useTranslation();
+  
+  const handleFilterToggle = useCallback((filter: string) => {
+    setSelectedFilters(prev => 
+      prev.includes(filter) 
+        ? prev.filter(f => f !== filter)
+        : [...prev, filter]
+    );
+  }, []);
+
+  const handleLayerToggle = useCallback((layerId: string) => {
+    setEnabledLayers(prev =>
+      prev.includes(layerId)
+        ? prev.filter(id => id !== layerId)
+        : [...prev, layerId]
+    );
+  }, []);
+
+  const handleOpenReadingRoom = useCallback((ref: string) => {
+    window.open(ref, '_blank');
+  }, []);
+
+  const handleDownloadData = useCallback((portId: string) => {
+    const port = portsData.ports.find(p => p.id === portId);
+    if (port) {
+      const dataStr = JSON.stringify(port, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${portId}_data.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+  }, []);
+
+  // Filter ports based on selected filters and period
+  const filteredPorts = portsData.ports.filter(port => {
+    const matchesFilter = selectedFilters.length === 0 || 
+      selectedFilters.some(filter => port.tags.includes(filter));
+    const matchesPeriod = selectedPeriod === 'all' || port.period_band === selectedPeriod;
+    return matchesFilter && matchesPeriod;
+  });
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -23,124 +83,138 @@ export default function MapsData() {
       <div className="absolute inset-0 bg-gradient-to-t from-background/10 via-transparent to-background/5" />
       
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Dharmic Cosmic Header */}
-        <div className="text-center mb-16">
-          <div className="flex justify-center items-center gap-6 mb-8">
-            <div className="relative">
-              <div className="absolute inset-0 bg-ocean/30 rounded-full blur-xl transform scale-150 animate-pulse-gentle"></div>
-              <div className="relative bg-gradient-to-br from-ocean/20 to-peacock-blue/20 p-6 rounded-full backdrop-blur-sm border border-ocean/30">
-                <IconConch size={48} className="text-ocean" />
-              </div>
-            </div>
-            <div className="relative">
-              <div className="absolute inset-0 bg-saffron/20 rounded-full blur-2xl transform scale-110"></div>
-              <div className="relative bg-gradient-to-br from-saffron/80 to-turmeric p-8 rounded-full shadow-2xl border-2 border-indigo-dharma/20">
-                <Map size={64} className="text-cream" />
-              </div>
-            </div>
-            <div className="relative">
-              <div className="absolute inset-0 bg-indigo-dharma/30 rounded-full blur-xl transform scale-150 animate-pulse-gentle"></div>
-              <div className="relative bg-gradient-to-br from-indigo-dharma/20 to-peacock-blue/20 p-6 rounded-full backdrop-blur-sm border border-indigo-dharma/30">
-                <IconDharmaChakra size={48} className="text-indigo-dharma" />
-              </div>
-            </div>
-          </div>
-          <div className="relative">
-            <h1 className="font-serif text-4xl lg:text-6xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-ocean via-peacock-blue to-indigo-dharma bg-clip-text text-transparent">
-                भौगोलिक डेटा
-              </span>
-            </h1>
-            <h2 className="font-serif text-2xl lg:text-3xl font-semibold text-ocean mb-8">
-              Cosmic Ocean Visualizations
-            </h2>
-            <p className="text-lg text-charcoal/80 max-w-4xl mx-auto leading-relaxed font-medium">
-              समुद्र मंथन — Interactive cosmographic visualizations mapping the spatial and temporal 
-              dimensions of dharmic civilizations across the Indian Ocean world, from sacred port geometries 
-              to monsoon mandalas, revealing the cosmic patterns that guided ancient navigation.
-            </p>
-            <div className="mt-6 h-1 w-32 bg-gradient-to-r from-ocean via-peacock-blue to-indigo-dharma mx-auto rounded-full"></div>
-          </div>
+        {/* Enhanced Hero Section */}
+        <CosmicOceanHero />
+
+        {/* Interactive Controls */}
+        <div className="mb-8">
+          <FilterChips 
+            selectedFilters={selectedFilters}
+            onFilterToggle={handleFilterToggle}
+          />
+          
+          <EvidenceToggle 
+            showEvidence={showEvidence}
+            onToggle={setShowEvidence}
+          />
+          
+          <TimeSlider 
+            selectedPeriod={selectedPeriod}
+            onPeriodChange={setSelectedPeriod}
+          />
+          
+          <LayerControls 
+            enabledLayers={enabledLayers}
+            onLayerToggle={handleLayerToggle}
+          />
         </div>
 
-        {/* Data Visualizations */}
+        {/* Enhanced Data Visualizations */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-          {/* Ports Dataset */}
-          <Card className="bg-card border-border">
+          {/* Historical Ports - Enhanced */}
+          <Card className="bg-card border-border col-span-full">
             <CardHeader>
-              <CardTitle className="font-serif text-xl text-foreground flex items-center gap-2">
-                <Globe size={20} className="text-ocean" />
-                Historical Ports
-              </CardTitle>
+              <div className="flex justify-between items-center">
+                <CardTitle className="font-serif text-xl text-foreground flex items-center gap-2">
+                  <Globe size={20} className="text-ocean" />
+                  {cosmicOceanI18n.labels.historical_ports}
+                </CardTitle>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setActiveModal('ports')}
+                >
+                  {i18n.language === 'hi' ? cosmicOceanI18n.labels.view_map_hi : cosmicOceanI18n.labels.view_map_en}
+                </Button>
+              </div>
+              <p className="text-muted-foreground">
+                Major port nodes with approximate coordinates and indicative active periods.
+              </p>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground mb-4">
-                Major port cities across the Indian Ocean world with their active periods and specializations.
-              </p>
-              <div className="space-y-3 mb-4">
-                {PORTS.map((port) => (
-                  <div key={port.id} className="flex items-center justify-between p-3 bg-sand/20 rounded">
-                    <div>
-                      <h4 className="font-medium text-foreground">{port.id}</h4>
-                      <p className="text-sm text-muted-foreground">{port.region} • {port.era}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-muted-foreground">
-                        {port.lat.toFixed(2)}°N, {port.lon.toFixed(2)}°E
-                      </p>
-                    </div>
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredPorts.map((port) => (
+                  <PortCard
+                    key={port.id}
+                    port={port}
+                    showEvidence={showEvidence}
+                    onOpenReadingRoom={handleOpenReadingRoom}
+                    onDownloadData={handleDownloadData}
+                  />
                 ))}
               </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full" 
-                onClick={() => setActiveModal('ports')}
-              >
-                View Interactive Map
-              </Button>
+              {filteredPorts.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No ports match the current filters. Try adjusting your selection.
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          {/* Monsoon Patterns */}
+          {/* Enhanced Monsoon Patterns */}
           <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle className="font-serif text-xl text-foreground flex items-center gap-2">
                 <BarChart3 size={20} className="text-ocean" />
-                Monsoon Patterns
+                {cosmicOceanI18n.labels.monsoon_patterns}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                Seasonal wind patterns that governed ancient navigation and trade cycles.
+                Conceptual seasonal winds for navigation timing. Not sailing instructions.
               </p>
               <div className="space-y-4 mb-4">
-                <div className="p-3 bg-ocean/10 rounded">
-                  <h4 className="font-medium text-foreground mb-2">Summer Monsoon</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {MONSOON.summer.months.join(', ')} — Southwest winds enabling eastward travel
-                  </p>
-                </div>
-                <div className="p-3 bg-gold/10 rounded">
-                  <h4 className="font-medium text-foreground mb-2">Winter Monsoon</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {MONSOON.winter.months.join(', ')} — Northeast winds enabling westward return
-                  </p>
-                </div>
+                {monsoonData.seasons.map((season) => (
+                  <div key={season.id} className="p-3 bg-ocean/10 rounded">
+                    <h4 className="font-medium text-foreground mb-2">
+                      {i18n.language === 'hi' ? season.title_hi : season.title_en}
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {season.months.join(', ')}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {i18n.language === 'hi' ? season.narrative_hi : season.narrative_en}
+                    </p>
+                    {showEvidence && (
+                      <div className="mt-2 text-xs text-muted-foreground">
+                        Vectors: {season.vectors.length} conceptual wind patterns
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full"
-                onClick={() => setActiveModal('monsoon')}
-              >
-                View Seasonal Animation
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={() => setActiveModal('monsoon')}
+                >
+                  {i18n.language === 'hi' ? cosmicOceanI18n.labels.view_animation_hi : cosmicOceanI18n.labels.view_animation_en}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    const dataStr = JSON.stringify(monsoonData, null, 2);
+                    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(dataBlob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'monsoon_data.json';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  <Download className="w-4 h-4" />
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
-          {/* Plate Movement */}
+          {/* Placeholder for Tectonic Movement - keeping existing functionality */}
           <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle className="font-serif text-xl text-foreground flex items-center gap-2">
@@ -152,56 +226,24 @@ export default function MapsData() {
               <p className="text-muted-foreground mb-4">
                 Indian plate movement over deep time and its impact on geography.
               </p>
-              <div className="space-y-2 mb-4">
-                {PLATE_SPEED.map((data, index) => (
-                  <div key={index} className="flex justify-between p-2 bg-sand/20 rounded text-sm">
-                    <span className="text-foreground">{data.Ma} Ma</span>
-                    <span className="text-muted-foreground">{data.cm_per_yr} cm/year</span>
-                  </div>
-                ))}
+              <div className="p-4 bg-muted/30 rounded text-center">
+                <p className="text-sm text-muted-foreground">
+                  Enhanced geological timeline coming soon
+                </p>
               </div>
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="w-full"
+                className="w-full mt-4"
                 onClick={() => setActiveModal('timeline')}
               >
                 View Timeline Visualization
               </Button>
             </CardContent>
           </Card>
-
-          {/* Trade Cargo */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="font-serif text-xl text-foreground flex items-center gap-2">
-                <BarChart3 size={20} className="text-gold" />
-                Pepper Trade Volume
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">
-                Estimated cargo volumes on major pepper trade routes.
-              </p>
-              <div className="space-y-3 mb-4">
-                {PEPPER_CARGO.map((cargo, index) => (
-                  <div key={index} className="p-3 bg-gold/10 rounded">
-                    <h4 className="font-medium text-foreground">{cargo.leg}</h4>
-                    <div className="flex justify-between text-sm text-muted-foreground mt-1">
-                      <span>{cargo.sacks} sacks</span>
-                      <span>~{(cargo.est_kg / 1000).toFixed(1)} tons</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <Button variant="outline" size="sm" className="w-full">
-                View Trade Flow Map
-              </Button>
-            </CardContent>
-          </Card>
         </div>
 
-        {/* Data Access */}
+        {/* Enhanced Data Access Section */}
         <div className="text-center">
           <Card className="bg-card border-border max-w-2xl mx-auto">
             <CardHeader>
@@ -239,8 +281,23 @@ export default function MapsData() {
                 </Card>
               </div>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button className="bg-ocean hover:bg-ocean/90">
-                  Download CSV Data
+                <Button 
+                  className="bg-ocean hover:bg-ocean/90"
+                  onClick={() => {
+                    const allData = { ports: portsData.ports, monsoon: monsoonData };
+                    const dataStr = JSON.stringify(allData, null, 2);
+                    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(dataBlob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'cosmic_ocean_complete_dataset.json';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  {cosmicOceanI18n.labels.download_json}
                 </Button>
                 <Button variant="outline">
                   API Documentation
@@ -248,6 +305,17 @@ export default function MapsData() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Disclaimer */}
+        <div className="mt-8 text-center">
+          <div className="max-w-2xl mx-auto">
+            {cosmicOceanI18n.footnotes.map((footnote, index) => (
+              <p key={index} className="text-xs text-muted-foreground mb-1">
+                {footnote}
+              </p>
+            ))}
+          </div>
         </div>
       </div>
 

@@ -105,5 +105,25 @@
     "enhancedMap": "View Enhanced Geographic Map",
     "needsCitation": "Needs citation",
     "schematicNote": "Map is schematic; coordinates are approximate centroids."
+  },
+  "cosmicOcean": {
+    "title": "Cosmic Ocean Visualizations",
+    "subtitle": "Interactive cosmographic visualizations of the Indian Ocean world—from sacred port geometries to monsoon mandalas.",
+    "historicalPorts": "Historical Ports",
+    "monsoonPatterns": "Monsoon Patterns",
+    "narrativeMode": "Narrative",
+    "evidenceMode": "Evidence",
+    "needsCitation": "Needs citation",
+    "timePeriod": "Time Period",
+    "mapLayers": "Map Layers",
+    "sources": "Sources",
+    "downloadData": "Download Data",
+    "viewInteractiveMap": "View Interactive Map",
+    "viewSeasonalAnimation": "View Seasonal Animation",
+    "filterByRegion": "Filter by Region",
+    "filterByEvidence": "Filter by Evidence Type",
+    "allPeriods": "All Periods",
+    "portDescription": "Major port nodes with approximate coordinates and indicative active periods.",
+    "monsoonDescription": "Conceptual seasonal winds for navigation timing. Not sailing instructions."
   }
 }

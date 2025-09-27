@@ -1,0 +1,69 @@
+{
+  "ports": [
+    {
+      "id": "muziris",
+      "display_name": "Muziris (Kodungallur)",
+      "region": "Malabar",
+      "coords": { "lat": 10.21, "lon": 76.26, "approximate": true },
+      "period_band": "1st c. CE–",
+      "specializations": ["Malabar"],
+      "evidence_types": ["texts"],
+      "tags": ["malabar"],
+      "reading_room_refs": ["/reading-room?topic=muziris"],
+      "needs_citation": true,
+      "description": "Major port on the Malabar coast, mentioned in classical sources as a center for spice trade."
+    },
+    {
+      "id": "berenike",
+      "display_name": "Berenike",
+      "region": "Red Sea",
+      "coords": { "lat": 23.91, "lon": 35.50, "approximate": true },
+      "period_band": "1st c. CE–",
+      "specializations": ["Red Sea"],
+      "evidence_types": ["archaeology"],
+      "tags": ["red-sea", "archaeology"],
+      "reading_room_refs": ["/reading-room?topic=berenike"],
+      "needs_citation": true,
+      "description": "Archaeological site with evidence of Indian Ocean trade connections."
+    },
+    {
+      "id": "myos_hormos",
+      "display_name": "Myos Hormos",
+      "region": "Red Sea",
+      "coords": { "lat": 26.16, "lon": 34.26, "approximate": true },
+      "period_band": "1st c. CE–",
+      "specializations": ["Red Sea"],
+      "evidence_types": ["texts"],
+      "tags": ["red-sea"],
+      "reading_room_refs": ["/reading-room?topic=red-sea-ports"],
+      "needs_citation": true,
+      "description": "Roman Red Sea port mentioned in classical geographical sources."
+    },
+    {
+      "id": "kedah_bujang",
+      "display_name": "Kedah (Bujang)",
+      "region": "Malaya",
+      "coords": { "lat": 5.69, "lon": 100.50, "approximate": true },
+      "period_band": "4th–10th c.",
+      "specializations": ["industrial", "riverine"],
+      "evidence_types": ["archaeology"],
+      "tags": ["archaeology"],
+      "reading_room_refs": ["/reading-room?topic=bujang-valley"],
+      "needs_citation": true,
+      "description": "Archaeological complex with evidence of maritime trade and industrial activity."
+    },
+    {
+      "id": "nagapattinam",
+      "display_name": "Nagapattinam",
+      "region": "Coromandel",
+      "coords": { "lat": 10.77, "lon": 79.84, "approximate": true },
+      "period_band": "Chola",
+      "specializations": ["guilds"],
+      "evidence_types": ["inscriptions"],
+      "tags": ["coromandel", "inscriptions"],
+      "reading_room_refs": ["/reading-room?topic=nagapattinam"],
+      "needs_citation": false,
+      "description": "Major Chola port with merchant guild inscriptions documenting maritime networks."
+    }
+  ]
+}

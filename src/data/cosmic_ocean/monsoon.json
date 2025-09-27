@@ -1,0 +1,32 @@
+{
+  "seasons": [
+    {
+      "id": "summer",
+      "title_en": "Summer Monsoon",
+      "title_hi": "ग्रीष्म मानसून",
+      "months": ["Jun", "Jul", "Aug", "Sep"],
+      "narrative_en": "Southwest winds typically enable eastward travel across the Arabian Sea and Bay of Bengal.",
+      "narrative_hi": "दक्षिण-पश्चिमी हवाएं आम तौर पर अरब सागर और बंगाल की खाड़ी में पूर्वी यात्रा को सक्षम बनाती हैं।",
+      "vectors": [
+        { "sector": "arabian-sea", "from": [16.0, 60.0], "to": [16.0, 72.0], "label": "SW Monsoon" },
+        { "sector": "bay-of-bengal", "from": [12.0, 82.0], "to": [12.0, 92.0], "label": "SW Monsoon" }
+      ]
+    },
+    {
+      "id": "winter",
+      "title_en": "Winter Monsoon",
+      "title_hi": "शीत मानसून",
+      "months": ["Dec", "Jan", "Feb"],
+      "narrative_en": "Northeast winds typically enable westward return journeys.",
+      "narrative_hi": "उत्तर-पूर्वी हवाएं आम तौर पर पश्चिमी वापसी यात्रा को सक्षम बनाती हैं।",
+      "vectors": [
+        { "sector": "arabian-sea", "from": [16.0, 72.0], "to": [16.0, 60.0], "label": "NE Monsoon" },
+        { "sector": "bay-of-bengal", "from": [12.0, 92.0], "to": [12.0, 82.0], "label": "NE Monsoon" }
+      ]
+    }
+  ],
+  "notes": [
+    "Vectors are conceptual arrows for animation; not shipping lanes.",
+    "Use season toggle to animate arrows between start and end points."
+  ]
+}
