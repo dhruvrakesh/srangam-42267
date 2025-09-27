@@ -46,6 +46,28 @@ Our visual design incorporates traditional Indian sacred geometry patterns inclu
 
 These patterns serve not merely as decoration but as subtle reminders of the sophisticated mathematical and spiritual understanding embedded in Indian civilization.
 
+## Oceanic Bharat Correlation System
+
+### Advanced Research Infrastructure
+Srangam Digital features a sophisticated **69-point correlation matrix** that connects archaeological evidence, textual sources, and geographical data across the Indian Ocean world. This system enables unprecedented academic rigor through:
+
+**1. Paired Evidence Architecture**
+- **Textual Authority**: Sanskrit inscriptions, Tamil Sangam literature, Pali chronicles
+- **Archaeological Validation**: Excavated artifacts, dated stratigraphy, material culture
+- **Geographic Precision**: Mapbox-integrated interactive pins with confidence indicators
+
+**2. Interactive Academic Loop: Theme → Article → Sourcebook → Map**
+- **Theme Pages**: Ancient India, Empires Exchange, Scripts & Inscriptions
+- **8 Oceanic Article Pages**: From Muziris to Bujang Valley with full MLA citations
+- **Sources & Pins**: Clickable evidence cards with primary source attribution
+- **QA Correlation Table**: Full transparency matrix for scholarly verification
+
+**3. Multilingual Cultural Integration**
+- **9-Language Support**: Tamil, Sanskrit, Telugu, Kannada, Bengali, Hindi, Punjabi, Assamese, Pnar
+- **Cultural Terms Database**: 800+ dharmic concepts with etymological context
+- **Confidence Indicators**: "Approximate" badges and scholarly debate notation
+- **Export Functionality**: JSON/CSV download for open access research
+
 ## Book Compilation Framework
 
 ### Academic Publication Strategy
@@ -118,11 +140,13 @@ npm run dev
 
 This project is built with:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Frontend Framework**: Vite + TypeScript + React
+- **UI Components**: shadcn-ui + Tailwind CSS with dharmic design system
+- **Mapping & Visualization**: Mapbox GL JS for interactive geography
+- **Academic Infrastructure**: Custom correlation engine with CSV/JSON data processing
+- **Multilingual Support**: i18next with cultural context preservation
+- **Citation Management**: MLA standards with bibliography compilation
+- **Data Export**: JSON/CSV academic research outputs
 
 ## How can I deploy this project?
 
