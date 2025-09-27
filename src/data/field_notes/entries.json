@@ -8,7 +8,7 @@
       "readingMinutes": 18,
       "tags": ["indo-roman-trade", "berenike", "muziris", "maritime-networks"],
       "status": "published",
-      "slug": "/articles/maritime-memories-south-india",
+      "slug": "/maritime-memories-south-india",
       "cta": { "en": "Read Full Article →", "hi": "लेख पढ़ें →" }
     },
     {
@@ -19,7 +19,18 @@
       "readingMinutes": 16,
       "tags": ["navigation", "kerala-archives", "maritime-networks"],
       "status": "published", 
-      "slug": "/articles/riders-on-monsoon",
+      "slug": "/riders-on-monsoon",
+      "cta": { "en": "Read Full Article →", "hi": "लेख पढ़ें →" }
+    },
+    {
+      "title": "Pepper and Bullion: The Economics of Ancient Spice Trade",
+      "dateLabel": "March 2024", 
+      "location": "Berenike, Egypt & South India",
+      "summary": "Archaeological evidence from Berenike reveals the true scale of the Roman-Indian pepper trade. Analysis of 7.5kg of preserved peppercorns and Roman coin hoards shows systematic economic exchange patterns.",
+      "readingMinutes": 18,
+      "tags": ["pepper-trade", "berenike", "roman-economics", "maritime-networks"],
+      "status": "published",
+      "slug": "/pepper-and-bullion", 
       "cta": { "en": "Read Full Article →", "hi": "लेख पढ़ें →" }
     }
   ]

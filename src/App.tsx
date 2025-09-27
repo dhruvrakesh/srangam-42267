@@ -42,6 +42,7 @@ const AshokaKandaharEdicts = lazy(() => import("./pages/articles/AshokaKandaharE
 const KutaiYupaBorneo = lazy(() => import("./pages/articles/KutaiYupaBorneo"));
 const MaritimeMemoriesSouthIndia = lazy(() => import("./pages/articles/MaritimeMemoriesSouthIndia"));
 const RidersOnMonsoon = lazy(() => import("./pages/articles/RidersOnMonsoon"));
+const PepperAndBullion = lazy(() => import("./pages/articles/PepperAndBullion"));
 const EarthSeaSangam = lazy(() => import("./pages/articles/EarthSeaSangam"));
 const BatchBujangNagapattinamOcean = lazy(() => import("./pages/BatchBujangNagapattinamOcean"));
 const BatchMuzirisKutaiAshoka = lazy(() => import("./pages/BatchMuzirisKutaiAshoka"));
@@ -104,6 +105,7 @@ const App = () => (
                 <Route path="/kutai-yupa-borneo" element={<KutaiYupaBorneo />} />
                 <Route path="/maritime-memories-south-india" element={<MaritimeMemoriesSouthIndia />} />
                 <Route path="/riders-on-monsoon" element={<RidersOnMonsoon />} />
+                <Route path="/pepper-and-bullion" element={<PepperAndBullion />} />
                 <Route path="/earth-sea-sangam" element={<EarthSeaSangam />} />
                 <Route path="/themes/ancient-india/pepper-routes" element={<IndianOceanPowerNetworks />} />
                 <Route path="/batch/bujang-nagapattinam-ocean" element={<BatchBujangNagapattinamOcean />} />
