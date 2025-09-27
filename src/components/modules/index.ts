@@ -4,6 +4,8 @@ export { RouteAtlas } from './RouteAtlas';
 export { RitualCalendar } from './RitualCalendar';
 export { MaritimeLexicon } from './MaritimeLexicon';
 export { ObjectGallery } from './ObjectGallery';
+export { ScholarlySourcePanel } from './ScholarlySourcePanel';
+export { TimelineNodeDetails } from './TimelineNodeDetails';
 
 // Data processing utilities
 export const parseSourcebookCSV = (csvText: string) => {

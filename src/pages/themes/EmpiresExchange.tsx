@@ -2,10 +2,21 @@ import { ArticleCard } from "@/components/ui/ArticleCard";
 import { getArticlesByTheme } from "@/lib/multilingualArticleUtils";
 import { useLanguage } from "@/components/language/LanguageProvider";
 import { IconSarnathLion, IconDharmaChakra, IconConch } from "@/components/icons";
+import { DynamicTimeline } from "@/components/articles/enhanced/DynamicTimeline";
+import { ScholarlySourcePanel, getSourceShelf } from "@/components/modules/ScholarlySourcePanel";
+import { TimelineNodeDetails } from "@/components/modules/TimelineNodeDetails";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { transformTimelineData, empiresExchangeTimeline } from "@/data/empiresExchangeTimeline";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import { MapPin, BookOpen, Crown } from "lucide-react";
 
 export default function EmpiresExchange() {
   const { currentLanguage } = useLanguage();
   const themeArticles = getArticlesByTheme("Empires & Exchange", currentLanguage);
+  const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  
+  const timelineData = transformTimelineData();
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -65,22 +76,122 @@ export default function EmpiresExchange() {
           </div>
         </div>
 
-        {/* Articles Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {themeArticles.map((article) => (
-            <ArticleCard key={article.id} article={article} />
-          ))}
-        </div>
+        {/* Main Content Tabs */}
+        <Tabs defaultValue="timeline" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 mb-8">
+            <TabsTrigger value="timeline" className="flex items-center gap-2">
+              <Crown className="w-4 h-4" />
+              Timeline
+            </TabsTrigger>
+            <TabsTrigger value="articles" className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4" />
+              Articles
+            </TabsTrigger>
+            <TabsTrigger value="sources" className="flex items-center gap-2">
+              <MapPin className="w-4 h-4" />
+              Sources
+            </TabsTrigger>
+            <TabsTrigger value="atlas" className="flex items-center gap-2">
+              <IconDharmaChakra size={16} />
+              Atlas
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Placeholder for more content */}
-        {themeArticles.length === 0 && (
-          <div className="text-center py-16">
-            <div className="p-8 rounded-lg bg-background/30 backdrop-blur-sm border border-gold/20">
-              <IconDharmaChakra size={48} className="mx-auto mb-4 text-gold/50" />
-              <p className="text-muted-foreground">More articles on dharmic governance coming soon...</p>
+          <TabsContent value="timeline" className="space-y-8">
+            <div className="text-center mb-8">
+              <h2 className="font-serif text-2xl lg:text-3xl font-bold text-foreground mb-4">
+                River to Ocean Sovereignty
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                From Vedic river politics to contemporary Indo-Pacific strategy: how territorial 
+                power flows toward oceanic projection across Indian historical epochs.
+              </p>
             </div>
-          </div>
-        )}
+            
+            <DynamicTimeline 
+              events={timelineData}
+              title="Empires & Exchange Timeline"
+              filterByType={true}
+              className="max-w-4xl mx-auto"
+            />
+            
+            {selectedNode && (
+              <div className="max-w-2xl mx-auto">
+                <ScholarlySourcePanel 
+                  nodeId={selectedNode}
+                  nodeName={empiresExchangeTimeline.find(n => n.id === selectedNode)?.node || ""}
+                  sources={getSourceShelf(selectedNode)}
+                />
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="articles" className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {themeArticles.map((article) => (
+                <ArticleCard key={article.id} article={article} />
+              ))}
+            </div>
+            
+            {themeArticles.length === 0 && (
+              <div className="text-center py-16">
+                <div className="p-8 rounded-lg bg-background/30 backdrop-blur-sm border border-gold/20">
+                  <IconDharmaChakra size={48} className="mx-auto mb-4 text-gold/50" />
+                  <p className="text-muted-foreground">More articles on dharmic governance coming soon...</p>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="sources" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {empiresExchangeTimeline.map((node) => (
+                <Card key={node.id} className="hover:shadow-md transition-shadow cursor-pointer" 
+                      onClick={() => setSelectedNode(node.id)}>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">{node.node}</CardTitle>
+                    <CardDescription className="text-sm">
+                      {node.period} • {node.dateRange}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-3">{node.powerLogic}</p>
+                    <div className="text-xs text-accent-foreground bg-accent/20 px-2 py-1 rounded">
+                      Primary: {node.primarySources}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="atlas" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5" />
+                  Interactive Atlas
+                </CardTitle>
+                <CardDescription>
+                  Geographical progression from riverine to oceanic power centers
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {empiresExchangeTimeline.map((node) => (
+                    <div key={node.id} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <h4 className="font-semibold text-sm mb-2">{node.locusPlace}</h4>
+                      <p className="text-xs text-muted-foreground mb-2">{node.waterways}</p>
+                      <div className="text-xs text-accent-foreground">
+                        {node.lat.toFixed(2)}°N, {node.lon.toFixed(2)}°E
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

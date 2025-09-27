@@ -171,9 +171,16 @@ export const DynamicTimeline = React.memo(({
                     </div>
                   )}
                   
-                  {event.expandable && isExpanded && event.details && (
+                  {event.expandable && isExpanded && (
                     <div className="mt-4 pt-4 border-t border-border/50 animate-accordion-down">
-                      {event.details}
+                      {event.details || (
+                        <div className="space-y-3">
+                          <div>
+                            <h5 className="font-semibold text-sm text-foreground mb-2">Details</h5>
+                            <p className="text-sm text-muted-foreground">Additional information available</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
