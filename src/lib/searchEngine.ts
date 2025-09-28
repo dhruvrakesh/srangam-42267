@@ -1,6 +1,7 @@
 import { MULTILINGUAL_ARTICLES, ARTICLE_METADATA } from '@/data/articles';
 import { LocalizedArticle, SupportedLanguage, MultilingualContent } from '@/types/multilingual';
 import { culturalTermsDatabase } from '@/data/articles/cultural-terms';
+import { generateSanskritVariants, matchesSanskritTerm, isSanskritTerm, getSanskritContext } from './sanskritUtils';
 
 export interface SearchResult {
   article: LocalizedArticle;
@@ -24,6 +25,10 @@ export interface SearchOptions {
   searchInContent?: boolean;
   searchCulturalTerms?: boolean;
   minScore?: number;
+  useBoolean?: boolean;
+  searchField?: 'all' | 'title' | 'content' | 'tags' | 'cultural-terms';
+  confidenceLevel?: 'high' | 'medium' | 'low' | 'all';
+  dateRange?: { start?: string; end?: string };
 }
 
 /**
@@ -58,7 +63,7 @@ function getAllTextContent(content: MultilingualContent): string[] {
 }
 
 /**
- * Search for cultural terms in text
+ * Search for cultural terms in text with Sanskrit enhancement
  */
 function findCulturalTerms(text: string, language: SupportedLanguage): MatchedContent[] {
   const matches: MatchedContent[] = [];
@@ -66,7 +71,18 @@ function findCulturalTerms(text: string, language: SupportedLanguage): MatchedCo
   
   Object.keys(culturalTermsDatabase).forEach(term => {
     const termLower = term.toLowerCase();
-    const index = lowerText.indexOf(termLower);
+    
+    // Standard term matching
+    let index = lowerText.indexOf(termLower);
+    
+    // Enhanced Sanskrit matching
+    if (index === -1 && isSanskritTerm(term)) {
+      const variants = generateSanskritVariants(term);
+      for (const variant of variants) {
+        index = lowerText.indexOf(variant);
+        if (index !== -1) break;
+      }
+    }
     
     if (index !== -1) {
       // Extract context around the match
@@ -84,6 +100,45 @@ function findCulturalTerms(text: string, language: SupportedLanguage): MatchedCo
   });
   
   return matches;
+}
+
+/**
+ * Parse boolean search query (AND, OR, NOT operators)
+ */
+function parseBooleanQuery(query: string): { terms: string[]; operators: string[] } {
+  const tokens = query.split(/\s+(AND|OR|NOT)\s+/i);
+  const terms: string[] = [];
+  const operators: string[] = [];
+  
+  for (let i = 0; i < tokens.length; i++) {
+    if (i % 2 === 0) {
+      // Terms
+      terms.push(tokens[i].trim().replace(/['"]/g, ''));
+    } else {
+      // Operators
+      operators.push(tokens[i].toUpperCase());
+    }
+  }
+  
+  return { terms, operators };
+}
+
+/**
+ * Enhanced search matching with Sanskrit support
+ */
+function enhancedTextMatch(searchTerm: string, targetText: string): boolean {
+  const lowerTarget = targetText.toLowerCase();
+  const lowerSearch = searchTerm.toLowerCase();
+  
+  // Standard matching
+  if (lowerTarget.includes(lowerSearch)) return true;
+  
+  // Sanskrit-aware matching
+  if (isSanskritTerm(searchTerm)) {
+    return matchesSanskritTerm(searchTerm, targetText);
+  }
+  
+  return false;
 }
 
 /**
@@ -149,10 +204,15 @@ export function searchArticles(
     theme,
     searchInContent = true,
     searchCulturalTerms = true,
-    minScore = 10
+    minScore = 10,
+    useBoolean = false,
+    searchField = 'all',
+    confidenceLevel = 'all',
+    dateRange
   } = options;
   
-  const queryLower = query.toLowerCase();
+  // Parse boolean query if enabled
+  const { terms, operators } = useBoolean ? parseBooleanQuery(query) : { terms: [query], operators: [] };
   const results: SearchResult[] = [];
   
   MULTILINGUAL_ARTICLES.forEach(article => {
@@ -164,84 +224,142 @@ export function searchArticles(
       return;
     }
     
-    const matches: MatchedContent[] = [];
-    let primaryLanguage: SupportedLanguage = language;
-    
-    // Search in title
-    const titleTexts = getAllTextContent(article.title);
-    titleTexts.forEach((titleText, index) => {
-      if (titleText.toLowerCase().includes(queryLower)) {
-        const langs = Object.keys(article.title) as SupportedLanguage[];
-        const matchLang = langs[index] || language;
-        matches.push({
-          type: 'title',
-          text: titleText,
-          context: titleText,
-          language: matchLang
-        });
-        primaryLanguage = matchLang;
-      }
-    });
-    
-    // Search in content
-    if (searchInContent) {
-      const contentTexts = getAllTextContent(article.content);
-      contentTexts.forEach((contentText, index) => {
-        if (contentText.toLowerCase().includes(queryLower)) {
-          const langs = Object.keys(article.content) as SupportedLanguage[];
-          const matchLang = langs[index] || language;
-          
-          // Extract context around the match
-          const lowerContent = contentText.toLowerCase();
-          const matchIndex = lowerContent.indexOf(queryLower);
-          const start = Math.max(0, matchIndex - 100);
-          const end = Math.min(contentText.length, matchIndex + queryLower.length + 100);
-          const context = contentText.substring(start, end);
-          
-          matches.push({
-            type: 'content',
-            text: query,
-            context: `...${context}...`,
-            language: matchLang
-          });
-          primaryLanguage = matchLang;
-        }
-      });
+    // Date range filtering
+    if (dateRange && metadata.date) {
+      const articleDate = new Date(metadata.date);
+      if (dateRange.start && articleDate < new Date(dateRange.start)) return;
+      if (dateRange.end && articleDate > new Date(dateRange.end)) return;
     }
     
-    // Search in tags
-    article.tags.forEach(tagObj => {
-      const tagTexts = getAllTextContent(tagObj);
-      tagTexts.forEach((tagText, index) => {
-        if (tagText.toLowerCase().includes(queryLower)) {
-          const langs = Object.keys(tagObj) as SupportedLanguage[];
-          const matchLang = langs[index] || language;
-          matches.push({
-            type: 'tag',
-            text: tagText,
-            context: tagText,
-            language: matchLang
-          });
-        }
-      });
-    });
+    const matches: MatchedContent[] = [];
+    let primaryLanguage: SupportedLanguage = language;
+    let hasMatches = false;
     
-    // Search for cultural terms
-    if (searchCulturalTerms) {
-      const allTexts = [
-        ...getAllTextContent(article.title),
-        ...getAllTextContent(article.content),
-        ...article.tags.flatMap(tag => getAllTextContent(tag))
-      ];
+    // Enhanced search logic for each term
+    for (let termIndex = 0; termIndex < terms.length; termIndex++) {
+      const searchTerm = terms[termIndex];
+      const operator = operators[termIndex - 1]; // Previous operator
+      let termMatches: MatchedContent[] = [];
       
-      allTexts.forEach(text => {
-        const culturalMatches = findCulturalTerms(text, language);
-        matches.push(...culturalMatches);
-      });
+      // Search in title (if field allows)
+      if (searchField === 'all' || searchField === 'title') {
+        const titleTexts = getAllTextContent(article.title);
+        titleTexts.forEach((titleText, index) => {
+          if (enhancedTextMatch(searchTerm, titleText)) {
+            const langs = Object.keys(article.title) as SupportedLanguage[];
+            const matchLang = langs[index] || language;
+            termMatches.push({
+              type: 'title',
+              text: titleText,
+              context: titleText,
+              language: matchLang
+            });
+            primaryLanguage = matchLang;
+          }
+        });
+      }
+    
+      // Search in content (if field allows)
+      if ((searchField === 'all' || searchField === 'content') && searchInContent) {
+        const contentTexts = getAllTextContent(article.content);
+        contentTexts.forEach((contentText, index) => {
+          if (enhancedTextMatch(searchTerm, contentText)) {
+            const langs = Object.keys(article.content) as SupportedLanguage[];
+            const matchLang = langs[index] || language;
+            
+            // Extract context around the match
+            const lowerContent = contentText.toLowerCase();
+            const searchVariants = isSanskritTerm(searchTerm) ? generateSanskritVariants(searchTerm) : [searchTerm.toLowerCase()];
+            let matchIndex = -1;
+            let matchedVariant = searchTerm;
+            
+            for (const variant of searchVariants) {
+              matchIndex = lowerContent.indexOf(variant);
+              if (matchIndex !== -1) {
+                matchedVariant = variant;
+                break;
+              }
+            }
+            
+            if (matchIndex !== -1) {
+              const start = Math.max(0, matchIndex - 100);
+              const end = Math.min(contentText.length, matchIndex + matchedVariant.length + 100);
+              const context = contentText.substring(start, end);
+              
+              termMatches.push({
+                type: 'content',
+                text: searchTerm,
+                context: `...${context}...`,
+                language: matchLang
+              });
+              primaryLanguage = matchLang;
+            }
+          }
+        });
+      }
+    
+      // Search in tags (if field allows)
+      if (searchField === 'all' || searchField === 'tags') {
+        article.tags.forEach(tagObj => {
+          const tagTexts = getAllTextContent(tagObj);
+          tagTexts.forEach((tagText, index) => {
+            if (enhancedTextMatch(searchTerm, tagText)) {
+              const langs = Object.keys(tagObj) as SupportedLanguage[];
+              const matchLang = langs[index] || language;
+              termMatches.push({
+                type: 'tag',
+                text: tagText,
+                context: tagText,
+                language: matchLang
+              });
+            }
+          });
+        });
+      }
+    
+      // Search for cultural terms (if field allows)
+      if ((searchField === 'all' || searchField === 'cultural-terms') && searchCulturalTerms) {
+        const allTexts = [
+          ...getAllTextContent(article.title),
+          ...getAllTextContent(article.content),
+          ...article.tags.flatMap(tag => getAllTextContent(tag))
+        ];
+        
+        allTexts.forEach(text => {
+          if (enhancedTextMatch(searchTerm, text)) {
+            const culturalMatches = findCulturalTerms(text, language);
+            termMatches.push(...culturalMatches);
+          }
+        });
+      }
+      
+      // Apply boolean logic
+      if (termIndex === 0) {
+        // First term - add all matches
+        matches.push(...termMatches);
+        hasMatches = termMatches.length > 0;
+      } else {
+        // Apply operator logic
+        if (operator === 'AND') {
+          hasMatches = hasMatches && termMatches.length > 0;
+          if (hasMatches) matches.push(...termMatches);
+        } else if (operator === 'OR') {
+          hasMatches = hasMatches || termMatches.length > 0;
+          if (termMatches.length > 0) matches.push(...termMatches);
+        } else if (operator === 'NOT') {
+          hasMatches = hasMatches && termMatches.length === 0;
+          // Don't add NOT matches to results
+        }
+      }
+      
+      // Break early if AND condition fails
+      if (useBoolean && operator === 'AND' && !hasMatches) {
+        break;
+      }
     }
     
     // Calculate score and add to results if relevant
-    if (matches.length > 0) {
+    if (matches.length > 0 && (!useBoolean || hasMatches)) {
       const score = calculateScore(query, article, matches, language);
       
       if (score >= minScore) {
@@ -273,11 +391,43 @@ export function getAvailableThemes(): string[] {
 }
 
 /**
- * Search suggestions based on cultural terms and popular content
+ * Search suggestions with Sanskrit enhancement
  */
 export function getSearchSuggestions(language: SupportedLanguage = 'en'): string[] {
-  const culturalTerms = Object.keys(culturalTermsDatabase).slice(0, 10);
+  const culturalTerms = Object.keys(culturalTermsDatabase).slice(0, 8);
   const popularTerms = ['Muziris', 'Monsoon', 'Chola', 'Sanskrit', 'Ports', 'Ashoka', 'Borneo'];
+  const sanskritTerms = ['amavasu', 'dharma', 'sangam', 'yuga', 'shastra', 'purana'];
   
-  return [...popularTerms, ...culturalTerms];
+  return [...popularTerms, ...sanskritTerms, ...culturalTerms];
+}
+
+/**
+ * Export search results for academic use
+ */
+export function exportSearchResults(results: SearchResult[], format: 'json' | 'csv' = 'json'): string {
+  if (format === 'csv') {
+    const headers = ['Title', 'Theme', 'Score', 'Match Type', 'Language', 'Date', 'Author'];
+    const rows = results.map(result => [
+      getTextContent(result.article.title, 'en'),
+      result.metadata.theme,
+      result.score.toString(),
+      result.matchType,
+      result.matchedLanguage,
+      result.metadata.date,
+      result.metadata.author
+    ]);
+    
+    return [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+  }
+  
+  return JSON.stringify(results.map(result => ({
+    id: result.article.id,
+    title: getTextContent(result.article.title, 'en'),
+    theme: result.metadata.theme,
+    score: result.score,
+    matchType: result.matchType,
+    matchedLanguage: result.matchedLanguage,
+    metadata: result.metadata,
+    matchedContent: result.matchedContent
+  })), null, 2);
 }

@@ -1,13 +1,17 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useSearchParams, useLocation } from "react-router-dom";
-import { Search as SearchIcon, Filter, Download, BookOpen, Highlighter } from "lucide-react";
+import { Search as SearchIcon, Filter, Download, BookOpen, Highlighter, Settings, Brain, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { searchArticles, getAvailableThemes, getSearchSuggestions } from "@/lib/searchEngine";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { searchArticles, getAvailableThemes, getSearchSuggestions, exportSearchResults } from "@/lib/searchEngine";
+import { isSanskritTerm, getSanskritContext } from "@/lib/sanskritUtils";
 import { getDisplayArticles } from "@/lib/multilingualArticleUtils";
 import { useLanguage } from "@/components/language/LanguageProvider";
 
@@ -18,6 +22,10 @@ export default function Search() {
   const [query, setQuery] = useState(searchParams.get("query") || "");
   const [selectedTheme, setSelectedTheme] = useState<string>("all");
   const [activeTab, setActiveTab] = useState("articles");
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [searchField, setSearchField] = useState<'all' | 'title' | 'content' | 'tags' | 'cultural-terms'>('all');
+  const [useBoolean, setUseBoolean] = useState(false);
+  const [minScore, setMinScore] = useState(10);
 
   // Update query from URL on mount and when URL changes
   useEffect(() => {
@@ -46,7 +54,9 @@ export default function Search() {
       theme: selectedTheme,
       searchInContent: true,
       searchCulturalTerms: true,
-      minScore: 10
+      minScore,
+      useBoolean,
+      searchField
     });
 
     // Convert search results to display format
@@ -93,6 +103,36 @@ export default function Search() {
     return getSearchSuggestions(currentLanguage);
   }, [currentLanguage]);
 
+  // Handle export
+  const handleExport = (format: 'json' | 'csv') => {
+    const exportData = exportSearchResults(searchResults.map(r => ({
+      article: { 
+        id: r.id, 
+        title: { en: r.title }, 
+        dek: { en: r.excerpt }, 
+        content: { en: '' }, 
+        tags: r.tags.map(tag => ({ en: tag })),
+        metadata: {}
+      },
+      metadata: { theme: r.theme, readTime: r.readTime, author: r.author, date: r.date },
+      matchedContent: r.matchedContent || [],
+      matchedLanguage: currentLanguage,
+      score: r.score || 0,
+      matchType: r.matchType || 'content'
+    })), format);
+    
+    const blob = new Blob([exportData], { type: format === 'csv' ? 'text/csv' : 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `search-results-${new Date().toISOString().split('T')[0]}.${format}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Check if query contains Sanskrit terms
+  const hasSanskritTerms = query.split(' ').some(term => isSanskritTerm(term));
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -107,16 +147,72 @@ export default function Search() {
             </p>
             
             {/* Search Input */}
-            <div className="relative max-w-2xl mx-auto">
-              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
-              <Input
-                type="search"
-                placeholder="Search articles, pins, sources..."
-                value={query}
-                onChange={(e) => updateSearchParams(e.target.value)}
-                className="pl-10 pr-4 py-3 text-lg"
-                autoFocus
-              />
+            <div className="space-y-4 max-w-2xl mx-auto">
+              <div className="relative">
+                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
+                <Input
+                  type="search"
+                  placeholder={useBoolean ? "Try: Muziris AND monsoon, Sanskrit OR dharma" : "Search articles, pins, sources..."}
+                  value={query}
+                  onChange={(e) => updateSearchParams(e.target.value)}
+                  className="pl-10 pr-12 py-3 text-lg"
+                  autoFocus
+                />
+                {hasSanskritTerms && (
+                  <Brain className="absolute right-3 top-1/2 transform -translate-y-1/2 text-primary h-5 w-5" />
+                )}
+              </div>
+              
+              {/* Advanced Search Toggle */}
+              <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm" className="text-muted-foreground">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Advanced Search
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-4 p-4 border rounded-lg bg-muted/30">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="search-field">Search in:</Label>
+                      <Select value={searchField} onValueChange={(value: any) => setSearchField(value)}>
+                        <SelectTrigger id="search-field">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Fields</SelectItem>
+                          <SelectItem value="title">Titles Only</SelectItem>
+                          <SelectItem value="content">Content Only</SelectItem>
+                          <SelectItem value="tags">Tags Only</SelectItem>
+                          <SelectItem value="cultural-terms">Cultural Terms</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="min-score">Min. Relevance:</Label>
+                      <Select value={minScore.toString()} onValueChange={(value) => setMinScore(parseInt(value))}>
+                        <SelectTrigger id="min-score">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="5">Low (5)</SelectItem>
+                          <SelectItem value="10">Medium (10)</SelectItem>
+                          <SelectItem value="20">High (20)</SelectItem>
+                          <SelectItem value="50">Very High (50)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Switch id="boolean-search" checked={useBoolean} onCheckedChange={setUseBoolean} />
+                        <Label htmlFor="boolean-search">Boolean Search (AND, OR, NOT)</Label>
+                      </div>
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
             </div>
           </div>
         </div>
@@ -156,10 +252,16 @@ export default function Search() {
                 </Select>
                 
                 {searchResults.length > 0 && (
-                  <Button variant="outline" size="sm">
-                    <Download className="h-4 w-4 mr-2" />
-                    Export
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => handleExport('csv')}>
+                      <Download className="h-4 w-4 mr-2" />
+                      CSV
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => handleExport('json')}>
+                      <Download className="h-4 w-4 mr-2" />
+                      JSON
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>
@@ -209,10 +311,21 @@ export default function Search() {
                               <div className="flex items-center gap-1 mb-1">
                                 <Highlighter className="h-3 w-3" />
                                 <span className="text-xs font-medium">Match found:</span>
+                                {article.matchedContent[0].language !== 'en' && (
+                                  <Badge variant="outline" className="text-xs ml-auto">
+                                    {article.matchedContent[0].language.toUpperCase()}
+                                  </Badge>
+                                )}
                               </div>
                               <p className="text-xs text-muted-foreground line-clamp-2">
                                 {article.matchedContent[0].context}
                               </p>
+                              {/* Sanskrit context */}
+                              {isSanskritTerm(article.matchedContent[0].text) && (
+                                <div className="mt-1 text-xs text-primary/70">
+                                  🕉️ {getSanskritContext(article.matchedContent[0].text, currentLanguage) || "Sanskrit/IAST term"}
+                                </div>
+                              )}
                             </div>
                           )}
                           
