@@ -50,10 +50,12 @@ export const getDisplayArticles = (language: SupportedLanguage = 'en'): DisplayA
 };
 
 /**
- * Get featured articles (first 3)
+ * Get featured articles (most recent 3)
  */
 export const getFeaturedArticles = (language: SupportedLanguage = 'en'): DisplayArticle[] => {
-  return getDisplayArticles(language).slice(0, 3);
+  return getDisplayArticles(language)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) // Sort by date, newest first
+    .slice(0, 3);
 };
 
 /**

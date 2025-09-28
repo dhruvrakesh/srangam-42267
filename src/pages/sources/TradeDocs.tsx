@@ -348,4 +348,3 @@ export default function TradeDocs() {
   );
 }
 
-export default TradeDocs;

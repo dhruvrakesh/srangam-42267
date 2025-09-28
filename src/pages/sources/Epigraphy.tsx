@@ -13,7 +13,7 @@ import { ScriptViewer } from '@/components/inscriptions/ScriptViewer';
 import { TranslationPanel } from '@/components/inscriptions/TranslationPanel';
 import { ContextualCommentary } from '@/components/inscriptions/ContextualCommentary';
 
-export export default function Epigraphy() {
+export default function Epigraphy() {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [regionFilter, setRegionFilter] = useState('');
@@ -315,4 +315,3 @@ export export default function Epigraphy() {
   );
 }
 
-export default Epigraphy;
