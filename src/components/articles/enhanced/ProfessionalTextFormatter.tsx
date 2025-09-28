@@ -35,8 +35,8 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
   const processTextForCulturalTerms = (text: string) => {
     if (!enableCulturalTerms) return text;
     
-    // Enhanced cultural term pattern matching
-    const culturalTermPattern = /\*\*(.*?)\*\*/g;
+    // Enhanced cultural term pattern matching for {{cultural:term}} format
+    const culturalTermPattern = /\{\{cultural:([^}]+)\}\}/g;
     const parts = [];
     let lastIndex = 0;
     let match;

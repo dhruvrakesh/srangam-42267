@@ -164,6 +164,148 @@ export const culturalTermsDatabase: Record<string, CulturalTerm> = {
         culturalContext: 'மேற்கு கடற்கரை மற்றும் மசாலா வணிகத்தைக் கட்டுப்படுத்திய பண்டைய தமிழ் வம்சம்'
       }
     }
+  },
+  'adichanallur': {
+    term: 'adichanallur',
+    translations: {
+      en: {
+        translation: 'Adichanallur',
+        transliteration: 'ādicāṉallūr',
+        etymology: 'Tamil ādi (ancient) + cāṉal (urn) + ūr (village)',
+        culturalContext: 'Ancient archaeological site in Tamil Nadu known for urn burials dating to 1000-600 BCE, evidence of early Tamil civilization'
+      },
+      ta: {
+        translation: 'ஆதிச்சநல்லூர்',
+        transliteration: 'ādicāṉallūr',
+        etymology: 'ஆதி (பண்டைய) + சாணல் (கலயம்) + ஊர் (ஊர்)',
+        culturalContext: 'கி.மு. 1000-600 காலகட்டத்திய கலய அடக்கத்திற்கு புகழ்பெற்ற தமிழ்நாட்டின் பண்டைய தொல்லியல் தளம், ஆரம்பகால தமிழ் நாகரிகத்தின் சான்று'
+      }
+    }
+  },
+  'keezhadi': {
+    term: 'keezhadi',
+    translations: {
+      en: {
+        translation: 'Keezhadi',
+        transliteration: 'kīḻaṭi',
+        etymology: 'Tamil kīḻ (below/ancient) + aṭi (settlement)',
+        culturalContext: 'Revolutionary archaeological site on Vaigai river showing urban civilization from 6th century BCE, rewriting Tamil history timeline'
+      },
+      ta: {
+        translation: 'கீழடி',
+        transliteration: 'kīḻaṭi',
+        etymology: 'கீழ் (கீழ்/பண்டைய) + அடி (குடியிருப்பு)',
+        culturalContext: 'கி.மு. 6ஆம் நூற்றாண்டிலிருந்து நகர நாகரிகத்தைக் காட்டும் வைகை நதிக்கரையின் புரட்சிகர தொல்லியல் தளம், தமிழ் வரலாற்று காலவரிசையை மீண்டும் எழுதுகிறது'
+      }
+    }
+  },
+  'vaigai': {
+    term: 'vaigai',
+    translations: {
+      en: {
+        translation: 'Vaigai',
+        transliteration: 'vaigai',
+        etymology: 'Tamil vai (sharp/swift) + gai (flow)',
+        culturalContext: 'Sacred river in Tamil Nadu, cradle of ancient Tamil civilization, site of Keezhadi and other archaeological discoveries'
+      },
+      ta: {
+        translation: 'வைகை',
+        transliteration: 'vaigai',
+        etymology: 'வை (கூர்மையான/வேகமான) + கை (ஓட்டம்)',
+        culturalContext: 'தமிழ்நாட்டின் புனித நதி, பண்டைய தமிழ் நாகரிகத்தின் தொட்டில், கீழடி மற்றும் பிற தொல்லியல் கண்டுபிடிப்புகளின் இடம்'
+      }
+    }
+  },
+  'jambudvipa': {
+    term: 'jambudvipa',
+    translations: {
+      en: {
+        translation: 'Jambudvipa',
+        transliteration: 'jambudvīpa',
+        etymology: 'Sanskrit jambu (rose apple tree) + dvīpa (island/continent)',
+        culturalContext: 'Ancient Sanskrit name for the Indian subcontinent, representing the known inhabited world in Hindu and Buddhist cosmology'
+      },
+      ta: {
+        translation: 'ஜம்புத்வீபம்',
+        transliteration: 'jambudvīpam',
+        etymology: 'சமஸ்கிருத jambu (நாவல் மரம்) + dvīpa (தீவு/கண்டம்)',
+        culturalContext: 'இந்திய துணைக்கண்டத்திற்கான பண்டைய சமஸ்கிருத பெயர், இந்து மற்றும் பௌத்த அண்டவியலில் அறியப்பட்ட வாழக்கூடிய உலகத்தைக் குறிக்கும்'
+      },
+      hi: {
+        translation: 'जम्बुद्वीप',
+        transliteration: 'jambudvīp',
+        etymology: 'संस्कृत जम्बु (जामुन वृक्ष) + द्वीप (द्वीप/महाद्वीप)',
+        culturalContext: 'भारतीय उपमहाद्वीप का प्राचीन संस्कृत नाम, हिंदू और बौद्ध ब्रह्मांड विज्ञान में ज्ञात निवास योग्य संसार का प्रतिनिधित्व'
+      }
+    }
+  },
+  'mahabharata': {
+    term: 'mahabharata',
+    translations: {
+      en: {
+        translation: 'Mahabharata',
+        transliteration: 'mahābhārata',
+        etymology: 'Sanskrit mahā (great) + bhārata (descendants of Bharata)',
+        culturalContext: 'Epic narrative of ancient India, containing the Bhagavad Gita and foundational stories of dharmic civilization'
+      },
+      ta: {
+        translation: 'மகாபாரதம்',
+        transliteration: 'mahābhāratam',
+        etymology: 'சமஸ்கிருத mahā (பெரிய) + bhārata (பரதன் வம்சம்)',
+        culturalContext: 'பண்டைய இந்தியாவின் காவிய கதை, பகவத் கீதை மற்றும் தர்ம நாகரிகத்தின் அடிப்படைக் கதைகளைக் கொண்டது'
+      }
+    }
+  },
+  'puranic': {
+    term: 'puranic',
+    translations: {
+      en: {
+        translation: 'Puranic',
+        transliteration: 'paurāṇika',
+        etymology: 'From Sanskrit purāṇa (ancient stories)',
+        culturalContext: 'Relating to the Puranas, ancient Sanskrit texts containing mythology, traditions, and genealogies'
+      },
+      ta: {
+        translation: 'புராணிக',
+        transliteration: 'paurāṇika',
+        etymology: 'சமஸ்கிருத purāṇa (பண்டைய கதைகள்)',
+        culturalContext: 'புராணங்களுடன் தொடர்புடையது, புராணக்கதைகள், மரபுகள் மற்றும் வம்சாவளிகளைக் கொண்ட பண்டைய சமஸ்கிருத நூல்கள்'
+      }
+    }
+  },
+  'uttarapatha': {
+    term: 'uttarapatha',
+    translations: {
+      en: {
+        translation: 'Uttarapatha',
+        transliteration: 'uttarāpatha',
+        etymology: 'Sanskrit uttara (north) + patha (path/route)',
+        culturalContext: 'Ancient northern trade route connecting northwestern India to eastern regions, major commercial artery'
+      },
+      ta: {
+        translation: 'உத்தராபதம்',
+        transliteration: 'uttarāpatham',
+        etymology: 'சமஸ்கிருத uttara (வடக்கு) + patha (பாதை/வழி)',
+        culturalContext: 'வடமேற்கு இந்தியாவை கிழக்குப் பகுதிகளுடன் இணைக்கும் பண்டைய வடக்கு வணிகப் பாதை, முக்கிய வணிக நாடி'
+      }
+    }
+  },
+  'dakshinapatha': {
+    term: 'dakshinapatha',
+    translations: {
+      en: {
+        translation: 'Dakshinapatha',
+        transliteration: 'dakṣiṇāpatha',
+        etymology: 'Sanskrit dakṣiṇa (south) + patha (path/route)',
+        culturalContext: 'Ancient southern trade route through peninsular India, connecting northern plains to Tamil kingdoms'
+      },
+      ta: {
+        translation: 'தக்ஷிணாபதம்',
+        transliteration: 'dakṣiṇāpatham',
+        etymology: 'சமஸ்கிருத dakṣiṇa (தெற்கு) + patha (பாதை/வழி)',
+        culturalContext: 'தீபகற்ப இந்தியா வழியாக செல்லும் பண்டைய தென் வணிகப் பாதை, வடக்கு சமவெளிகளை தமிழ் அரசுகளுடன் இணைக்கும்'
+      }
+    }
   }
 };
 
