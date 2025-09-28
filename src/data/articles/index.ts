@@ -10,6 +10,7 @@ import { gondwanaToHimalaya } from './gondwana-to-himalaya';
 import { indianOceanPowerNetworksComplete } from './indian-ocean-power-networks-complete';
 import { earthSeaSangam } from './earth-sea-sangam';
 import { maritimeMemoriesSouthIndiaComplete } from './maritime-memories-south-india-complete';
+import { jambudvipaConnected } from './jambudvipa-connected';
 
 // Complete multilingual article registry
 export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
@@ -23,7 +24,8 @@ export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
   kutaiYupaBorneo,
   cholaNavalRaid,
   pepperAndBullion,
-  earthSeaSangam
+  earthSeaSangam,
+  jambudvipaConnected
 ];
 
 // Mapping from legacy slugs to multilingual article IDs
@@ -38,7 +40,8 @@ export const SLUG_TO_ID_MAP: Record<string, string> = {
   '/kutai-yupa-borneo': 'kutai-yupa-borneo',
   '/chola-naval-raid': 'chola-naval-raid',
   '/pepper-and-bullion': 'pepper-and-bullion',
-  '/earth-sea-sangam': 'earth-sea-sangam'
+  '/earth-sea-sangam': 'earth-sea-sangam',
+  '/jambudvipa-connected': 'jambudvipa-connected'
 };
 
 // Article metadata for display (readTime, author, date)
@@ -113,6 +116,12 @@ export const ARTICLE_METADATA: Record<string, {
     author: 'Nartiang Foundation',
     date: '2024-03-28',
     theme: 'Geology & Deep Time'
+  },
+  'jambudvipa-connected': {
+    readTime: 35,
+    author: 'Nartiang Foundation',
+    date: '2025-09-28',
+    theme: 'Ancient India'
   }
 };
 
