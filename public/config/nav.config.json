@@ -1,0 +1,53 @@
+{
+  "primary": [
+    {"label": "Explore", "href": "/sitemap", "desc": "Start here: site map & featured"},
+    {
+      "label": "Themes",
+      "desc": "Research narratives by topic",
+      "children": [
+        {"label": "Indian Ocean World", "href": "/themes/indian-ocean-world"},
+        {"label": "Empires & Exchange", "href": "/themes/empires-exchange"},
+        {"label": "Scripts & Inscriptions", "href": "/themes/scripts-inscriptions"},
+        {"label": "Geology & Deep Time", "href": "/themes/geology-deep-time"},
+        {"label": "Ancient India", "href": "/themes/ancient-india"}
+      ]
+    },
+    {
+      "label": "Sources",
+      "desc": "Primary materials & methods",
+      "children": [
+        {"label": "Epigraphic Evidence", "href": "/sources/epigraphy"},
+        {"label": "Multilingual Edicts", "href": "/sources/edicts"},
+        {"label": "Trade Documents", "href": "/sources/trade-docs"},
+        {"label": "Methods & Data", "href": "/sources-method"},
+        {"label": "Bibliography (MLA)", "href": "/reading-room"},
+        {"label": "Sourcebook Index", "href": "/sources/index"},
+        {"label": "Sanskrit Terminology / IAST", "href": "/sources/sanskrit-terminology"}
+      ]
+    },
+    {
+      "label": "Maps & Data",
+      "desc": "Interactive layers & downloads",
+      "children": [
+        {"label": "Open Global Map", "href": "/maps-data"},
+        {"label": "Ports & Emporia", "href": "/maps-data?layer=ports"},
+        {"label": "Transoceanic Hubs", "href": "/maps-data?layer=hubs"},
+        {"label": "Epigraphy & Guilds", "href": "/maps-data?layer=guilds"},
+        {"label": "Coin Hoards", "href": "/maps-data?layer=hoards"},
+        {"label": "Forts & Naval", "href": "/maps-data?layer=forts"},
+        {"label": "Waypoints", "href": "/maps-data?layer=waypoints"},
+        {"label": "Interior Corridors", "href": "/maps-data?layer=corridors"},
+        {"label": "Download CSV", "href": "/data/correlation_matrix_oceanic_bharat_EXPANDED.csv"},
+        {"label": "Download GeoJSON", "href": "/data/oceanic_layers.geojson"}
+      ]
+    },
+    {"label": "Reading Room", "href": "/reading-room", "desc": "Long essays & PDFs"},
+    {"label": "Field Notes", "href": "/field-notes", "desc": "Dispatches & updates"},
+    {"label": "About", "href": "/about", "desc": "Project overview"}
+  ],
+  "utilities": {
+    "searchPlaceholder": "Search articles, pins, sources…",
+    "languages": ["English","हिन्दी","தமிழ்","తెలుగু","ಕನ್ನಡ","বাংলা","অসমীয়া","Pnar"],
+    "i18nOptions": {"showIAST": true}
+  }
+}

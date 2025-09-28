@@ -1,0 +1,29 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ports & Emporia",
+        "type": "ports",
+        "description": "Major trading ports of the Indian Ocean"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [80.2707, 13.0827]
+      }
+    },
+    {
+      "type": "Feature", 
+      "properties": {
+        "name": "Transoceanic Hubs",
+        "type": "hubs",
+        "description": "Key transoceanic trading centers"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [76.2673, 10.8505]
+      }
+    }
+  ]
+}
