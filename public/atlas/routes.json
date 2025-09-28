@@ -1,0 +1,80 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [100.50, 5.69],
+          [79.84, 10.77]
+        ]
+      },
+      "properties": {
+        "id": "kedah_nagapattinam",
+        "name": {
+          "en": "Bay of Bengal Corridor",
+          "hi": "बंगाल की खाड़ी गलियारा",
+          "ta": "வங்காள விரிகுடா வழித்தடம்"
+        },
+        "period": {
+          "start": 400,
+          "end": 1000
+        },
+        "confidence": "medium",
+        "note": "Schematic Bay of Bengal trade route",
+        "needs_citation": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [76.26, 10.21],
+          [35.50, 23.91]
+        ]
+      },
+      "properties": {
+        "id": "muziris_berenike",
+        "name": {
+          "en": "Pepper Route",
+          "hi": "मिर्च मार्ग",
+          "ta": "மிளகு வழித்தடம்"
+        },
+        "period": {
+          "start": -100,
+          "end": 400
+        },
+        "confidence": "high",
+        "note": "Indo-Roman spice trade corridor",
+        "needs_citation": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [79.84, 10.77],
+          [76.26, 10.21]
+        ]
+      },
+      "properties": {
+        "id": "coromandel_malabar",
+        "name": {
+          "en": "Peninsular Coastal Route",
+          "hi": "प्रायद्वीपीय तटीय मार्ग",
+          "ta": "தீபகற்ப கடற்கரை வழித்தடம்"
+        },
+        "period": {
+          "start": 900,
+          "end": 1300
+        },
+        "confidence": "high",
+        "note": "Chola-era coastal connections",
+        "needs_citation": false
+      }
+    }
+  ]
+}

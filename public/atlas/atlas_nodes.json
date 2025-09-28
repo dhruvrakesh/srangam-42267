@@ -1,0 +1,206 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [76.26, 10.21]
+      },
+      "properties": {
+        "id": "muziris",
+        "title": {
+          "en": "Muziris",
+          "hi": "मुजिरिस",
+          "ta": "முசிறி"
+        },
+        "type": "port",
+        "category": "Ports & Emporia",
+        "period": {
+          "start": -100,
+          "end": 400
+        },
+        "summary": {
+          "en": "Major pepper port on the Malabar coast mentioned in the Periplus Maris Erythraei. Archaeological excavations at Pattanam have revealed Roman amphorae, glass beads, and evidence of extensive maritime trade networks. The port served as a crucial link between Roman merchants and Indian spice producers, handling massive quantities of pepper, cardamom, and other aromatics destined for Mediterranean markets.",
+          "hi": "पेरिप्लस मारिस एरिथ्राई में वर्णित मालाबार तट का प्रमुख काली मिर्च बंदरगाह। पट्टनम की पुरातत्व खुदाई में रोमन मिट्टी के बर्तन, कांच के मोती और व्यापक सामुद्रिक व्यापार नेटवर्क के प्रमाण मिले हैं।",
+          "ta": "பெரிப்ளஸ் மாரிஸ் எரிதிராயில் குறிப்பிடப்பட்ட மலபார் கடற்கரையின் முக்கிய மிளகு துறைமுகம்।"
+        },
+        "tags": ["pepper", "roman-trade", "archaeology", "malabar"],
+        "sources": [
+          "Casson, Lionel. *The Periplus Maris Erythraei*. Princeton UP, 1989.",
+          "Sidebotham, Steven E. *Berenike and the Ancient Maritime Spice Route*. U of California P, 2011."
+        ],
+        "articleSlug": "pepper-and-bullion",
+        "confidence": "high",
+        "approximate": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [79.83, 11.93]
+      },
+      "properties": {
+        "id": "arikamedu",
+        "title": {
+          "en": "Arikamedu",
+          "hi": "अरिकामेडु",
+          "ta": "அரிக்கமேடு"
+        },
+        "type": "port",
+        "category": "Ports & Emporia",
+        "period": {
+          "start": -50,
+          "end": 200
+        },
+        "summary": {
+          "en": "Archaeological site near Puducherry revealing extensive Indo-Roman trade connections. Excavations have uncovered Roman amphorae, terra sigillata, glass vessels, and local imitations of Roman pottery, demonstrating sustained commercial relationships between South India and the Mediterranean world from the 1st century BCE to 2nd century CE.",
+          "hi": "पुडुचेरी के पास पुरातत्विक स्थल जो व्यापक भारत-रोमन व्यापार संबंधों को प्रकट करता है।",
+          "ta": "புதுச்சேரிக்கு அருகிலுள்ள தொல்லியல் தளம் விரிவான இந்தோ-ரோமன் வர்த்தக தொடர்புகளை வெளிப்படுத்துகிறது।"
+        },
+        "tags": ["roman-trade", "archaeology", "south-india"],
+        "sources": [
+          "Wheeler, R.E.M. *Ancient India* 2 (1946).",
+          "Begley, Vimala. *The Ancient Port of Arikamedu*. Pondicherry, 1996."
+        ],
+        "articleSlug": "maritime-memories-south-india",
+        "confidence": "high",
+        "approximate": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [79.84, 10.77]
+      },
+      "properties": {
+        "id": "nagapattinam",
+        "title": {
+          "en": "Nagapattinam",
+          "hi": "नागपट्टिनम",
+          "ta": "நாகப்பட்டினம்"
+        },
+        "type": "port",
+        "category": "Ports & Emporia",
+        "period": {
+          "start": 900,
+          "end": 1300
+        },
+        "summary": {
+          "en": "Major Chola naval base and commercial port on the Coromandel coast. Inscriptions document extensive overseas trade networks, merchant guilds, and naval expeditions. The port served as a launching point for Rajendra Chola's 1025 CE campaign against Srivijaya and maintained trading connections with China, Southeast Asia, and the Persian Gulf.",
+          "hi": "कोरोमंडल तट पर प्रमुख चोल नौसैनिक अड्डा और वाणिज्यिक बंदरगाह।",
+          "ta": "கோரோமண்டல் கடற்கரையில் முக்கிய சோழர் கடற்படை தளம் மற்றும் வணிக துறைமுகம்।"
+        },
+        "tags": ["chola", "naval-base", "coromandel", "inscriptions"],
+        "sources": [
+          "Nilakanta Sastri, K.A. *The Cōḷas*. University of Madras, 1955.",
+          "Hall, Kenneth R. *Maritime Trade and State Development*. University of Hawaii Press, 1985."
+        ],
+        "articleSlug": "chola-naval-raid",
+        "confidence": "high",
+        "approximate": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.50, 23.91]
+      },
+      "properties": {
+        "id": "berenike",
+        "title": {
+          "en": "Berenike",
+          "hi": "बेरेनिके",
+          "ta": "பெரெனிகே"
+        },
+        "type": "port",
+        "category": "Red Sea Gateways",
+        "period": {
+          "start": -300,
+          "end": 500
+        },
+        "summary": {
+          "en": "Major Red Sea port serving as a crucial link in the Indo-Roman spice trade. Excavations have revealed Indian pepper, textiles, and precious stones, demonstrating the port's role as a transshipment hub between Indian Ocean merchants and Roman traders. The site provides exceptional preservation of organic materials, offering detailed insights into ancient maritime commerce.",
+          "hi": "भारत-रोमन मसाला व्यापार में महत्वपूर्ण कड़ी के रूप में काम करने वाला प्रमुख लाल सागर बंदरगाह।",
+          "ta": "இந்தோ-ரோமன் மசாலா வர்த்தகத்தில் முக்கிய இணைப்பாக செயல்படும் முக்கிய செங்கடல் துறைமுகம்।"
+        },
+        "tags": ["red-sea", "roman-trade", "archaeology", "spices"],
+        "sources": [
+          "Sidebotham, Steven E. *Berenike and the Ancient Maritime Spice Route*. U of California P, 2011."
+        ],
+        "articleSlug": "pepper-and-bullion",
+        "confidence": "high",
+        "approximate": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [100.50, 5.69]
+      },
+      "properties": {
+        "id": "kedah",
+        "title": {
+          "en": "Kedah (Bujang Valley)",
+          "hi": "केदाह (बुजंग घाटी)",
+          "ta": "கெடா (புஜாங் பள்ளத்தாக்கு)"
+        },
+        "type": "port",
+        "category": "Transoceanic Hubs",
+        "period": {
+          "start": 400,
+          "end": 1000
+        },
+        "summary": {
+          "en": "Ancient entrepôt in the Bujang Valley, Malaysia, showing evidence of early maritime trade networks. Archaeological excavations at Sungai Batu have revealed iron smelting sites, Hindu-Buddhist temples, and Indian Ocean trade connections. The site demonstrates the integration of local production with long-distance commerce in the early medieval period.",
+          "hi": "मलेशिया की बुजंग घाटी में प्राचीन व्यापारिक केंद्र जो प्रारंभिक सामुद्रिक व्यापार नेटवर्क के प्रमाण दिखाता है।",
+          "ta": "மலேசியாவின் புஜாங் பள்ளத்தாக்கில் உள்ள பண்டைய வர்த்தக மையம்."
+        },
+        "tags": ["southeast-asia", "archaeology", "entrepot"],
+        "sources": [
+          "Jacq-Hergoualc'h, Michel. *The Malay Peninsula*. Brill, 2002."
+        ],
+        "articleSlug": "indian-ocean-power-networks",
+        "confidence": "high",
+        "approximate": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [104.76, -2.99]
+      },
+      "properties": {
+        "id": "palembang",
+        "title": {
+          "en": "Palembang",
+          "hi": "पालेम्बांग",
+          "ta": "பாலெம்பாங்"
+        },
+        "type": "city",
+        "category": "Transoceanic Hubs",
+        "period": {
+          "start": 700,
+          "end": 1200
+        },
+        "summary": {
+          "en": "Capital of the Srivijaya maritime empire, controlling crucial trade routes through the Strait of Malacca. Sanskrit inscriptions document the kingdom's Buddhist character and commercial networks extending from India to China. The city's strategic location made it a target of Chola naval expeditions in 1025 CE.",
+          "hi": "श्रीविजय सामुद्रिक साम्राज्य की राजधानी, मलक्का जलडमरूमध्य के महत्वपूर्ण व्यापारिक मार्गों को नियंत्रित करती थी।",
+          "ta": "ஸ்ரீவிஜய கடல்சார் பேரரசின் தலைநகரம்."
+        },
+        "tags": ["srivijaya", "southeast-asia", "chola-target"],
+        "sources": [
+          "Coedès, George. *The Indianized States of Southeast Asia*. University of Hawaii Press, 1968."
+        ],
+        "articleSlug": "chola-naval-raid",
+        "confidence": "high",
+        "approximate": false
+      }
+    }
+  ]
+}
