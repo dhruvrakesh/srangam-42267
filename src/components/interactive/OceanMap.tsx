@@ -41,11 +41,7 @@ export function OceanMap({
 }: OceanMapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<Map | null>(null);
-  const [toggles, setToggles] = useState<LayerToggles>({
-    ports: enabledLayers.includes('ports'),
-    monsoon: enabledLayers.includes('monsoon'),
-    routes: enabledLayers.includes('routes'),
-  });
+  // Remove internal state - use enabledLayers prop directly
   const [token, setToken] = useState<string | undefined>(
     import.meta?.env?.VITE_MAPBOX_TOKEN || localStorage.getItem('MAPBOX_TOKEN') || undefined
   );
@@ -164,9 +160,9 @@ export function OceanMap({
         });
 
         // Set initial layer visibility
-        setLayerVisibility(map, 'ports', toggles.ports);
-        setLayerVisibility(map, 'monsoon', toggles.monsoon);
-        setLayerVisibility(map, 'routes', toggles.routes);
+        setLayerVisibility(map, 'ports', enabledLayers.includes('ports'));
+        setLayerVisibility(map, 'monsoon', enabledLayers.includes('monsoon'));
+        setLayerVisibility(map, 'routes', enabledLayers.includes('routes'));
 
         // Port click handlers
         map.on('click', 'ports-unclustered', (e) => {
@@ -248,38 +244,19 @@ export function OceanMap({
     };
   }, [token]);
 
-  // Update layer visibility when toggles change
+  // Update layer visibility when enabledLayers change
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
     
-    setLayerVisibility(map, 'ports', toggles.ports);
-    setLayerVisibility(map, 'monsoon', toggles.monsoon);
-    setLayerVisibility(map, 'routes', toggles.routes);
-  }, [toggles]);
-
-  // Sync with parent layer controls
-  useEffect(() => {
-    setToggles({
-      ports: enabledLayers.includes('ports'),
-      monsoon: enabledLayers.includes('monsoon'),
-      routes: enabledLayers.includes('routes'),
-    });
+    setLayerVisibility(map, 'ports', enabledLayers.includes('ports'));
+    setLayerVisibility(map, 'monsoon', enabledLayers.includes('monsoon'));
+    setLayerVisibility(map, 'routes', enabledLayers.includes('routes'));
   }, [enabledLayers]);
 
-  const handleToggle = (layer: keyof LayerToggles) => {
-    const newValue = !toggles[layer];
-    setToggles(prev => ({ ...prev, [layer]: newValue }));
-    onLayerToggle?.(layer);
-  };
-
   const handleExportData = () => {
-    const visibleLayers = Object.entries(toggles)
-      .filter(([_, visible]) => visible)
-      .map(([layer, _]) => layer);
-    
     const exportData = {
-      layers: visibleLayers,
+      layers: enabledLayers,
       filters: selectedFilters,
       period: selectedPeriod,
       timestamp: new Date().toISOString()
@@ -299,45 +276,25 @@ export function OceanMap({
 
   return (
     <div className={cn("w-full", className)}>
-      {/* Map Controls */}
-      <div className="flex flex-wrap gap-3 items-center mb-4 p-3 bg-card border border-border rounded-lg">
-        <div className="flex gap-2">
-          <Toggle
-            label="Ports"
-            checked={toggles.ports}
-            onChange={() => handleToggle('ports')}
-          />
-          <Toggle
-            label="Monsoon"
-            checked={toggles.monsoon}
-            onChange={() => handleToggle('monsoon')}
-          />
-          <Toggle
-            label="Routes"
-            checked={toggles.routes}
-            onChange={() => handleToggle('routes')}
-          />
-        </div>
-        
-        <div className="flex gap-2 ml-auto">
+      {/* Export Button Only */}
+      <div className="flex justify-end gap-2 mb-4">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={handleExportData}
+        >
+          <Download className="w-4 h-4 mr-1" />
+          Export
+        </Button>
+        {!token && (
           <Button
             size="sm"
             variant="outline"
-            onClick={handleExportData}
+            onClick={() => setShowTokenModal(true)}
           >
-            <Download className="w-4 h-4 mr-1" />
-            Export
+            Use Mapbox Token
           </Button>
-          {!token && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setShowTokenModal(true)}
-            >
-              Use Mapbox Token
-            </Button>
-          )}
-        </div>
+        )}
       </div>
 
       {/* Map Container */}
