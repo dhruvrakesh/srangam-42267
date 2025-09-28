@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LanguageProvider } from "@/components/language/LanguageProvider";
+import { HelmetProvider } from 'react-helmet-async';
 import { Loader2 } from 'lucide-react';
 
 // Immediate load for critical pages
@@ -83,63 +84,65 @@ function PageLoadingFallback() {
 
 const App = () => (
   <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Layout>
-              <Suspense fallback={<PageLoadingFallback />}>
-                <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/themes/ancient-india" element={<AncientIndia />} />
-                <Route path="/themes/indian-ocean-world" element={<IndianOceanWorld />} />
-                <Route path="/themes/scripts-inscriptions" element={<ScriptsInscriptions />} />
-                <Route path="/themes/geology-deep-time" element={<GeologyDeepTime />} />
-                <Route path="/themes/empires-exchange" element={<EmpiresExchange />} />
-            <Route path="/field-notes" element={<FieldNotes />} />
-            <Route path="/maps-data" element={<MapsData />} />
-            <Route path="/reading-room" element={<ReadingRoom />} />
-            
-            {/* Sources Routes */}
-            <Route path="/sources/edicts" element={<Edicts />} />
-            <Route path="/sources/epigraphy" element={<Epigraphy />} />
-            <Route path="/sources/trade-docs" element={<TradeDocs />} />
-                <Route path="/sources-method" element={<SourcesMethod />} />
-                <Route path="/search" element={<Search />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/brand" element={<Brand />} />
-                <Route path="/monsoon-trade-clock" element={<MonsoonTradeClock />} />
-                <Route path="/scripts-that-sailed" element={<ScriptsThatSailed />} />
-                <Route path="/gondwana-to-himalaya" element={<GondwanaToHimalaya />} />
-                <Route path="/indian-ocean-power-networks" element={<IndianOceanPowerNetworks />} />
-                <Route path="/ashoka-kandahar-edicts" element={<AshokaKandaharEdicts />} />
-                <Route path="/kutai-yupa-borneo" element={<KutaiYupaBorneo />} />
-                <Route path="/maritime-memories-south-india" element={<MaritimeMemoriesSouthIndia />} />
-                <Route path="/riders-on-monsoon" element={<RidersOnMonsoon />} />
-                <Route path="/pepper-and-bullion" element={<PepperAndBullion />} />
-                <Route path="/earth-sea-sangam" element={<EarthSeaSangam />} />
-                <Route path="/jambudvipa-connected" element={<JambudvipaConnected />} />
-                <Route path="/themes/ancient-india/pepper-routes" element={<IndianOceanPowerNetworks />} />
-                <Route path="/batch/bujang-nagapattinam-ocean" element={<BatchBujangNagapattinamOcean />} />
-                <Route path="/batch/muziris-kutai-ashoka" element={<BatchMuzirisKutaiAshoka />} />
-                <Route path="/research-submission" element={<ResearchSubmission />} />
-                <Route path="/partnership" element={<Partnership />} />
-                <Route path="/support-research" element={<SupportResearch />} />
-                <Route path="/sitemap" element={<Sitemap />} />
-                
-                {/* Oceanic Bharat article system */}
-                <Route path="/oceanic/*" element={<OceanicRouter />} />
-                
-                <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-          </Layout>
-        </BrowserRouter>
-      </TooltipProvider>
-      </LanguageProvider>
-    </QueryClientProvider>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <LanguageProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Layout>
+                <Suspense fallback={<PageLoadingFallback />}>
+                  <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/themes/ancient-india" element={<AncientIndia />} />
+                  <Route path="/themes/indian-ocean-world" element={<IndianOceanWorld />} />
+                  <Route path="/themes/scripts-inscriptions" element={<ScriptsInscriptions />} />
+                  <Route path="/themes/geology-deep-time" element={<GeologyDeepTime />} />
+                  <Route path="/themes/empires-exchange" element={<EmpiresExchange />} />
+              <Route path="/field-notes" element={<FieldNotes />} />
+              <Route path="/maps-data" element={<MapsData />} />
+              <Route path="/reading-room" element={<ReadingRoom />} />
+              
+              {/* Sources Routes */}
+              <Route path="/sources/edicts" element={<Edicts />} />
+              <Route path="/sources/epigraphy" element={<Epigraphy />} />
+              <Route path="/sources/trade-docs" element={<TradeDocs />} />
+                  <Route path="/sources-method" element={<SourcesMethod />} />
+                  <Route path="/search" element={<Search />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/brand" element={<Brand />} />
+                  <Route path="/monsoon-trade-clock" element={<MonsoonTradeClock />} />
+                  <Route path="/scripts-that-sailed" element={<ScriptsThatSailed />} />
+                  <Route path="/gondwana-to-himalaya" element={<GondwanaToHimalaya />} />
+                  <Route path="/indian-ocean-power-networks" element={<IndianOceanPowerNetworks />} />
+                  <Route path="/ashoka-kandahar-edicts" element={<AshokaKandaharEdicts />} />
+                  <Route path="/kutai-yupa-borneo" element={<KutaiYupaBorneo />} />
+                  <Route path="/maritime-memories-south-india" element={<MaritimeMemoriesSouthIndia />} />
+                  <Route path="/riders-on-monsoon" element={<RidersOnMonsoon />} />
+                  <Route path="/pepper-and-bullion" element={<PepperAndBullion />} />
+                  <Route path="/earth-sea-sangam" element={<EarthSeaSangam />} />
+                  <Route path="/jambudvipa-connected" element={<JambudvipaConnected />} />
+                  <Route path="/themes/ancient-india/pepper-routes" element={<IndianOceanPowerNetworks />} />
+                  <Route path="/batch/bujang-nagapattinam-ocean" element={<BatchBujangNagapattinamOcean />} />
+                  <Route path="/batch/muziris-kutai-ashoka" element={<BatchMuzirisKutaiAshoka />} />
+                  <Route path="/research-submission" element={<ResearchSubmission />} />
+                  <Route path="/partnership" element={<Partnership />} />
+                  <Route path="/support-research" element={<SupportResearch />} />
+                  <Route path="/sitemap" element={<Sitemap />} />
+                  
+                  {/* Oceanic Bharat article system */}
+                  <Route path="/oceanic/*" element={<OceanicRouter />} />
+                  
+                  <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+            </Layout>
+          </BrowserRouter>
+        </TooltipProvider>
+        </LanguageProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
   </ErrorBoundary>
 );
 
