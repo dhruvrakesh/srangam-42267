@@ -53,6 +53,11 @@ const Sitemap = lazy(() => import("./pages/Sitemap"));
 // Lazy load oceanic article system
 const OceanicRouter = lazy(() => import("./pages/oceanic/OceanicRouter"));
 
+// Sources Pages  
+const Edicts = lazy(() => import("./pages/sources/Edicts"));
+const Epigraphy = lazy(() => import("./pages/sources/Epigraphy"));  
+const TradeDocs = lazy(() => import("./pages/sources/TradeDocs"));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -93,9 +98,14 @@ const App = () => (
                 <Route path="/themes/scripts-inscriptions" element={<ScriptsInscriptions />} />
                 <Route path="/themes/geology-deep-time" element={<GeologyDeepTime />} />
                 <Route path="/themes/empires-exchange" element={<EmpiresExchange />} />
-                <Route path="/field-notes" element={<FieldNotes />} />
-                <Route path="/maps-data" element={<MapsData />} />
-                <Route path="/reading-room" element={<ReadingRoom />} />
+            <Route path="/field-notes" element={<FieldNotes />} />
+            <Route path="/maps-data" element={<MapsData />} />
+            <Route path="/reading-room" element={<ReadingRoom />} />
+            
+            {/* Sources Routes */}
+            <Route path="/sources/edicts" element={<Edicts />} />
+            <Route path="/sources/epigraphy" element={<Epigraphy />} />
+            <Route path="/sources/trade-docs" element={<TradeDocs />} />
                 <Route path="/sources-method" element={<SourcesMethod />} />
                 <Route path="/search" element={<Search />} />
                 <Route path="/about" element={<About />} />

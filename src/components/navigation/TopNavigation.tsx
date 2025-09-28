@@ -95,6 +95,33 @@ export function TopNavigation() {
                       {t('navigation.archaeologicalInsights')}
                     </span>
                   </DropdownMenuItem>
+                  <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-t border-border mt-2 pt-2">
+                    स्रोत | Sources
+                  </div>
+                  <DropdownMenuItem asChild>
+                    <Link 
+                      to="/sources/edicts"
+                      className="text-sm text-foreground hover:text-saffron transition-colors"
+                    >
+                      Royal Edicts
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link 
+                      to="/sources/epigraphy"
+                      className="text-sm text-foreground hover:text-saffron transition-colors"
+                    >
+                      Epigraphic Database
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link 
+                      to="/sources/trade-docs"
+                      className="text-sm text-foreground hover:text-saffron transition-colors"
+                    >
+                      Trade Documents
+                    </Link>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
