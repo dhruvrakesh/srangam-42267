@@ -41,12 +41,17 @@ export function OceanMap({
 }: OceanMapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<Map | null>(null);
-  // Remove internal state - use enabledLayers prop directly
   const [token, setToken] = useState<string | undefined>(
     import.meta?.env?.VITE_MAPBOX_TOKEN || localStorage.getItem('MAPBOX_TOKEN') || undefined
   );
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [mapError, setMapError] = useState<string | null>(null);
+
+  // Debug: Log enabledLayers changes
+  useEffect(() => {
+    console.log('OceanMap enabledLayers changed:', enabledLayers);
+  }, [enabledLayers]);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -54,8 +59,9 @@ export function OceanMap({
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: STYLE_WITH_TOKEN(token),
-      center: [78, 12], // Indian Ocean focus
-      zoom: 3.5,
+      center: [78, 12], // Indian Ocean focus [lng, lat]
+      zoom: 4.2, // Better zoom for Indian Ocean region
+      maxBounds: [[40, -20], [120, 40]], // Restrict to Indian Ocean region
       attributionControl: false,
       hash: false,
     });
@@ -65,14 +71,26 @@ export function OceanMap({
 
     map.on('load', async () => {
       try {
-        // Load and add ports layer
-        map.addSource('ports', {
-          type: 'geojson',
-          data: DATA_ENDPOINTS.ports,
-          cluster: true,
-          clusterRadius: 40,
-          clusterMaxZoom: 7,
-        });
+        console.log('Map loaded, adding data sources...');
+        
+        // Load and add ports layer with error handling
+        try {
+          const portsResponse = await fetch(DATA_ENDPOINTS.ports);
+          if (!portsResponse.ok) throw new Error(`Failed to load ports: ${portsResponse.status}`);
+          const portsData = await portsResponse.json();
+          console.log('Ports data loaded:', portsData.features?.length, 'features');
+          
+          map.addSource('ports', {
+            type: 'geojson',
+            data: portsData,
+            cluster: true,
+            clusterRadius: 40,
+            clusterMaxZoom: 7,
+          });
+        } catch (err) {
+          console.error('Failed to load ports data:', err);
+          setMapError('Failed to load ports data');
+        }
 
         // Clustered ports
         map.addLayer({
@@ -122,47 +140,68 @@ export function OceanMap({
           },
         });
 
-        // Load monsoon layer
-        map.addSource('monsoon', { 
-          type: 'geojson', 
-          data: DATA_ENDPOINTS.monsoon 
-        });
-        
-        map.addLayer({
-          id: 'monsoon-lines',
-          type: 'line',
-          source: 'monsoon',
-          paint: {
-            'line-color': 'hsl(var(--ocean))',
-            'line-width': ['interpolate', ['linear'], ['zoom'], 3, 1.5, 6, 3],
-            'line-opacity': 0.7,
-          },
-          layout: { 'line-cap': 'round', 'line-join': 'round' },
-        });
+        // Load monsoon layer with error handling
+        try {
+          const monsoonResponse = await fetch(DATA_ENDPOINTS.monsoon);
+          if (!monsoonResponse.ok) throw new Error(`Failed to load monsoon: ${monsoonResponse.status}`);
+          const monsoonData = await monsoonResponse.json();
+          console.log('Monsoon data loaded:', monsoonData.features?.length, 'features');
+          
+          map.addSource('monsoon', { 
+            type: 'geojson', 
+            data: monsoonData 
+          });
+          
+          map.addLayer({
+            id: 'monsoon-lines',
+            type: 'line',
+            source: 'monsoon',
+            paint: {
+              'line-color': 'hsl(var(--ocean))',
+              'line-width': ['interpolate', ['linear'], ['zoom'], 3, 2, 6, 4],
+              'line-opacity': 0.8,
+            },
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
+          });
+        } catch (err) {
+          console.error('Failed to load monsoon data:', err);
+        }
 
-        // Load routes layer
-        map.addSource('routes', { 
-          type: 'geojson', 
-          data: DATA_ENDPOINTS.routes 
-        });
-        
-        map.addLayer({
-          id: 'routes-lines',
-          type: 'line',
-          source: 'routes',
-          paint: {
-            'line-color': 'hsl(var(--laterite))',
-            'line-width': ['interpolate', ['linear'], ['zoom'], 3, 1, 6, 2.5],
-            'line-dasharray': [2, 2],
-            'line-opacity': 0.8,
-          },
-          layout: { 'line-cap': 'round', 'line-join': 'round' },
-        });
+        // Load routes layer with error handling
+        try {
+          const routesResponse = await fetch(DATA_ENDPOINTS.routes);
+          if (!routesResponse.ok) throw new Error(`Failed to load routes: ${routesResponse.status}`);
+          const routesData = await routesResponse.json();
+          console.log('Routes data loaded:', routesData.features?.length, 'features');
+          
+          map.addSource('routes', { 
+            type: 'geojson', 
+            data: routesData 
+          });
+          
+          map.addLayer({
+            id: 'routes-lines',
+            type: 'line',
+            source: 'routes',
+            paint: {
+              'line-color': 'hsl(var(--laterite))',
+              'line-width': ['interpolate', ['linear'], ['zoom'], 3, 1.5, 6, 3],
+              'line-dasharray': [2, 2],
+              'line-opacity': 0.9,
+            },
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
+          });
+        } catch (err) {
+          console.error('Failed to load routes data:', err);
+        }
 
-        // Set initial layer visibility
-        setLayerVisibility(map, 'ports', enabledLayers.includes('ports'));
-        setLayerVisibility(map, 'monsoon', enabledLayers.includes('monsoon'));
-        setLayerVisibility(map, 'routes', enabledLayers.includes('routes'));
+        // Set initial layer visibility - wait for layers to be added
+        setTimeout(() => {
+          console.log('Setting initial layer visibility:', enabledLayers);
+          setLayerVisibility(map, 'ports', enabledLayers.includes('ports'));
+          setLayerVisibility(map, 'monsoon', enabledLayers.includes('monsoon'));
+          setLayerVisibility(map, 'routes', enabledLayers.includes('routes'));
+        }, 100);
 
         // Port click handlers
         map.on('click', 'ports-unclustered', (e) => {
@@ -249,9 +288,14 @@ export function OceanMap({
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
     
-    setLayerVisibility(map, 'ports', enabledLayers.includes('ports'));
-    setLayerVisibility(map, 'monsoon', enabledLayers.includes('monsoon'));
-    setLayerVisibility(map, 'routes', enabledLayers.includes('routes'));
+    console.log('Updating layer visibility:', enabledLayers);
+    
+    // Wait for layers to be fully loaded before setting visibility
+    setTimeout(() => {
+      setLayerVisibility(map, 'ports', enabledLayers.includes('ports'));
+      setLayerVisibility(map, 'monsoon', enabledLayers.includes('monsoon'));
+      setLayerVisibility(map, 'routes', enabledLayers.includes('routes'));
+    }, 50);
   }, [enabledLayers]);
 
   const handleExportData = () => {
@@ -403,10 +447,15 @@ function setLayerVisibility(map: Map, kind: 'ports' | 'monsoon' | 'routes', show
     : kind === 'monsoon' 
     ? ['monsoon-lines'] 
     : ['routes-lines'];
+  
+  console.log(`Setting ${kind} visibility to ${show}`, layerIds);
     
   layerIds.forEach(id => {
     if (map.getLayer(id)) {
       map.setLayoutProperty(id, 'visibility', show ? 'visible' : 'none');
+      console.log(`Layer ${id} visibility set to ${show ? 'visible' : 'none'}`);
+    } else {
+      console.warn(`Layer ${id} not found on map`);
     }
   });
 }

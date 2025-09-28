@@ -11,6 +11,11 @@ interface LayerControlsProps {
 }
 
 export function LayerControls({ enabledLayers, onLayerToggle }: LayerControlsProps) {
+  // Debug: Log when LayerControls receives new props
+  React.useEffect(() => {
+    console.log('LayerControls received enabledLayers:', enabledLayers);
+  }, [enabledLayers]);
+
   return (
     <Card className="p-4 mb-6">
       <h3 className="text-sm font-medium mb-3">{cosmicOceanI18n.labels.layers}</h3>
@@ -20,7 +25,10 @@ export function LayerControls({ enabledLayers, onLayerToggle }: LayerControlsPro
             <Switch
               id={`layer-${layer.id}`}
               checked={enabledLayers.includes(layer.id)}
-              onCheckedChange={() => onLayerToggle(layer.id)}
+              onCheckedChange={() => {
+                console.log('LayerControls switch clicked:', layer.id);
+                onLayerToggle(layer.id);
+              }}
             />
             <Label htmlFor={`layer-${layer.id}`} className="text-sm">
               {layer.label}
