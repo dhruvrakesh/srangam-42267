@@ -6,7 +6,7 @@ import timelineData from '@/data/geodeep/timeline.json';
 // Zod schemas for validation
 const SourceSchema = z.object({
   id: z.string(),
-  type: z.enum(['article', 'book', 'text']),
+  type: z.enum(['article', 'book', 'text', 'primary_text', 'report']),
   title: z.string(),
   authors: z.string(),
   year: z.number().optional(),
