@@ -1,0 +1,90 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [76.26, 10.21]
+      },
+      "properties": {
+        "id": "muziris",
+        "name": "Muziris (Kodungallur)",
+        "region": "Malabar",
+        "period_band": "1st c. CE–",
+        "evidence_types": "texts",
+        "tags": "malabar",
+        "description": "Major port on the Malabar coast, mentioned in classical sources as a center for spice trade.",
+        "needs_citation": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.50, 23.91]
+      },
+      "properties": {
+        "id": "berenike",
+        "name": "Berenike",
+        "region": "Red Sea",
+        "period_band": "1st c. CE–",
+        "evidence_types": "archaeology",
+        "tags": "red-sea, archaeology",
+        "description": "Archaeological site with evidence of Indian Ocean trade connections.",
+        "needs_citation": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [34.26, 26.16]
+      },
+      "properties": {
+        "id": "myos_hormos",
+        "name": "Myos Hormos",
+        "region": "Red Sea",
+        "period_band": "1st c. CE–",
+        "evidence_types": "texts",
+        "tags": "red-sea",
+        "description": "Roman Red Sea port mentioned in classical geographical sources.",
+        "needs_citation": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [100.50, 5.69]
+      },
+      "properties": {
+        "id": "kedah_bujang",
+        "name": "Kedah (Bujang)",
+        "region": "Malaya",
+        "period_band": "4th–10th c.",
+        "evidence_types": "archaeology",
+        "tags": "archaeology",
+        "description": "Archaeological complex with evidence of maritime trade and industrial activity.",
+        "needs_citation": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [79.84, 10.77]
+      },
+      "properties": {
+        "id": "nagapattinam",
+        "name": "Nagapattinam",
+        "region": "Coromandel",
+        "period_band": "Chola",
+        "evidence_types": "inscriptions",
+        "tags": "coromandel, inscriptions",
+        "description": "Major Chola port with merchant guild inscriptions documenting maritime networks.",
+        "needs_citation": false
+      }
+    }
+  ]
+}

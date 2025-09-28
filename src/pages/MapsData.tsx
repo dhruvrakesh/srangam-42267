@@ -2,7 +2,7 @@ import { Map, Database, BarChart3, Globe, Download } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { LazyMapboxPortMap } from "@/components/interactive/LazyMapboxPortMap";
+import { OceanMap } from "@/components/interactive/OceanMap";
 import { LazyMonsoonAnimation } from "@/components/interactive/LazyMonsoonAnimation";
 import { PlateTimeline } from "@/components/interactive/PlateTimeline";
 import { useState, useCallback } from "react";
@@ -119,19 +119,24 @@ export default function MapsData() {
                   <Globe size={20} className="text-ocean" />
                   {cosmicOceanI18n.labels.historical_ports}
                 </CardTitle>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setActiveModal('ports')}
-                >
-                  {i18n.language === 'hi' ? cosmicOceanI18n.labels.view_map_hi : cosmicOceanI18n.labels.view_map_en}
-                </Button>
+                <div className="text-sm text-muted-foreground">
+                  Interactive map with clustered ports, monsoon patterns, and schematic routes
+                </div>
               </div>
               <p className="text-muted-foreground">
                 Major port nodes with approximate coordinates and indicative active periods.
               </p>
             </CardHeader>
             <CardContent>
+              <OceanMap
+                className="mb-6"
+                selectedFilters={selectedFilters}
+                selectedPeriod={selectedPeriod}
+                enabledLayers={enabledLayers}
+                onLayerToggle={handleLayerToggle}
+                showEvidence={showEvidence}
+              />
+              
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredPorts.map((port) => (
                   <PortCard
@@ -320,9 +325,6 @@ export default function MapsData() {
       </div>
 
       {/* Interactive Modals */}
-      {activeModal === 'ports' && (
-        <LazyMapboxPortMap onClose={() => setActiveModal(null)} />
-      )}
       {activeModal === 'monsoon' && (
         <LazyMonsoonAnimation onClose={() => setActiveModal(null)} />
       )}

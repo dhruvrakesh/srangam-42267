@@ -1,0 +1,77 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[60.0, 16.0], [72.0, 16.0]]
+      },
+      "properties": {
+        "id": "summer-0",
+        "season": "summer",
+        "title_en": "Summer Monsoon",
+        "title_hi": "ग्रीष्म मानसून",
+        "months": "Jun, Jul, Aug, Sep",
+        "narrative_en": "Southwest winds typically enable eastward travel across the Arabian Sea and Bay of Bengal.",
+        "narrative_hi": "दक्षिण-पश्चिमी हवाएं आम तौर पर अरब सागर और बंगाल की खाड़ी में पूर्वी यात्रा को सक्षम बनाती हैं।",
+        "label": "SW Monsoon",
+        "sector": "arabian-sea"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[82.0, 12.0], [92.0, 12.0]]
+      },
+      "properties": {
+        "id": "summer-1",
+        "season": "summer",
+        "title_en": "Summer Monsoon",
+        "title_hi": "ग्रीष्म मानसून",
+        "months": "Jun, Jul, Aug, Sep",
+        "narrative_en": "Southwest winds typically enable eastward travel across the Arabian Sea and Bay of Bengal.",
+        "narrative_hi": "दक्षिण-पश्चिमी हवाएं आम तौर पर अरब सागर और बंगाल की खाड़ी में पूर्वी यात्रा को सक्षम बनाती हैं।",
+        "label": "SW Monsoon",
+        "sector": "bay-of-bengal"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[72.0, 16.0], [60.0, 16.0]]
+      },
+      "properties": {
+        "id": "winter-0",
+        "season": "winter",
+        "title_en": "Winter Monsoon",
+        "title_hi": "शीत मानसून",
+        "months": "Dec, Jan, Feb",
+        "narrative_en": "Northeast winds typically enable westward return journeys.",
+        "narrative_hi": "उत्तर-पूर्वी हवाएं आम तौर पर पश्चिमी वापसी यात्रा को सक्षम बनाती हैं।",
+        "label": "NE Monsoon",
+        "sector": "arabian-sea"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[92.0, 12.0], [82.0, 12.0]]
+      },
+      "properties": {
+        "id": "winter-1",
+        "season": "winter",
+        "title_en": "Winter Monsoon",
+        "title_hi": "शीत मानसून",
+        "months": "Dec, Jan, Feb",
+        "narrative_en": "Northeast winds typically enable westward return journeys.",
+        "narrative_hi": "उत्तर-पूर्वी हवाएं आम तौर पर पश्चिमी वापसी यात्रा को सक्षम बनाती हैं।",
+        "label": "NE Monsoon",
+        "sector": "bay-of-bengal"
+      }
+    }
+  ]
+}
