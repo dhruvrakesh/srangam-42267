@@ -50,7 +50,7 @@ export const EvidenceDrawer = ({ caseStudy, isOpen, onClose }: EvidenceDrawerPro
                       {text.excerpt}
                     </div>
                     <div className="text-sm text-muted-foreground italic border-l-2 border-indigo-dharma/30 pl-3">
-                      "{text.translation}"
+                      "{text.reference}"
                     </div>
                     <div className="text-xs text-indigo-dharma/60 mt-2">
                       Word limit: {text.limitWords} | Character count: {text.excerpt.length}

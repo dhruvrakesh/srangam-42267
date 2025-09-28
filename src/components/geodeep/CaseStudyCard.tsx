@@ -75,7 +75,7 @@ export const CaseStudyCard = ({ caseStudy, onOpenDetails }: CaseStudyCardProps) 
               {caseStudy.texts[0].excerpt}
             </div>
             <div className="text-xs text-muted-foreground italic">
-              "{caseStudy.texts[0].translation}"
+              "{caseStudy.texts[0].reference}"
             </div>
           </div>
         )}

@@ -26,8 +26,9 @@ const ClaimSchema = z.object({
 
 const TextMemorySchema = z.object({
   tradition: z.string(),
+  reference: z.string(),
   excerpt: z.string(),
-  translation: z.string(),
+  source: z.string(),
   limitWords: z.number()
 });
 
