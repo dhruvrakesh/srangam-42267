@@ -306,6 +306,384 @@ export const culturalTermsDatabase: Record<string, CulturalTerm> = {
         culturalContext: 'தீபகற்ப இந்தியா வழியாக செல்லும் பண்டைய தென் வணிகப் பாதை, வடக்கு சமவெளிகளை தமிழ் அரசுகளுடன் இணைக்கும்'
       }
     }
+  },
+  // Archaeological Sites & Ancient Places
+  'korkai': {
+    term: 'korkai',
+    translations: {
+      en: {
+        translation: 'Korkai',
+        transliteration: 'kōrkai',
+        etymology: 'Tamil kōr (sharp) + kai (settlement by water)',
+        culturalContext: 'Ancient Pandya capital and major pearl diving center, flourished as a port city from 3rd century BCE'
+      },
+      ta: {
+        translation: 'கோர்கை',
+        transliteration: 'kōrkai',
+        etymology: 'கோர் (கூர்மையான) + கை (நீருக்கு அருகே குடியிருப்பு)',
+        culturalContext: 'பண்டைய பாண்டிய தலைநகர் மற்றும் முக்கிய முத்து வேட்டை மையம், கி.மு. 3ஆம் நூற்றாண்டிலிருந்து துறைமுக நகரமாக வளர்ந்தது'
+      }
+    }
+  },
+  'arikamedu': {
+    term: 'arikamedu',
+    translations: {
+      en: {
+        translation: 'Arikamedu',
+        transliteration: 'arikamēḍu',
+        etymology: 'Tamil ari (broken) + kamedu (platform/settlement)',
+        culturalContext: 'Ancient Roman trading post near Pondicherry, known as Poduke to Greeks, major Indo-Roman trade center'
+      },
+      ta: {
+        translation: 'அரிகமேடு',
+        transliteration: 'arikamēḍu',
+        etymology: 'அரி (உடைந்த) + கமேடு (மேடை/குடியிருப்பு)',
+        culturalContext: 'பாண்டிச்சேரி அருகே உள்ள பண்டைய ரோமானிய வணிக நிலையம், கிரேக்கர்களுக்கு போடுகே என்று அறியப்பட்டது, முக்கிய இந்திய-ரோமானிய வணிக மையம்'
+      }
+    }
+  },
+  'tamilakam': {
+    term: 'tamilakam',
+    translations: {
+      en: {
+        translation: 'Tamilakam',
+        transliteration: 'tamiḻakam',
+        etymology: 'Tamil tamiḻ + akam (home/region)',
+        culturalContext: 'Ancient geographical and cultural region of Tamil people, encompassing modern Tamil Nadu and parts of Kerala, Karnataka, Andhra Pradesh'
+      },
+      ta: {
+        translation: 'தமிழகம்',
+        transliteration: 'tamiḻakam',
+        etymology: 'தமிழ் + அகம் (வீடு/பகுதி)',
+        culturalContext: 'தமிழ் மக்களின் பண்டைய புவியியல் மற்றும் கலாச்சார பகுதி, நவீன தமிழ்நாடு மற்றும் கேரளா, கர்நாடக, ஆந்திர பிரதேசத்தின் சில பகுதிகளை உள்ளடக்கியது'
+      }
+    }
+  },
+  'poduke': {
+    term: 'poduke',
+    translations: {
+      en: {
+        translation: 'Poduke',
+        transliteration: 'podukē',
+        etymology: 'Greek rendering of Tamil port name, possibly from podu (entrance) + kay (settlement)',
+        culturalContext: 'Ancient Greek name for Arikamedu, mentioned in Periplus of the Erythraean Sea as major trading port'
+      },
+      ta: {
+        translation: 'போடுகே',
+        transliteration: 'pōdukē',
+        etymology: 'தமிழ் துறைமுக பெயரின் கிரேக்க உச்சரிப்பு, போது (நுழைவு) + கே (குடியிருப்பு)',
+        culturalContext: 'அரிகமேடுவின் பண்டைய கிரேக்க பெயர், எரித்ரியன் கடல் பெரிப்ளஸில் முக்கிய வணிக துறைமுகமாக குறிப்பிடப்பட்டது'
+      }
+    }
+  },
+  // Rivers & Geography
+  'thamirabarani': {
+    term: 'thamirabarani',
+    translations: {
+      en: {
+        translation: 'Thamirabarani',
+        transliteration: 'tāmiraparṇi',
+        etymology: 'Sanskrit tāmra (copper) + parṇi (leaves)',
+        culturalContext: 'Sacred river in Tamil Nadu, mentioned in ancient texts, sustains the Tirunelveli region'
+      },
+      ta: {
+        translation: 'தாமிரபரணி',
+        transliteration: 'tāmiraparṇi',
+        etymology: 'சமஸ்கிருத tāmra (செம்பு) + parṇi (இலைகள்)',
+        culturalContext: 'தமிழ்நாட்டின் புனித நதி, பண்டைய நூல்களில் குறிப்பிடப்பட்டு, திருநெல்வேலி பகுதியை வளமாக்குகிறது'
+      }
+    }
+  },
+  'ganga': {
+    term: 'ganga',
+    translations: {
+      en: {
+        translation: 'Ganga',
+        transliteration: 'gaṅgā',
+        etymology: 'Sanskrit gaṅ (to go) + gā (stream)',
+        culturalContext: 'Most sacred river in Hinduism, goddess personification, spiritual purification'
+      },
+      ta: {
+        translation: 'கங்கா',
+        transliteration: 'gaṅgā',
+        etymology: 'சமஸ்கிருத gaṅ (செல்லுதல்) + gā (ஓடை)',
+        culturalContext: 'இந்து மதத்தில் மிகவும் புனிதமான நதி, தேவி அவதாரம், ஆன்மீக தூய்மை'
+      }
+    }
+  },
+  'yamuna': {
+    term: 'yamuna',
+    translations: {
+      en: {
+        translation: 'Yamuna',
+        transliteration: 'yamunā',
+        etymology: 'Sanskrit yama (restraint) + una (water)',
+        culturalContext: 'Sacred river associated with Lord Krishna, twin of Ganga in spiritual significance'
+      },
+      ta: {
+        translation: 'யமுனா',
+        transliteration: 'yamunā',
+        etymology: 'சமஸ்கிருத yama (கட்டுப்பாடு) + una (நீர்)',
+        culturalContext: 'கிருஷ்ணருடன் தொடர்புடைய புனித நதி, ஆன்மீக முக்கியத்துவத்தில் கங்கையின் இரட்டையர்'
+      }
+    }
+  },
+  'godavari': {
+    term: 'godavari',
+    translations: {
+      en: {
+        translation: 'Godavari',
+        transliteration: 'godāvarī',
+        etymology: 'Sanskrit go (cow/earth) + dāvarī (giving)',
+        culturalContext: 'Sacred river known as Southern Ganga, major pilgrimage sites along its banks'
+      },
+      ta: {
+        translation: 'கோதாவரி',
+        transliteration: 'godāvarī',
+        etymology: 'சமஸ்கிருத go (பசு/பூமி) + dāvarī (கொடுப்பவள்)',
+        culturalContext: 'தென் கங்கை என்று அழைக்கப்படும் புனித நதி, அதன் கரைகளில் முக்கிய புண்ணிய தலங்கள்'
+      }
+    }
+  },
+  'krishnaveni': {
+    term: 'krishnaveni',
+    translations: {
+      en: {
+        translation: 'Krishnaveni',
+        transliteration: 'kṛṣṇavēṇī',
+        etymology: 'Sanskrit kṛṣṇa (dark/Krishna) + vēṇī (braid/river)',
+        culturalContext: 'Ancient name for Krishna river, sacred waterway in Andhra Pradesh and Karnataka'
+      },
+      ta: {
+        translation: 'கிருஷ்ணவேணி',
+        transliteration: 'kṛṣṇavēṇī',
+        etymology: 'சமஸ்கிருத kṛṣṇa (கருமை/கிருஷ்ணர்) + vēṇī (பின்னல்/நதி)',
+        culturalContext: 'கிருஷ்ணா நதியின் பண்டைய பெயர், ஆந்திர பிரதேசம் மற்றும் கர்நாடகத்தின் புனித நீர்வழி'
+      }
+    }
+  },
+  'kaveri': {
+    term: 'kaveri',
+    translations: {
+      en: {
+        translation: 'Kaveri',
+        transliteration: 'kāvērī',
+        etymology: 'Sanskrit kā (prosperity) + vērī (bestowing)',
+        culturalContext: 'Sacred river of South India, sustains Tamil and Kannada regions, source of ancient kingdoms'
+      },
+      ta: {
+        translation: 'காவிரி',
+        transliteration: 'kāvērī',
+        etymology: 'சமஸ்கிருத kā (செழிப்பு) + vērī (அளிப்பவள்)',
+        culturalContext: 'தென்னிந்தியாவின் புனித நதி, தமிழ் மற்றும் கன்னட பகுதிகளை வளமாக்குகிறது, பண்டைய அரசுகளின் ஊற்று'
+      }
+    }
+  },
+  // Scripts & Languages
+  'tamil-brahmi': {
+    term: 'tamil-brahmi',
+    translations: {
+      en: {
+        translation: 'Tamil-Brahmi',
+        transliteration: 'tamiḻ-brāhmī',
+        etymology: 'Tamil script derived from Brahmi script',
+        culturalContext: 'Ancient Tamil script used from 3rd century BCE, found in cave inscriptions and pottery'
+      },
+      ta: {
+        translation: 'தமிழ்-பிராமி',
+        transliteration: 'tamiḻ-brāhmī',
+        etymology: 'பிராமி எழுத்திலிருந்து பெறப்பட்ட தமிழ் எழுத்து',
+        culturalContext: 'கி.மு. 3ஆம் நூற்றாண்டிலிருந்து பயன்படுத்தப்பட்ட பண்டைய தமிழ் எழுத்து, குகை கல்வெட்டுகள் மற்றும் மண்பாண்டங்களில் காணப்படுகிறது'
+      }
+    }
+  },
+  'indus-script': {
+    term: 'indus-script',
+    translations: {
+      en: {
+        translation: 'Indus Script',
+        transliteration: 'sindhu-lipi',
+        etymology: 'Script of the Indus Valley Civilization',
+        culturalContext: 'Undeciphered script of Harappan civilization (3300-1300 BCE), found on seals and pottery'
+      },
+      ta: {
+        translation: 'சிந்து எழுத்து',
+        transliteration: 'sindhu-eḻuttu',
+        etymology: 'சிந்து வெளி நாகரிகத்தின் எழுத்து',
+        culturalContext: 'ஹரப்பா நாகரிகத்தின் (கி.மு. 3300-1300) விடுகதை எழுத்து, முத்திரைகள் மற்றும் மண்பாண்டங்களில் காணப்படுகிறது'
+      }
+    }
+  },
+  // Mahabharata Terms
+  'sabha-parva': {
+    term: 'sabha-parva',
+    translations: {
+      en: {
+        translation: 'Sabha Parva',
+        transliteration: 'sabhā-parva',
+        etymology: 'Sanskrit sabhā (assembly hall) + parva (book/section)',
+        culturalContext: 'Second book of Mahabharata describing Yudhishthira\'s royal assembly and Pandava expansion'
+      },
+      ta: {
+        translation: 'சபா பர்வம்',
+        transliteration: 'sabhā-parvam',
+        etymology: 'சமஸ்கிருத sabhā (அவைக்கூடம்) + parva (புத்தகம்/பகுதி)',
+        culturalContext: 'யுதிஷ்டிரரின் அரச அவை மற்றும் பாண்டவர் விரிவாக்கத்தை விவரிக்கும் மகாபாரதத்தின் இரண்டாம் புத்தகம்'
+      }
+    }
+  },
+  'digvijaya-parva': {
+    term: 'digvijaya-parva',
+    translations: {
+      en: {
+        translation: 'Digvijaya Parva',
+        transliteration: 'digvijaya-parva',
+        etymology: 'Sanskrit dig (direction) + vijaya (conquest) + parva (section)',
+        culturalContext: 'Section describing conquest of all directions by Pandava brothers for Rajasuya sacrifice'
+      },
+      ta: {
+        translation: 'திக்விஜய பர்வம்',
+        transliteration: 'digvijaya-parvam',
+        etymology: 'சமஸ்கிருத dig (திசை) + vijaya (வெற்றி) + parva (பகுதி)',
+        culturalContext: 'ராஜசூய யாகத்திற்காக பாண்டவ சகோதரர்கள் எல்லா திசைகளையும் வென்றதை விவரிக்கும் பகுதி'
+      }
+    }
+  },
+  'sahadeva': {
+    term: 'sahadeva',
+    translations: {
+      en: {
+        translation: 'Sahadeva',
+        transliteration: 'sahadēva',
+        etymology: 'Sanskrit saha (with/together) + dēva (divine)',
+        culturalContext: 'Youngest Pandava prince, twin of Nakula, known for wisdom and prophetic abilities'
+      },
+      ta: {
+        translation: 'சகாதேவ',
+        transliteration: 'sahadēva',
+        etymology: 'சமஸ்கிருத saha (உடன்/சேர்ந்து) + dēva (தெய்வீக)',
+        culturalContext: 'இளைய பாண்டவ இளவரசன், நகுலனின் இரட்டையன், ஞானம் மற்றும் தீர்க்கதரிசன திறனுக்கு புகழ்பெற்றவன்'
+      }
+    }
+  },
+  'yudhishthira': {
+    term: 'yudhishthira',
+    translations: {
+      en: {
+        translation: 'Yudhishthira',
+        transliteration: 'yudhiṣṭhira',
+        etymology: 'Sanskrit yuddha (war) + sthira (steady/firm)',
+        culturalContext: 'Eldest Pandava, known as Dharmaraja for his righteousness, future king of Hastinapura'
+      },
+      ta: {
+        translation: 'யுதிஷ்டிர',
+        transliteration: 'yudhiṣṭhira',
+        etymology: 'சமஸ்கிருத yuddha (போர்) + sthira (நிலையான/உறுதியான)',
+        culturalContext: 'மூத்த பாண்டவன், நீதிநேர்மைக்காக தர்மராஜா என்று அழைக்கப்படுபவன், ஹஸ்தினாபுரத்தின் வருங்கால அரசன்'
+      }
+    }
+  },
+  'rajasuya': {
+    term: 'rajasuya',
+    translations: {
+      en: {
+        translation: 'Rajasuya',
+        transliteration: 'rājasūya',
+        etymology: 'Sanskrit rāja (king) + sūya (sacrifice/consecration)',
+        culturalContext: 'Imperial consecration sacrifice performed by universal emperors, establishes sovereignty over all kings'
+      },
+      ta: {
+        translation: 'ராஜசூய',
+        transliteration: 'rājasūya',
+        etymology: 'சமஸ्கிருத rāja (அரசன்) + sūya (தியாகம்/அபிஷேகம்)',
+        culturalContext: 'உலகாண்ட சக்ரவர்த்திகளால் நடத்தப்படும் பேரரசு அபிஷேக யாகம், எல்லா மன்னர்களின் மீதும் இறையாண்மையை நிறுவுகிறது'
+      }
+    }
+  },
+  'mahishimati': {
+    term: 'mahishimati',
+    translations: {
+      en: {
+        translation: 'Mahishimati',
+        transliteration: 'māhiṣmatī',
+        etymology: 'Sanskrit māhiṣa (buffalo/mighty) + mati (city/capital)',
+        culturalContext: 'Ancient capital city mentioned in Mahabharata, located on Narmada river, powerful kingdom'
+      },
+      ta: {
+        translation: 'மாஹிஷ்மதி',
+        transliteration: 'māhiṣmatī',
+        etymology: 'சமஸ্কிருত māhiṣa (எருமை/வலிமையான) + mati (நகரம்/தலைநகர்)',
+        culturalContext: 'மகாபாரதத்தில் குறிப்பிடப்பட்ட பண்டைய தலைநகரம், நர்மதா நதிக்கரையில் அமைந்த சக்திவாய்ந்த அரசு'
+      }
+    }
+  },
+  'kurukshetra': {
+    term: 'kurukshetra',
+    translations: {
+      en: {
+        translation: 'Kurukshetra',
+        transliteration: 'kurukṣētra',
+        etymology: 'Sanskrit kuru (dynasty name) + kṣētra (field/sacred ground)',
+        culturalContext: 'Sacred battlefield of Mahabharata war, site where Bhagavad Gita was spoken, place of righteousness'
+      },
+      ta: {
+        translation: 'குருக்ஷேத்ர',
+        transliteration: 'kurukṣētra',
+        etymology: 'சமஸ्कিருত kuru (வம்ச பெயர்) + kṣētra (புலம்/புனித பூமி)',
+        culturalContext: 'மகாபாரத போரின் புனித போர்க்களம், பகவத் கீதை கூறப்பட்ட இடம், நீதியின் ஸ்தலம்'
+      }
+    }
+  },
+  'bhishma': {
+    term: 'bhishma',
+    translations: {
+      en: {
+        translation: 'Bhishma',
+        transliteration: 'bhīṣma',
+        etymology: 'Sanskrit bhīṣma (terrible/fearsome) from bhī (to fear)',
+        culturalContext: 'Grand patriarch of Kuru dynasty, took vow of celibacy, supreme warrior and strategist'
+      },
+      ta: {
+        translation: 'பீஷ்ம',
+        transliteration: 'bhīṣma',
+        etymology: 'சமஸ්கிருত bhīṣma (பயங்கரமான/அச்சமூட்டும்) bhī (பயம்) விலிருந்து',
+        culturalContext: 'குரு வம்சத்தின் பெரியவர், பிரம்மச்சரிய விரதம் எடுத்தவர், உச்ச வீரர் மற்றும் தந்திரவாதி'
+      }
+    }
+  },
+  'arjuna': {
+    term: 'arjuna',
+    translations: {
+      en: {
+        translation: 'Arjuna',
+        transliteration: 'arjuna',
+        etymology: 'Sanskrit arjuna (bright/silver/pure)',
+        culturalContext: 'Third Pandava prince, greatest archer, receiver of Bhagavad Gita teachings from Krishna'
+      },
+      ta: {
+        translation: 'அர்ஜுன',
+        transliteration: 'arjuna',
+        etymology: 'சமஸ்கிருত arjuna (பிரகாசமான/வெள்ளி/தூய்மையான)',
+        culturalContext: 'மூன்றாம் பாண்டவ இளவரசன், மிகச்சிறந்த வில்வீரன், கிருஷ்ணரிடமிருந்து பகவத் கீதை உபதேசம் பெற்றவன்'
+      }
+    }
+  },
+  'harivamsha': {
+    term: 'harivamsha',
+    translations: {
+      en: {
+        translation: 'Harivamsha',
+        transliteration: 'harivaṃśa',
+        etymology: 'Sanskrit hari (Vishnu/Krishna) + vaṃśa (lineage/genealogy)',
+        culturalContext: 'Supplement to Mahabharata containing Krishna\'s life story and Yadava genealogy'
+      },
+      ta: {
+        translation: 'ஹரிவம்ச',
+        transliteration: 'harivaṃśa',
+        etymology: 'சமஸ্কিருத hari (விஷ்ணு/கிருஷ்ணர்) + vaṃśa (வம்சம்/வம்சாவளி)',
+        culturalContext: 'கிருஷ்ணரின் வாழ்க்கை வரலாறு மற்றும் யாதவ வம்சாவளியைக் கொண்ட மகாபாரதத்தின் துணைநூல்'
+      }
+    }
   }
 };
 

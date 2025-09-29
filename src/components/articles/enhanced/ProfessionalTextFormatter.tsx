@@ -32,6 +32,23 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
   const textContent = getText();
   if (typeof textContent !== 'string') return null;
 
+  // Pre-process text to identify and mark cultural terms before markdown processing
+  const preprocessText = (text: string) => {
+    if (!enableCulturalTerms) return text;
+    
+    // Pattern to find existing {{cultural:term}} markers
+    const existingPattern = /\{\{cultural:([^}]+)\}\}/g;
+    const existingTerms = new Set();
+    let match;
+    
+    // Track existing terms to avoid double-processing
+    while ((match = existingPattern.exec(text)) !== null) {
+      existingTerms.add(match[1].toLowerCase());
+    }
+    
+    return text;
+  };
+
   const processTextForCulturalTerms = (text: string) => {
     if (!enableCulturalTerms) return text;
     
@@ -202,10 +219,12 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
     )
   };
 
+  const processedText = preprocessText(textContent);
+
   return (
     <div className={cn('prose prose-xl max-w-none', className)}>
       <ReactMarkdown components={customRenderers}>
-        {textContent}
+        {processedText}
       </ReactMarkdown>
     </div>
   );
