@@ -6,7 +6,7 @@ import { jambudvipaCulturalTerms } from './cultural-terms-jambudvipa';
 
 export const culturalTermsDatabase: Record<string, CulturalTerm> = {
   ...enhancedCulturalTerms,
-  ...jambudvipaCulturalTerms,
+  ...jambudvipaCulturalTerms.reduce((acc, term) => ({ ...acc, [term.term]: term }), {}),
   'dharma': {
     term: 'dharma',
     translations: {

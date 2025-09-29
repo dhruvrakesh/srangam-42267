@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart3, Scatter, PieChart as PieChartIcon, Info } from 'lucide-react';
+import { BarChart3, ScatterChart as ScatterChartIcon, PieChart as PieChartIcon, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ChartDataPoint {
@@ -168,7 +168,7 @@ export const ImprovedInteractiveChart: React.FC<ImprovedInteractiveChartProps> =
               size="sm"
               onClick={() => setActiveChart('scatter')}
             >
-              <Scatter size={16} />
+              <ScatterChartIcon size={16} />
             </Button>
             <Button
               variant={activeChart === 'pie' ? 'default' : 'outline'}

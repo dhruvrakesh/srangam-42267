@@ -6,7 +6,7 @@ import { IconScript } from '@/components/icons';
 import { SeasonalWindPattern } from '@/components/articles/SeasonalWindPattern';
 import { TradeTimeline } from '@/components/articles/TradeTimeline';
 import { CulturalDiffusionMap } from '@/components/articles/CulturalDiffusionMap';
-import { EnhancedTimeline, jambudvipaTimelineData, ArchaeologicalChart, InteractiveTextualSources } from '@/components/articles/enhanced';
+import { EnhancedTimeline, jambudvipaTimelineData, ArchaeologicalChart, InteractiveTextualSources, StickyTableOfContents, ImprovedInteractiveChart, archaeologicalSitesData } from '@/components/articles/enhanced';
 
 const JambudvipaConnected: React.FC = () => {
   return (
@@ -64,8 +64,17 @@ const JambudvipaConnected: React.FC = () => {
         author="Nartiang Foundation"
         date="September 28, 2025"
         dataComponents={[
+          <StickyTableOfContents key="table-of-contents" items={[]} className="hidden lg:block" />,
           <EnhancedTimeline key="enhanced-timeline" events={jambudvipaTimelineData} />,
           <ArchaeologicalChart key="archaeological-chart" />,
+          <ImprovedInteractiveChart 
+            key="sites-chart" 
+            title="Archaeological Sites Timeline" 
+            description="Major archaeological discoveries revealing the depth of ancient Indian civilization"
+            data={archaeologicalSitesData}
+            chartType="bar"
+            showLegend={true}
+          />,
           <InteractiveTextualSources key="textual-sources" />,
           <SeasonalWindPattern key="wind-pattern" />,
           <TradeTimeline key="trade-timeline" />,
