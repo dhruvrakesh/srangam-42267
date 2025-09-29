@@ -11,6 +11,8 @@ export { ProfessionalTextFormatter } from './ProfessionalTextFormatter';
 export { EnhancedTimeline, jambudvipaTimelineData } from './EnhancedTimeline';
 export { ArchaeologicalChart } from './ArchaeologicalChart';
 export { InteractiveTextualSources } from './InteractiveTextualSources';
+export { StickyTableOfContents, extractTableOfContents } from './StickyTableOfContents';
+export { ImprovedInteractiveChart, archaeologicalSitesData } from './ImprovedInteractiveChart';
 
 // Component composition utilities
 export const createArticleSection = (title: string, content: React.ReactNode, options?: {

@@ -2,9 +2,11 @@ import { CulturalTerm } from '@/types/multilingual';
 
 // Comprehensive database of dharmic and bharatiya terms with cultural context
 import { enhancedCulturalTerms } from './enhanced-cultural-terms';
+import { jambudvipaCulturalTerms } from './cultural-terms-jambudvipa';
 
 export const culturalTermsDatabase: Record<string, CulturalTerm> = {
   ...enhancedCulturalTerms,
+  ...jambudvipaCulturalTerms,
   'dharma': {
     term: 'dharma',
     translations: {
