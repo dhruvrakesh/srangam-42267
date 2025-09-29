@@ -7,6 +7,11 @@ export { DynamicTimeline, createTimelineEvent } from './DynamicTimeline';
 export { ImprovedTextFormatting } from './ImprovedTextFormatting';
 export { ProfessionalTextFormatter } from './ProfessionalTextFormatter';
 
+// New Enhanced Layout Components
+export { EnhancedTimeline, jambudvipaTimelineData } from './EnhancedTimeline';
+export { ArchaeologicalChart } from './ArchaeologicalChart';
+export { InteractiveTextualSources } from './InteractiveTextualSources';
+
 // Component composition utilities
 export const createArticleSection = (title: string, content: React.ReactNode, options?: {
   expandable?: boolean;
