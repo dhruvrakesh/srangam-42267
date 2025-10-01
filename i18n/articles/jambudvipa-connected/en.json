@@ -1,0 +1,41 @@
+{
+  "meta": {
+    "slug": "jambudvipa-connected",
+    "lang": "en",
+    "percent": 100,
+    "lastUpdated": "2025-10-01"
+  },
+  "strings": {
+    "meta.title": "Jambudvipa Connected: Weaving the Threads of Civilization from the Vaigai to the Ganga",
+    "meta.dek": "New archaeological discoveries at Keezhadi challenge fragmented views of ancient India. This synthesis correlates Tamil findings with Sanskrit literature, revealing Jambudvipa as a deeply interconnected civilizational space unified by trade arteries and shared cultural grammar.",
+    "tag.0": "Keezhadi Archaeology",
+    "tag.1": "Tamil-Brahmi Script",
+    "tag.2": "Ancient Trade Networks",
+    "tag.3": "Jambudvipa Civilization",
+    "section.abstract.heading": "Abstract",
+    "section.abstract.p1": "For centuries, the story of ancient India has often been told through a fragmented lens, positing a series of distinct, often disconnected, civilizational impulses.",
+    "section.abstract.p2": "The recent archaeological discoveries in the Vaigai river basin of Tamil Nadu, most notably at Keezhadi, have provided a powerful new dataset that challenges these older models.",
+    "section.abstract.p3": "This paper humbly attempts to synthesize these groundbreaking archaeological findings with the vast, often underutilized, geographical and genealogical data embedded within Sanskrit literature.",
+    "section.southern-fulcrum.heading": "The Southern Fulcrum - Archaeological Revelations from Keezhadi and Beyond",
+    "section.southern-fulcrum.p1": "The historical narrative of ancient India has long been anchored in the north, from the river plains of the Sindhu-Saraswati to the Gangetic heartland of the Mahajanapadas.",
+    "section.southern-fulcrum.p2": "However, recent archaeology from the subcontinent's southern tip has unearthed a story of such antiquity and sophistication that it compels a fundamental rebalancing of our historical understanding.",
+    "section.keezhadi.subheading": "Keezhadi: A Paradigm Shift on the Vaigai",
+    "section.keezhadi.p1": "The excavations at Keezhadi, on the banks of the Vaigai river near Madurai, represent a watershed moment in Indian archaeology.",
+    "section.keezhadi.p2": "Scientific dating of its earliest layers to the 6th century BCE has irrevocably altered Indian historiography.",
+    "section.constellation.subheading": "A Constellation of Southern Centers",
+    "section.constellation.p1": "Keezhadi was not an isolated miracle. It was a prominent node in a network of sophisticated settlements across ancient Tamilakam.",
+    "section.textual-tapestry.heading": "The Textual Tapestry - Jambudvipa in the Itihasa-Purana Tradition",
+    "section.textual-tapestry.p1": "While archaeology provides the material foundation, it is the vast corpus of Sanskrit literature that offers the cultural and geographical map of ancient India.",
+    "section.conclusion.heading": "Conclusion: One Jambudvipa, Many Expressions",
+    "section.conclusion.p1": "The archaeological findings from Keezhadi and the textual evidence from the Mahabharata converge to reveal a single truth: ancient India was not a collection of isolated cultures but a unified civilizational space.",
+    "ui.readTime": "35 min read",
+    "ui.author": "Nartiang Foundation",
+    "ui.date": "September 28, 2025",
+    "ui.share": "Share",
+    "ui.download": "Download PDF",
+    "ui.cite": "Cite",
+    "ui.tableOfContents": "Table of Contents",
+    "ui.references": "References",
+    "ui.notes": "Notes"
+  }
+}
