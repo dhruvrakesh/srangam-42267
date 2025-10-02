@@ -1,0 +1,254 @@
+{
+  "id": "cosmic-island-sacred-land",
+  "metadata": {
+    "author": "Research Team",
+    "readTime": 42,
+    "date": "2025-10-02",
+    "theme": "Ancient India",
+    "academicLevel": "Advanced",
+    "keywords": [
+      "Jambudvipa",
+      "Bharatvarsha",
+      "Puranic cosmography",
+      "Vedic geography",
+      "Sapta Sindhu",
+      "Sanskrit literature",
+      "Ancient India",
+      "Civilizational identity"
+    ]
+  },
+  "structure": {
+    "sections": [
+      {
+        "id": "introduction",
+        "title": "Introduction: Defining a Civilizational Geography",
+        "type": "introduction",
+        "wordCount": 350
+      },
+      {
+        "id": "puranic-worldview",
+        "title": "The Puranic Worldview: Jambudwipa as the Central Continent",
+        "type": "analysis",
+        "subsections": [
+          "The Sapta-Dvipa Model",
+          "Jambudwipa: The Central Island",
+          "The Nine Varshas of Jambudwipa",
+          "Comparative Cosmographies (Buddhist and Jain)"
+        ],
+        "wordCount": 1200
+      },
+      {
+        "id": "naming-bharatvarsha",
+        "title": "The Naming of the Land: The Antiquity and Etymology of 'Bharatvarsha'",
+        "type": "analysis",
+        "subsections": [
+          "The Puranic Definition",
+          "The Imperial Tradition: Emperor Bharata",
+          "The Vedic Antecedent: The Bharata Tribe"
+        ],
+        "wordCount": 950
+      },
+      {
+        "id": "anatomy-nation",
+        "title": "The Anatomy of a Nation: The 'Bhuvanakosha' of Bharatvarsha",
+        "type": "analysis",
+        "subsections": [
+          "The Nine Divisions (Khandas) of Bharatvarsha",
+          "The Seven Kulaparvatas (Principal Mountain Ranges)",
+          "The River Systems of Bharatvarsha",
+          "The Peoples and Kingdoms (Janapadas)"
+        ],
+        "wordCount": 1100
+      },
+      {
+        "id": "vedic-precursors",
+        "title": "Vedic Precursors and Civilizational Expansion",
+        "type": "analysis",
+        "subsections": [
+          "The Rigvedic Horizon: Sapta Sindhu",
+          "The Narrative of Expansion: The Story of Videgha Mathava",
+          "The Identity of the Inhabitants: The Meaning of 'Arya'"
+        ],
+        "wordCount": 1000
+      },
+      {
+        "id": "scholarly-lenses",
+        "title": "Scholarly Lenses: Reconstructing Ancient Geography and Identity",
+        "type": "literature-review",
+        "subsections": [
+          "The Pioneers: B.C. Law and H.C. Raychaudhuri",
+          "The Text as History: Bibek Debroy",
+          "The Civilizational Continuum: Meenakshi Jain",
+          "The Antiquity Debate: Bal Gangadhar Tilak"
+        ],
+        "wordCount": 900
+      },
+      {
+        "id": "conclusion",
+        "title": "Conclusion: The Enduring Idea of Bharatvarsha",
+        "type": "conclusion",
+        "wordCount": 650
+      }
+    ]
+  },
+  "bibliography": {
+    "primarySources": [
+      {
+        "id": "rigveda",
+        "title": "Ṛgveda",
+        "translator": "Wendy Doniger",
+        "publisher": "Penguin Classics",
+        "year": 1981,
+        "type": "primary"
+      },
+      {
+        "id": "shatapatha-brahmana",
+        "title": "Śatapatha Brāhmaṇa",
+        "translator": "Julius Eggeling",
+        "series": "Sacred Books of the East",
+        "volumes": "12, 26, 41, 43, 44",
+        "publisher": "Clarendon Press",
+        "place": "Oxford",
+        "year": "1882–1900",
+        "type": "primary"
+      },
+      {
+        "id": "mahabharata-bori",
+        "title": "Mahābhārata (BORI Critical Edition)",
+        "translator": "Bibek Debroy",
+        "volumes": 10,
+        "publisher": "Penguin Books India",
+        "year": "2010–2015",
+        "type": "primary"
+      },
+      {
+        "id": "vishnu-purana",
+        "title": "Viṣṇu Purāṇa",
+        "translator": "H.H. Wilson",
+        "originalYear": 1840,
+        "publisher": "Nag Publishers",
+        "year": 1989,
+        "type": "primary"
+      },
+      {
+        "id": "markandeya-purana",
+        "title": "Mārkaṇḍeya Purāṇa",
+        "translator": "F. Eden Pargiter",
+        "publisher": "Asiatic Society",
+        "place": "Calcutta",
+        "year": 1904,
+        "type": "primary"
+      }
+    ],
+    "secondarySources": [
+      {
+        "id": "law-geography",
+        "author": "Law, Bimala Churn",
+        "title": "Historical Geography of Ancient India",
+        "publisher": "Société Asiatique de Paris",
+        "place": "Paris",
+        "year": 1954,
+        "type": "secondary"
+      },
+      {
+        "id": "raychaudhuri-studies",
+        "author": "Raychaudhuri, Hemchandra",
+        "title": "Studies in Indian Antiquities",
+        "publisher": "University of Calcutta",
+        "place": "Calcutta",
+        "year": 1927,
+        "type": "secondary"
+      },
+      {
+        "id": "jain-bharat",
+        "author": "Jain, Meenakshi",
+        "title": "India that is Bharat: Coloniality, Civilisation, Constitution",
+        "publisher": "Bloomsbury India",
+        "year": 2022,
+        "type": "secondary"
+      },
+      {
+        "id": "tilak-arctic",
+        "author": "Tilak, Bal Gangadhar",
+        "title": "The Arctic Home in the Vedas",
+        "publisher": "Tilak Bros",
+        "place": "Pune",
+        "year": 1903,
+        "type": "secondary"
+      }
+    ]
+  },
+  "culturalTerms": [
+    "jambudvipa",
+    "bharatvarsha",
+    "sapta-dvipa",
+    "meru",
+    "ilavrita",
+    "bhuvanakosha",
+    "vedic",
+    "puranic",
+    "shatapatha-brahmana",
+    "mahabharata",
+    "vishnu-purana",
+    "markandeya-purana",
+    "vayu-purana",
+    "brahmanda-purana",
+    "sapta-sindhu",
+    "rigveda",
+    "nadistuti-sukta",
+    "videgha-mathava",
+    "sadanira",
+    "aryavarta",
+    "arya",
+    "dharmic",
+    "itihasa",
+    "puranas",
+    "varshas",
+    "kulaparvatas",
+    "janapadas"
+  ],
+  "crossReferences": [
+    {
+      "articleId": "jambudvipa-connected",
+      "relevance": "Explores similar themes of Puranic cosmography and Indian Ocean connectivity",
+      "section": "puranic-worldview"
+    },
+    {
+      "articleId": "scripts-that-sailed",
+      "relevance": "Related to cultural transmission and the spread of Indic civilization",
+      "section": "vedic-precursors"
+    },
+    {
+      "articleId": "earth-sea-sangam",
+      "relevance": "Discusses geological and geographical formations of the Indian subcontinent",
+      "section": "anatomy-nation"
+    }
+  ],
+  "visualizations": [
+    {
+      "type": "cosmography-diagram",
+      "title": "Sapta-Dvipa Concentric Model",
+      "description": "Visual representation of the seven concentric island-continents with their separating oceans"
+    },
+    {
+      "type": "map",
+      "title": "The Nine Varshas of Jambudvipa",
+      "description": "Mapping the nine divisions with Bharatvarsha highlighted in the south"
+    },
+    {
+      "type": "map",
+      "title": "Vedic Geographical Expansion",
+      "description": "From Sapta Sindhu to Aryavarta - charting the eastward expansion"
+    },
+    {
+      "type": "timeline",
+      "title": "Textual Evolution of Bharatvarsha Concept",
+      "description": "From Rigveda through Brahmanas to Puranas"
+    },
+    {
+      "type": "comparative-chart",
+      "title": "Jambudvipa in Three Traditions",
+      "description": "Comparing Hindu, Buddhist, and Jain cosmographical models"
+    }
+  ]
+}
