@@ -1,8 +1,6 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
-import rehypeRaw from 'rehype-raw';
 import { useTranslation } from 'react-i18next';
-import { EnhancedMultilingualText } from '@/components/language/EnhancedMultilingualText';
 import { CulturalTermTooltip } from '@/components/language/CulturalTermTooltip';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { MultilingualContent } from '@/types/multilingual';
@@ -44,56 +42,51 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
     return null;
   }
 
-  // Pre-process text to identify and mark cultural terms before markdown processing
-  const preprocessText = (text: string) => {
+  // Process text and inject CulturalTermTooltip components directly
+  const renderWithCulturalTerms = (text: string): React.ReactNode => {
     if (!enableCulturalTerms) return text;
     
-    // Pattern to find existing {{cultural:term}} markers
-    const existingPattern = /\{\{cultural:([^}]+)\}\}/g;
-    const existingTerms = new Set();
+    const parts: React.ReactNode[] = [];
+    const culturalTermPattern = /\{\{cultural:([^}]+)\}\}/g;
+    let lastIndex = 0;
     let match;
     
-    // Track existing terms to avoid double-processing
-    while ((match = existingPattern.exec(text)) !== null) {
-      existingTerms.add(match[1].toLowerCase());
-    }
-    
-    return text;
-  };
-
-  // Pre-process markdown to convert {{cultural:term}} to inline components
-  const preprocessCulturalTerms = (text: string): string => {
-    if (!enableCulturalTerms) return text;
-    
-    // Convert {{cultural:term}} to <cultural-term data-term="term">Display Term</cultural-term>
-    // This custom HTML will be processed by ReactMarkdown and handled by our renderer
-    const culturalTermPattern = /\{\{cultural:([^}]+)\}\}/g;
-    return text.replace(culturalTermPattern, (match, term) => {
-      const trimmedTerm = term.trim();
-      const displayTerm = trimmedTerm
+    while ((match = culturalTermPattern.exec(text)) !== null) {
+      const term = match[1].trim();
+      const matchStart = match.index;
+      
+      // Add text before the match
+      if (matchStart > lastIndex) {
+        parts.push(text.slice(lastIndex, matchStart));
+      }
+      
+      // Create display term
+      const displayTerm = term
         .split('-')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
-      // Use a custom HTML element that ReactMarkdown will pass to our components
-      return `<cultural-term data-term="${trimmedTerm}">${displayTerm}</cultural-term>`;
-    });
-  };
-
-  const customRenderers = {
-    // Handle custom cultural-term HTML elements (rehype-raw converts to camelCase)
-    culturalTerm: ({ node, ...props }: any) => {
-      const term = props['data-term'] || props.dataTerm || '';
-      if (!term) return <span>{props.children}</span>;
       
-      return (
-        <CulturalTermTooltip term={term}>
+      // Add CulturalTermTooltip component
+      parts.push(
+        <CulturalTermTooltip key={`${term}-${matchStart}`} term={term}>
           <span className="font-semibold text-burgundy bg-gradient-to-r from-saffron/10 to-gold-warm/10 px-1.5 py-0.5 rounded-md border border-saffron/20 cursor-help hover:bg-saffron/20 transition-colors">
-            {props.children}
+            {displayTerm}
           </span>
         </CulturalTermTooltip>
       );
-    },
+      
+      lastIndex = match.index + match[0].length;
+    }
+    
+    // Add remaining text
+    if (lastIndex < text.length) {
+      parts.push(text.slice(lastIndex));
+    }
+    
+    return parts.length > 0 ? parts : text;
+  };
 
+  const customRenderers = {
     // Regular link renderer
     a: ({ href, children, ...props }: any) => {
       return <a href={href} className="text-ocean hover:text-ocean-dark underline transition-colors" target="_blank" rel="noopener noreferrer" {...props}>{children}</a>;
@@ -116,8 +109,16 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
       </h2>
     ),
 
-    // Enhanced paragraph rendering with smart chunking
+    // Enhanced paragraph rendering with smart chunking and cultural term support
     p: ({ children, ...props }: any) => {
+      // Process children to handle cultural terms
+      const processedChildren = React.Children.map(children, child => {
+        if (typeof child === 'string') {
+          return renderWithCulturalTerms(child);
+        }
+        return child;
+      });
+      
       const content = typeof children === 'string' ? children : 
         React.Children.toArray(children).join('');
       
@@ -167,7 +168,7 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
           )}
           {...props}
         >
-          {children}
+          {processedChildren}
         </p>
       );
     },
@@ -232,16 +233,13 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
     )
   };
 
-  const processedText = preprocessCulturalTerms(preprocessText(textContent));
-
   return (
     <TooltipProvider delayDuration={200}>
       <div className={cn('prose prose-xl max-w-none', className)}>
         <ReactMarkdown 
           components={customRenderers}
-          rehypePlugins={[rehypeRaw]}
         >
-          {processedText}
+          {textContent}
         </ReactMarkdown>
       </div>
     </TooltipProvider>

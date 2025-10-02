@@ -1439,30 +1439,6 @@ export const jambudvipaCulturalTerms: CulturalTerm[] = [
       }
     }
   },
-  // The Nine Varshas
-  {
-    term: 'varshas',
-    translations: {
-      en: {
-        translation: 'Regional Divisions',
-        transliteration: 'Varṣas',
-        etymology: 'Sanskrit varṣa (region/zone/division)',
-        culturalContext: 'The nine regional divisions of Jambudwipa, separated by mountain ranges, each with distinct characteristics'
-      },
-      hi: {
-        translation: 'क्षेत्रीय विभाग',
-        transliteration: 'वर्ष',
-        etymology: 'संस्कृत वर्ष (क्षेत्र/जोन/विभाग)',
-        culturalContext: 'जम्बूद्वीप के नौ क्षेत्रीय विभाग, पर्वत श्रृंखलाओं द्वारा अलग, प्रत्येक की विशिष्ट विशेषताएं हैं'
-      },
-      ta: {
-        translation: 'பிராந்தியப் பிரிவுகள்',
-        transliteration: 'வர்ஷங்கள்',
-        etymology: 'சமஸ்கிருத வர்ஷ (பிரதேசம்/மண்டலம்/பிரிவு)',
-        culturalContext: 'ஜம்புத்வீபத்தின் ஒன்பது பிராந்தியப் பிரிவுகள், மலைத்தொடர்களால் பிரிக்கப்பட்டு, ஒவ்வொன்றும் தனித்துவமான பண்புகளைக் கொண்டுள்ளன'
-      }
-    }
-  },
   {
     term: 'ilavrita',
     translations: {

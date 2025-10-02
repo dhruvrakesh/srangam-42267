@@ -19,13 +19,31 @@ export const CulturalTermTooltip: React.FC<CulturalTermTooltipProps> = ({
   const { i18n } = useTranslation();
   const currentLang = i18n.language;
   
-  // Normalize term to lowercase for lookup (matching getCulturalContext behavior)
+  // Type safety: ensure term is always a string
+  if (typeof term !== 'string') {
+    console.error('CulturalTermTooltip: term prop must be a string, received:', typeof term, term);
+    return <span className={className}>{children}</span>;
+  }
+  
+  // Normalize term to lowercase for lookup
   const normalizedTerm = term.toLowerCase().trim();
+  
+  if (!normalizedTerm) {
+    console.error('CulturalTermTooltip: empty term provided');
+    return <span className={className}>{children}</span>;
+  }
+  
   const context = getCulturalContext(normalizedTerm, currentLang);
   
-  // Debug log if term not found (remove in production)
+  // If term not found in database, render without tooltip
   if (!context) {
     console.warn(`Cultural term not found: "${term}" (normalized: "${normalizedTerm}")`);
+    return <span className={className}>{children}</span>;
+  }
+  
+  // Type safety: ensure context has required properties
+  if (typeof context !== 'object' || !context.translation) {
+    console.error('CulturalTermTooltip: invalid context returned for term:', term, context);
     return <span className={className}>{children}</span>;
   }
 
