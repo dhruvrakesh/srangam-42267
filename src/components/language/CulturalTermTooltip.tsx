@@ -19,9 +19,13 @@ export const CulturalTermTooltip: React.FC<CulturalTermTooltipProps> = ({
   const { i18n } = useTranslation();
   const currentLang = i18n.language;
   
-  const context = getCulturalContext(term, currentLang);
+  // Normalize term to lowercase for lookup (matching getCulturalContext behavior)
+  const normalizedTerm = term.toLowerCase().trim();
+  const context = getCulturalContext(normalizedTerm, currentLang);
   
+  // Debug log if term not found (remove in production)
   if (!context) {
+    console.warn(`Cultural term not found: "${term}" (normalized: "${normalizedTerm}")`);
     return <span className={className}>{children}</span>;
   }
 

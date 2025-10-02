@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import { useTranslation } from 'react-i18next';
 import { EnhancedMultilingualText } from '@/components/language/EnhancedMultilingualText';
 import { CulturalTermTooltip } from '@/components/language/CulturalTermTooltip';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { MultilingualContent } from '@/types/multilingual';
 import { SupportedLanguage } from '@/lib/i18n';
 import { normalizeLanguageCode, getScriptFont } from '@/lib/languageUtils';
@@ -49,29 +50,37 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
     return text;
   };
 
-  const processTextForCulturalTerms = (text: string) => {
-    if (!enableCulturalTerms) return text;
+  const processTextForCulturalTerms = (text: string | React.ReactNode): React.ReactNode => {
+    if (!enableCulturalTerms || typeof text !== 'string') return text;
     
     // Enhanced cultural term pattern matching for {{cultural:term}} format
     const culturalTermPattern = /\{\{cultural:([^}]+)\}\}/g;
-    const parts = [];
+    const parts: React.ReactNode[] = [];
     let lastIndex = 0;
     let match;
+    let matchCount = 0;
 
     while ((match = culturalTermPattern.exec(text)) !== null) {
+      matchCount++;
       // Add text before the match
       if (match.index > lastIndex) {
         parts.push(text.slice(lastIndex, match.index));
       }
       
-      // Add the cultural term with enhanced styling
-      const term = match[1];
+      // Extract and format the term
+      const rawTerm = match[1].trim();
+      const displayTerm = rawTerm
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+      
+      // Add the cultural term with enhanced styling and tooltip
       parts.push(
-        <span key={match.index} className="font-semibold text-burgundy bg-gradient-to-r from-saffron/10 to-gold-warm/10 px-1.5 py-0.5 rounded-md border border-saffron/20">
-          <CulturalTermTooltip term={term}>
-            {term}
-          </CulturalTermTooltip>
-        </span>
+        <CulturalTermTooltip key={`cultural-${matchCount}-${match.index}`} term={rawTerm}>
+          <span className="font-semibold text-burgundy bg-gradient-to-r from-saffron/10 to-gold-warm/10 px-1.5 py-0.5 rounded-md border border-saffron/20 cursor-help hover:bg-saffron/20 transition-colors">
+            {displayTerm}
+          </span>
+        </CulturalTermTooltip>
       );
       
       lastIndex = match.index + match[0].length;
@@ -82,7 +91,7 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
       parts.push(text.slice(lastIndex));
     }
     
-    return parts.length > 1 ? parts : text;
+    return parts.length > 0 ? <>{parts}</> : text;
   };
 
   const customRenderers = {
@@ -222,10 +231,12 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
   const processedText = preprocessText(textContent);
 
   return (
-    <div className={cn('prose prose-xl max-w-none', className)}>
-      <ReactMarkdown components={customRenderers}>
-        {processedText}
-      </ReactMarkdown>
-    </div>
+    <TooltipProvider delayDuration={200}>
+      <div className={cn('prose prose-xl max-w-none', className)}>
+        <ReactMarkdown components={customRenderers}>
+          {processedText}
+        </ReactMarkdown>
+      </div>
+    </TooltipProvider>
   );
 };
