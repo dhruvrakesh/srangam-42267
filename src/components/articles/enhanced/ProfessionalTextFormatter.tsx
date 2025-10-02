@@ -27,12 +27,22 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
   const currentLanguage = normalizeLanguageCode(i18n.language || 'en') as SupportedLanguage;
   const scriptFont = getScriptFont(currentLanguage);
 
-  const getText = () => {
-    return content[currentLanguage] || content.en || Object.values(content)[0] || '';
+  const getText = (): string => {
+    const text = content[currentLanguage] || content.en || Object.values(content)[0] || '';
+    // Ensure we always return a string, never an object
+    if (typeof text === 'string') {
+      return text;
+    }
+    // Fallback if somehow an object got through
+    console.warn('ProfessionalTextFormatter received non-string content:', text);
+    return '';
   };
 
   const textContent = getText();
-  if (typeof textContent !== 'string') return null;
+  if (!textContent || typeof textContent !== 'string') {
+    console.error('ProfessionalTextFormatter: Invalid text content');
+    return null;
+  }
 
   // Pre-process text to identify and mark cultural terms before markdown processing
   const preprocessText = (text: string) => {
