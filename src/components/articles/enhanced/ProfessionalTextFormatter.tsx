@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 import { useTranslation } from 'react-i18next';
 import { EnhancedMultilingualText } from '@/components/language/EnhancedMultilingualText';
 import { CulturalTermTooltip } from '@/components/language/CulturalTermTooltip';
@@ -50,11 +51,12 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
     return text;
   };
 
-  // Pre-process markdown to convert {{cultural:term}} to special link format
+  // Pre-process markdown to convert {{cultural:term}} to inline components
   const preprocessCulturalTerms = (text: string): string => {
     if (!enableCulturalTerms) return text;
     
-    // Convert {{cultural:term}} to [term](cultural:term) format for ReactMarkdown
+    // Convert {{cultural:term}} to <cultural-term data-term="term">Display Term</cultural-term>
+    // This custom HTML will be processed by ReactMarkdown and handled by our renderer
     const culturalTermPattern = /\{\{cultural:([^}]+)\}\}/g;
     return text.replace(culturalTermPattern, (match, term) => {
       const trimmedTerm = term.trim();
@@ -62,26 +64,29 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
         .split('-')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
-      return `[${displayTerm}](cultural:${trimmedTerm})`;
+      // Use a custom HTML element that ReactMarkdown will pass to our components
+      return `<cultural-term data-term="${trimmedTerm}">${displayTerm}</cultural-term>`;
     });
   };
 
   const customRenderers = {
-    // Custom link renderer to handle cultural terms
+    // Handle custom cultural-term HTML elements (rehype-raw converts to camelCase)
+    culturalTerm: ({ node, ...props }: any) => {
+      const term = props['data-term'] || props.dataTerm || '';
+      if (!term) return <span>{props.children}</span>;
+      
+      return (
+        <CulturalTermTooltip term={term}>
+          <span className="font-semibold text-burgundy bg-gradient-to-r from-saffron/10 to-gold-warm/10 px-1.5 py-0.5 rounded-md border border-saffron/20 cursor-help hover:bg-saffron/20 transition-colors">
+            {props.children}
+          </span>
+        </CulturalTermTooltip>
+      );
+    },
+
+    // Regular link renderer
     a: ({ href, children, ...props }: any) => {
-      // Check if this is a cultural term link
-      if (href && href.startsWith('cultural:')) {
-        const term = href.replace('cultural:', '');
-        return (
-          <CulturalTermTooltip term={term}>
-            <span className="font-semibold text-burgundy bg-gradient-to-r from-saffron/10 to-gold-warm/10 px-1.5 py-0.5 rounded-md border border-saffron/20 cursor-help hover:bg-saffron/20 transition-colors">
-              {children}
-            </span>
-          </CulturalTermTooltip>
-        );
-      }
-      // Regular link
-      return <a href={href} className="text-ocean hover:text-ocean-dark underline" {...props}>{children}</a>;
+      return <a href={href} className="text-ocean hover:text-ocean-dark underline transition-colors" target="_blank" rel="noopener noreferrer" {...props}>{children}</a>;
     },
 
     // Enhanced heading rendering
@@ -222,7 +227,10 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
   return (
     <TooltipProvider delayDuration={200}>
       <div className={cn('prose prose-xl max-w-none', className)}>
-        <ReactMarkdown components={customRenderers}>
+        <ReactMarkdown 
+          components={customRenderers}
+          rehypePlugins={[rehypeRaw]}
+        >
           {processedText}
         </ReactMarkdown>
       </div>
