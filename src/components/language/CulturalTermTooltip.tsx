@@ -25,19 +25,23 @@ export const CulturalTermTooltip: React.FC<CulturalTermTooltipProps> = ({
     return <span className={className}>{children}</span>;
   }
   
-  // Normalize term to lowercase for lookup
-  const normalizedTerm = term.toLowerCase().trim();
+  // Normalize term: lowercase, trim, and handle hyphens
+  const normalizedTerm = term.toLowerCase().trim().replace(/\s+/g, '-');
   
   if (!normalizedTerm) {
     console.error('CulturalTermTooltip: empty term provided');
     return <span className={className}>{children}</span>;
   }
   
-  const context = getCulturalContext(normalizedTerm, currentLang);
-  
-  // If term not found in database, render without tooltip
+  // Try exact match first, then without hyphens as fallback
+  let context = getCulturalContext(normalizedTerm, currentLang);
   if (!context) {
-    console.warn(`Cultural term not found: "${term}" (normalized: "${normalizedTerm}")`);
+    const termWithoutHyphens = normalizedTerm.replace(/-/g, '');
+    context = getCulturalContext(termWithoutHyphens, currentLang);
+  }
+  
+  // If term not found in database, render children without tooltip (not [object Object])
+  if (!context) {
     return <span className={className}>{children}</span>;
   }
   

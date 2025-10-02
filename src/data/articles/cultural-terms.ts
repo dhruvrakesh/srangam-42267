@@ -686,6 +686,1173 @@ export const culturalTermsDatabase: Record<string, CulturalTerm> = {
         culturalContext: 'கிருஷ்ணரின் வாழ்க்கை வரலாறு மற்றும் யாதவ வம்சாவளியைக் கொண்ட மகாபாரதத்தின் துணைநூல்'
       }
     }
+  },
+  // Vedic & Epic Texts
+  'rigveda': {
+    term: 'rigveda',
+    translations: {
+      en: {
+        translation: 'Rigveda',
+        transliteration: 'ṛgveda',
+        etymology: 'Sanskrit ṛc (praise) + veda (knowledge)',
+        culturalContext: 'Oldest of the four Vedas, collection of 1,028 hymns composed c. 1500-1200 BCE'
+      },
+      hi: {
+        translation: 'ऋग्वेद',
+        transliteration: 'ṛgveda',
+        etymology: 'संस्कृत ऋच् (स्तुति) + वेद (ज्ञान)',
+        culturalContext: 'चार वेदों में सबसे प्राचीन, 1,028 मंत्रों का संग्रह, रचनाकाल लगभग 1500-1200 ईसा पूर्व'
+      }
+    }
+  },
+  'vedic': {
+    term: 'vedic',
+    translations: {
+      en: {
+        translation: 'Vedic',
+        transliteration: 'vaidika',
+        etymology: 'From Sanskrit veda (knowledge)',
+        culturalContext: 'Relating to the Vedas, the oldest Sanskrit texts and foundation of Hindu philosophy'
+      },
+      hi: {
+        translation: 'वैदिक',
+        transliteration: 'vaidika',
+        etymology: 'संस्कृत वेद (ज्ञान) से',
+        culturalContext: 'वेदों से संबंधित, सबसे प्राचीन संस्कृत ग्रंथ और हिंदू दर्शन की नींव'
+      }
+    }
+  },
+  'shatapatha-brahmana': {
+    term: 'shatapatha-brahmana',
+    translations: {
+      en: {
+        translation: 'Shatapatha Brahmana',
+        transliteration: 'śatapatha brāhmaṇa',
+        etymology: 'Sanskrit śata (hundred) + patha (path/chapter) + brāhmaṇa',
+        culturalContext: 'Vedic text containing ritual instructions and narratives of eastward expansion'
+      },
+      hi: {
+        translation: 'शतपथ ब्राह्मण',
+        transliteration: 'śatapatha brāhmaṇa',
+        etymology: 'संस्कृत शत (सौ) + पथ (मार्ग/अध्याय) + ब्राह्मण',
+        culturalContext: 'वैदिक ग्रंथ जिसमें यज्ञ विधि और पूर्व की ओर विस्तार की कथाएं हैं'
+      }
+    }
+  },
+  'vishnu-purana': {
+    term: 'vishnu-purana',
+    translations: {
+      en: {
+        translation: 'Vishnu Purana',
+        transliteration: 'viṣṇu purāṇa',
+        etymology: 'Named after deity Vishnu + purāṇa (ancient lore)',
+        culturalContext: 'Major Purana containing cosmology, geography, and genealogies of gods and kings'
+      },
+      hi: {
+        translation: 'विष्णु पुराण',
+        transliteration: 'viṣṇu purāṇa',
+        etymology: 'देवता विष्णु के नाम पर + पुराण (प्राचीन कथाएं)',
+        culturalContext: 'प्रमुख पुराण जिसमें ब्रह्मांड विज्ञान, भूगोल, और देवताओं तथा राजाओं की वंशावली है'
+      }
+    }
+  },
+  'markandeya-purana': {
+    term: 'markandeya-purana',
+    translations: {
+      en: {
+        translation: 'Markandeya Purana',
+        transliteration: 'mārkaṇḍeya purāṇa',
+        etymology: 'Named after sage Markandeya + purāṇa',
+        culturalContext: 'Purana containing detailed geography of Bharatvarsha and Devi Mahatmya'
+      },
+      hi: {
+        translation: 'मार्कण्डेय पुराण',
+        transliteration: 'mārkaṇḍeya purāṇa',
+        etymology: 'ऋषि मार्कण्डेय के नाम पर + पुराण',
+        culturalContext: 'पुराण जिसमें भारतवर्ष का विस्तृत भूगोल और देवी माहात्म्य है'
+      }
+    }
+  },
+  'vayu-purana': {
+    term: 'vayu-purana',
+    translations: {
+      en: {
+        translation: 'Vayu Purana',
+        transliteration: 'vāyu purāṇa',
+        etymology: 'Named after wind deity Vayu + purāṇa',
+        culturalContext: 'Purana with extensive geographical and genealogical information'
+      },
+      hi: {
+        translation: 'वायु पुराण',
+        transliteration: 'vāyu purāṇa',
+        etymology: 'वायु देवता के नाम पर + पुराण',
+        culturalContext: 'विस्तृत भौगोलिक और वंशावली जानकारी वाला पुराण'
+      }
+    }
+  },
+  'brahmanda-purana': {
+    term: 'brahmanda-purana',
+    translations: {
+      en: {
+        translation: 'Brahmanda Purana',
+        transliteration: 'brahmāṇḍa purāṇa',
+        etymology: 'Sanskrit brahma (cosmic) + aṇḍa (egg) + purāṇa',
+        culturalContext: 'Purana describing cosmic structure and regional geography'
+      },
+      hi: {
+        translation: 'ब्रह्मांड पुराण',
+        transliteration: 'brahmāṇḍa purāṇa',
+        etymology: 'संस्कृत ब्रह्म (ब्रह्मांडीय) + अंड (अंडा) + पुराण',
+        culturalContext: 'ब्रह्मांडीय संरचना और क्षेत्रीय भूगोल का वर्णन करने वाला पुराण'
+      }
+    }
+  },
+  'adi-parva': {
+    term: 'adi-parva',
+    translations: {
+      en: {
+        translation: 'Adi Parva',
+        transliteration: 'ādi parva',
+        etymology: 'Sanskrit ādi (first) + parva (book/chapter)',
+        culturalContext: 'First book of the Mahabharata, containing origin stories and genealogies'
+      },
+      hi: {
+        translation: 'आदि पर्व',
+        transliteration: 'ādi parva',
+        etymology: 'संस्कृत आदि (प्रथम) + पर्व (पुस्तक/अध्याय)',
+        culturalContext: 'महाभारत का प्रथम पर्व, जिसमें उत्पत्ति कथाएं और वंशावली हैं'
+      }
+    }
+  },
+  // Cosmology & Geography
+  'bhumandala': {
+    term: 'bhumandala',
+    translations: {
+      en: {
+        translation: 'Bhumandala',
+        transliteration: 'bhūmaṇḍala',
+        etymology: 'Sanskrit bhū (earth) + maṇḍala (circle/disc)',
+        culturalContext: 'The terrestrial disc in Puranic cosmology, containing the seven continents'
+      },
+      hi: {
+        translation: 'भूमंडल',
+        transliteration: 'bhūmaṇḍala',
+        etymology: 'संस्कृत भू (पृथ्वी) + मंडल (वृत्त/चक्र)',
+        culturalContext: 'पौराणिक ब्रह्मांड विज्ञान में पार्थिव चक्र, जिसमें सात द्वीप हैं'
+      }
+    }
+  },
+  'sapta-dvipa': {
+    term: 'sapta-dvipa',
+    translations: {
+      en: {
+        translation: 'Sapta-Dvipa',
+        transliteration: 'sapta-dvīpa',
+        etymology: 'Sanskrit sapta (seven) + dvīpa (island/continent)',
+        culturalContext: 'The seven concentric island-continents of Puranic cosmography'
+      },
+      hi: {
+        translation: 'सप्त-द्वीप',
+        transliteration: 'sapta-dvīpa',
+        etymology: 'संस्कृत सप्त (सात) + द्वीप (द्वीप/महाद्वीप)',
+        culturalContext: 'पौराणिक भूगोल के सात संकेंद्रित द्वीप-महाद्वीप'
+      }
+    }
+  },
+  'dvipas': {
+    term: 'dvipas',
+    translations: {
+      en: {
+        translation: 'Dvipas',
+        transliteration: 'dvīpas',
+        etymology: 'Plural of Sanskrit dvīpa (island/continent)',
+        culturalContext: 'The island-continents in Puranic world model'
+      },
+      hi: {
+        translation: 'द्वीप',
+        transliteration: 'dvīpas',
+        etymology: 'संस्कृत द्वीप (द्वीप/महाद्वीप) का बहुवचन',
+        culturalContext: 'पौराणिक विश्व मॉडल में द्वीप-महाद्वीप'
+      }
+    }
+  },
+  'meru': {
+    term: 'meru',
+    translations: {
+      en: {
+        translation: 'Mount Meru',
+        transliteration: 'meru',
+        etymology: 'Sanskrit meru (cosmic mountain)',
+        culturalContext: 'The golden cosmic axis mountain at the center of the universe in Hindu cosmology'
+      },
+      hi: {
+        translation: 'मेरु पर्वत',
+        transliteration: 'meru',
+        etymology: 'संस्कृत मेरु (ब्रह्मांडीय पर्वत)',
+        culturalContext: 'हिंदू ब्रह्मांड विज्ञान में ब्रह्मांड के केंद्र में स्थित स्वर्णिम अक्ष पर्वत'
+      }
+    }
+  },
+  'himavan': {
+    term: 'himavan',
+    translations: {
+      en: {
+        translation: 'Himavan',
+        transliteration: 'himavān',
+        etymology: 'Sanskrit hima (snow) + vān (possessing)',
+        culturalContext: 'Ancient name for the Himalayan mountains, abode of snow'
+      },
+      hi: {
+        translation: 'हिमवान',
+        transliteration: 'himavān',
+        etymology: 'संस्कृत हिम (बर्फ) + वान (युक्त)',
+        culturalContext: 'हिमालय पर्वत का प्राचीन नाम, हिम का निवास'
+      }
+    }
+  },
+  'ilavrita': {
+    term: 'ilavrita',
+    translations: {
+      en: {
+        translation: 'Ilavrita',
+        transliteration: 'ilāvṛta',
+        etymology: 'Sanskrit proper name, possibly "enclosed by Ila"',
+        culturalContext: 'Central varsha of Jambudvipa where Mount Meru is located'
+      },
+      hi: {
+        translation: 'इलावृत',
+        transliteration: 'ilāvṛta',
+        etymology: 'संस्कृत व्यक्तिवाचक नाम',
+        culturalContext: 'जम्बूद्वीप का केंद्रीय वर्ष जहां मेरु पर्वत स्थित है'
+      }
+    }
+  },
+  'uttarakuru': {
+    term: 'uttarakuru',
+    translations: {
+      en: {
+        translation: 'Uttarakuru',
+        transliteration: 'uttarakuru',
+        etymology: 'Sanskrit uttara (north) + kuru (people)',
+        culturalContext: 'Northern varsha of Jambudvipa, described as earthly paradise'
+      },
+      hi: {
+        translation: 'उत्तरकुरु',
+        transliteration: 'uttarakuru',
+        etymology: 'संस्कृत उत्तर (उत्तर) + कुरु (लोग)',
+        culturalContext: 'जम्बूद्वीप का उत्तरी वर्ष, पार्थिव स्वर्ग के रूप में वर्णित'
+      }
+    }
+  },
+  'varshas': {
+    term: 'varshas',
+    translations: {
+      en: {
+        translation: 'Varshas',
+        transliteration: 'varṣas',
+        etymology: 'Plural of Sanskrit varṣa (region/division)',
+        culturalContext: 'The nine divisions of Jambudvipa in Puranic geography'
+      },
+      hi: {
+        translation: 'वर्ष',
+        transliteration: 'varṣas',
+        etymology: 'संस्कृत वर्ष (क्षेत्र/विभाग) का बहुवचन',
+        culturalContext: 'पौराणिक भूगोल में जम्बूद्वीप के नौ विभाग'
+      }
+    }
+  },
+  'kulaparvatas': {
+    term: 'kulaparvatas',
+    translations: {
+      en: {
+        translation: 'Kulaparvatas',
+        transliteration: 'kulaparvatas',
+        etymology: 'Sanskrit kula (clan/principal) + parvata (mountain)',
+        culturalContext: 'The seven principal mountain ranges of Bharatvarsha'
+      },
+      hi: {
+        translation: 'कुलपर्वत',
+        transliteration: 'kulaparvatas',
+        etymology: 'संस्कृत कुल (कुल/मुख्य) + पर्वत (पहाड़)',
+        culturalContext: 'भारतवर्ष की सात प्रमुख पर्वत श्रृंखलाएं'
+      }
+    }
+  },
+  'bhuvanakosha': {
+    term: 'bhuvanakosha',
+    translations: {
+      en: {
+        translation: 'Bhuvanakosha',
+        transliteration: 'bhuvanakośa',
+        etymology: 'Sanskrit bhuvana (world) + kośa (treasury/compendium)',
+        culturalContext: 'World atlas sections of Puranic texts containing systematic geography'
+      },
+      hi: {
+        translation: 'भुवनकोश',
+        transliteration: 'bhuvanakośa',
+        etymology: 'संस्कृत भुवन (संसार) + कोश (खजाना/संग्रह)',
+        culturalContext: 'पौराणिक ग्रंथों के विश्व मानचित्र खंड जिनमें व्यवस्थित भूगोल है'
+      }
+    }
+  },
+  // Philosophy & Concepts
+  'karma': {
+    term: 'karma',
+    translations: {
+      en: {
+        translation: 'Karma',
+        transliteration: 'karma',
+        etymology: 'Sanskrit kṛ (to do, act)',
+        culturalContext: 'Law of cause and effect; actions determining future consequences'
+      },
+      hi: {
+        translation: 'कर्म',
+        transliteration: 'karma',
+        etymology: 'संस्कृत कृ (करना, कार्य करना)',
+        culturalContext: 'कारण और प्रभाव का नियम; कर्म जो भविष्य के परिणाम निर्धारित करते हैं'
+      }
+    }
+  },
+  'moksha': {
+    term: 'moksha',
+    translations: {
+      en: {
+        translation: 'Moksha',
+        transliteration: 'mokṣa',
+        etymology: 'Sanskrit muc (to free, release)',
+        culturalContext: 'Liberation from cycle of rebirth, ultimate spiritual goal in Hinduism'
+      },
+      hi: {
+        translation: 'मोक्ष',
+        transliteration: 'mokṣa',
+        etymology: 'संस्कृत मुच् (मुक्त करना, छोड़ना)',
+        culturalContext: 'पुनर्जन्म के चक्र से मुक्ति, हिंदू धर्म में परम आध्यात्मिक लक्ष्य'
+      }
+    }
+  },
+  'svarga': {
+    term: 'svarga',
+    translations: {
+      en: {
+        translation: 'Svarga',
+        transliteration: 'svarga',
+        etymology: 'Sanskrit svar (heaven) + ga (going)',
+        culturalContext: 'Heaven or paradise in Hindu cosmology'
+      },
+      hi: {
+        translation: 'स्वर्ग',
+        transliteration: 'svarga',
+        etymology: 'संस्कृत स्वर् (स्वर्ग) + ग (जाना)',
+        culturalContext: 'हिंदू ब्रह्मांड विज्ञान में स्वर्ग या परम धाम'
+      }
+    }
+  },
+  'dharmic': {
+    term: 'dharmic',
+    translations: {
+      en: {
+        translation: 'Dharmic',
+        transliteration: 'dhārmika',
+        etymology: 'From Sanskrit dharma + -ic suffix',
+        culturalContext: 'Relating to dharma; religious traditions originating in India'
+      },
+      hi: {
+        translation: 'धार्मिक',
+        transliteration: 'dhārmika',
+        etymology: 'संस्कृत धर्म से',
+        culturalContext: 'धर्म से संबंधित; भारत में उत्पन्न धार्मिक परंपराएं'
+      }
+    }
+  },
+  // Deities & Figures
+  'agni': {
+    term: 'agni',
+    translations: {
+      en: {
+        translation: 'Agni',
+        transliteration: 'agni',
+        etymology: 'Sanskrit agni (fire)',
+        culturalContext: 'Vedic fire deity, mediator between humans and gods through sacrifice'
+      },
+      hi: {
+        translation: 'अग्नि',
+        transliteration: 'agni',
+        etymology: 'संस्कृत अग्नि (आग)',
+        culturalContext: 'वैदिक अग्नि देवता, यज्ञ के माध्यम से मनुष्य और देवताओं के बीच मध्यस्थ'
+      }
+    }
+  },
+  'brahma': {
+    term: 'brahma',
+    translations: {
+      en: {
+        translation: 'Brahma',
+        transliteration: 'brahmā',
+        etymology: 'From Sanskrit brahman (cosmic principle)',
+        culturalContext: 'Creator deity in Hindu trinity, dwells atop Mount Meru'
+      },
+      hi: {
+        translation: 'ब्रह्मा',
+        transliteration: 'brahmā',
+        etymology: 'संस्कृत ब्रह्मन् (ब्रह्मांडीय सिद्धांत) से',
+        culturalContext: 'हिंदू त्रिमूर्ति में सृष्टिकर्ता देवता, मेरु पर्वत के शिखर पर निवास'
+      }
+    }
+  },
+  'vishnu': {
+    term: 'vishnu',
+    translations: {
+      en: {
+        translation: 'Vishnu',
+        transliteration: 'viṣṇu',
+        etymology: 'Sanskrit viṣ (to pervade)',
+        culturalContext: 'Preserver deity in Hindu trinity, from whom Akasha Ganga descends'
+      },
+      hi: {
+        translation: 'विष्णु',
+        transliteration: 'viṣṇu',
+        etymology: 'संस्कृत विष् (व्याप्त होना)',
+        culturalContext: 'हिंदू त्रिमूर्ति में पालनकर्ता देवता, जिनसे आकाश गंगा उतरती है'
+      }
+    }
+  },
+  'indra': {
+    term: 'indra',
+    translations: {
+      en: {
+        translation: 'Indra',
+        transliteration: 'indra',
+        etymology: 'Sanskrit ind (to conquer)',
+        culturalContext: 'King of gods in Vedic pantheon, wielder of thunderbolt'
+      },
+      hi: {
+        translation: 'इंद्र',
+        transliteration: 'indra',
+        etymology: 'संस्कृत इन्द् (जीतना)',
+        culturalContext: 'वैदिक देवताओं के राजा, वज्र धारण करने वाले'
+      }
+    }
+  },
+  'siddhas': {
+    term: 'siddhas',
+    translations: {
+      en: {
+        translation: 'Siddhas',
+        transliteration: 'siddhas',
+        etymology: 'From Sanskrit sidh (to accomplish)',
+        culturalContext: 'Accomplished beings with supernatural powers in Hindu and Jain traditions'
+      },
+      hi: {
+        translation: 'सिद्ध',
+        transliteration: 'siddhas',
+        etymology: 'संस्कृत सिध् (सिद्ध करना) से',
+        culturalContext: 'हिंदू और जैन परंपराओं में अलौकिक शक्तियों वाले सिद्ध प्राणी'
+      }
+    }
+  },
+  'buddha': {
+    term: 'buddha',
+    translations: {
+      en: {
+        translation: 'Buddha',
+        transliteration: 'buddha',
+        etymology: 'Sanskrit budh (to awaken)',
+        culturalContext: 'Awakened one; founder of Buddhism, attained enlightenment in Jambudvipa'
+      },
+      hi: {
+        translation: 'बुद्ध',
+        transliteration: 'buddha',
+        etymology: 'संस्कृत बुध् (जागना)',
+        culturalContext: 'जागृत व्यक्ति; बौद्ध धर्म के संस्थापक, जम्बूद्वीप में ज्ञान प्राप्त किया'
+      }
+    }
+  },
+  'tirthankaras': {
+    term: 'tirthankaras',
+    translations: {
+      en: {
+        translation: 'Tirthankaras',
+        transliteration: 'tīrthaṅkaras',
+        etymology: 'Sanskrit tīrtha (ford) + kara (maker)',
+        culturalContext: 'Ford-makers; 24 spiritual teachers in Jainism who showed path to liberation'
+      },
+      hi: {
+        translation: 'तीर्थंकर',
+        transliteration: 'tīrthaṅkaras',
+        etymology: 'संस्कृत तीर्थ (घाट) + कर (बनाने वाला)',
+        culturalContext: 'जैन धर्म में 24 आध्यात्मिक शिक्षक जिन्होंने मुक्ति का मार्ग दिखाया'
+      }
+    }
+  },
+  'videgha-mathava': {
+    term: 'videgha-mathava',
+    translations: {
+      en: {
+        translation: 'Videgha Mathava',
+        transliteration: 'videha māthava',
+        etymology: 'Sanskrit proper name',
+        culturalContext: 'Legendary king who led Vedic expansion eastward, founder of Videha kingdom'
+      },
+      hi: {
+        translation: 'विदेघ माथव',
+        transliteration: 'videha māthava',
+        etymology: 'संस्कृत व्यक्तिवाचक नाम',
+        culturalContext: 'पौराणिक राजा जिन्होंने वैदिक विस्तार का नेतृत्व किया, विदेह राज्य के संस्थापक'
+      }
+    }
+  },
+  'dushyanta': {
+    term: 'dushyanta',
+    translations: {
+      en: {
+        translation: 'Dushyanta',
+        transliteration: 'duṣyanta',
+        etymology: 'Sanskrit proper name',
+        culturalContext: 'King of Lunar Dynasty, father of Emperor Bharata through Shakuntala'
+      },
+      hi: {
+        translation: 'दुष्यंत',
+        transliteration: 'duṣyanta',
+        etymology: 'संस्कृत व्यक्तिवाचक नाम',
+        culturalContext: 'चंद्रवंश के राजा, शकुंतला के माध्यम से सम्राट भरत के पिता'
+      }
+    }
+  },
+  'shakuntala': {
+    term: 'shakuntala',
+    translations: {
+      en: {
+        translation: 'Shakuntala',
+        transliteration: 'śakuntalā',
+        etymology: 'Sanskrit śakunta (bird) + -la suffix',
+        culturalContext: 'Celestial nymph, mother of Emperor Bharata, heroine of famous play'
+      },
+      hi: {
+        translation: 'शकुंतला',
+        transliteration: 'śakuntalā',
+        etymology: 'संस्कृत शकुंत (पक्षी) + -ला प्रत्यय',
+        culturalContext: 'अप्सरा, सम्राट भरत की माता, प्रसिद्ध नाटक की नायिका'
+      }
+    }
+  },
+  'sudas': {
+    term: 'sudas',
+    translations: {
+      en: {
+        translation: 'Sudas',
+        transliteration: 'sudās',
+        etymology: 'Sanskrit proper name, possibly "good servant"',
+        culturalContext: 'Bharata king who won the Battle of Ten Kings in Rigveda'
+      },
+      hi: {
+        translation: 'सुदास',
+        transliteration: 'sudās',
+        etymology: 'संस्कृत व्यक्तिवाचक नाम',
+        culturalContext: 'भरत राजा जिन्होंने ऋग्वेद में दशराज्ञ युद्ध जीता'
+      }
+    }
+  },
+  // Rivers & Places
+  'sarasvati': {
+    term: 'sarasvati',
+    translations: {
+      en: {
+        translation: 'Sarasvati',
+        transliteration: 'sarasvatī',
+        etymology: 'Sanskrit saras (pool) + vatī (possessing)',
+        culturalContext: 'Sacred Vedic river, center of early Vedic civilization, now dried up'
+      },
+      hi: {
+        translation: 'सरस्वती',
+        transliteration: 'sarasvatī',
+        etymology: 'संस्कृत सरस् (तालाब) + वती (युक्त)',
+        culturalContext: 'पवित्र वैदिक नदी, प्रारंभिक वैदिक सभ्यता का केंद्र, अब सूख गई'
+      }
+    }
+  },
+  'ravi': {
+    term: 'ravi',
+    translations: {
+      en: {
+        translation: 'Ravi',
+        transliteration: 'parūṣṇī',
+        etymology: 'Ancient Parushni in Sanskrit',
+        culturalContext: 'River in Punjab where Battle of Ten Kings was fought'
+      },
+      hi: {
+        translation: 'रावी',
+        transliteration: 'parūṣṇī',
+        etymology: 'संस्कृत में प्राचीन परुष्णी',
+        culturalContext: 'पंजाब में नदी जहां दशराज्ञ युद्ध लड़ा गया'
+      }
+    }
+  },
+  'tungabhadra': {
+    term: 'tungabhadra',
+    translations: {
+      en: {
+        translation: 'Tungabhadra',
+        transliteration: 'tuṅgabhadrā',
+        etymology: 'Sanskrit tuṅga (high) + bhadrā (auspicious)',
+        culturalContext: 'Sacred river in Karnataka, tributary of Krishna, site of Vijayanagara'
+      },
+      hi: {
+        translation: 'तुंगभद्रा',
+        transliteration: 'tuṅgabhadrā',
+        etymology: 'संस्कृत तुंग (ऊंचा) + भद्रा (मंगलकारी)',
+        culturalContext: 'कर्नाटक में पवित्र नदी, कृष्णा की सहायक, विजयनगर का स्थल'
+      }
+    }
+  },
+  'tamraparni': {
+    term: 'tamraparni',
+    translations: {
+      en: {
+        translation: 'Tamraparni',
+        transliteration: 'tāmraparṇī',
+        etymology: 'Sanskrit tāmra (copper) + parṇī (leaf)',
+        culturalContext: 'Ancient river of far south, flows from Malaya mountains in Tamil Nadu'
+      },
+      hi: {
+        translation: 'ताम्रपर्णी',
+        transliteration: 'tāmraparṇī',
+        etymology: 'संस्कृत ताम्र (तांबा) + पर्णी (पत्ती)',
+        culturalContext: 'सुदूर दक्षिण की प्राचीन नदी, तमिलनाडु में मलय पर्वत से बहती है'
+      }
+    }
+  },
+  'chambal': {
+    term: 'chambal',
+    translations: {
+      en: {
+        translation: 'Chambal',
+        transliteration: 'carmaṇvatī',
+        etymology: 'Ancient Charmanvati in Sanskrit',
+        culturalContext: 'River flowing from Aravalli ranges, tributary of Yamuna'
+      },
+      hi: {
+        translation: 'चंबल',
+        transliteration: 'carmaṇvatī',
+        etymology: 'संस्कृत में प्राचीन चर्मण्वती',
+        culturalContext: 'अरावली पर्वतमाला से बहने वाली नदी, यमुना की सहायक'
+      }
+    }
+  },
+  'betwa': {
+    term: 'betwa',
+    translations: {
+      en: {
+        translation: 'Betwa',
+        transliteration: 'vetravatī',
+        etymology: 'Ancient Vetravati in Sanskrit',
+        culturalContext: 'River in central India, tributary of Yamuna'
+      },
+      hi: {
+        translation: 'बेतवा',
+        transliteration: 'vetravatī',
+        etymology: 'संस्कृत में प्राचीन वेत्रवती',
+        culturalContext: 'मध्य भारत में नदी, यमुना की सहायक'
+      }
+    }
+  },
+  'son': {
+    term: 'son',
+    translations: {
+      en: {
+        translation: 'Son',
+        transliteration: 'śoṇa',
+        etymology: 'Sanskrit śoṇa (red)',
+        culturalContext: 'Major tributary of Ganga, flows from Vindhya mountains'
+      },
+      hi: {
+        translation: 'सोन',
+        transliteration: 'śoṇa',
+        etymology: 'संस्कृत शोण (लाल)',
+        culturalContext: 'गंगा की प्रमुख सहायक, विंध्य पर्वत से बहती है'
+      }
+    }
+  },
+  'mahanadi': {
+    term: 'mahanadi',
+    translations: {
+      en: {
+        translation: 'Mahanadi',
+        transliteration: 'mahānadī',
+        etymology: 'Sanskrit mahā (great) + nadī (river)',
+        culturalContext: 'Great river of Odisha, flows from central India to Bay of Bengal'
+      },
+      hi: {
+        translation: 'महानदी',
+        transliteration: 'mahānadī',
+        etymology: 'संस्कृत महा (महान) + नदी (नदी)',
+        culturalContext: 'ओडिशा की महान नदी, मध्य भारत से बंगाल की खाड़ी तक बहती है'
+      }
+    }
+  },
+  'tapi': {
+    term: 'tapi',
+    translations: {
+      en: {
+        translation: 'Tapi',
+        transliteration: 'tāpī',
+        etymology: 'Sanskrit tāpī, from daughter of Sun',
+        culturalContext: 'River flowing west from Satpura mountains to Arabian Sea'
+      },
+      hi: {
+        translation: 'ताप्ती',
+        transliteration: 'tāpī',
+        etymology: 'संस्कृत ताप्ती, सूर्य की पुत्री से',
+        culturalContext: 'सतपुड़ा पर्वत से अरब सागर तक पश्चिम में बहने वाली नदी'
+      }
+    }
+  },
+  'bhima': {
+    term: 'bhima',
+    translations: {
+      en: {
+        translation: 'Bhima',
+        transliteration: 'bhīma',
+        etymology: 'Sanskrit bhīma (terrible/mighty)',
+        culturalContext: 'Major tributary of Krishna river, flows through Maharashtra and Karnataka'
+      },
+      hi: {
+        translation: 'भीमा',
+        transliteration: 'bhīma',
+        etymology: 'संस्कृत भीम (भयंकर/शक्तिशाली)',
+        culturalContext: 'कृष्णा नदी की प्रमुख सहायक, महाराष्ट्र और कर्नाटक से होकर बहती है'
+      }
+    }
+  },
+  'sadanira': {
+    term: 'sadanira',
+    translations: {
+      en: {
+        translation: 'Sadanira',
+        transliteration: 'sadānīrā',
+        etymology: 'Sanskrit sadā (always) + nīrā (with water)',
+        culturalContext: 'Ancient name for Gandak river, eastern frontier in Shatapatha Brahmana'
+      },
+      hi: {
+        translation: 'सदानीरा',
+        transliteration: 'sadānīrā',
+        etymology: 'संस्कृत सदा (हमेशा) + नीरा (पानी के साथ)',
+        culturalContext: 'गंडक नदी का प्राचीन नाम, शतपथ ब्राह्मण में पूर्वी सीमा'
+      }
+    }
+  },
+  // Peoples & Kingdoms
+  'cholas': {
+    term: 'cholas',
+    translations: {
+      en: {
+        translation: 'Cholas',
+        transliteration: 'cōḻas',
+        etymology: 'Plural of Tamil cōḻa',
+        culturalContext: 'Ancient Tamil people and dynasty known for maritime empire and temple architecture'
+      },
+      hi: {
+        translation: 'चोल',
+        transliteration: 'cōḻas',
+        etymology: 'तमिल cōḻa का बहुवचन',
+        culturalContext: 'कदल्सार पेररस्यु और कोविल कट्टिडक्कलैक्कु पुकझ्पेट्र पण्डैय तमिळ वम्सम्'
+      }
+    }
+  },
+  'kambojas': {
+    term: 'kambojas',
+    translations: {
+      en: {
+        translation: 'Kambojas',
+        transliteration: 'kāmboja',
+        etymology: 'Sanskrit proper name',
+        culturalContext: 'Ancient northwest Indian people mentioned in Mahabharata and Puranas'
+      },
+      hi: {
+        translation: 'कंबोज',
+        transliteration: 'kāmboja',
+        etymology: 'संस्कृत व्यक्तिवाचक नाम',
+        culturalContext: 'महाभारत और पुराणों में उल्लिखित प्राचीन उत्तर पश्चिमी भारतीय लोग'
+      }
+    }
+  },
+  'kuru': {
+    term: 'kuru',
+    translations: {
+      en: {
+        translation: 'Kuru',
+        transliteration: 'kuru',
+        etymology: 'Sanskrit proper name',
+        culturalContext: 'Kingdom formed by merger of Bharata and Puru tribes, site of Mahabharata war'
+      },
+      hi: {
+        translation: 'कुरु',
+        transliteration: 'kuru',
+        etymology: 'संस्कृत व्यक्तिवाचक नाम',
+        culturalContext: 'भरत और पुरु जनजातियों के विलय से बना राज्य, महाभारत युद्ध का स्थल'
+      }
+    }
+  },
+  'videha': {
+    term: 'videha',
+    translations: {
+      en: {
+        translation: 'Videha',
+        transliteration: 'videha',
+        etymology: 'Sanskrit vi (without) + deha (body)',
+        culturalContext: 'Ancient kingdom east of Sadanira, founded by Videgha Mathava'
+      },
+      hi: {
+        translation: 'विदेह',
+        transliteration: 'videha',
+        etymology: 'संस्कृत वि (बिना) + देह (शरीर)',
+        culturalContext: 'सदानीरा के पूर्व में प्राचीन राज्य, विदेघ माथव द्वारा स्थापित'
+      }
+    }
+  },
+  // Identity & Cultural Terms
+  'arya': {
+    term: 'arya',
+    translations: {
+      en: {
+        translation: 'Arya',
+        transliteration: 'ārya',
+        etymology: 'Sanskrit ār (to honor)',
+        culturalContext: 'Noble one; cultural and ethical designation, not racial; adherent of Vedic dharma'
+      },
+      hi: {
+        translation: 'आर्य',
+        transliteration: 'ārya',
+        etymology: 'संस्कृत आर् (सम्मान करना)',
+        culturalContext: 'कुलीन व्यक्ति; सांस्कृतिक और नैतिक पदनाम, नस्लीय नहीं; वैदिक धर्म का अनुयायी'
+      }
+    }
+  },
+  'aryavarta': {
+    term: 'aryavarta',
+    translations: {
+      en: {
+        translation: 'Aryavarta',
+        transliteration: 'āryāvarta',
+        etymology: 'Sanskrit ārya (noble) + āvarta (abode)',
+        culturalContext: 'Abode of noble ones; the cultural heartland of Vedic civilization'
+      },
+      hi: {
+        translation: 'आर्यावर्त',
+        transliteration: 'āryāvarta',
+        etymology: 'संस्कृत आर्य (कुलीन) + आवर्त (निवास)',
+        culturalContext: 'कुलीनों का निवास; वैदिक सभ्यता की सांस्कृतिक जन्मभूमि'
+      }
+    }
+  },
+  'dasyu': {
+    term: 'dasyu',
+    translations: {
+      en: {
+        translation: 'Dasyu',
+        transliteration: 'dasyu',
+        etymology: 'Sanskrit das (to destroy/plunder)',
+        culturalContext: 'Non-Arya; one not following Vedic practices, cultural not racial designation'
+      },
+      hi: {
+        translation: 'दस्यु',
+        transliteration: 'dasyu',
+        etymology: 'संस्कृत दस् (नष्ट करना/लूटना)',
+        culturalContext: 'अनार्य; वैदिक प्रथाओं का पालन न करने वाला, सांस्कृतिक न कि नस्लीय पदनाम'
+      }
+    }
+  },
+  'varnas': {
+    term: 'varnas',
+    translations: {
+      en: {
+        translation: 'Varnas',
+        transliteration: 'varṇas',
+        etymology: 'Plural of Sanskrit varṇa (color/class)',
+        culturalContext: 'Four social orders in Vedic society: Brahmin, Kshatriya, Vaishya, Shudra'
+      },
+      hi: {
+        translation: 'वर्ण',
+        transliteration: 'varṇas',
+        etymology: 'संस्कृत वर्ण (रंग/वर्ग) का बहुवचन',
+        culturalContext: 'वैदिक समाज में चार सामाजिक व्यवस्थाएं: ब्राह्मण, क्षत्रिय, वैश्य, शूद्र'
+      }
+    }
+  },
+  'brahmin': {
+    term: 'brahmin',
+    translations: {
+      en: {
+        translation: 'Brahmin',
+        transliteration: 'brāhmaṇa',
+        etymology: 'From Sanskrit brahman (sacred knowledge)',
+        culturalContext: 'Priestly class, keepers of Vedic knowledge and ritual tradition'
+      },
+      hi: {
+        translation: 'ब्राह्मण',
+        transliteration: 'brāhmaṇa',
+        etymology: 'संस्कृत ब्रह्मन् (पवित्र ज्ञान) से',
+        culturalContext: 'पुरोहित वर्ग, वैदिक ज्ञान और अनुष्ठान परंपरा के रक्षक'
+      }
+    }
+  },
+  'kshatriya': {
+    term: 'kshatriya',
+    translations: {
+      en: {
+        translation: 'Kshatriya',
+        transliteration: 'kṣatriya',
+        etymology: 'From Sanskrit kṣatra (dominion/power)',
+        culturalContext: 'Warrior and ruling class, protectors of dharma and territory'
+      },
+      hi: {
+        translation: 'क्षत्रिय',
+        transliteration: 'kṣatriya',
+        etymology: 'संस्कृत क्षत्र (शासन/शक्ति) से',
+        culturalContext: 'योद्धा और शासक वर्ग, धर्म और क्षेत्र के रक्षक'
+      }
+    }
+  },
+  'vaishya': {
+    term: 'vaishya',
+    translations: {
+      en: {
+        translation: 'Vaishya',
+        transliteration: 'vaiśya',
+        etymology: 'From Sanskrit viś (people/settlement)',
+        culturalContext: 'Merchant and agricultural class, providers of economic prosperity'
+      },
+      hi: {
+        translation: 'वैश्य',
+        transliteration: 'vaiśya',
+        etymology: 'संस्कृत विश् (लोग/बस्ती) से',
+        culturalContext: 'व्यापारी और कृषि वर्ग, आर्थिक समृद्धि के प्रदाता'
+      }
+    }
+  },
+  // Dynasty & Rulership
+  'chandravamsha': {
+    term: 'chandravamsha',
+    translations: {
+      en: {
+        translation: 'Chandravamsha',
+        transliteration: 'candravamśa',
+        etymology: 'Sanskrit candra (moon) + vaṃśa (lineage)',
+        culturalContext: 'Lunar Dynasty, one of two great royal lineages, includes Bharata and Pandavas'
+      },
+      hi: {
+        translation: 'चंद्रवंश',
+        transliteration: 'candravamśa',
+        etymology: 'संस्कृत चंद्र (चांद) + वंश (वंशावली)',
+        culturalContext: 'चंद्रवंश, दो महान राजवंशों में से एक, भरत और पांडवों को शामिल करता है'
+      }
+    }
+  },
+  'chakravartin': {
+    term: 'chakravartin',
+    translations: {
+      en: {
+        translation: 'Chakravartin',
+        transliteration: 'cakravartin',
+        etymology: 'Sanskrit cakra (wheel) + vartin (one who turns)',
+        culturalContext: 'Universal emperor whose chariot wheels roll unobstructed across the world'
+      },
+      hi: {
+        translation: 'चक्रवर्ती',
+        transliteration: 'cakravartin',
+        etymology: 'संस्कृत चक्र (पहिया) + वर्तिन् (घुमाने वाला)',
+        culturalContext: 'सार्वभौम सम्राट जिसके रथ के पहिये निर्बाध रूप से विश्व भर में घूमते हैं'
+      }
+    }
+  },
+  'digvijaya': {
+    term: 'digvijaya',
+    translations: {
+      en: {
+        translation: 'Digvijaya',
+        transliteration: 'digvijaya',
+        etymology: 'Sanskrit dig (direction) + vijaya (victory)',
+        culturalContext: 'Universal conquest; campaign to conquer all directions and establish sovereignty'
+      },
+      hi: {
+        translation: 'दिग्विजय',
+        transliteration: 'digvijaya',
+        etymology: 'संस्कृत दिग् (दिशा) + विजय (जीत)',
+        culturalContext: 'सार्वभौमिक विजय; सभी दिशाओं को जीतने और संप्रभुता स्थापित करने का अभियान'
+      }
+    }
+  },
+  // Historical Concepts
+  'dasarajna': {
+    term: 'dasarajna',
+    translations: {
+      en: {
+        translation: 'Dasarajna',
+        transliteration: 'daśarājña',
+        etymology: 'Sanskrit daśa (ten) + rājña (kings)',
+        culturalContext: 'Battle of Ten Kings in Rigveda where Bharatas defeated confederation on Ravi river'
+      },
+      hi: {
+        translation: 'दशराज्ञ',
+        transliteration: 'daśarājña',
+        etymology: 'संस्कृत दश (दस) + राज्ञ (राजा)',
+        culturalContext: 'ऋग्वेद में दस राजाओं का युद्ध जहां भरतों ने रवि नदी पर संघ को हराया'
+      }
+    }
+  },
+  'sapta-sindhu': {
+    term: 'sapta-sindhu',
+    translations: {
+      en: {
+        translation: 'Sapta-Sindhu',
+        transliteration: 'sapta sindhu',
+        etymology: 'Sanskrit sapta (seven) + sindhu (river)',
+        culturalContext: 'Land of seven rivers; the geographical heartland of the Rigveda in Punjab'
+      },
+      hi: {
+        translation: 'सप्त-सिंधु',
+        transliteration: 'sapta sindhu',
+        etymology: 'संस्कृत सप्त (सात) + सिंधु (नदी)',
+        culturalContext: 'सात नदियों की भूमि; पंजाब में ऋग्वेद की भौगोलिक जन्मभूमि'
+      }
+    }
+  },
+  'nadistuti-sukta': {
+    term: 'nadistuti-sukta',
+    translations: {
+      en: {
+        translation: 'Nadistuti Sukta',
+        transliteration: 'nadīstuti sūkta',
+        etymology: 'Sanskrit nadī (river) + stuti (praise) + sūkta (hymn)',
+        culturalContext: 'Hymn in praise of rivers in Rigveda 10.75, geographic map of Vedic world'
+      },
+      hi: {
+        translation: 'नदीस्तुति सूक्त',
+        transliteration: 'nadīstuti sūkta',
+        etymology: 'संस्कृत नदी (नदी) + स्तुति (स्तुति) + सूक्त (स्तोत्र)',
+        culturalContext: 'ऋग्वेद 10.75 में नदियों की स्तुति का सूक्त, वैदिक दुनिया का भौगोलिक मानचित्र'
+      }
+    }
+  },
+  'mandala': {
+    term: 'mandala',
+    translations: {
+      en: {
+        translation: 'Mandala',
+        transliteration: 'maṇḍala',
+        etymology: 'Sanskrit maṇḍa (essence) + la (container)',
+        culturalContext: 'Circular cosmic diagram; book division in Rigveda; ritual circle'
+      },
+      hi: {
+        translation: 'मंडल',
+        transliteration: 'maṇḍala',
+        etymology: 'संस्कृत मंड (सार) + ल (पात्र)',
+        culturalContext: 'वृत्ताकार ब्रह्मांडीय आरेख; ऋग्वेद में पुस्तक विभाजन; अनुष्ठान वृत्त'
+      }
+    }
+  },
+  // Cosmological & Philosophical
+  'loka': {
+    term: 'loka',
+    translations: {
+      en: {
+        translation: 'Loka',
+        transliteration: 'loka',
+        etymology: 'Sanskrit lok (to see, perceive)',
+        culturalContext: 'World or realm; universe in Jain cosmology'
+      },
+      hi: {
+        translation: 'लोक',
+        transliteration: 'loka',
+        etymology: 'संस्कृत लोक् (देखना, अनुभव करना)',
+        culturalContext: 'संसार या क्षेत्र; जैन ब्रह्मांड विज्ञान में ब्रह्मांड'
+      }
+    }
+  },
+  'yojanas': {
+    term: 'yojanas',
+    translations: {
+      en: {
+        translation: 'Yojanas',
+        transliteration: 'yojanas',
+        etymology: 'Plural of Sanskrit yojana (distance unit)',
+        culturalContext: 'Ancient Indian unit of distance, approximately 8-9 miles'
+      },
+      hi: {
+        translation: 'योजन',
+        transliteration: 'yojanas',
+        etymology: 'संस्कृत योजन (दूरी इकाई) का बहुवचन',
+        culturalContext: 'प्राचीन भारतीय दूरी की इकाई, लगभग 8-9 मील'
+      }
+    }
+  },
+  'akasha-ganga': {
+    term: 'akasha-ganga',
+    translations: {
+      en: {
+        translation: 'Akasha Ganga',
+        transliteration: 'ākāśa gaṅgā',
+        etymology: 'Sanskrit ākāśa (sky) + gaṅgā (Ganga)',
+        culturalContext: 'Celestial river descending from Vishnu, splits into four earthly rivers'
+      },
+      hi: {
+        translation: 'आकाश गंगा',
+        transliteration: 'ākāśa gaṅgā',
+        etymology: 'संस्कृत आकाश (आकाश) + गंगा (गंगा)',
+        culturalContext: 'विष्णु से उतरती हुई दिव्य नदी, चार पार्थिव नदियों में विभाजित होती है'
+      }
+    }
+  },
+  // Added capitalization variants
+  'bharata': {
+    term: 'bharata',
+    translations: {
+      en: {
+        translation: 'Bharata',
+        transliteration: 'bharata',
+        etymology: 'Sanskrit bhṛ (to bear, maintain)',
+        culturalContext: 'Vedic tribe; legendary emperor who united India; eponym of Bharatvarsha'
+      },
+      hi: {
+        translation: 'भरत',
+        transliteration: 'bharata',
+        etymology: 'संस्कृत भृ (सहना, बनाए रखना)',
+        culturalContext: 'वैदिक जनजाति; पौराणिक सम्राट जिन्होंने भारत को एकजुट किया; भारतवर्ष का नामकरण'
+      }
+    }
+  },
+  'puranas': {
+    term: 'puranas',
+    translations: {
+      en: {
+        translation: 'Puranas',
+        transliteration: 'purāṇas',
+        etymology: 'Plural of Sanskrit purāṇa (ancient)',
+        culturalContext: 'Ancient Sanskrit texts containing mythology, cosmology, genealogies, and history'
+      },
+      hi: {
+        translation: 'पुराण',
+        transliteration: 'purāṇas',
+        etymology: 'संस्कृत पुराण (प्राचीन) का बहुवचन',
+        culturalContext: 'प्राचीन संस्कृत ग्रंथ जिनमें पौराणिक कथाएं, ब्रह्मांड विज्ञान, वंशावली और इतिहास है'
+      }
+    }
+  },
+  'himalayas': {
+    term: 'himalayas',
+    translations: {
+      en: {
+        translation: 'Himalayas',
+        transliteration: 'himālaya',
+        etymology: 'Sanskrit hima (snow) + ālaya (abode)',
+        culturalContext: 'Abode of snow; worlds highest mountain range, northern boundary of Bharatvarsha'
+      },
+      hi: {
+        translation: 'हिमालय',
+        transliteration: 'himālaya',
+        etymology: 'संस्कृत हिम (बर्फ) + आलय (निवास)',
+        culturalContext: 'बर्फ का निवास; दुनिया की सबसे ऊंची पर्वत श्रृंखला, भारतवर्ष की उत्तरी सीमा'
+      }
+    }
   }
 };
 
