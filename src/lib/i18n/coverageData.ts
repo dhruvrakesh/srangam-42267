@@ -83,15 +83,107 @@ export const jambudvipaConnectedCoverage: CoverageMap = {
 };
 
 /**
+ * Coverage data for Cosmic Island Sacred Land article
+ */
+export const cosmicIslandSacredLandCoverage: CoverageMap = {
+  'cosmic-island-sacred-land': {
+    en: {
+      slug: 'cosmic-island-sacred-land',
+      lang: 'en' as SupportedLanguage,
+      percent: 100,
+      totalKeys: 350,
+      translatedKeys: 350,
+      missingKeys: []
+    },
+    hi: {
+      slug: 'cosmic-island-sacred-land',
+      lang: 'hi' as SupportedLanguage,
+      percent: 30,
+      totalKeys: 350,
+      translatedKeys: 105,
+      missingKeys: []
+    },
+    ta: {
+      slug: 'cosmic-island-sacred-land',
+      lang: 'ta' as SupportedLanguage,
+      percent: 30,
+      totalKeys: 350,
+      translatedKeys: 105,
+      missingKeys: []
+    },
+    te: {
+      slug: 'cosmic-island-sacred-land',
+      lang: 'te' as SupportedLanguage,
+      percent: 0,
+      totalKeys: 350,
+      translatedKeys: 0,
+      missingKeys: []
+    },
+    kn: {
+      slug: 'cosmic-island-sacred-land',
+      lang: 'kn' as SupportedLanguage,
+      percent: 0,
+      totalKeys: 350,
+      translatedKeys: 0,
+      missingKeys: []
+    },
+    bn: {
+      slug: 'cosmic-island-sacred-land',
+      lang: 'bn' as SupportedLanguage,
+      percent: 0,
+      totalKeys: 350,
+      translatedKeys: 0,
+      missingKeys: []
+    },
+    as: {
+      slug: 'cosmic-island-sacred-land',
+      lang: 'as' as SupportedLanguage,
+      percent: 0,
+      totalKeys: 350,
+      translatedKeys: 0,
+      missingKeys: []
+    },
+    pa: {
+      slug: 'cosmic-island-sacred-land',
+      lang: 'pa' as SupportedLanguage,
+      percent: 0,
+      totalKeys: 350,
+      translatedKeys: 0,
+      missingKeys: []
+    },
+    pn: {
+      slug: 'cosmic-island-sacred-land',
+      lang: 'pn' as SupportedLanguage,
+      percent: 0,
+      totalKeys: 350,
+      translatedKeys: 0,
+      missingKeys: []
+    }
+  }
+};
+
+/**
  * Get coverage for a specific article and language
  */
 export function getArticleCoverage(slug: string, lang: SupportedLanguage) {
-  return jambudvipaConnectedCoverage[slug]?.[lang];
+  if (slug === 'jambudvipa-connected') {
+    return jambudvipaConnectedCoverage[slug]?.[lang];
+  }
+  if (slug === 'cosmic-island-sacred-land') {
+    return cosmicIslandSacredLandCoverage[slug]?.[lang];
+  }
+  return undefined;
 }
 
 /**
  * Get all coverage for an article
  */
 export function getArticleCoverageMap(slug: string) {
-  return jambudvipaConnectedCoverage[slug] || {};
+  if (slug === 'jambudvipa-connected') {
+    return jambudvipaConnectedCoverage[slug] || {};
+  }
+  if (slug === 'cosmic-island-sacred-land') {
+    return cosmicIslandSacredLandCoverage[slug] || {};
+  }
+  return {};
 }

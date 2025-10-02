@@ -297,6 +297,216 @@ export const jambudvipaCulturalTerms: CulturalTerm[] = [
     }
   },
   {
+    term: 'bharatvarsha',
+    translations: {
+      en: {
+        translation: 'Land of the Bharatas',
+        transliteration: 'Bhārata-varṣa',
+        etymology: 'Sanskrit bhārata (descendant of Bharata) + varṣa (region/land)',
+        culturalContext: 'Ancient name for the Indian subcontinent, defined as the land between the Himalayas and the southern ocean'
+      },
+      hi: {
+        translation: 'भारतवर्ष - भरतों की भूमि',
+        transliteration: 'भारतवर्ष',
+        etymology: 'संस्कृत भारत (भरत का वंशज) + वर्ष (क्षेत्र/भूमि)',
+        culturalContext: 'भारतीय उपमहाद्वीप का प्राचीन नाम, हिमालय और दक्षिणी सागर के बीच की भूमि के रूप में परिभाषित'
+      },
+      ta: {
+        translation: 'பாரதவர்ஷம் - பரதர்களின் நிலம்',
+        transliteration: 'பாரதவர்ஷம்',
+        etymology: 'சமஸ்கிருத பாரத (பரதரின் வழித்தோன்றல்) + வர்ஷ (பகுதி/நிலம்)',
+        culturalContext: 'இந்திய துணைக்கண்டத்தின் பண்டைய பெயர், இமயமலை மற்றும் தெற்கு கடலுக்கு இடையே உள்ள நிலமாக வரையறுக்கப்பட்டுள்ளது'
+      }
+    }
+  },
+  {
+    term: 'sapta-dvipa-vasumati',
+    translations: {
+      en: {
+        translation: 'Earth of Seven Continents',
+        transliteration: 'Sapta-dvīpa Vasumatī',
+        etymology: 'Sanskrit sapta (seven) + dvīpa (island/continent) + vasumatī (earth)',
+        culturalContext: 'Puranic model of the terrestrial plane consisting of seven concentric island-continents'
+      },
+      hi: {
+        translation: 'सप्तद्वीप वसुमती - सात द्वीपों की पृथ्वी',
+        transliteration: 'सप्तद्वीप वसुमती',
+        etymology: 'संस्कृत सप्त (सात) + द्वीप (द्वीप/महाद्वीप) + वसुमती (पृथ्वी)',
+        culturalContext: 'सात संकेंद्रित द्वीप-महाद्वीपों से युक्त पार्थिव तल का पौराणिक मॉडल'
+      }
+    }
+  },
+  {
+    term: 'mount-meru',
+    translations: {
+      en: {
+        translation: 'Cosmic Mountain at Center of Universe',
+        transliteration: 'Meru Parvata',
+        etymology: 'Sanskrit meru (central/axis)',
+        culturalContext: 'Golden mountain at the center of Jambudvipa, cosmic axis upon which the universe revolves'
+      },
+      hi: {
+        translation: 'मेरु पर्वत - ब्रह्मांड के केंद्र में दिव्य पर्वत',
+        transliteration: 'मेरु पर्वत',
+        etymology: 'संस्कृत मेरु (केंद्र/अक्ष)',
+        culturalContext: 'जम्बूद्वीप के केंद्र में स्वर्णिम पर्वत, ब्रह्मांडीय अक्ष जिस पर ब्रह्मांड घूमता है'
+      }
+    }
+  },
+  {
+    term: 'ilavrita',
+    translations: {
+      en: {
+        translation: 'Central Region of Jambudvipa',
+        transliteration: 'Ilāvṛta',
+        etymology: 'Sanskrit meaning disputed, possibly "protected by Ila"',
+        culturalContext: 'The central varsha of Jambudvipa where Mount Meru is located, surrounded by the eight other varshas'
+      },
+      hi: {
+        translation: 'इलावृत - जम्बूद्वीप का केंद्रीय क्षेत्र',
+        transliteration: 'इलावृत',
+        etymology: 'संस्कृत अर्थ विवादित, संभवतः "इला द्वारा संरक्षित"',
+        culturalContext: 'जम्बूद्वीप का केंद्रीय वर्ष जहां मेरु पर्वत स्थित है, आठ अन्य वर्षों से घिरा हुआ'
+      }
+    }
+  },
+  {
+    term: 'shatapatha-brahmana',
+    translations: {
+      en: {
+        translation: 'Prose Text of One Hundred Paths',
+        transliteration: 'Śatapatha Brāhmaṇa',
+        etymology: 'Sanskrit śata (hundred) + patha (paths) + brāhmaṇa (explanatory text)',
+        culturalContext: 'Important Vedic text (c. 800-600 BCE) containing the narrative of eastward Aryan expansion under Agni'
+      },
+      hi: {
+        translation: 'शतपथ ब्राह्मण - सौ पथों का गद्य ग्रंथ',
+        transliteration: 'शतपथ ब्राह्मण',
+        etymology: 'संस्कृत शत (सौ) + पथ (मार्ग) + ब्राह्मण (व्याख्यात्मक पाठ)',
+        culturalContext: 'महत्वपूर्ण वैदिक पाठ (लगभग 800-600 ईसा पूर्व) जिसमें अग्नि के तहत पूर्व की ओर आर्य विस्तार की कथा है'
+      }
+    }
+  },
+  {
+    term: 'videgha-mathava',
+    translations: {
+      en: {
+        translation: 'King Who Established Videha',
+        transliteration: 'Videgha Māthava',
+        etymology: 'Sanskrit videha (ancient kingdom) + māthava (descendant of Mathava)',
+        culturalContext: 'Legendary king who, according to Shatapatha Brahmana, followed Agni eastward and founded the kingdom of Videha'
+      },
+      hi: {
+        translation: 'विदेग माथव - विदेह स्थापक राजा',
+        transliteration: 'विदेग माथव',
+        etymology: 'संस्कृत विदेह (प्राचीन राज्य) + माथव (माथव का वंशज)',
+        culturalContext: 'पौराणिक राजा जिन्होंने शतपथ ब्राह्मण के अनुसार, अग्नि का अनुसरण करते हुए पूर्व की ओर गए और विदेह राज्य की स्थापना की'
+      }
+    }
+  },
+  {
+    term: 'sadanira',
+    translations: {
+      en: {
+        translation: 'Ever-Flowing River',
+        transliteration: 'Sadānīrā',
+        etymology: 'Sanskrit sadā (always) + nīrā (water/river)',
+        culturalContext: 'Ancient name for the Gandak river in Bihar, marking the eastern frontier of Vedic expansion in Shatapatha Brahmana'
+      },
+      hi: {
+        translation: 'सदानीरा - सदा बहने वाली नदी',
+        transliteration: 'सदानीरा',
+        etymology: 'संस्कृत सदा (हमेशा) + नीरा (जल/नदी)',
+        culturalContext: 'बिहार में गंडक नदी का प्राचीन नाम, शतपथ ब्राह्मण में वैदिक विस्तार की पूर्वी सीमा को चिह्नित करता है'
+      }
+    }
+  },
+  {
+    term: 'sapta-sindhu',
+    translations: {
+      en: {
+        translation: 'Land of Seven Rivers',
+        transliteration: 'Sapta Sindhu',
+        etymology: 'Sanskrit sapta (seven) + sindhu (river)',
+        culturalContext: 'The geographical heartland of Rigvedic civilization, centered on Punjab and its seven major river systems'
+      },
+      hi: {
+        translation: 'सप्त सिंधु - सात नदियों की भूमि',
+        transliteration: 'सप्त सिंधु',
+        etymology: 'संस्कृत सप्त (सात) + सिंधु (नदी)',
+        culturalContext: 'ऋग्वैदिक सभ्यता की भौगोलिक केंद्रभूमि, पंजाब और इसकी सात प्रमुख नदी प्रणालियों पर केंद्रित'
+      }
+    }
+  },
+  {
+    term: 'kulaparvatas',
+    translations: {
+      en: {
+        translation: 'Clan Mountains / Principal Ranges',
+        transliteration: 'Kula-parvatas',
+        etymology: 'Sanskrit kula (clan/family) + parvata (mountain)',
+        culturalContext: 'Seven principal mountain ranges of Bharatvarsha: Mahendra, Malaya, Sahya, Shuktimat, Riksha, Vindhya, Paripatra'
+      },
+      hi: {
+        translation: 'कुलपर्वत - वंश पर्वत / प्रमुख श्रेणियां',
+        transliteration: 'कुलपर्वत',
+        etymology: 'संस्कृत कुल (कुल/परिवार) + पर्वत (पर्वत)',
+        culturalContext: 'भारतवर्ष की सात प्रमुख पर्वत श्रेणियां: महेंद्र, मलय, सह्य, शुक्तिमत, ऋक्ष, विंध्य, परिपात्र'
+      }
+    }
+  },
+  {
+    term: 'bhuvanakosha',
+    translations: {
+      en: {
+        translation: 'Treasury of World Knowledge',
+        transliteration: 'Bhuvana-kośa',
+        etymology: 'Sanskrit bhuvana (world/universe) + kośa (treasury/storehouse)',
+        culturalContext: 'Geographical sections of Puranic texts providing systematic descriptions of the cosmos and terrestrial geography'
+      },
+      hi: {
+        translation: 'भुवनकोश - विश्व ज्ञान का खजाना',
+        transliteration: 'भुवनकोश',
+        etymology: 'संस्कृत भुवन (विश्व/ब्रह्मांड) + कोश (खजाना/भंडार)',
+        culturalContext: 'पौराणिक ग्रंथों के भौगोलिक खंड जो ब्रह्मांड और पार्थिव भूगोल का व्यवस्थित विवरण प्रदान करते हैं'
+      }
+    }
+  },
+  {
+    term: 'varshas',
+    translations: {
+      en: {
+        translation: 'Regions / Zones',
+        transliteration: 'Varṣas',
+        etymology: 'Sanskrit varṣa (region/zone/year)',
+        culturalContext: 'Nine divisions of Jambudvipa in Puranic geography, with Bharatvarsha being the southernmost inhabited zone'
+      },
+      hi: {
+        translation: 'वर्ष - क्षेत्र / खंड',
+        transliteration: 'वर्ष',
+        etymology: 'संस्कृत वर्ष (क्षेत्र/खंड/वर्ष)',
+        culturalContext: 'पौराणिक भूगोल में जम्बूद्वीप के नौ विभाग, भारतवर्ष सबसे दक्षिणी आबाद खंड है'
+      }
+    }
+  },
+  {
+    term: 'janapadas',
+    translations: {
+      en: {
+        translation: 'Tribal Territories / Kingdoms',
+        transliteration: 'Janapadas',
+        etymology: 'Sanskrit jana (people/tribe) + pada (foot/place)',
+        culturalContext: 'Ancient territorial and political divisions of India, cataloged extensively in Mahabharata and Puranic texts'
+      },
+      hi: {
+        translation: 'जनपद - आदिवासी क्षेत्र / राज्य',
+        transliteration: 'जनपद',
+        etymology: 'संस्कृत जन (लोग/जनजाति) + पद (पैर/स्थान)',
+        culturalContext: 'भारत के प्राचीन क्षेत्रीय और राजनीतिक विभाग, महाभारत और पौराणिक ग्रंथों में व्यापक रूप से सूचीबद्ध'
+      }
+    }
+  },
+  {
     term: 'digvijaya-parva',
     translations: {
       en: {

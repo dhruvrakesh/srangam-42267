@@ -11,6 +11,7 @@ import { indianOceanPowerNetworksComplete } from './indian-ocean-power-networks-
 import { earthSeaSangam } from './earth-sea-sangam';
 import { maritimeMemoriesSouthIndiaComplete } from './maritime-memories-south-india-complete';
 import { jambudvipaConnected } from './jambudvipa-connected';
+import { cosmicIslandSacredLand } from './cosmic-island-sacred-land';
 
 // Complete multilingual article registry
 export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
@@ -25,7 +26,8 @@ export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
   cholaNavalRaid,
   pepperAndBullion,
   earthSeaSangam,
-  jambudvipaConnected
+  jambudvipaConnected,
+  cosmicIslandSacredLand
 ];
 
 // Mapping from legacy slugs to multilingual article IDs
@@ -41,7 +43,8 @@ export const SLUG_TO_ID_MAP: Record<string, string> = {
   '/chola-naval-raid': 'chola-naval-raid',
   '/pepper-and-bullion': 'pepper-and-bullion',
   '/earth-sea-sangam': 'earth-sea-sangam',
-  '/jambudvipa-connected': 'jambudvipa-connected'
+  '/jambudvipa-connected': 'jambudvipa-connected',
+  '/cosmic-island-sacred-land': 'cosmic-island-sacred-land'
 };
 
 // Article metadata for display (readTime, author, date)
@@ -121,6 +124,12 @@ export const ARTICLE_METADATA: Record<string, {
     readTime: 35,
     author: 'Nartiang Foundation',
     date: '2025-09-28',
+    theme: 'Ancient India'
+  },
+  'cosmic-island-sacred-land': {
+    readTime: 42,
+    author: 'Research Team',
+    date: '2025-10-02',
     theme: 'Ancient India'
   }
 };
