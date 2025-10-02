@@ -50,51 +50,40 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
     return text;
   };
 
-  const processTextForCulturalTerms = (text: string | React.ReactNode): React.ReactNode => {
-    if (!enableCulturalTerms || typeof text !== 'string') return text;
+  // Pre-process markdown to convert {{cultural:term}} to special link format
+  const preprocessCulturalTerms = (text: string): string => {
+    if (!enableCulturalTerms) return text;
     
-    // Enhanced cultural term pattern matching for {{cultural:term}} format
+    // Convert {{cultural:term}} to [term](cultural:term) format for ReactMarkdown
     const culturalTermPattern = /\{\{cultural:([^}]+)\}\}/g;
-    const parts: React.ReactNode[] = [];
-    let lastIndex = 0;
-    let match;
-    let matchCount = 0;
-
-    while ((match = culturalTermPattern.exec(text)) !== null) {
-      matchCount++;
-      // Add text before the match
-      if (match.index > lastIndex) {
-        parts.push(text.slice(lastIndex, match.index));
-      }
-      
-      // Extract and format the term
-      const rawTerm = match[1].trim();
-      const displayTerm = rawTerm
+    return text.replace(culturalTermPattern, (match, term) => {
+      const trimmedTerm = term.trim();
+      const displayTerm = trimmedTerm
         .split('-')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
-      
-      // Add the cultural term with enhanced styling and tooltip
-      parts.push(
-        <CulturalTermTooltip key={`cultural-${matchCount}-${match.index}`} term={rawTerm}>
-          <span className="font-semibold text-burgundy bg-gradient-to-r from-saffron/10 to-gold-warm/10 px-1.5 py-0.5 rounded-md border border-saffron/20 cursor-help hover:bg-saffron/20 transition-colors">
-            {displayTerm}
-          </span>
-        </CulturalTermTooltip>
-      );
-      
-      lastIndex = match.index + match[0].length;
-    }
-    
-    // Add remaining text
-    if (lastIndex < text.length) {
-      parts.push(text.slice(lastIndex));
-    }
-    
-    return parts.length > 0 ? <>{parts}</> : text;
+      return `[${displayTerm}](cultural:${trimmedTerm})`;
+    });
   };
 
   const customRenderers = {
+    // Custom link renderer to handle cultural terms
+    a: ({ href, children, ...props }: any) => {
+      // Check if this is a cultural term link
+      if (href && href.startsWith('cultural:')) {
+        const term = href.replace('cultural:', '');
+        return (
+          <CulturalTermTooltip term={term}>
+            <span className="font-semibold text-burgundy bg-gradient-to-r from-saffron/10 to-gold-warm/10 px-1.5 py-0.5 rounded-md border border-saffron/20 cursor-help hover:bg-saffron/20 transition-colors">
+              {children}
+            </span>
+          </CulturalTermTooltip>
+        );
+      }
+      // Regular link
+      return <a href={href} className="text-ocean hover:text-ocean-dark underline" {...props}>{children}</a>;
+    },
+
     // Enhanced heading rendering
     h2: ({ children, ...props }: any) => (
       <h2 
@@ -142,7 +131,7 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
                   )}
                   {...props}
                 >
-                  {processTextForCulturalTerms(chunk)}
+                  {chunk}
                 </p>
               ))}
             </>
@@ -163,7 +152,7 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
           )}
           {...props}
         >
-          {typeof children === 'string' ? processTextForCulturalTerms(children) : children}
+          {children}
         </p>
       );
     },
@@ -182,7 +171,7 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
       )} {...props}>
         <span className="text-saffron text-2xl font-bold leading-none mt-1">•</span>
         <span className="flex-1">
-          {typeof children === 'string' ? processTextForCulturalTerms(children) : children}
+          {children}
         </span>
       </li>
     ),
@@ -216,7 +205,7 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
         className="font-semibold text-burgundy bg-gradient-to-r from-saffron/15 to-gold-warm/15 px-1.5 py-0.5 rounded-md border border-saffron/30"
         {...props}
       >
-        {typeof children === 'string' ? processTextForCulturalTerms(children) : children}
+        {children}
       </strong>
     ),
 
@@ -228,7 +217,7 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
     )
   };
 
-  const processedText = preprocessText(textContent);
+  const processedText = preprocessCulturalTerms(preprocessText(textContent));
 
   return (
     <TooltipProvider delayDuration={200}>
