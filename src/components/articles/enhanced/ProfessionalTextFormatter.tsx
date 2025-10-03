@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 import { useTranslation } from 'react-i18next';
 import { CulturalTermTooltip } from '@/components/language/CulturalTermTooltip';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -27,101 +28,155 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
 
   const getText = (): string => {
     const text = content[currentLanguage] || content.en || Object.values(content)[0] || '';
-    // Ensure we always return a string, never an object
     if (typeof text === 'string') {
       return text;
     }
-    // Fallback if somehow an object got through
     console.warn('ProfessionalTextFormatter received non-string content:', text);
     return '';
   };
 
-  // STAGE 1: Pre-process - Convert {{cultural:term}} → __CULTURAL::term::__
-  // Embed term directly in placeholder to avoid Map/state issues
-  const preprocessCulturalTerms = (text: string): string => {
-    if (!enableCulturalTerms) return text;
-    
-    const culturalTermPattern = /\{\{cultural:([^}]+)\}\}/g;
-    return text.replace(culturalTermPattern, (match, term) => {
-      const normalizedTerm = term.trim().toLowerCase();
-      // Embed term directly using :: delimiter
-      return `__CULTURAL::${normalizedTerm}::__`;
-    });
+  // Title case converter
+  const toTitleCase = (str: string): string => {
+    return str
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   };
 
-  // STAGE 2: Inject - Replace __CULTURAL::term::__ → CulturalTermTooltip component
-  // Extract term directly from placeholder (stateless approach)
-  const injectCulturalTerm = (text: string): React.ReactNode => {
-    if (!enableCulturalTerms || typeof text !== 'string') return text;
-    
-    const parts: React.ReactNode[] = [];
-    const placeholderPattern = /__CULTURAL::(.+?)::__/g;
-    let lastIndex = 0;
-    let match;
-    
-    while ((match = placeholderPattern.exec(text)) !== null) {
-      const term = match[1]; // Extract term directly from placeholder
-      
-      // Add text before placeholder
-      if (match.index > lastIndex) {
-        parts.push(text.slice(lastIndex, match.index));
-      }
-      
-      // Create display term (convert kebab-case to Title Case)
-      const displayTerm = term
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-      
-      // Add CulturalTermTooltip component
-      parts.push(
-        <CulturalTermTooltip key={`${term}-${match.index}`} term={term}>
-          <span className="cultural-term-highlight">
-            {displayTerm}
-          </span>
-        </CulturalTermTooltip>
+  // PRE-RENDERING APPROACH: Parse and render cultural terms BEFORE markdown processing
+  const renderWithCulturalTerms = (text: string): React.ReactNode => {
+    if (!enableCulturalTerms || !text) {
+      return (
+        <ReactMarkdown 
+          rehypePlugins={[rehypeRaw]}
+          components={customRenderers}
+        >
+          {text}
+        </ReactMarkdown>
       );
+    }
+
+    const segments: React.ReactNode[] = [];
+    let currentMarkdown = '';
+    let segmentKey = 0;
+
+    // Split text by lines to handle markdown structure properly
+    const lines = text.split('\n');
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const culturalPattern = /\{\{cultural:([^}]+)\}\}/g;
       
-      lastIndex = match.index + match[0].length;
-    }
-    
-    // Add remaining text
-    if (lastIndex < text.length) {
-      parts.push(text.slice(lastIndex));
-    }
-    
-    return parts.length > 0 ? parts : text;
-  };
+      // Check if this line contains cultural terms
+      if (culturalPattern.test(line)) {
+        // Flush accumulated markdown before processing this line
+        if (currentMarkdown) {
+          segments.push(
+            <ReactMarkdown
+              key={`md-${segmentKey++}`}
+              rehypePlugins={[rehypeRaw]}
+              components={customRenderers}
+            >
+              {currentMarkdown}
+            </ReactMarkdown>
+          );
+          currentMarkdown = '';
+        }
 
-  // Deep text extraction: recursively extract ALL text from React children
-  const extractText = (children: React.ReactNode): string => {
-    if (typeof children === 'string') return children;
-    if (typeof children === 'number') return String(children);
-    if (!children) return '';
-    
-    if (Array.isArray(children)) {
-      return children.map(extractText).join('');
-    }
-    
-    if (React.isValidElement(children) && children.props.children) {
-      return extractText(children.props.children);
-    }
-    
-    return '';
-  };
+        // Process line with cultural terms
+        let processedLine: React.ReactNode[] = [];
+        let lastIndex = 0;
+        culturalPattern.lastIndex = 0; // Reset regex
+        let match;
 
-  // Process children: extract text, inject cultural terms, return React nodes
-  const processChildren = (children: React.ReactNode): React.ReactNode => {
-    const textContent = extractText(children);
-    if (!textContent || typeof textContent !== 'string') return children;
-    
-    // Check if text contains any cultural term placeholders
-    if (!/__CULTURAL::(.+?)::__/.test(textContent)) {
-      return children; // No placeholders, return original
+        while ((match = culturalPattern.exec(line)) !== null) {
+          // Add text before match
+          if (match.index > lastIndex) {
+            processedLine.push(line.substring(lastIndex, match.index));
+          }
+
+          // Add cultural term tooltip
+          const term = match[1].trim().toLowerCase();
+          const displayTerm = toTitleCase(term);
+          
+          processedLine.push(
+            <CulturalTermTooltip key={`cultural-${term}-${segmentKey++}`} term={term}>
+              <span className="cultural-term-highlight">
+                {displayTerm}
+              </span>
+            </CulturalTermTooltip>
+          );
+
+          lastIndex = culturalPattern.lastIndex;
+        }
+
+        // Add remaining text
+        if (lastIndex < line.length) {
+          processedLine.push(line.substring(lastIndex));
+        }
+
+        // Wrap processed line in appropriate markdown container
+        const lineMarkdown = line.replace(/\{\{cultural:[^}]+\}\}/g, '');
+        const isHeading = lineMarkdown.trim().startsWith('#');
+        const isListItem = lineMarkdown.trim().startsWith('-') || lineMarkdown.trim().startsWith('*');
+        const isBlockquote = lineMarkdown.trim().startsWith('>');
+
+        if (isHeading) {
+          const level = (lineMarkdown.match(/^#+/) || [''])[0].length;
+          const HeadingTag = `h${level}` as keyof JSX.IntrinsicElements;
+          const CustomHeading = customRenderers[HeadingTag] || customRenderers.h2;
+          segments.push(
+            <CustomHeading key={`heading-${segmentKey++}`}>
+              {processedLine}
+            </CustomHeading>
+          );
+        } else if (isListItem) {
+          segments.push(
+            <div key={`list-${segmentKey++}`}>
+              {customRenderers.li({ children: processedLine })}
+            </div>
+          );
+        } else if (isBlockquote) {
+          segments.push(
+            customRenderers.blockquote({ 
+              key: `blockquote-${segmentKey++}`,
+              children: <p>{processedLine}</p>
+            })
+          );
+        } else {
+          segments.push(
+            <p 
+              key={`p-${segmentKey++}`}
+              className={cn(
+                'text-lg leading-relaxed mb-6 text-foreground/90',
+                scriptFont,
+                'hyphens-auto'
+              )}
+            >
+              {processedLine}
+            </p>
+          );
+        }
+      } else {
+        // Accumulate regular markdown
+        currentMarkdown += line + '\n';
+      }
     }
-    
-    // Inject cultural term tooltips
-    return injectCulturalTerm(textContent);
+
+    // Flush remaining markdown
+    if (currentMarkdown.trim()) {
+      segments.push(
+        <ReactMarkdown
+          key={`md-${segmentKey++}`}
+          rehypePlugins={[rehypeRaw]}
+          components={customRenderers}
+        >
+          {currentMarkdown}
+        </ReactMarkdown>
+      );
+    }
+
+    return <>{segments}</>;
   };
 
   const rawText = getText();
@@ -130,22 +185,14 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
     return null;
   }
 
-  // PRE-PROCESS: Convert {{cultural:term}} to placeholders BEFORE ReactMarkdown
-  const textContent = preprocessCulturalTerms(rawText);
-
   const customRenderers = {
-    // Regular link renderer
     a: ({ href, children, ...props }: any) => {
       return <a href={href} className="text-ocean hover:text-ocean-dark underline transition-colors" target="_blank" rel="noopener noreferrer" {...props}>{children}</a>;
     },
 
-    // Enhanced heading rendering with cultural terms support
     h2: ({ children, ...props }: any) => {
-      const processedChildren = processChildren(children);
-      
       return (
         <div className="relative mt-16 mb-8">
-          {/* Visual divider */}
           <div className="absolute -top-8 left-0 right-0 h-px bg-gradient-to-r from-transparent via-burgundy/30 to-transparent" />
           
           <h2 
@@ -158,15 +205,13 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
             {...props}
           >
             <span className="text-saffron text-4xl">§</span>
-            {processedChildren}
+            {children}
           </h2>
         </div>
       );
     },
 
     h3: ({ children, ...props }: any) => {
-      const processedChildren = processChildren(children);
-      
       return (
         <h3 
           className={cn(
@@ -177,15 +222,12 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
           {...props}
         >
           <span className="text-gold-warm">◆</span>
-          {processedChildren}
+          {children}
         </h3>
       );
     },
 
-    // Simplified paragraph rendering with cultural term support
     p: ({ children, ...props }: any) => {
-      const processedChildren = processChildren(children);
-      
       return (
         <p 
           className={cn(
@@ -198,12 +240,11 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
           )}
           {...props}
         >
-          {processedChildren}
+          {children}
         </p>
       );
     },
 
-    // Enhanced list rendering
     ul: ({ children, ...props }: any) => (
       <ul className="list-none space-y-4 mb-8 ml-4" {...props}>
         {children}
@@ -211,8 +252,6 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
     ),
 
     li: ({ children, ...props }: any) => {
-      const processedChildren = processChildren(children);
-      
       return (
         <li className={cn(
           'flex items-start gap-4 text-lg leading-relaxed text-foreground/90',
@@ -220,16 +259,13 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
         )} {...props}>
           <span className="text-saffron text-2xl font-bold leading-none mt-1">•</span>
           <span className="flex-1">
-            {processedChildren}
+            {children}
           </span>
         </li>
       );
     },
 
-    // Enhanced blockquote rendering with cultural term support
     blockquote: ({ children, ...props }: any) => {
-      const processedChildren = processChildren(children);
-      
       return (
         <blockquote 
           className={cn(
@@ -242,7 +278,7 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
           {...props}
         >
           <div className="text-xl italic text-charcoal/80 leading-relaxed">
-            {processedChildren}
+            {children}
           </div>
           <div className="absolute top-4 right-6 text-6xl text-burgundy/20 font-serif leading-none">
             "
@@ -251,28 +287,23 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
       );
     },
 
-    // Enhanced strong/bold text (simplified to avoid conflicts)
     strong: ({ children, ...props }: any) => {
-      const processedChildren = processChildren(children);
-      
       return (
         <strong 
           className="font-semibold text-burgundy"
           {...props}
         >
-          {processedChildren}
+          {children}
         </strong>
       );
     },
 
-    // Enhanced emphasis/italic text
     em: ({ children, ...props }: any) => (
       <em className="italic text-burgundy font-medium" {...props}>
         {children}
       </em>
     ),
 
-    // Table support with cultural terms
     table: ({ children, ...props }: any) => (
       <div className="overflow-x-auto my-8">
         <table className="w-full border-collapse" {...props}>
@@ -282,30 +313,27 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
     ),
 
     td: ({ children, ...props }: any) => {
-      const processedChildren = processChildren(children);
       return (
         <td 
           className="border border-burgundy/20 px-4 py-3 text-base" 
           {...props}
         >
-          {processedChildren}
+          {children}
         </td>
       );
     },
 
     th: ({ children, ...props }: any) => {
-      const processedChildren = processChildren(children);
       return (
         <th 
           className="border border-burgundy/30 bg-burgundy/5 px-4 py-3 text-left font-semibold text-burgundy" 
           {...props}
         >
-          {processedChildren}
+          {children}
         </th>
       );
     },
 
-    // Horizontal rule with elegant styling
     hr: ({ ...props }: any) => (
       <hr 
         className="my-12 border-0 h-px bg-gradient-to-r from-transparent via-burgundy/30 to-transparent" 
@@ -317,11 +345,7 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
   return (
     <TooltipProvider delayDuration={200}>
       <div className={cn('prose prose-xl max-w-none', className)}>
-        <ReactMarkdown 
-          components={customRenderers}
-        >
-          {textContent}
-        </ReactMarkdown>
+        {renderWithCulturalTerms(rawText)}
       </div>
     </TooltipProvider>
   );
