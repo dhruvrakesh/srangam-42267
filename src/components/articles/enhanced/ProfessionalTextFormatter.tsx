@@ -36,44 +36,38 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
     return '';
   };
 
-  // Cultural term storage for placeholder → component mapping
-  // Use useMemo to persist Map across render cycles
-  const culturalTermMap = React.useMemo(() => new Map<string, string>(), []);
-
-  // STAGE 1: Pre-process - Convert {{cultural:term}} → __CULTURAL_TERM__
+  // STAGE 1: Pre-process - Convert {{cultural:term}} → __CULTURAL::term::__
+  // Embed term directly in placeholder to avoid Map/state issues
   const preprocessCulturalTerms = (text: string): string => {
     if (!enableCulturalTerms) return text;
     
     const culturalTermPattern = /\{\{cultural:([^}]+)\}\}/g;
     return text.replace(culturalTermPattern, (match, term) => {
       const normalizedTerm = term.trim().toLowerCase();
-      const placeholder = `__CULTURAL_${normalizedTerm.toUpperCase().replace(/[^A-Z0-9]/g, '_')}__`;
-      culturalTermMap.set(placeholder, normalizedTerm);
-      return placeholder;
+      // Embed term directly using :: delimiter
+      return `__CULTURAL::${normalizedTerm}::__`;
     });
   };
 
-  // STAGE 2: Post-process - Convert __CULTURAL_TERM__ → <CulturalTermTooltip>
+  // STAGE 2: Inject - Replace __CULTURAL::term::__ → CulturalTermTooltip component
+  // Extract term directly from placeholder (stateless approach)
   const injectCulturalTerm = (text: string): React.ReactNode => {
     if (!enableCulturalTerms || typeof text !== 'string') return text;
     
     const parts: React.ReactNode[] = [];
-    const placeholderPattern = /__CULTURAL_([A-Z0-9_]+)__/g;
+    const placeholderPattern = /__CULTURAL::(.+?)::__/g;
     let lastIndex = 0;
     let match;
     
     while ((match = placeholderPattern.exec(text)) !== null) {
-      const placeholder = match[0];
-      const term = culturalTermMap.get(placeholder);
-      
-      if (!term) continue;
+      const term = match[1]; // Extract term directly from placeholder
       
       // Add text before placeholder
       if (match.index > lastIndex) {
         parts.push(text.slice(lastIndex, match.index));
       }
       
-      // Create display term (capitalize words)
+      // Create display term (convert kebab-case to Title Case)
       const displayTerm = term
         .split('-')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
