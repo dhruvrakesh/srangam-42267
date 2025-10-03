@@ -1,0 +1,125 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lameta Formation",
+        "type": "Dinosaur fossils",
+        "age": "68-66 Ma",
+        "significance": "Titanosaur nest sites, Late Cretaceous vertebrates",
+        "confidence": "A",
+        "site": "Jabalpur, Madhya Pradesh"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [79.9864, 23.1765]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Deccan Traps",
+        "type": "Flood basalts",
+        "age": "66 Ma",
+        "significance": "Largest volcanic province, K-Pg boundary marker",
+        "confidence": "A",
+        "site": "Western Ghats"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [73.8567, 18.5204]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Siwalik Hills",
+        "type": "Miocene-Pliocene vertebrates",
+        "age": "18-2 Ma",
+        "significance": "World's richest Neogene mammal fossil record",
+        "confidence": "A",
+        "site": "Himachal Pradesh, Uttarakhand"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [77.1734, 30.3165]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Gondwana Supergroup",
+        "type": "Coal measures, plant fossils",
+        "age": "300-150 Ma",
+        "significance": "Permian-Jurassic flora, Glossopteris forests",
+        "confidence": "A",
+        "site": "Central India Coalfields"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [82.7765, 23.6765]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Narmada Valley",
+        "type": "Hominin tools, Pleistocene fauna",
+        "age": "500-50 ka",
+        "significance": "Acheulean handaxes, archaic Homo fossils",
+        "confidence": "A",
+        "site": "Narmada River terraces"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [76.9567, 22.7196]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Mudumalai (Moyar)",
+        "type": "Shaligram (ammonites)",
+        "age": "Jurassic-Cretaceous",
+        "significance": "Sacred fossils in pilgrimage circuits",
+        "confidence": "B",
+        "site": "Tamil Nadu-Karnataka border"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [76.5733, 11.5658]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ghaggar-Hakra Paleochannel",
+        "type": "Vedic Sarasvati river system",
+        "age": "7000-3500 BP",
+        "significance": "IVC settlements, river capture geology",
+        "confidence": "A",
+        "site": "Punjab-Haryana-Rajasthan"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [74.6453, 29.9456]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Badlands (Chambal)",
+        "type": "Ravine erosion, Vindhyan geology",
+        "age": "Proterozoic basement",
+        "significance": "Landscape evolution, cultural associations",
+        "confidence": "B",
+        "site": "Chambal River basin"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [78.6765, 26.2389]
+      }
+    }
+  ]
+}

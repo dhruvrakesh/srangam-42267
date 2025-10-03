@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900">
+<defs>
+<style><![CDATA[.title{font:700 30px/1.2 Inter,system-ui}.subtitle{font:500 18px/1.3 Inter,system-ui;fill:#334155}.box{fill:#f8fafc;stroke:#cbd5e1;stroke-width:1.25}.axis{stroke:#cbd5e1;stroke-dasharray:4 6;stroke-width:1}.label{font:500 14px/1.2 Inter,system-ui;fill:#0f172a}.feature{font:600 14px/1.2 Inter,system-ui;fill:#0b3d5c}.river{fill:none;stroke:#0ea5e9;stroke-width:4;stroke-linecap:round}.paleoch{fill:none;stroke:#7c3aed;stroke-width:4;stroke-dasharray:8 6;stroke-linecap:round}.arrow{marker-end:url(#arrowhead)}.desert{fill:#fff7ed;stroke:#fed7aa}.hill{stroke:#64748b;stroke-width:2;fill:none;stroke-dasharray:6 6}.credit{font:400 14px/1.2 Inter,system-ui;fill:#475569}]]></style>
+<marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#0ea5e9"/></marker>
+</defs>
+<text x="700.0" y="50" text-anchor="middle" class="title">Fig. 4 — Ghaggar–Hakra Paleochannel (schematic)</text>
+<text x="700.0" y="74" text-anchor="middle" class="subtitle">Cartography‑neutral; stylized rivers; arrows show Sutlej (Śatadru) rerouting to the Indus system</text>
+<rect x="80" y="80" width="1240" height="740" class="box" rx="12"/>
+<line x1="80" y1="820.0" x2="1320" y2="820.0" class="axis"/><text x="74" y="825.0" text-anchor="end" class="label">22°N</text>
+<line x1="80" y1="696.6666666666666" x2="1320" y2="696.6666666666666" class="axis"/><text x="74" y="701.6666666666666" text-anchor="end" class="label">24°N</text>
+<line x1="80" y1="573.3333333333334" x2="1320" y2="573.3333333333334" class="axis"/><text x="74" y="578.3333333333334" text-anchor="end" class="label">26°N</text>
+<line x1="80" y1="450.0" x2="1320" y2="450.0" class="axis"/><text x="74" y="455.0" text-anchor="end" class="label">28°N</text>
+<line x1="80" y1="326.6666666666667" x2="1320" y2="326.6666666666667" class="axis"/><text x="74" y="331.6666666666667" text-anchor="end" class="label">30°N</text>
+<line x1="80" y1="203.33333333333326" x2="1320" y2="203.33333333333326" class="axis"/><text x="74" y="208.33333333333326" text-anchor="end" class="label">32°N</text>
+<line x1="80" y1="80.0" x2="1320" y2="80.0" class="axis"/><text x="74" y="85.0" text-anchor="end" class="label">34°N</text>
+<line x1="80.0" y1="80" x2="80.0" y2="820" class="axis"/><text x="80.0" y="838" text-anchor="middle" class="label">68°E</text>
+<line x1="328.0" y1="80" x2="328.0" y2="820" class="axis"/><text x="328.0" y="838" text-anchor="middle" class="label">70°E</text>
+<line x1="576.0" y1="80" x2="576.0" y2="820" class="axis"/><text x="576.0" y="838" text-anchor="middle" class="label">72°E</text>
+<line x1="824.0" y1="80" x2="824.0" y2="820" class="axis"/><text x="824.0" y="838" text-anchor="middle" class="label">74°E</text>
+<line x1="1072.0" y1="80" x2="1072.0" y2="820" class="axis"/><text x="1072.0" y="838" text-anchor="middle" class="label">76°E</text>
+<line x1="1320.0" y1="80" x2="1320.0" y2="820" class="axis"/><text x="1320.0" y="838" text-anchor="middle" class="label">78°E</text>
+<polygon points="328.0,450.0 700.0,542.5 1010.0,480.83333333333337 1134.0,388.3333333333333 923.1999999999996,265.0 638.0,295.83333333333326 452.0,357.5" class="desert"/><text x="700.0" y="376.0" class="label">Thar (schematic)</text>
+<path d="M 700.0,727.5 C 762.0,635.0 799.1999999999997,542.5 848.8000000000004,450.0" class="hill"/>
+<path d="M 1010.0,141.66666666666674 C 824.0,203.33333333333326 638.0,234.16666666666674 452.0,265.0" class="hill"/>
+<text x="861.1999999999996" y="480.83333333333337" class="label">Aravalli (schematic)</text>
+<text x="576.0" y="246.5" class="label">Siwalik front (schematic)</text>
+<path d="M 1171.1999999999996,234.16666666666674 L 1010.0,252.66666666666674 L 886.0,265.0 L 762.0,295.83333333333326 L 638.0,314.3333333333334" class="river arrow"/>
+<text x="997.6000000000007" y="234.16666666666674" class="feature">Sutlej (Śatadru) → Indus</text>
+<path d="M 1134.0,265.0 L 1096.8000000000004,302.0000000000001 L 1022.3999999999993,351.33333333333326 L 935.6000000000007,394.5000000000001 L 861.1999999999996,437.6666666666667 L 799.1999999999997,474.6666666666666 L 724.8000000000003,505.49999999999994" class="paleoch"/>
+<text x="1010.0" y="345.1666666666667" class="feature">Ghaggar–Hakra (paleochannel)</text>
+<line x1="1146.3999999999992" y1="258.83333333333326" x2="1121.6000000000006" y2="277.33333333333326" class="river arrow"/>
+<line x1="1109.1999999999996" y1="283.5" x2="1090.6000000000008" y2="298.91666666666674" class="river arrow"/>
+<rect x="1000" y="110" width="300" height="120" class="box" rx="10"/>
+<line x1="1018" y1="144" x2="1070" y2="144" class="river"/><text x="1080" y="148" class="label">Active river</text>
+<line x1="1018" y1="174" x2="1070" y2="174" class="paleoch"/><text x="1080" y="178" class="label">Paleochannel (inferred)</text>
+<rect x="1016" y="188" width="20" height="14" class="desert"/><text x="1080" y="200" class="label">Desert (schematic)</text>
+<text x="1320" y="854" text-anchor="end" class="credit">Stone Purāṇa — Ghaggar–Hakra paleochannel (schematic; vector SVG)</text>
+</svg>

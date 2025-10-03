@@ -5,46 +5,14 @@ import { IconBasalt } from '@/components/icons/IconBasalt';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
+import { 
+  SiwalikMegafaunaViewer,
+  GhaggarHakraPaleoMap,
+  GeologicalTimelineInteractive,
+  GeoHeritageMap
+} from '@/components/geology';
 
-// Placeholder for Figure 1: Geographic Distribution (Phase 3)
-const SitesLocatorFigure = () => (
-  <Card className="my-8 border-amber-500/20 bg-gradient-to-br from-amber-950/10 to-stone-950/10">
-    <CardHeader>
-      <CardTitle className="text-lg flex items-center gap-2">
-        <IconBasalt className="h-5 w-5 text-amber-600" />
-        Figure 1: India's Geo-Heritage Localities
-      </CardTitle>
-      <CardDescription>Geographic distribution of key fossil sites</CardDescription>
-    </CardHeader>
-    <CardContent className="flex items-center justify-center h-64 bg-muted/50 rounded-lg">
-      <div className="text-center space-y-2">
-        <p className="text-muted-foreground">SVG Figure to be integrated in Phase 3</p>
-        <Badge variant="secondary">Coming Soon</Badge>
-      </div>
-    </CardContent>
-  </Card>
-);
-
-// Placeholder for Figure 2: Deep Time Timeline (Phase 3)
-const DeepTimeTimelineFigure = () => (
-  <Card className="my-8 border-amber-500/20 bg-gradient-to-br from-amber-950/10 to-stone-950/10">
-    <CardHeader>
-      <CardTitle className="text-lg flex items-center gap-2">
-        <IconBasalt className="h-5 w-5 text-amber-600" />
-        Figure 2: Geological Timeline
-      </CardTitle>
-      <CardDescription>From Permian Gondwana to Quaternary hominins (252 Ma → Present)</CardDescription>
-    </CardHeader>
-    <CardContent className="flex items-center justify-center h-96 bg-muted/50 rounded-lg">
-      <div className="text-center space-y-2">
-        <p className="text-muted-foreground">Deep Time Timeline SVG to be integrated in Phase 3</p>
-        <Badge variant="secondary">Coming Soon</Badge>
-      </div>
-    </CardContent>
-  </Card>
-);
-
-// Quick glossary sample (5 key terms)
+// Quick reference glossary remains as simple component
 const GlossaryQuickMap = () => (
   <Card className="my-8 border-primary/20">
     <CardHeader>
@@ -81,6 +49,7 @@ const GlossaryQuickMap = () => (
     </CardContent>
   </Card>
 );
+
 
 // Related geology articles
 const RelatedGeologyArticles = () => (
@@ -128,9 +97,11 @@ export default function StonePurana() {
           caption="The Deccan Traps: 68-66 million years of volcanic history frozen in stone"
           className="rounded-lg shadow-2xl mb-8"
         />,
-        <SitesLocatorFigure key="fig1" />,
-        <DeepTimeTimelineFigure key="fig2" />,
+        <GeoHeritageMap key="fig1" />,
+        <GeologicalTimelineInteractive key="fig2" />,
         <GlossaryQuickMap key="glossary" />,
+        <SiwalikMegafaunaViewer key="fig3" />,
+        <GhaggarHakraPaleoMap key="fig4" />,
         <ResponsiveImage
           key="fossil"
           src="/images/archaeology/poompuhar-underwater.jpg"

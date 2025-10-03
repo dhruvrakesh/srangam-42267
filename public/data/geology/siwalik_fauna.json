@@ -1,0 +1,74 @@
+{
+  "species": [
+    {
+      "id": "stegodon",
+      "name": "Stegodon ganesa",
+      "commonName": "Stegodon",
+      "height": 3.5,
+      "age": "5-2 Ma",
+      "zone": "Upper Siwalik",
+      "ecology": "Forest-dwelling proboscidean, browsing on vegetation",
+      "modernAnalog": "Asian elephant",
+      "description": "Large proboscidean with straight tusks, ancestor of modern elephants. Key indicator of Upper Siwalik fauna."
+    },
+    {
+      "id": "sivatherium",
+      "name": "Sivatherium giganteum",
+      "commonName": "Sivatherium",
+      "height": 2.8,
+      "age": "7-1 Ma",
+      "zone": "Middle-Upper Siwalik",
+      "ecology": "Large giraffid with palmate ossicones, mixed feeder",
+      "modernAnalog": "Okapi",
+      "description": "Largest giraffid ever to exist, with four horns and massive build. Widespread across Siwalik deposits."
+    },
+    {
+      "id": "hipparion",
+      "name": "Hipparion antelopinum",
+      "commonName": "Three-toed Horse",
+      "height": 1.4,
+      "age": "11-3 Ma",
+      "zone": "Middle Siwalik",
+      "ecology": "Grassland grazer, indicator of open savanna environments",
+      "modernAnalog": "Zebra",
+      "description": "Three-toed horse common in Miocene-Pliocene. Arrival marks 'Hipparion Event' in Siwalik stratigraphy."
+    },
+    {
+      "id": "crocodile",
+      "name": "Crocodylus palaeindicus",
+      "commonName": "Giant Crocodile",
+      "length": 7.0,
+      "age": "15-5 Ma",
+      "zone": "Lower-Upper Siwalik",
+      "ecology": "Apex aquatic predator in Siwalik river systems",
+      "modernAnalog": "Saltwater crocodile",
+      "description": "Massive crocodilian reaching up to 7m length. Found in fluvial sandstones throughout Siwalik sequence."
+    },
+    {
+      "id": "hexaprotodon",
+      "name": "Hexaprotodon sivalensis",
+      "commonName": "Siwalik Hippopotamus",
+      "height": 1.6,
+      "age": "7-2 Ma",
+      "zone": "Middle-Upper Siwalik",
+      "ecology": "Semi-aquatic herbivore in river valleys",
+      "modernAnalog": "Pygmy hippopotamus",
+      "description": "Ancestral hippopotamus species. Presence indicates perennial river systems in Siwalik paleoenvironments."
+    },
+    {
+      "id": "megantereon",
+      "name": "Megantereon cultridens",
+      "commonName": "Saber-toothed Cat",
+      "height": 1.2,
+      "age": "4-0.5 Ma",
+      "zone": "Upper Siwalik",
+      "ecology": "Apex predator with elongated canines for hunting megafauna",
+      "modernAnalog": "Lion",
+      "description": "Medium-sized machairodont with distinctive saber teeth. Important carnivore in Upper Siwalik ecosystems."
+    }
+  ],
+  "humanReference": {
+    "height": 1.75,
+    "label": "Modern human (1.75m) for scale"
+  }
+}

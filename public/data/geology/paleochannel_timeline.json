@@ -1,0 +1,80 @@
+{
+  "timeline": [
+    {
+      "year": -7000,
+      "label": "7000 BP",
+      "description": "Ghaggar-Hakra system at peak flow during monsoon optimum",
+      "riverFlow": "High",
+      "climate": "Humid monsoon",
+      "culturalContext": "Pre-Harappan settlements emerge along riverbanks"
+    },
+    {
+      "year": -5000,
+      "label": "5000 BP",
+      "description": "Early Harappan period, river sustains agricultural communities",
+      "riverFlow": "High",
+      "climate": "Strong monsoon",
+      "culturalContext": "Early IVC phase (Ravi/Kot Diji)"
+    },
+    {
+      "year": -4500,
+      "label": "4500 BP",
+      "description": "Mature Harappan civilization peak",
+      "riverFlow": "Moderate-High",
+      "climate": "Weakening monsoon begins",
+      "culturalContext": "Urban centers flourish (Kalibangan, Rakhigarhi)"
+    },
+    {
+      "year": -3900,
+      "label": "3900 BP",
+      "description": "River capture by Yamuna, major flow reduction",
+      "riverFlow": "Low",
+      "climate": "Aridification accelerates",
+      "culturalContext": "IVC decline begins, eastward migration"
+    },
+    {
+      "year": -3500,
+      "label": "3500 BP",
+      "description": "Vedic period, river remembered as 'Sarasvati'",
+      "riverFlow": "Ephemeral",
+      "climate": "Arid",
+      "culturalContext": "Rigvedic hymns composed, river sacralized in memory"
+    },
+    {
+      "year": -2000,
+      "label": "2000 BP",
+      "description": "Mahabharata era, paleochannel largely dry",
+      "riverFlow": "Seasonal",
+      "climate": "Desert conditions established",
+      "culturalContext": "Pilgrimage to 'invisible Sarasvati' at Prayag"
+    },
+    {
+      "year": 0,
+      "label": "Present",
+      "description": "Paleochannel traced via satellite and GPR surveys",
+      "riverFlow": "None (monsoon-fed streams only)",
+      "climate": "Thar Desert",
+      "culturalContext": "Archaeological excavations and geological studies"
+    }
+  ],
+  "rivers": [
+    {
+      "id": "sutlej",
+      "name": "Sutlej",
+      "modernFlow": "Active (Himalayan source)",
+      "historicalPath": "Previously flowed into Ghaggar system before capture by Indus"
+    },
+    {
+      "id": "ghaggar",
+      "name": "Ghaggar-Hakra",
+      "modernFlow": "Ephemeral (monsoon-dependent)",
+      "historicalPath": "Major perennial river 7000-4000 BP, fed by Sutlej and Yamuna"
+    },
+    {
+      "id": "yamuna",
+      "name": "Yamuna",
+      "modernFlow": "Active (Ganga tributary)",
+      "historicalPath": "Previously flowed west into Ghaggar before capture by Ganga ~3900 BP"
+    }
+  ]
+}

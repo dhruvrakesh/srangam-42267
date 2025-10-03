@@ -1,0 +1,84 @@
+{
+  "events": [
+    {
+      "id": "gondwana_breakup",
+      "ageMa": 180,
+      "label": "Gondwana Breakup Begins",
+      "type": "tectonic",
+      "description": "India separates from Africa-Antarctica landmass",
+      "culturalContext": null
+    },
+    {
+      "id": "deccan_traps",
+      "ageMa": 66,
+      "label": "Deccan Traps Eruption",
+      "type": "volcanic",
+      "description": "Massive flood basalts cover 500,000 km² of western India",
+      "culturalContext": "Later remembered in flood myths?"
+    },
+    {
+      "id": "kt_extinction",
+      "ageMa": 66,
+      "label": "K-Pg Mass Extinction",
+      "type": "extinction",
+      "description": "Non-avian dinosaurs extinct, mammals diversify",
+      "culturalContext": "Puranic pralaya (dissolution) echoes?"
+    },
+    {
+      "id": "india_collision",
+      "ageMa": 50,
+      "label": "India-Asia Collision",
+      "type": "tectonic",
+      "description": "Indian plate collides with Eurasia, Himalayan orogeny begins",
+      "culturalContext": "Birth of sacred northern boundary"
+    },
+    {
+      "id": "siwalik_deposition",
+      "ageMa": 18,
+      "label": "Siwalik Deposition Begins",
+      "type": "sedimentary",
+      "description": "Himalayan erosion creates vast foreland basin deposits",
+      "culturalContext": "Fossil-rich 'Shaligram' bearing formations"
+    },
+    {
+      "id": "hipparion_event",
+      "ageMa": 11,
+      "label": "Hipparion Event",
+      "type": "biostratigraphic",
+      "description": "Three-toed horses enter Indian subcontinent from Eurasia",
+      "culturalContext": null
+    },
+    {
+      "id": "pliocene_hominins",
+      "ageMa": 3,
+      "label": "Early Hominins",
+      "type": "paleontological",
+      "description": "Earliest human ancestors appear in African fossil record",
+      "culturalContext": null
+    },
+    {
+      "id": "pleistocene_glaciation",
+      "ageMa": 0.12,
+      "label": "Last Glacial Maximum",
+      "type": "climatic",
+      "description": "Sea level 120m lower, exposed continental shelves",
+      "culturalContext": "Kumari Kandam submergence legends"
+    },
+    {
+      "id": "holocene_monsoon",
+      "ageMa": 0.007,
+      "label": "Monsoon Optimum",
+      "type": "climatic",
+      "description": "Strengthened monsoons support Harappan civilization",
+      "culturalContext": "Sarasvati River at peak flow"
+    },
+    {
+      "id": "ivc_decline",
+      "ageMa": 0.0039,
+      "label": "Harappan Desiccation",
+      "type": "climatic",
+      "description": "Monsoon weakening, river capture events, IVC decline",
+      "culturalContext": "Sarasvati 'disappearance' into Vedic memory"
+    }
+  ]
+}

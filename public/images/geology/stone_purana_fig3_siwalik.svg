@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="700" viewBox="0 0 1600 700">
+<defs>
+<style><![CDATA[.title{font:700 32px/1.2 Inter,system-ui}.subtitle{font:500 18px/1.3 Inter,system-ui;fill:#334155}.label{font:500 16px/1.2 Inter,system-ui;fill:#0f172a}.species{font:600 16px/1.2 Inter,system-ui;fill:#0b3d5c}.credit{font:400 14px/1.2 Inter,system-ui;fill:#475569}.box{fill:#f8fafc;stroke:#cbd5e1;stroke-width:1.25}.sil{fill:#0f172a}.human{fill:#334155}.grid{stroke:#e2e8f0;stroke-width:1}]]></style>
+</defs>
+<text x="800.0" y="60" text-anchor="middle" class="title">Fig. 3 — Siwalik Megafauna (schematic silhouettes)</text>
+<text x="800.0" y="86" text-anchor="middle" class="subtitle">Visual relative sizes with 2 m human reference • Not for measurement • Upper Siwalik exemplars</text>
+<rect x="60" y="110" width="1480" height="530" class="box" rx="12"/>
+<line x1="100" y1="120" x2="100" y2="630" class="grid"/>
+<line x1="180" y1="120" x2="180" y2="630" class="grid"/>
+<line x1="260" y1="120" x2="260" y2="630" class="grid"/>
+<line x1="340" y1="120" x2="340" y2="630" class="grid"/>
+<line x1="420" y1="120" x2="420" y2="630" class="grid"/>
+<line x1="500" y1="120" x2="500" y2="630" class="grid"/>
+<line x1="580" y1="120" x2="580" y2="630" class="grid"/>
+<line x1="660" y1="120" x2="660" y2="630" class="grid"/>
+<line x1="740" y1="120" x2="740" y2="630" class="grid"/>
+<line x1="820" y1="120" x2="820" y2="630" class="grid"/>
+<line x1="900" y1="120" x2="900" y2="630" class="grid"/>
+<line x1="980" y1="120" x2="980" y2="630" class="grid"/>
+<line x1="1060" y1="120" x2="1060" y2="630" class="grid"/>
+<line x1="1140" y1="120" x2="1140" y2="630" class="grid"/>
+<line x1="1220" y1="120" x2="1220" y2="630" class="grid"/>
+<line x1="1300" y1="120" x2="1300" y2="630" class="grid"/>
+<line x1="1380" y1="120" x2="1380" y2="630" class="grid"/>
+<line x1="1460" y1="120" x2="1460" y2="630" class="grid"/>
+<line x1="70" y1="120" x2="1530" y2="120" class="grid"/>
+<line x1="70" y1="200" x2="1530" y2="200" class="grid"/>
+<line x1="70" y1="280" x2="1530" y2="280" class="grid"/>
+<line x1="70" y1="360" x2="1530" y2="360" class="grid"/>
+<line x1="70" y1="440" x2="1530" y2="440" class="grid"/>
+<line x1="70" y1="520" x2="1530" y2="520" class="grid"/>
+<line x1="70" y1="600" x2="1530" y2="600" class="grid"/>
+
+        <g transform="translate(4.0,408.0) scale(1.2)">
+            <path class="sil" d="M40,120 c40,-40 140,-40 180,0 l50,0 c20,0 20,30 0,30 l-25,0 c-5,15 -15,30 -30,30 l-90,0 c-30,0 -50,-10 -65,-30 l-25,0 c-20,0 -20,-30 0,-30 z"/>
+            <circle cx="80" cy="110" r="18" class="sil"/>
+            <rect x="60" y="145" width="18" height="45" class="sil"/>
+            <rect x="150" y="145" width="18" height="45" class="sil"/>
+            <rect x="200" y="145" width="18" height="45" class="sil"/>
+            <rect x="100" y="145" width="18" height="45" class="sil"/>
+            <!-- head & tusks -->
+            <path class="sil" d="M10,110 c10,-20 25,-30 50,-32 l0,28 c-20,5 -25,12 -40,24 z"/>
+            <path class="sil" d="M5,122 c-25,15 -40,15 -60,0 c-10,-6 -8,-12 2,-10 c18,3 30,3 58,10 z"/>
+            <path class="sil" d="M12,126 c-22,19 -38,19 -60,2 c-9,-7 -7,-12 3,-10 c18,3 28,4 57,8 z"/>
+        </g>
+<text x="220" y="425" text-anchor="middle" class="species">Stegodon ganesa</text>
+<text x="220" y="448" text-anchor="middle" class="label" style="font-size:14px;fill:#475569">Stegodon (proboscidean) with long, near-parallel tusks</text>
+
+        <g transform="translate(391.5,451.5) scale(0.9900000000000001)">
+            <path class="sil" d="M40,130 c40,-40 110,-40 150,0 l30,0 c15,0 15,25 0,25 l-20,0 c-5,12 -12,25 -25,25 l-70,0 c-25,0 -40,-8 -50,-25 l-20,0 c-15,0 -15,-25 0,-25 z"/>
+            <rect x="65" y="145" width="16" height="45" class="sil"/>
+            <rect x="130" y="145" width="16" height="45" class="sil"/>
+            <rect x="170" y="145" width="16" height="45" class="sil"/>
+            <rect x="95" y="145" width="16" height="45" class="sil"/>
+            <!-- neck/head with ossicones -->
+            <path class="sil" d="M170,100 c25,-15 35,-15 55,0 l0,12 c-18,-6 -28,-6 -55,0 z"/>
+            <path class="sil" d="M200,92 l6,-18 l8,18 l-14,0 z"/>
+            <path class="sil" d="M186,96 l5,-14 l7,14 l-12,0 z"/>
+        </g>
+<text x="540" y="425" text-anchor="middle" class="species">Sivatherium giganteum</text>
+<text x="540" y="448" text-anchor="middle" class="label" style="font-size:14px;fill:#475569">Massive giraffid with ossicones</text>
+
+        <g transform="translate(781.0,501.0) scale(0.8250000000000001)">
+            <path class="sil" d="M20,100 c50,-40 120,-40 170,0 l20,0 c12,0 12,22 0,22 l-15,0 c-5,10 -12,20 -22,20 l-90,0 c-20,0 -35,-6 -45,-20 l-18,0 c-12,0 -12,-22 0,-22 z"/>
+            <rect x="55" y="120" width="14" height="38" class="sil"/>
+            <rect x="120" y="120" width="14" height="38" class="sil"/>
+            <rect x="150" y="120" width="14" height="38" class="sil"/>
+            <rect x="85" y="120" width="14" height="38" class="sil"/>
+            <!-- head/muzzle -->
+            <path class="sil" d="M5,100 c-10,-8 -20,-8 -35,0 c-6,3 -5,9 2,9 l33,0 z"/>
+        </g>
+<text x="880" y="425" text-anchor="middle" class="species">Hexaprotodon sivalensis</text>
+<text x="880" y="448" text-anchor="middle" class="label" style="font-size:14px;fill:#475569">Siwalik hippo</text>
+
+        <g transform="translate(1088.0,542.4) scale(0.72)">
+            <ellipse cx="100" cy="60" rx="90" ry="50" class="sil"/>
+            <rect x="40" y="95" width="20" height="20" class="sil"/>
+            <rect x="140" y="95" width="20" height="20" class="sil"/>
+            <rect x="70" y="95" width="20" height="20" class="sil"/>
+            <rect x="110" y="95" width="20" height="20" class="sil"/>
+            <path class="sil" d="M10,60 c10,-8 20,-8 35,0 l-25,10 z"/>
+        </g>
+<text x="1160" y="425" text-anchor="middle" class="species">Megalochelys atlas</text>
+<text x="1160" y="448" text-anchor="middle" class="label" style="font-size:14px;fill:#475569">Giant tortoise</text>
+
+        <g transform="translate(1426.0,456.0) scale(1.2)">
+            <circle cx="20" cy="20" r="12" class="human"/>
+            <rect x="14" y="32" width="12" height="55" class="human"/>
+            <rect x="0" y="45" width="14" height="12" class="human"/>
+            <rect x="26" y="45" width="14" height="12" class="human"/>
+            <rect x="10" y="85" width="10" height="35" class="human"/>
+            <rect x="22" y="85" width="10" height="35" class="human"/>
+        </g>
+<text x="1450" y="425" text-anchor="middle" class="species">Human (2 m)</text>
+<text x="1450" y="448" text-anchor="middle" class="label" style="font-size:14px;fill:#475569">Reference</text>
+<text x="1540" y="686" text-anchor="end" class="credit">Stone Purāṇa — Siwalik silhouettes (schematic; vector SVG)</text>
+</svg>
