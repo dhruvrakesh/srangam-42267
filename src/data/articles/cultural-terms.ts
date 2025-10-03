@@ -1255,23 +1255,6 @@ export const culturalTermsDatabase: Record<string, CulturalTerm> = {
       }
     }
   },
-  'ravi': {
-    term: 'ravi',
-    translations: {
-      en: {
-        translation: 'Ravi',
-        transliteration: 'parūṣṇī',
-        etymology: 'Ancient Parushni in Sanskrit',
-        culturalContext: 'River in Punjab where Battle of Ten Kings was fought'
-      },
-      hi: {
-        translation: 'रावी',
-        transliteration: 'parūṣṇī',
-        etymology: 'संस्कृत में प्राचीन परुष्णी',
-        culturalContext: 'पंजाब में नदी जहां दशराज्ञ युद्ध लड़ा गया'
-      }
-    }
-  },
   'tungabhadra': {
     term: 'tungabhadra',
     translations: {
@@ -1839,8 +1822,8 @@ export const culturalTermsDatabase: Record<string, CulturalTerm> = {
       }
     }
   },
-  // Rivers of ancient Bharatvarsha
-  'sindhu': {
+  // Mahabharata references
+  'bhishma-parva': {
     term: 'sindhu',
     translations: {
       en: {
@@ -1863,7 +1846,7 @@ export const culturalTermsDatabase: Record<string, CulturalTerm> = {
       }
     }
   },
-  'sutlej': {
+  'rigvedic': {
     term: 'sutlej',
     translations: {
       en: {
@@ -1994,24 +1977,6 @@ export const culturalTermsDatabase: Record<string, CulturalTerm> = {
       }
     }
   },
-  // Mahabharata references
-  'bhishma-parva': {
-    term: 'bhishma-parva',
-    translations: {
-      en: {
-        translation: 'Bhishma Parva',
-        transliteration: 'bhīṣma parva',
-        etymology: 'Sanskrit bhīṣma (terrible, formidable) + parva (book, section)',
-        culturalContext: 'Sixth book of the Mahabharata; contains the Bhagavad Gita'
-      },
-      hi: {
-        translation: 'भीष्म पर्व',
-        transliteration: 'bhīṣma parva',
-        etymology: 'संस्कृत भीष्म (भयानक, दुर्जेय) + पर्व (पुस्तक, खंड)',
-        culturalContext: 'महाभारत का छठा पुस्तक; भगवद गीता को शामिल करता है'
-      }
-    }
-  },
   'sanjaya': {
     term: 'sanjaya',
     translations: {
@@ -2060,86 +2025,6 @@ export const culturalTermsDatabase: Record<string, CulturalTerm> = {
         transliteration: 'madhyadeśa',
         etymology: 'संस्कृत मध्य (बीच) + देश (भूमि)',
         culturalContext: 'मध्य भूमि; हिमालय और विंध्य के बीच वैदिक सभ्यता का केंद्र'
-      }
-    }
-  },
-  'vedas': {
-    term: 'vedas',
-    translations: {
-      en: {
-        translation: 'Vedas',
-        transliteration: 'vedāḥ',
-        etymology: 'From Sanskrit vid (to know)',
-        culturalContext: 'The four ancient texts of knowledge: Rigveda, Yajurveda, Samaveda, Atharvaveda'
-      },
-      hi: {
-        translation: 'वेद',
-        transliteration: 'vedāḥ',
-        etymology: 'संस्कृत विद् (जानना) से',
-        culturalContext: 'ज्ञान के चार प्राचीन ग्रंथ: ऋग्वेद, यजुर्वेद, सामवेद, अथर्ववेद'
-      },
-      ta: {
-        translation: 'வேதங்கள்',
-        transliteration: 'vētaṅkaḷ',
-        etymology: 'சமஸ்கிருத vid (அறிதல்)',
-        culturalContext: 'அறிவின் நான்கு பண்டைய நூல்கள்: ரிக்வேதம், யஜுர்வேதம், சாமவேதம், அதர்வவேதம்'
-      }
-    }
-  },
-  'brahmanas': {
-    term: 'brahmanas',
-    translations: {
-      en: {
-        translation: 'Brahmanas',
-        transliteration: 'brāhmaṇāḥ',
-        etymology: 'From Sanskrit brahman (sacred knowledge)',
-        culturalContext: 'Prose commentaries on the Vedas explaining rituals and ceremonies'
-      },
-      hi: {
-        translation: 'ब्राह्मण ग्रंथ',
-        transliteration: 'brāhmaṇāḥ',
-        etymology: 'संस्कृत ब्रह्मन् (पवित्र ज्ञान) से',
-        culturalContext: 'वेदों पर गद्य टीकाएं जो अनुष्ठान और समारोहों को समझाती हैं'
-      }
-    }
-  },
-  'brahmana': {
-    term: 'brahmana',
-    translations: {
-      en: {
-        translation: 'Brahmana',
-        transliteration: 'brāhmaṇa',
-        etymology: 'From Sanskrit brahman (sacred knowledge)',
-        culturalContext: 'Priestly class; keeper of sacred knowledge and ritual traditions'
-      },
-      hi: {
-        translation: 'ब्राह्मण',
-        transliteration: 'brāhmaṇa',
-        etymology: 'संस्कृत ब्रह्मन् (पवित्र ज्ञान) से',
-        culturalContext: 'पुरोहित वर्ग; पवित्र ज्ञान और अनुष्ठान परंपराओं के संरक्षक'
-      },
-      ta: {
-        translation: 'பிராமணர்',
-        transliteration: 'pirāmaṇar',
-        etymology: 'சமஸ்கிருத brahman (புனித அறிவு)',
-        culturalContext: 'குருக்கள் வகுப்பு; புனித அறிவு மற்றும் சடங்கு மரபுகளின் காப்பாளர்கள்'
-      }
-    }
-  },
-  'rigvedic': {
-    term: 'rigvedic',
-    translations: {
-      en: {
-        translation: 'Rigvedic',
-        transliteration: 'ṛgvaidika',
-        etymology: 'Relating to the Rigveda',
-        culturalContext: 'Pertaining to the earliest Vedic period and the Rigveda text'
-      },
-      hi: {
-        translation: 'ऋग्वैदिक',
-        transliteration: 'ṛgvaidika',
-        etymology: 'ऋग्वेद से संबंधित',
-        culturalContext: 'सबसे प्रारंभिक वैदिक काल और ऋग्वेद ग्रंथ से संबंधित'
       }
     }
   },
