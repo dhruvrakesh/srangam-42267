@@ -48,6 +48,7 @@ const PepperAndBullion = lazy(() => import("./pages/articles/PepperAndBullion"))
 const EarthSeaSangam = lazy(() => import("./pages/articles/EarthSeaSangam"));
 const JambudvipaConnected = lazy(() => import("./pages/articles/JambudvipaConnected"));
 const CosmicIslandSacredLand = lazy(() => import("./pages/articles/CosmicIslandSacredLand"));
+const StonePurana = lazy(() => import("./pages/articles/StonePurana"));
 const BatchBujangNagapattinamOcean = lazy(() => import("./pages/BatchBujangNagapattinamOcean"));
 const BatchMuzirisKutaiAshoka = lazy(() => import("./pages/BatchMuzirisKutaiAshoka"));
 const Sitemap = lazy(() => import("./pages/Sitemap"));
@@ -125,6 +126,8 @@ const App = () => (
                   <Route path="/earth-sea-sangam" element={<EarthSeaSangam />} />
                   <Route path="/jambudvipa-connected" element={<JambudvipaConnected />} />
                   <Route path="/cosmic-island-sacred-land" element={<CosmicIslandSacredLand />} />
+                  <Route path="/stone-purana" element={<StonePurana />} />
+                  <Route path="/themes/geology-deep-time/stone-purana" element={<StonePurana />} />
                   <Route path="/themes/ancient-india/pepper-routes" element={<IndianOceanPowerNetworks />} />
                   <Route path="/batch/bujang-nagapattinam-ocean" element={<BatchBujangNagapattinamOcean />} />
                   <Route path="/batch/muziris-kutai-ashoka" element={<BatchMuzirisKutaiAshoka />} />
