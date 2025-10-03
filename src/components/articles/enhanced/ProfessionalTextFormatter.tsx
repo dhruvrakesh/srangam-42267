@@ -37,7 +37,8 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
   };
 
   // Cultural term storage for placeholder → component mapping
-  const culturalTermMap = new Map<string, string>();
+  // Use useMemo to persist Map across render cycles
+  const culturalTermMap = React.useMemo(() => new Map<string, string>(), []);
 
   // STAGE 1: Pre-process - Convert {{cultural:term}} → __CULTURAL_TERM__
   const preprocessCulturalTerms = (text: string): string => {
