@@ -296,3 +296,21 @@ All colors MUST be HSL.
   33% { transform: translateX(10px) translateY(-5px); }
   66% { transform: translateX(-8px) translateY(3px); }
 }
+
+/* Cultural Term Highlighting */
+.cultural-term-highlight {
+  @apply font-semibold text-burgundy;
+  @apply bg-gradient-to-r from-saffron/10 to-gold-warm/10;
+  @apply px-1.5 py-0.5 rounded-md;
+  @apply border border-saffron/20;
+  @apply cursor-help;
+  @apply transition-all duration-200;
+}
+
+.cultural-term-highlight:hover {
+  @apply bg-saffron/20 border-saffron/40;
+}
+
+.cultural-term-highlight:focus-visible {
+  @apply outline-2 outline-offset-2 outline-burgundy;
+}

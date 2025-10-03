@@ -36,31 +36,43 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
     return '';
   };
 
-  const textContent = getText();
-  if (!textContent || typeof textContent !== 'string') {
-    console.error('ProfessionalTextFormatter: Invalid text content');
-    return null;
-  }
+  // Cultural term storage for placeholder → component mapping
+  const culturalTermMap = new Map<string, string>();
 
-  // Process text and inject CulturalTermTooltip components directly
-  const renderWithCulturalTerms = (text: string): React.ReactNode => {
+  // STAGE 1: Pre-process - Convert {{cultural:term}} → __CULTURAL_TERM__
+  const preprocessCulturalTerms = (text: string): string => {
     if (!enableCulturalTerms) return text;
     
-    const parts: React.ReactNode[] = [];
     const culturalTermPattern = /\{\{cultural:([^}]+)\}\}/g;
+    return text.replace(culturalTermPattern, (match, term) => {
+      const normalizedTerm = term.trim().toLowerCase();
+      const placeholder = `__CULTURAL_${normalizedTerm.toUpperCase().replace(/[^A-Z0-9]/g, '_')}__`;
+      culturalTermMap.set(placeholder, normalizedTerm);
+      return placeholder;
+    });
+  };
+
+  // STAGE 2: Post-process - Convert __CULTURAL_TERM__ → <CulturalTermTooltip>
+  const injectCulturalTerm = (text: string): React.ReactNode => {
+    if (!enableCulturalTerms || typeof text !== 'string') return text;
+    
+    const parts: React.ReactNode[] = [];
+    const placeholderPattern = /__CULTURAL_([A-Z0-9_]+)__/g;
     let lastIndex = 0;
     let match;
     
-    while ((match = culturalTermPattern.exec(text)) !== null) {
-      const term = match[1].trim();
-      const matchStart = match.index;
+    while ((match = placeholderPattern.exec(text)) !== null) {
+      const placeholder = match[0];
+      const term = culturalTermMap.get(placeholder);
       
-      // Add text before the match
-      if (matchStart > lastIndex) {
-        parts.push(text.slice(lastIndex, matchStart));
+      if (!term) continue;
+      
+      // Add text before placeholder
+      if (match.index > lastIndex) {
+        parts.push(text.slice(lastIndex, match.index));
       }
       
-      // Create display term
+      // Create display term (capitalize words)
       const displayTerm = term
         .split('-')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -68,8 +80,8 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
       
       // Add CulturalTermTooltip component
       parts.push(
-        <CulturalTermTooltip key={`${term}-${matchStart}`} term={term}>
-          <span className="font-semibold text-burgundy bg-gradient-to-r from-saffron/10 to-gold-warm/10 px-1.5 py-0.5 rounded-md border border-saffron/20 cursor-help hover:bg-saffron/20 transition-colors">
+        <CulturalTermTooltip key={`${term}-${match.index}`} term={term}>
+          <span className="cultural-term-highlight">
             {displayTerm}
           </span>
         </CulturalTermTooltip>
@@ -86,85 +98,87 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
     return parts.length > 0 ? parts : text;
   };
 
+  // Helper: Process React children recursively
+  const processChildren = (children: React.ReactNode): React.ReactNode => {
+    return React.Children.map(children, child => {
+      if (typeof child === 'string') {
+        return injectCulturalTerm(child);
+      }
+      return child;
+    });
+  };
+
+  const rawText = getText();
+  if (!rawText || typeof rawText !== 'string') {
+    console.error('ProfessionalTextFormatter: Invalid text content');
+    return null;
+  }
+
+  // PRE-PROCESS: Convert {{cultural:term}} to placeholders BEFORE ReactMarkdown
+  const textContent = preprocessCulturalTerms(rawText);
+
   const customRenderers = {
     // Regular link renderer
     a: ({ href, children, ...props }: any) => {
       return <a href={href} className="text-ocean hover:text-ocean-dark underline transition-colors" target="_blank" rel="noopener noreferrer" {...props}>{children}</a>;
     },
 
-    // Enhanced heading rendering
-    h2: ({ children, ...props }: any) => (
-      <h2 
-        className={cn(
-          'text-3xl font-serif font-bold text-burgundy mt-16 mb-8 pb-4',
-          'border-b-2 border-gradient-to-r from-burgundy via-saffron to-gold-warm',
-          'relative',
-          'before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5',
-          'before:bg-gradient-to-r before:from-burgundy before:via-saffron before:to-gold-warm',
-          scriptFont
-        )}
-        {...props}
-      >
-        {children}
-      </h2>
-    ),
-
-    // Enhanced paragraph rendering with smart chunking and cultural term support
-    p: ({ children, ...props }: any) => {
-      // Process children to handle cultural terms
-      const processedChildren = React.Children.map(children, child => {
-        if (typeof child === 'string') {
-          return renderWithCulturalTerms(child);
-        }
-        return child;
-      });
+    // Enhanced heading rendering with cultural terms support
+    h2: ({ children, ...props }: any) => {
+      const processedChildren = processChildren(children);
       
-      const content = typeof children === 'string' ? children : 
-        React.Children.toArray(children).join('');
-      
-      if (typeof content === 'string') {
-        // Split long paragraphs into readable chunks (max 3-4 sentences)
-        const sentences = content.split(/(?<=[.!?])\s+/).filter(s => s.trim());
-        if (sentences.length > 4) {
-          const chunks = [];
-          for (let i = 0; i < sentences.length; i += 3) {
-            chunks.push(sentences.slice(i, i + 3).join(' '));
-          }
+      return (
+        <div className="relative mt-16 mb-8">
+          {/* Visual divider */}
+          <div className="absolute -top-8 left-0 right-0 h-px bg-gradient-to-r from-transparent via-burgundy/30 to-transparent" />
           
-          return (
-            <>
-              {chunks.map((chunk, index) => (
-                <p 
-                  key={index}
-                  className={cn(
-                    'text-lg leading-relaxed mb-6 text-foreground/90',
-                    'first-letter:text-6xl first-letter:font-serif first-letter:font-bold',
-                    'first-letter:text-burgundy first-letter:float-left first-letter:mr-3',
-                    'first-letter:mt-1 first-letter:leading-none',
-                    enableDropCap && index === 0 ? '' : 'first-letter:text-lg first-letter:float-none first-letter:mr-0 first-letter:mt-0',
-                    scriptFont,
-                    'hyphens-auto text-justify'
-                  )}
-                  {...props}
-                >
-                  {chunk}
-                </p>
-              ))}
-            </>
-          );
-        }
-      }
+          <h2 
+            className={cn(
+              'text-3xl font-serif font-bold text-burgundy pb-4',
+              'border-b-2 border-burgundy/30',
+              'flex items-center gap-3',
+              scriptFont
+            )}
+            {...props}
+          >
+            <span className="text-saffron text-4xl">§</span>
+            {processedChildren}
+          </h2>
+        </div>
+      );
+    },
+
+    h3: ({ children, ...props }: any) => {
+      const processedChildren = processChildren(children);
+      
+      return (
+        <h3 
+          className={cn(
+            'text-2xl font-serif font-semibold text-burgundy mt-10 mb-6',
+            'flex items-center gap-2',
+            scriptFont
+          )}
+          {...props}
+        >
+          <span className="text-gold-warm">◆</span>
+          {processedChildren}
+        </h3>
+      );
+    },
+
+    // Simplified paragraph rendering with cultural term support
+    p: ({ children, ...props }: any) => {
+      const processedChildren = processChildren(children);
       
       return (
         <p 
           className={cn(
             'text-lg leading-relaxed mb-6 text-foreground/90',
-            'first-letter:text-6xl first-letter:font-serif first-letter:font-bold',
-            'first-letter:text-burgundy first-letter:float-left first-letter:mr-3',
-            'first-letter:mt-1 first-letter:leading-none',
-            enableDropCap ? '' : 'first-letter:text-lg first-letter:float-none first-letter:mr-0 first-letter:mt-0',
+            enableDropCap && 'first-letter:text-6xl first-letter:font-serif first-letter:font-bold',
+            enableDropCap && 'first-letter:text-burgundy first-letter:float-left first-letter:mr-3',
+            enableDropCap && 'first-letter:mt-1 first-letter:leading-none',
             scriptFont,
-            'hyphens-auto text-justify'
+            'hyphens-auto'
           )}
           {...props}
         >
@@ -180,56 +194,107 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
       </ul>
     ),
 
-    li: ({ children, ...props }: any) => (
-      <li className={cn(
-        'flex items-start gap-4 text-lg leading-relaxed text-foreground/90',
-        scriptFont
-      )} {...props}>
-        <span className="text-saffron text-2xl font-bold leading-none mt-1">•</span>
-        <span className="flex-1">
-          {children}
-        </span>
-      </li>
-    ),
-
-    // Enhanced blockquote rendering
-    blockquote: ({ children, ...props }: any) => (
-      <blockquote 
-        className={cn(
-          'border-l-4 border-gradient-to-b from-burgundy to-saffron',
-          'bg-gradient-to-r from-sandalwood/50 via-cream/30 to-transparent',
-          'pl-8 pr-6 py-6 my-12 rounded-r-2xl',
-          'relative overflow-hidden',
-          'before:absolute before:inset-0 before:bg-gradient-to-r',
-          'before:from-saffron/5 before:to-transparent before:-z-10',
+    li: ({ children, ...props }: any) => {
+      const processedChildren = processChildren(children);
+      
+      return (
+        <li className={cn(
+          'flex items-start gap-4 text-lg leading-relaxed text-foreground/90',
           scriptFont
-        )}
-        {...props}
-      >
-        <div className="text-xl italic text-charcoal/80 leading-relaxed">
-          {children}
-        </div>
-        <div className="absolute top-4 right-6 text-6xl text-burgundy/20 font-serif leading-none">
-          "
-        </div>
-      </blockquote>
-    ),
+        )} {...props}>
+          <span className="text-saffron text-2xl font-bold leading-none mt-1">•</span>
+          <span className="flex-1">
+            {processedChildren}
+          </span>
+        </li>
+      );
+    },
 
-    // Enhanced strong/bold text
-    strong: ({ children, ...props }: any) => (
-      <strong 
-        className="font-semibold text-burgundy bg-gradient-to-r from-saffron/15 to-gold-warm/15 px-1.5 py-0.5 rounded-md border border-saffron/30"
-        {...props}
-      >
-        {children}
-      </strong>
-    ),
+    // Enhanced blockquote rendering with cultural term support
+    blockquote: ({ children, ...props }: any) => {
+      const processedChildren = processChildren(children);
+      
+      return (
+        <blockquote 
+          className={cn(
+            'border-l-4 border-burgundy',
+            'bg-gradient-to-r from-sandalwood/50 via-cream/30 to-transparent',
+            'pl-8 pr-6 py-6 my-12 rounded-r-2xl',
+            'relative overflow-hidden',
+            scriptFont
+          )}
+          {...props}
+        >
+          <div className="text-xl italic text-charcoal/80 leading-relaxed">
+            {processedChildren}
+          </div>
+          <div className="absolute top-4 right-6 text-6xl text-burgundy/20 font-serif leading-none">
+            "
+          </div>
+        </blockquote>
+      );
+    },
+
+    // Enhanced strong/bold text (simplified to avoid conflicts)
+    strong: ({ children, ...props }: any) => {
+      const processedChildren = processChildren(children);
+      
+      return (
+        <strong 
+          className="font-semibold text-burgundy"
+          {...props}
+        >
+          {processedChildren}
+        </strong>
+      );
+    },
 
     // Enhanced emphasis/italic text
     em: ({ children, ...props }: any) => (
       <em className="italic text-burgundy font-medium" {...props}>
         {children}
       </em>
+    ),
+
+    // Table support with cultural terms
+    table: ({ children, ...props }: any) => (
+      <div className="overflow-x-auto my-8">
+        <table className="w-full border-collapse" {...props}>
+          {children}
+        </table>
+      </div>
+    ),
+
+    td: ({ children, ...props }: any) => {
+      const processedChildren = processChildren(children);
+      return (
+        <td 
+          className="border border-burgundy/20 px-4 py-3 text-base" 
+          {...props}
+        >
+          {processedChildren}
+        </td>
+      );
+    },
+
+    th: ({ children, ...props }: any) => {
+      const processedChildren = processChildren(children);
+      return (
+        <th 
+          className="border border-burgundy/30 bg-burgundy/5 px-4 py-3 text-left font-semibold text-burgundy" 
+          {...props}
+        >
+          {processedChildren}
+        </th>
+      );
+    },
+
+    // Horizontal rule with elegant styling
+    hr: ({ ...props }: any) => (
+      <hr 
+        className="my-12 border-0 h-px bg-gradient-to-r from-transparent via-burgundy/30 to-transparent" 
+        {...props}
+      />
     )
   };
 
