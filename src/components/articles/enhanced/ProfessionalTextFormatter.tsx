@@ -93,14 +93,35 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
     return parts.length > 0 ? parts : text;
   };
 
-  // Helper: Process React children recursively
+  // Deep text extraction: recursively extract ALL text from React children
+  const extractText = (children: React.ReactNode): string => {
+    if (typeof children === 'string') return children;
+    if (typeof children === 'number') return String(children);
+    if (!children) return '';
+    
+    if (Array.isArray(children)) {
+      return children.map(extractText).join('');
+    }
+    
+    if (React.isValidElement(children) && children.props.children) {
+      return extractText(children.props.children);
+    }
+    
+    return '';
+  };
+
+  // Process children: extract text, inject cultural terms, return React nodes
   const processChildren = (children: React.ReactNode): React.ReactNode => {
-    return React.Children.map(children, child => {
-      if (typeof child === 'string') {
-        return injectCulturalTerm(child);
-      }
-      return child;
-    });
+    const textContent = extractText(children);
+    if (!textContent || typeof textContent !== 'string') return children;
+    
+    // Check if text contains any cultural term placeholders
+    if (!/__CULTURAL::(.+?)::__/.test(textContent)) {
+      return children; // No placeholders, return original
+    }
+    
+    // Inject cultural term tooltips
+    return injectCulturalTerm(textContent);
   };
 
   const rawText = getText();
