@@ -9,7 +9,10 @@ import {
   SiwalikMegafaunaViewer,
   GhaggarHakraPaleoMap,
   GeologicalTimelineInteractive,
-  GeoHeritageMap
+  GeoHeritageMap,
+  InteractiveFossilMap,
+  DeepTimeTimeline,
+  CulturalCorrelationMatrix
 } from '@/components/geology';
 
 // Quick reference glossary remains as simple component
@@ -97,11 +100,14 @@ export default function StonePurana() {
           caption="The Deccan Traps: 68-66 million years of volcanic history frozen in stone"
           className="rounded-lg shadow-2xl mb-8"
         />,
-        <GeoHeritageMap key="fig1" />,
-        <GeologicalTimelineInteractive key="fig2" />,
+        <InteractiveFossilMap key="fig1-interactive" />,
+        <DeepTimeTimeline key="fig2-interactive" />,
+        <GeoHeritageMap key="heritage-map" />,
+        <GeologicalTimelineInteractive key="timeline-chart" />,
         <GlossaryQuickMap key="glossary" />,
         <SiwalikMegafaunaViewer key="fig3" />,
         <GhaggarHakraPaleoMap key="fig4" />,
+        <CulturalCorrelationMatrix key="correlation-matrix" />,
         <ResponsiveImage
           key="fossil"
           src="/images/archaeology/poompuhar-underwater.jpg"

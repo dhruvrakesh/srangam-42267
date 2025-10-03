@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1400" viewBox="0 0 1200 1400">
+<defs>
+<style><![CDATA[.title { font: 700 32px/1.2 "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans"; }.subtitle { font: 500 20px/1.3 "Inter", system-ui; fill: #333; }.axis { stroke: #9aa1a7; stroke-width: 1; stroke-dasharray: 4 6; }.label { font: 500 16px/1.25 "Inter", system-ui; fill: #0f172a; }.sitelabel { font: 600 16px/1.25 "Inter", system-ui; fill: #0b3d5c; }.site-dot { fill: #0b7285; stroke: white; stroke-width: 2; }.box { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.25; }.credit { font: 400 14px/1.2 "Inter", system-ui; fill: #475569; }]]></style>
+</defs>
+<rect x="120" y="48.0" width="960" height="70" class="box" rx="8"/>
+<text x="600.0" y="93.0" text-anchor="middle" class="title">Fig. 1 — Key Fossil & Geoheritage Localities (schematic locator)</text>
+<text x="600.0" y="118.0" text-anchor="middle" class="subtitle">Not to scale • Cartography-neutral • Graticule for orientation only</text>
+<rect x="120" y="120" width="960" height="1160" class="box" rx="14"/>
+<line x1="120" y1="1280.0" x2="1080" y2="1280.0" class="axis"/>
+<text x="112" y="1285.0" text-anchor="end" class="label">8°N</text>
+<line x1="120" y1="1080.0" x2="1080" y2="1080.0" class="axis"/>
+<text x="112" y="1085.0" text-anchor="end" class="label">13°N</text>
+<line x1="120" y1="880.0" x2="1080" y2="880.0" class="axis"/>
+<text x="112" y="885.0" text-anchor="end" class="label">18°N</text>
+<line x1="120" y1="680.0" x2="1080" y2="680.0" class="axis"/>
+<text x="112" y="685.0" text-anchor="end" class="label">23°N</text>
+<line x1="120" y1="480.0" x2="1080" y2="480.0" class="axis"/>
+<text x="112" y="485.0" text-anchor="end" class="label">28°N</text>
+<line x1="120" y1="280.0000000000001" x2="1080" y2="280.0000000000001" class="axis"/>
+<text x="112" y="285.0000000000001" text-anchor="end" class="label">33°N</text>
+<line x1="120.0" y1="120" x2="120.0" y2="1280" class="axis"/>
+<text x="120.0" y="1302" text-anchor="middle" class="label">68°E</text>
+<line x1="285.51724137931035" y1="120" x2="285.51724137931035" y2="1280" class="axis"/>
+<text x="285.51724137931035" y="1302" text-anchor="middle" class="label">73°E</text>
+<line x1="451.0344827586207" y1="120" x2="451.0344827586207" y2="1280" class="axis"/>
+<text x="451.0344827586207" y="1302" text-anchor="middle" class="label">78°E</text>
+<line x1="616.551724137931" y1="120" x2="616.551724137931" y2="1280" class="axis"/>
+<text x="616.551724137931" y="1302" text-anchor="middle" class="label">83°E</text>
+<line x1="782.0689655172414" y1="120" x2="782.0689655172414" y2="1280" class="axis"/>
+<text x="782.0689655172414" y="1302" text-anchor="middle" class="label">88°E</text>
+<line x1="947.5862068965516" y1="120" x2="947.5862068965516" y2="1280" class="axis"/>
+<text x="947.5862068965516" y="1302" text-anchor="middle" class="label">93°E</text>
+<circle cx="401.37931034482756" cy="692.0" r="7" class="site-dot"/>
+<text x="413.37931034482756" y="682.0" class="sitelabel">Narmadā–Lameta</text>
+<circle cx="484.13793103448273" cy="840.0" r="7" class="site-dot"/>
+<text x="496.13793103448273" y="830.0" class="sitelabel">Pranhita–Godāvari</text>
+<circle cx="169.6551724137931" cy="660.0" r="7" class="site-dot"/>
+<text x="181.6551724137931" y="650.0" class="sitelabel">Kachchh</text>
+<circle cx="451.0344827586207" cy="308.0000000000001" r="7" class="site-dot"/>
+<text x="463.0344827586207" y="298.0000000000001" class="sitelabel">Spiti</text>
+<circle cx="421.24137931034466" cy="356.0" r="7" class="site-dot"/>
+<text x="433.24137931034466" y="346.0" class="sitelabel">Siwalik</text>
+<circle cx="494.0689655172413" cy="1228.0" r="7" class="site-dot"/>
+<text x="506.0689655172413" y="1218.0" class="sitelabel">Rāmeśvaram / Adam’s Bridge</text>
+<rect x="720" y="220" width="340" height="120" class="box" rx="10"/>
+<circle cx="740" cy="250" r="7" class="site-dot"/>
+<text x="760" y="255" class="label">Key site</text>
+<text x="740" y="290" class="label">Selected localities:</text>
+<text x="760" y="315" class="label">• Narmadā–Lameta</text>
+<text x="760" y="335" class="label">• Pranhita–Godāvari</text>
+<text x="760" y="355" class="label">• Kachchh</text>
+<text x="760" y="375" class="label">• Spiti</text>
+<text x="1080" y="1320" text-anchor="end" class="credit">Stone Purāṇa — schematic map (SVG)</text>
+</svg>

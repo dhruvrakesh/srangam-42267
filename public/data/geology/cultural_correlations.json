@@ -1,0 +1,150 @@
+{
+  "correlations": [
+    {
+      "geologicalEvent": "Permian-Triassic Extinction",
+      "ageMa": 252,
+      "culturalSources": [
+        {
+          "source": "Purāṇic Pralaya",
+          "text": "Matsya Purāṇa, Viṣṇu Purāṇa",
+          "correlation": "Cosmic dissolution narratives; fire and flood destroying previous creation",
+          "confidence": "C",
+          "notes": "Mythic time cycles may preserve deep cultural memory of catastrophic events"
+        },
+        {
+          "source": "Yuga Transition",
+          "text": "Mahābhārata, various Purāṇas",
+          "correlation": "End of one age, beginning of another; world remade",
+          "confidence": "D",
+          "notes": "Speculative - yuga chronology symbolic rather than historical"
+        }
+      ]
+    },
+    {
+      "geologicalEvent": "Deccan Traps Eruptions",
+      "ageMa": 66,
+      "culturalSources": [
+        {
+          "source": "Agni as Transformer",
+          "text": "Ṛgveda Agni hymns",
+          "correlation": "Fire as creative-destructive force; landscape transformation",
+          "confidence": "C",
+          "notes": "Basalt landscapes as 'burnt earth'; sacred fire association"
+        },
+        {
+          "source": "Narmadā Origin Myths",
+          "text": "Regional folklore",
+          "correlation": "River cutting through volcanic landscape; sacred purifier",
+          "confidence": "B",
+          "notes": "Geological event shapes sacred geography"
+        }
+      ]
+    },
+    {
+      "geologicalEvent": "Himalayan Uplift",
+      "ageMa": 50,
+      "culturalSources": [
+        {
+          "source": "Himālaya as Meru",
+          "text": "Purāṇas, Buddhist texts",
+          "correlation": "Cosmic mountain at world's center; axis mundi",
+          "confidence": "A",
+          "notes": "Direct geological-cultural link; mountains shape worldview"
+        },
+        {
+          "source": "Gaṅgā Descent",
+          "text": "Rāmāyaṇa, Purāṇas",
+          "correlation": "Himalayan rivers as heaven-born; Śiva's intervention",
+          "confidence": "B",
+          "notes": "Mythologized geology; glacial meltwater origins"
+        }
+      ]
+    },
+    {
+      "geologicalEvent": "Siwalik Megafauna",
+      "ageMa": 8,
+      "culturalSources": [
+        {
+          "source": "Giant Beings in Epics",
+          "text": "Rāmāyaṇa, Mahābhārata",
+          "correlation": "Rākṣasa, Asura as mythologized megafauna memories",
+          "confidence": "D",
+          "notes": "Highly speculative; folklore transmission over millions of years unlikely"
+        },
+        {
+          "source": "Elephant Mythology",
+          "text": "Gaṇeśa cult, Indra's Airāvata",
+          "correlation": "Siwalik Stegodon → cultural elephant reverence",
+          "confidence": "C",
+          "notes": "Pleistocene human-elephant interactions; fossil discoveries inspiring myths"
+        }
+      ]
+    },
+    {
+      "geologicalEvent": "Śāligrāma Ammonites",
+      "ageMa": 100,
+      "culturalSources": [
+        {
+          "source": "Viṣṇu Chakra",
+          "text": "Purāṇas, temple rituals",
+          "correlation": "Ammonite spiral = Viṣṇu's discus; sacred fossil worship",
+          "confidence": "A",
+          "notes": "Direct link; fossils as sacred objects for millennia"
+        },
+        {
+          "source": "Kali Gandaki Pilgrimage",
+          "text": "Contemporary practice",
+          "correlation": "Geological site as tirtha; science-religion nexus",
+          "confidence": "A",
+          "notes": "Living tradition; geological education potential"
+        }
+      ]
+    },
+    {
+      "geologicalEvent": "Ghaggar-Hakra Paleochannel",
+      "ageMa": 0.005,
+      "culturalSources": [
+        {
+          "source": "Sarasvatī River (Ṛgveda)",
+          "text": "Ṛgveda (Nadī Sūkta)",
+          "correlation": "Desiccation of major river system; cultural memory of loss",
+          "confidence": "B",
+          "notes": "Debated identification; geological and textual timelines complex"
+        },
+        {
+          "source": "IVC Decline",
+          "text": "Archaeological evidence",
+          "correlation": "River shift → urban abandonment; geological determinism",
+          "confidence": "B",
+          "notes": "Geomorphology shapes civilization trajectory"
+        }
+      ]
+    },
+    {
+      "geologicalEvent": "Narmadā Terraces & Hominins",
+      "ageMa": 0.3,
+      "culturalSources": [
+        {
+          "source": "Manu as First Human",
+          "text": "Manu Smṛti, Purāṇas",
+          "correlation": "Human origins narratives; progenitor figure",
+          "confidence": "D",
+          "notes": "No direct link; mythic vs paleoanthropological timescales differ vastly"
+        },
+        {
+          "source": "Narmadā Parikramā",
+          "text": "Contemporary pilgrimage",
+          "correlation": "Circumambulating river as witness to human prehistory",
+          "confidence": "B",
+          "notes": "Sacred landscape preserves human evolutionary record"
+        }
+      ]
+    }
+  ],
+  "confidenceScale": {
+    "A": "Direct correlation - geological feature actively shapes cultural practice (e.g., Śāligrāma worship)",
+    "B": "Strong indirect link - geology influences cultural worldview (e.g., Himalayas as Meru)",
+    "C": "Plausible but speculative - thematic resonance (e.g., pralaya and mass extinction)",
+    "D": "Highly speculative - no clear causal link (e.g., megafauna and epic giants)"
+  }
+}

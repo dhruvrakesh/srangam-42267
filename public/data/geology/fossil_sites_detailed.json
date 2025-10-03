@@ -1,0 +1,192 @@
+{
+  "sites": [
+    {
+      "id": "deccan_lameta",
+      "name": "Deccan Traps–Lameta Formation",
+      "coordinates": [21.5, 78.0],
+      "age": "68-66 Ma",
+      "ageNumeric": 67,
+      "period": "Late Cretaceous",
+      "fossils": [
+        "Titanosaur eggs and nests",
+        "Rajasaurus narmadensis",
+        "Isisaurus colberti",
+        "Crocodilian remains"
+      ],
+      "significance": "K-Pg boundary mass extinction context, Deccan volcanism trigger debate",
+      "culturalContext": "Narmadā River as sacred purifier; flood basalts as 'cosmic fire' (agni)",
+      "confidence": "A",
+      "references": [
+        "Geological Survey of India (GSI) Memoir 1995",
+        "Wilson et al. 2003 - Deccan volcanism and dinosaur extinction"
+      ],
+      "articleSection": "section1",
+      "modernLocation": "Narmada Valley, Madhya Pradesh",
+      "excavationStatus": "Active research site"
+    },
+    {
+      "id": "gondwana_coal",
+      "name": "Gondwana Coal Measures",
+      "coordinates": [23.0, 80.5],
+      "age": "300-200 Ma",
+      "ageNumeric": 250,
+      "period": "Permian-Triassic",
+      "fossils": [
+        "Glossopteris flora",
+        "Dicroidium",
+        "Early reptile trackways",
+        "Amphibian fossils"
+      ],
+      "significance": "Gondwana Supercontinent evidence, P-Tr extinction survivors",
+      "culturalContext": "Ancient forests as source of modern energy; coal = compressed time (kāla)",
+      "confidence": "A",
+      "references": [
+        "GSI Gondwana Series monographs",
+        "Bandyopadhyay 1999 - Permian vertebrates"
+      ],
+      "articleSection": "section2",
+      "modernLocation": "Damodar Valley, Jharkhand & West Bengal",
+      "excavationStatus": "Historical collections, ongoing research"
+    },
+    {
+      "id": "kota_formation",
+      "name": "Kota Formation",
+      "coordinates": [18.5, 78.5],
+      "age": "190-180 Ma",
+      "ageNumeric": 185,
+      "period": "Early Jurassic",
+      "fossils": [
+        "Barapasaurus tagorei",
+        "Kotasaurus yamanpalliensis",
+        "Freshwater fish",
+        "Pterosaur remains"
+      ],
+      "significance": "India's oldest sauropod dinosaurs, Gondwana-wide fauna",
+      "culturalContext": "Pranhita-Godavari basin as ancient life cradle",
+      "confidence": "B",
+      "references": [
+        "Jain et al. 1979 - Barapasaurus",
+        "Kutty et al. 2007 - Kota dinosaurs"
+      ],
+      "articleSection": "section3",
+      "modernLocation": "Pranhita-Godavari Valley, Telangana",
+      "excavationStatus": "Limited access, protected site"
+    },
+    {
+      "id": "siwalik_group",
+      "name": "Siwalik Group",
+      "coordinates": [30.5, 77.5],
+      "age": "16-0.5 Ma",
+      "ageNumeric": 8,
+      "period": "Miocene-Pleistocene",
+      "fossils": [
+        "Stegodon ganesa",
+        "Sivatherium giganteum",
+        "Hipparion",
+        "Early hominins (Ramapithecus)",
+        "Giant crocodiles"
+      ],
+      "significance": "Himalayan uplift chronicle, megafauna evolution, human origins",
+      "culturalContext": "Vedic river systems (Sarasvatī debate); sacred Himalayan foothills",
+      "confidence": "A",
+      "references": [
+        "Pilgrim 1910 - Siwalik fauna",
+        "Tandon et al. 2006 - Paleochannels"
+      ],
+      "articleSection": "section4",
+      "modernLocation": "Indo-Gangetic foreland, Uttarakhand to Jammu",
+      "excavationStatus": "Multiple active sites, UNESCO consideration"
+    },
+    {
+      "id": "saligrama",
+      "name": "Śāligrāma Fossil Sites",
+      "coordinates": [28.8, 83.7],
+      "age": "145-66 Ma",
+      "ageNumeric": 100,
+      "period": "Cretaceous",
+      "fossils": [
+        "Ammonite cephalopods (Spilites)",
+        "Bivalves",
+        "Gastropods"
+      ],
+      "significance": "Sacred fossils used in Hindu ritual; Tethyan Ocean record",
+      "culturalContext": "Viṣṇu's chakra manifestation; Kali Gandaki pilgrimage",
+      "confidence": "A",
+      "references": [
+        "Gansser 1964 - Geology of the Himalayas",
+        "Simmons & Lam 2011 - Śāligrāma taxonomy"
+      ],
+      "articleSection": "section5",
+      "modernLocation": "Kali Gandaki River, Nepal",
+      "excavationStatus": "Religious collection ongoing, scientific study limited"
+    },
+    {
+      "id": "narmada_terraces",
+      "name": "Narmadā River Terraces",
+      "coordinates": [22.5, 74.5],
+      "age": "0.3-0.01 Ma",
+      "ageNumeric": 0.15,
+      "period": "Pleistocene",
+      "fossils": [
+        "Homo erectus narmadensis",
+        "Acheulean stone tools",
+        "Stegodon",
+        "Hexaprotodon"
+      ],
+      "significance": "India's oldest human fossils; Quaternary climate archive",
+      "culturalContext": "Sacred river as witness to human origins; parikramā tradition",
+      "confidence": "A",
+      "references": [
+        "Kennedy et al. 1991 - Narmada hominin",
+        "Patnaik et al. 2009 - Paleolithic sites"
+      ],
+      "articleSection": "section5",
+      "modernLocation": "Narmada Valley, Madhya Pradesh",
+      "excavationStatus": "Active research and heritage documentation"
+    }
+  ],
+  "legendCategories": [
+    {
+      "period": "Paleozoic",
+      "color": "hsl(200, 70%, 50%)",
+      "ageRange": "541-252 Ma"
+    },
+    {
+      "period": "Mesozoic",
+      "color": "hsl(120, 60%, 45%)",
+      "ageRange": "252-66 Ma"
+    },
+    {
+      "period": "Cenozoic",
+      "color": "hsl(45, 80%, 55%)",
+      "ageRange": "66-2.6 Ma"
+    },
+    {
+      "period": "Quaternary",
+      "color": "hsl(25, 75%, 50%)",
+      "ageRange": "2.6 Ma-present"
+    }
+  ],
+  "confidenceLegend": {
+    "A": {
+      "label": "High confidence",
+      "description": "Extensively documented, peer-reviewed, replicated findings",
+      "color": "hsl(142, 71%, 45%)"
+    },
+    "B": {
+      "label": "Moderate confidence",
+      "description": "Published research, some debate or limited replication",
+      "color": "hsl(48, 96%, 53%)"
+    },
+    "C": {
+      "label": "Preliminary",
+      "description": "Initial findings, requires further study",
+      "color": "hsl(25, 95%, 53%)"
+    },
+    "D": {
+      "label": "Speculative",
+      "description": "Hypothesis stage, limited evidence",
+      "color": "hsl(0, 84%, 60%)"
+    }
+  }
+}

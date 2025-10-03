@@ -2,3 +2,6 @@ export { SiwalikMegafaunaViewer } from './SiwalikMegafaunaViewer';
 export { GhaggarHakraPaleoMap } from './GhaggarHakraPaleoMap';
 export { GeologicalTimelineInteractive } from './GeologicalTimelineInteractive';
 export { GeoHeritageMap } from './GeoHeritageMap';
+export { InteractiveFossilMap } from './InteractiveFossilMap';
+export { DeepTimeTimeline } from './DeepTimeTimeline';
+export { CulturalCorrelationMatrix } from './CulturalCorrelationMatrix';
