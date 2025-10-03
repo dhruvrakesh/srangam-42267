@@ -3,10 +3,12 @@ import { CulturalTerm } from '@/types/multilingual';
 // Comprehensive database of dharmic and bharatiya terms with cultural context
 import { enhancedCulturalTerms } from './enhanced-cultural-terms';
 import { jambudvipaCulturalTerms } from './cultural-terms-jambudvipa';
+import { cosmicIslandCulturalTerms } from './cultural-terms-cosmic-island';
 
 export const culturalTermsDatabase: Record<string, CulturalTerm> = {
   ...enhancedCulturalTerms,
   ...jambudvipaCulturalTerms.reduce((acc, term) => ({ ...acc, [term.term]: term }), {}),
+  ...cosmicIslandCulturalTerms,
   'dharma': {
     term: 'dharma',
     translations: {
@@ -62,23 +64,6 @@ export const culturalTermsDatabase: Record<string, CulturalTerm> = {
         transliteration: 'yug',
         etymology: 'ਸੰਸਕ੍ਰਿਤ ਯੁਗ (ਜੋੜਨਾ, ਸਮਾਂ) ਤੋਂ',
         culturalContext: 'ਹਿੰਦੂ ਬ੍ਰਹਿਮੰਡ ਵਿਗਿਆਨ ਵਿੱਚ ਸਮੇਂ ਦੇ ਵਿਸ਼ਾਲ ਚੱਕਰ'
-      }
-    }
-  },
-  'sangam': {
-    term: 'sangam',
-    translations: {
-      en: {
-        translation: 'sangam (confluence)',
-        transliteration: 'saṅgam',
-        etymology: 'From Sanskrit saṅgama (meeting, confluence)',
-        culturalContext: 'Sacred confluence of rivers; literary assemblies in Tamil tradition'
-      },
-      ta: {
-        translation: 'சங்கம்',
-        transliteration: 'saṅgam',
-        etymology: 'சமஸ்கிருத saṅgama (சந்திப்பு, சங்கமம்)',
-        culturalContext: 'ஆறுகளின் புனித சங்கமம்; தமிழ் மரபில் இலக்கிய அவைகள்'
       }
     }
   },
@@ -1851,6 +1836,431 @@ export const culturalTermsDatabase: Record<string, CulturalTerm> = {
         transliteration: 'himālaya',
         etymology: 'संस्कृत हिम (बर्फ) + आलय (निवास)',
         culturalContext: 'बर्फ का निवास; दुनिया की सबसे ऊंची पर्वत श्रृंखला, भारतवर्ष की उत्तरी सीमा'
+      }
+    }
+  },
+  // Rivers of ancient Bharatvarsha
+  'sindhu': {
+    term: 'sindhu',
+    translations: {
+      en: {
+        translation: 'Sindhu (Indus River)',
+        transliteration: 'sindhu',
+        etymology: 'From Sanskrit sindhu (river, ocean)',
+        culturalContext: 'The great river of the Sapta Sindhu region; gave its name to India'
+      },
+      hi: {
+        translation: 'सिंधु',
+        transliteration: 'sindhu',
+        etymology: 'संस्कृत सिंधु (नदी, सागर)',
+        culturalContext: 'सप्त सिंधु क्षेत्र की महान नदी; भारत को इसका नाम दिया'
+      },
+      ta: {
+        translation: 'சிந்து',
+        transliteration: 'sintu',
+        etymology: 'சமஸ்கிருத sindhu (ஆறு, கடல்)',
+        culturalContext: 'சப்த சிந்து பகுதியின் மாபெரும் ஆறு; இந்தியாவிற்கு பெயர் அளித்த நதி'
+      }
+    }
+  },
+  'sutlej': {
+    term: 'sutlej',
+    translations: {
+      en: {
+        translation: 'Sutlej River',
+        transliteration: 'śatadru',
+        etymology: 'From Sanskrit śatadru (having hundred channels)',
+        culturalContext: 'One of the five rivers of Punjab; ancient Śatadru of the Rigveda'
+      },
+      hi: {
+        translation: 'सतलुज',
+        transliteration: 'sutlej',
+        etymology: 'संस्कृत शतद्रु (सौ धाराओं वाली)',
+        culturalContext: 'पंजाब की पांच नदियों में से एक; ऋग्वेद की प्राचीन शतद्रु'
+      }
+    }
+  },
+  'jhelum': {
+    term: 'jhelum',
+    translations: {
+      en: {
+        translation: 'Jhelum River',
+        transliteration: 'vitastā',
+        etymology: 'Sanskrit Vitastā; Greek Hydaspes',
+        culturalContext: 'River in Kashmir and Punjab; site of Alexander\'s battle with Porus'
+      },
+      hi: {
+        translation: 'झेलम',
+        transliteration: 'jhelum',
+        etymology: 'संस्कृत वितस्ता; ग्रीक हाइडास्पीज़',
+        culturalContext: 'कश्मीर और पंजाब की नदी; सिकंदर और पोरस के युद्ध का स्थल'
+      }
+    }
+  },
+  'narmada': {
+    term: 'narmada',
+    translations: {
+      en: {
+        translation: 'Narmada River',
+        transliteration: 'narmadā',
+        etymology: 'From Sanskrit narmadā (the delightful one)',
+        culturalContext: 'Sacred river of central India; one of the seven holy rivers'
+      },
+      hi: {
+        translation: 'नर्मदा',
+        transliteration: 'narmadā',
+        etymology: 'संस्कृत नर्मदा (आनंददायिनी)',
+        culturalContext: 'मध्य भारत की पवित्र नदी; सात पवित्र नदियों में से एक'
+      },
+      ta: {
+        translation: 'நர்மதை',
+        transliteration: 'narmatai',
+        etymology: 'சமஸ்கிருத narmadā (மகிழ்ச்சி அளிப்பவள்)',
+        culturalContext: 'மத்திய இந்தியாவின் புனித நதி; ஏழு புனித நதிகளில் ஒன்று'
+      }
+    }
+  },
+  'krishna': {
+    term: 'krishna',
+    translations: {
+      en: {
+        translation: 'Krishna River',
+        transliteration: 'kṛṣṇa',
+        etymology: 'From Sanskrit kṛṣṇa (dark, black)',
+        culturalContext: 'Major river of Deccan; flows through Karnataka, Maharashtra, and Andhra Pradesh'
+      },
+      hi: {
+        translation: 'कृष्णा',
+        transliteration: 'kṛṣṇā',
+        etymology: 'संस्कृत कृष्ण (काला, गहरा)',
+        culturalContext: 'दक्कन की प्रमुख नदी; कर्नाटक, महाराष्ट्र और आंध्र प्रदेश से बहती है'
+      },
+      ta: {
+        translation: 'கிருஷ்ணா',
+        transliteration: 'kiruṣṇā',
+        etymology: 'சமஸ்கிருத kṛṣṇa (கருமை, இருள்)',
+        culturalContext: 'தக்காணத்தின் முக்கிய நதி; கர்நாடகா, மகாராஷ்டிரா, ஆந்திரா வழியாக பாய்கிறது'
+      }
+    }
+  },
+  'chenab': {
+    term: 'chenab',
+    translations: {
+      en: {
+        translation: 'Chenab River',
+        transliteration: 'asiknī',
+        etymology: 'Sanskrit Asiknī (dark one)',
+        culturalContext: 'One of the five rivers of Punjab; ancient Asiknī of the Rigveda'
+      },
+      hi: {
+        translation: 'चिनाब',
+        transliteration: 'chenab',
+        etymology: 'संस्कृत असिक्नी (अंधेरी)',
+        culturalContext: 'पंजाब की पांच नदियों में से एक; ऋग्वेद की प्राचीन असिक्नी'
+      }
+    }
+  },
+  'ravi': {
+    term: 'ravi',
+    translations: {
+      en: {
+        translation: 'Ravi River',
+        transliteration: 'parūṣṇī',
+        etymology: 'Sanskrit Parūṣṇī; modern Ravi from Sanskrit ravi (sun)',
+        culturalContext: 'One of the five rivers of Punjab; site of the Battle of Ten Kings'
+      },
+      hi: {
+        translation: 'रावी',
+        transliteration: 'ravi',
+        etymology: 'संस्कृत पारुष्णी; आधुनिक रावी संस्कृत रवि (सूर्य) से',
+        culturalContext: 'पंजाब की पांच नदियों में से एक; दस राजाओं के युद्ध का स्थल'
+      }
+    }
+  },
+  'beas': {
+    term: 'beas',
+    translations: {
+      en: {
+        translation: 'Beas River',
+        transliteration: 'vipāśā',
+        etymology: 'Sanskrit Vipāśā (free from bonds)',
+        culturalContext: 'One of the five rivers of Punjab; easternmost limit of Alexander\'s conquest'
+      },
+      hi: {
+        translation: 'ब्यास',
+        transliteration: 'beas',
+        etymology: 'संस्कृत विपाशा (बंधनों से मुक्त)',
+        culturalContext: 'पंजाब की पांच नदियों में से एक; सिकंदर की विजय की पूर्वी सीमा'
+      }
+    }
+  },
+  // Mahabharata references
+  'bhishma-parva': {
+    term: 'bhishma-parva',
+    translations: {
+      en: {
+        translation: 'Bhishma Parva',
+        transliteration: 'bhīṣma parva',
+        etymology: 'Sanskrit bhīṣma (terrible, formidable) + parva (book, section)',
+        culturalContext: 'Sixth book of the Mahabharata; contains the Bhagavad Gita'
+      },
+      hi: {
+        translation: 'भीष्म पर्व',
+        transliteration: 'bhīṣma parva',
+        etymology: 'संस्कृत भीष्म (भयानक, दुर्जेय) + पर्व (पुस्तक, खंड)',
+        culturalContext: 'महाभारत का छठा पुस्तक; भगवद गीता को शामिल करता है'
+      }
+    }
+  },
+  'sanjaya': {
+    term: 'sanjaya',
+    translations: {
+      en: {
+        translation: 'Sanjaya',
+        transliteration: 'sañjaya',
+        etymology: 'Sanskrit sañjaya (completely victorious)',
+        culturalContext: 'Dhritarashtra\'s charioteer; narrator of the Kurukshetra battle in the Mahabharata'
+      },
+      hi: {
+        translation: 'संजय',
+        transliteration: 'sañjaya',
+        etymology: 'संस्कृत संजय (पूर्णतः विजयी)',
+        culturalContext: 'धृतराष्ट्र के सारथी; महाभारत में कुरुक्षेत्र युद्ध के वर्णनकर्ता'
+      }
+    }
+  },
+  'dhritarashtra': {
+    term: 'dhritarashtra',
+    translations: {
+      en: {
+        translation: 'Dhritarashtra',
+        transliteration: 'dhṛtarāṣṭra',
+        etymology: 'Sanskrit dhṛta (held) + rāṣṭra (kingdom)',
+        culturalContext: 'Blind king of Hastinapura; father of the Kauravas in the Mahabharata'
+      },
+      hi: {
+        translation: 'धृतराष्ट्र',
+        transliteration: 'dhṛtarāṣṭra',
+        etymology: 'संस्कृत धृत (धारण किया) + राष्ट्र (राज्य)',
+        culturalContext: 'हस्तिनापुर के अंधे राजा; महाभारत में कौरवों के पिता'
+      }
+    }
+  },
+  'madhyadesa': {
+    term: 'madhyadesa',
+    translations: {
+      en: {
+        translation: 'Madhyadesa',
+        transliteration: 'madhyadeśa',
+        etymology: 'Sanskrit madhya (middle) + deśa (land)',
+        culturalContext: 'The middle land; heartland of Vedic civilization between Himalayas and Vindhyas'
+      },
+      hi: {
+        translation: 'मध्यदेश',
+        transliteration: 'madhyadeśa',
+        etymology: 'संस्कृत मध्य (बीच) + देश (भूमि)',
+        culturalContext: 'मध्य भूमि; हिमालय और विंध्य के बीच वैदिक सभ्यता का केंद्र'
+      }
+    }
+  },
+  'vedas': {
+    term: 'vedas',
+    translations: {
+      en: {
+        translation: 'Vedas',
+        transliteration: 'vedāḥ',
+        etymology: 'From Sanskrit vid (to know)',
+        culturalContext: 'The four ancient texts of knowledge: Rigveda, Yajurveda, Samaveda, Atharvaveda'
+      },
+      hi: {
+        translation: 'वेद',
+        transliteration: 'vedāḥ',
+        etymology: 'संस्कृत विद् (जानना) से',
+        culturalContext: 'ज्ञान के चार प्राचीन ग्रंथ: ऋग्वेद, यजुर्वेद, सामवेद, अथर्ववेद'
+      },
+      ta: {
+        translation: 'வேதங்கள்',
+        transliteration: 'vētaṅkaḷ',
+        etymology: 'சமஸ்கிருத vid (அறிதல்)',
+        culturalContext: 'அறிவின் நான்கு பண்டைய நூல்கள்: ரிக்வேதம், யஜுர்வேதம், சாமவேதம், அதர்வவேதம்'
+      }
+    }
+  },
+  'brahmanas': {
+    term: 'brahmanas',
+    translations: {
+      en: {
+        translation: 'Brahmanas',
+        transliteration: 'brāhmaṇāḥ',
+        etymology: 'From Sanskrit brahman (sacred knowledge)',
+        culturalContext: 'Prose commentaries on the Vedas explaining rituals and ceremonies'
+      },
+      hi: {
+        translation: 'ब्राह्मण ग्रंथ',
+        transliteration: 'brāhmaṇāḥ',
+        etymology: 'संस्कृत ब्रह्मन् (पवित्र ज्ञान) से',
+        culturalContext: 'वेदों पर गद्य टीकाएं जो अनुष्ठान और समारोहों को समझाती हैं'
+      }
+    }
+  },
+  'brahmana': {
+    term: 'brahmana',
+    translations: {
+      en: {
+        translation: 'Brahmana',
+        transliteration: 'brāhmaṇa',
+        etymology: 'From Sanskrit brahman (sacred knowledge)',
+        culturalContext: 'Priestly class; keeper of sacred knowledge and ritual traditions'
+      },
+      hi: {
+        translation: 'ब्राह्मण',
+        transliteration: 'brāhmaṇa',
+        etymology: 'संस्कृत ब्रह्मन् (पवित्र ज्ञान) से',
+        culturalContext: 'पुरोहित वर्ग; पवित्र ज्ञान और अनुष्ठान परंपराओं के संरक्षक'
+      },
+      ta: {
+        translation: 'பிராமணர்',
+        transliteration: 'pirāmaṇar',
+        etymology: 'சமஸ்கிருத brahman (புனித அறிவு)',
+        culturalContext: 'குருக்கள் வகுப்பு; புனித அறிவு மற்றும் சடங்கு மரபுகளின் காப்பாளர்கள்'
+      }
+    }
+  },
+  'rigvedic': {
+    term: 'rigvedic',
+    translations: {
+      en: {
+        translation: 'Rigvedic',
+        transliteration: 'ṛgvaidika',
+        etymology: 'Relating to the Rigveda',
+        culturalContext: 'Pertaining to the earliest Vedic period and the Rigveda text'
+      },
+      hi: {
+        translation: 'ऋग्वैदिक',
+        transliteration: 'ṛgvaidika',
+        etymology: 'ऋग्वेद से संबंधित',
+        culturalContext: 'सबसे प्रारंभिक वैदिक काल और ऋग्वेद ग्रंथ से संबंधित'
+      }
+    }
+  },
+  // Ancient peoples and kingdoms
+  'panchalas': {
+    term: 'panchalas',
+    translations: {
+      en: {
+        translation: 'Panchalas',
+        transliteration: 'pāñcālāḥ',
+        etymology: 'Sanskrit pañca (five) + āla (tribes)',
+        culturalContext: 'Ancient kingdom in north-central India; allies of the Pandavas in the Mahabharata'
+      },
+      hi: {
+        translation: 'पांचाल',
+        transliteration: 'pāñcālāḥ',
+        etymology: 'संस्कृत पञ्च (पांच) + आल (कबीले)',
+        culturalContext: 'उत्तर-मध्य भारत का प्राचीन राज्य; महाभारत में पांडवों के सहयोगी'
+      }
+    }
+  },
+  'surasenas': {
+    term: 'surasenas',
+    translations: {
+      en: {
+        translation: 'Surasenas',
+        transliteration: 'śūrasenāḥ',
+        etymology: 'Sanskrit śūra (brave) + senā (army)',
+        culturalContext: 'Ancient kingdom around Mathura; associated with Krishna\'s lineage'
+      },
+      hi: {
+        translation: 'शूरसेन',
+        transliteration: 'śūrasenāḥ',
+        etymology: 'संस्कृत शूर (वीर) + सेना (सेना)',
+        culturalContext: 'मथुरा के आसपास प्राचीन राज्य; कृष्ण के वंश से जुड़ा'
+      }
+    }
+  },
+  'kalingas': {
+    term: 'kalingas',
+    translations: {
+      en: {
+        translation: 'Kalingas',
+        transliteration: 'kaliṅgāḥ',
+        etymology: 'Sanskrit kaliṅga (ancient kingdom)',
+        culturalContext: 'Ancient kingdom in coastal Odisha; conquered by Ashoka in the famous Kalinga War'
+      },
+      hi: {
+        translation: 'कलिंग',
+        transliteration: 'kaliṅgāḥ',
+        etymology: 'संस्कृत कलिंग (प्राचीन राज्य)',
+        culturalContext: 'तटीय ओडिशा का प्राचीन राज्य; प्रसिद्ध कलिंग युद्ध में अशोक द्वारा जीता गया'
+      },
+      ta: {
+        translation: 'கலிங்கர்கள்',
+        transliteration: 'kaliṅkarkaḷ',
+        etymology: 'சமஸ்கிருத kaliṅga (பண்டைய அரசு)',
+        culturalContext: 'கடலோர ஒடிசாவின் பண்டைய அரசு; புகழ்பெற்ற கலிங்க போரில் அசோகரால் வென்றது'
+      }
+    }
+  },
+  'magadhas': {
+    term: 'magadhas',
+    translations: {
+      en: {
+        translation: 'Magadhas',
+        transliteration: 'magadhāḥ',
+        etymology: 'Sanskrit magadha (ancient kingdom)',
+        culturalContext: 'Ancient kingdom in Bihar; birthplace of Buddhism and Jainism; Mauryan Empire\'s heartland'
+      },
+      hi: {
+        translation: 'मगध',
+        transliteration: 'magadhāḥ',
+        etymology: 'संस्कृत मगध (प्राचीन राज्य)',
+        culturalContext: 'बिहार का प्राचीन राज्य; बौद्ध धर्म और जैन धर्म का जन्मस्थान; मौर्य साम्राज्य का केंद्र'
+      }
+    }
+  },
+  'keralas': {
+    term: 'keralas',
+    translations: {
+      en: {
+        translation: 'Keralas',
+        transliteration: 'keralāḥ',
+        etymology: 'Sanskrit kerala (land of coconuts)',
+        culturalContext: 'Ancient people of Kerala; known for spice trade and maritime connections'
+      },
+      hi: {
+        translation: 'केरल',
+        transliteration: 'keralāḥ',
+        etymology: 'संस्कृत केरल (नारियल की भूमि)',
+        culturalContext: 'केरल के प्राचीन लोग; मसाला व्यापार और समुद्री संबंधों के लिए जाने जाते हैं'
+      },
+      ta: {
+        translation: 'கேரளர்கள்',
+        transliteration: 'kēraḷarkaḷ',
+        etymology: 'சமஸ்கிருத kerala (தேங்காயின் நிலம்)',
+        culturalContext: 'கேரளாவின் பண்டைய மக்கள்; மசாலா வர்த்தகம் மற்றும் கடல்சார் தொடர்புகளுக்கு பெயர் பெற்றவர்கள்'
+      }
+    }
+  },
+  'aryas': {
+    term: 'aryas',
+    translations: {
+      en: {
+        translation: 'Aryas',
+        transliteration: 'āryāḥ',
+        etymology: 'Sanskrit ārya (noble, honorable)',
+        culturalContext: 'Cultural designation for people following Vedic dharma; not a racial term'
+      },
+      hi: {
+        translation: 'आर्य',
+        transliteration: 'āryāḥ',
+        etymology: 'संस्कृत आर्य (श्रेष्ठ, सम्मानीय)',
+        culturalContext: 'वैदिक धर्म का पालन करने वाले लोगों का सांस्कृतिक पदनाम; नस्लीय शब्द नहीं'
+      },
+      ta: {
+        translation: 'ஆரியர்கள்',
+        transliteration: 'āriyarkaḷ',
+        etymology: 'சமஸ்கிருத ārya (உன்னதமான, மதிப்புமிக்க)',
+        culturalContext: 'வேத தர்மத்தை பின்பற்றும் மக்களின் கலாச்சார பெயர்; இன சொல் அல்ல'
       }
     }
   }
