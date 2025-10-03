@@ -4,11 +4,13 @@ import { CulturalTerm } from '@/types/multilingual';
 import { enhancedCulturalTerms } from './enhanced-cultural-terms';
 import { jambudvipaCulturalTerms } from './cultural-terms-jambudvipa';
 import { cosmicIslandCulturalTerms } from './cultural-terms-cosmic-island';
+import { stonePuranaCulturalTerms } from './cultural-terms-stone-purana';
 
 export const culturalTermsDatabase: Record<string, CulturalTerm> = {
   ...enhancedCulturalTerms,
   ...jambudvipaCulturalTerms.reduce((acc, term) => ({ ...acc, [term.term]: term }), {}),
   ...cosmicIslandCulturalTerms,
+  ...stonePuranaCulturalTerms,
   'dharma': {
     term: 'dharma',
     translations: {

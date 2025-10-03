@@ -67,7 +67,7 @@ export const stonePuranaCulturalTerms: Record<string, CulturalTerm> = {
         translation: 'Hiraṇyagarbha',
         transliteration: 'hiraṇyagarbha',
         etymology: 'Sanskrit: hiraṇya (golden) + garbha (womb/egg)',
-        culturalContext: 'In Ṛgvedic hymns (RV 10.121), Hiraṇyagarbha is the "golden embryo" or cosmic egg from which creation emerges. In geological metaphor, it evokes Gondwana—the ancient supercontinent that cradled India's Permian forests, coal seams, and early reptilian life. The analogy is poetic, not causal; Gondwana assembly and breakup follow plate tectonics, not cosmogonic myth.'
+        culturalContext: `In Ṛgvedic hymns (RV 10.121), Hiraṇyagarbha is the "golden embryo" or cosmic egg from which creation emerges. In geological metaphor, it evokes Gondwana—the ancient supercontinent that cradled India's Permian forests, coal seams, and early reptilian life. The analogy is poetic, not causal; Gondwana assembly and breakup follow plate tectonics, not cosmogonic myth.`
       },
       hi: {
         translation: 'हिरण्यगर्भ',
@@ -143,7 +143,7 @@ export const stonePuranaCulturalTerms: Record<string, CulturalTerm> = {
         translation: 'Sudarśana Chakra',
         transliteration: 'sudarśana cakra',
         etymology: 'Sanskrit: su (good) + darśana (vision) + cakra (wheel/disc)',
-        culturalContext: 'The Sudarśana Chakra is Viṣṇu's discus weapon in Hindu iconography. In geomythology, the spiral morphology of ammonite fossils—particularly Śāligrāma stones—is interpreted as the imprint of this divine disc. The resemblance is morphological: ammonite suture patterns form logarithmic spirals. This cultural reading protected and circulated fossils for millennia within devotional networks.'
+        culturalContext: `The Sudarśana Chakra is Viṣṇu's discus weapon in Hindu iconography. In geomythology, the spiral morphology of ammonite fossils—particularly Śāligrāma stones—is interpreted as the imprint of this divine disc. The resemblance is morphological: ammonite suture patterns form logarithmic spirals. This cultural reading protected and circulated fossils for millennia within devotional networks.`
       },
       hi: {
         translation: 'सुदर्शन चक्र',
@@ -219,7 +219,7 @@ export const stonePuranaCulturalTerms: Record<string, CulturalTerm> = {
         translation: 'Narmadā Māī',
         transliteration: 'Narmadā Māī',
         etymology: 'Sanskrit Narmadā (the river) + Hindi Māī (Mother)',
-        culturalContext: 'The Narmadā River, revered as a goddess and "Mother" in Hindu tradition, flows through central India. On 5 December 1982, a Middle Pleistocene hominin calvarium—India\'s oldest known human ancestor fossil—was recovered near Hathnora on the Narmadā\'s banks. The convergence is poetic: a river worshipped as life-giver yielding the skull of an ancient "mother." Geologically, the Narmadā valley is a major tectonic lineament with rich Quaternary deposits; spiritually, it is a tirtha of immense significance. The fossil and the faith coexist in the same landscape.'
+        culturalContext: `The Narmadā River, revered as a goddess and "Mother" in Hindu tradition, flows through central India. On 5 December 1982, a Middle Pleistocene hominin calvarium—India's oldest known human ancestor fossil—was recovered near Hathnora on the Narmadā's banks. The convergence is poetic: a river worshipped as life-giver yielding the skull of an ancient "mother." Geologically, the Narmadā valley is a major tectonic lineament with rich Quaternary deposits; spiritually, it is a tirtha of immense significance. The fossil and the faith coexist in the same landscape.`
       },
       hi: {
         translation: 'नर्मदा माई',
@@ -267,7 +267,7 @@ export const stonePuranaCulturalTerms: Record<string, CulturalTerm> = {
         translation: 'Rāma Setu',
         transliteration: 'Rāma Setu',
         etymology: 'Sanskrit: Rāma (hero of the Rāmāyaṇa) + setu (bridge)',
-        culturalContext: 'Rāma Setu, also known as Adam\'s Bridge, is a ~50 km chain of natural shoals, sand bars, and coral formations between Rāmeśvaram (India) and Mannar (Sri Lanka). Geologically, it sits on a shallow limestone ridge that was periodically emergent during lower Pleistocene sea levels. Scientific and official assessments characterize it as a natural formation. In devotional geography and oral tradition, it is venerated as the engineered causeway built by Rāma\'s army to reach Laṅkā. Both readings—geological and theological—coexist. A robust stewardship regime protects the formation and the pilgrimage without conflating faith and stratigraphy.'
+        culturalContext: `Rāma Setu, also known as Adam's Bridge, is a ~50 km chain of natural shoals, sand bars, and coral formations between Rāmeśvaram (India) and Mannar (Sri Lanka). Geologically, it sits on a shallow limestone ridge that was periodically emergent during lower Pleistocene sea levels. Scientific and official assessments characterize it as a natural formation. In devotional geography and oral tradition, it is venerated as the engineered causeway built by Rāma's army to reach Laṅkā. Both readings—geological and theological—coexist. A robust stewardship regime protects the formation and the pilgrimage without conflating faith and stratigraphy.`
       },
       hi: {
         translation: 'राम सेतु',
@@ -291,7 +291,7 @@ export const stonePuranaCulturalTerms: Record<string, CulturalTerm> = {
         translation: 'Setubandha',
         transliteration: 'setubandha',
         etymology: 'Sanskrit: setu (bridge) + bandha (binding/construction)',
-        culturalContext: 'The act of bridge construction in the Rāmāyaṇa, where stones were cast into the sea to create a causeway to Laṅkā. The term is used in Vālmīki\'s text and later retellings. Geomythologically, the narrative may encode cultural memory of navigating or engineering across the Palk Strait during periods of lower sea level, though direct archaeological evidence for Bronze Age construction is absent. The story remains powerful in pilgrimage and identity, independent of historical verification.'
+        culturalContext: `The act of bridge construction in the Rāmāyaṇa, where stones were cast into the sea to create a causeway to Laṅkā. The term is used in Vālmīki's text and later retellings. Geomythologically, the narrative may encode cultural memory of navigating or engineering across the Palk Strait during periods of lower sea level, though direct archaeological evidence for Bronze Age construction is absent. The story remains powerful in pilgrimage and identity, independent of historical verification.`
       },
       hi: {
         translation: 'सेतुबन्ध',
@@ -315,7 +315,7 @@ export const stonePuranaCulturalTerms: Record<string, CulturalTerm> = {
         translation: 'Dvārakā',
         transliteration: 'Dvārakā',
         etymology: 'Sanskrit: dvāra (door/gate) + suffix',
-        culturalContext: 'In the Mahābhārata and Purāṇas, Dvārakā is Kṛṣṇa\'s fabled western coastal city, said to have been submerged by the sea after his departure. Modern coastal and marine archaeology around Dwarka (Gujarat) has identified submerged structural remains and artifacts spanning several periods, though their identification with the textual Dvārakā remains contested. Sea-level changes, coastal subsidence, and tectonic activity in the region are well-documented. The site exemplifies the interplay between textual tradition, archaeological stratigraphy, and coastal geomorphology.'
+        culturalContext: `In the Mahābhārata and Purāṇas, Dvārakā is Kṛṣṇa's fabled western coastal city, said to have been submerged by the sea after his departure. Modern coastal and marine archaeology around Dwarka (Gujarat) has identified submerged structural remains and artifacts spanning several periods, though their identification with the textual Dvārakā remains contested. Sea-level changes, coastal subsidence, and tectonic activity in the region are well-documented. The site exemplifies the interplay between textual tradition, archaeological stratigraphy, and coastal geomorphology.`
       },
       hi: {
         translation: 'द्वारका',
