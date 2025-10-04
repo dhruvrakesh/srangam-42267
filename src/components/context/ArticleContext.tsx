@@ -102,7 +102,7 @@ interface ArticleProviderProps {
   articleId?: string;
 }
 
-export const ArticleProvider = React.memo(({ children, articleId }: ArticleProviderProps) => {
+export const ArticleProvider = ({ children, articleId }: ArticleProviderProps) => {
   const [state, dispatch] = useReducer(articleReducer, initialState);
 
   const setReadingProgress = useCallback((progress: number) => {
@@ -169,7 +169,7 @@ export const ArticleProvider = React.memo(({ children, articleId }: ArticleProvi
       {children}
     </ArticleContext.Provider>
   );
-});
+};
 
 ArticleProvider.displayName = 'ArticleProvider';
 
