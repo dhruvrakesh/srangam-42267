@@ -13,7 +13,7 @@ interface EnhancedInscriptionViewProps {
   className?: string;
 }
 
-export const EnhancedInscriptionView = React.memo(({ 
+export const EnhancedInscriptionView = ({ 
   inscription, 
   layout = 'full',
   showComponents = ['script-viewer', 'translation-panel', 'visualization', 'commentary'],
@@ -134,9 +134,7 @@ export const EnhancedInscriptionView = React.memo(({
       {renderCommentary()}
     </div>
   );
-});
-
-EnhancedInscriptionView.displayName = 'EnhancedInscriptionView';
+};
 
 // Utility function to create inscription components for articles
 export const createInscriptionComponent = (
