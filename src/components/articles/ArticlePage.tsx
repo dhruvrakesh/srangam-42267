@@ -61,10 +61,7 @@ const ArticleContent = React.memo(({
   }, [mark, measure]);
 
   return (
-    <>
-      <ReadingProgressBar />
-      
-      <article className="max-w-4xl mx-auto px-4 py-8 relative">
+    <article className="max-w-4xl mx-auto px-4 py-8 relative">
         {/* Contextual Sacred Geometry Background */}
         <div className="absolute inset-0 bg-gradient-to-b from-cream/40 via-sandalwood/30 to-cream/40 rounded-3xl -z-10" />
         <div className={cn(
@@ -167,7 +164,6 @@ const ArticleContent = React.memo(({
           )}
         </div>
       </article>
-    </>
   );
 });
 
@@ -179,6 +175,7 @@ export function ArticlePage(props: ArticlePageProps) {
   
   return (
     <ArticleProvider articleId={titleString}>
+      <ReadingProgressBar />
       <ArticleContent {...props} />
     </ArticleProvider>
   );
