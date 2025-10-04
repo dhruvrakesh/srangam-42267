@@ -16,8 +16,14 @@ export default function ScriptsThatSailedII() {
 
   return (
     <ArticlePage
-      article={scriptsThatSailedII}
+      title={scriptsThatSailedII.title}
+      dek={scriptsThatSailedII.dek}
+      content={scriptsThatSailedII.content}
+      tags={scriptsThatSailedII.tags}
       icon={IconScript}
+      readTime={45}
+      author="Kanika Rakesh"
+      date="2025-10-04"
       dataComponents={[
         kandaharEdict && <EnhancedInscriptionView key="kandahar" inscription={kandaharEdict} layout="compact" />,
         <EpigraphicAtlasMap key="atlas-map" className="my-12" />,

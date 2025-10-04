@@ -17,6 +17,7 @@
       "desc": "Primary materials & methods",
       "children": [
         {"label": "Epigraphic Evidence", "href": "/sources/epigraphy"},
+        {"label": "Scripts that Sailed II: Epigraphic Atlas", "href": "/scripts-that-sailed-ii"},
         {"label": "Multilingual Edicts", "href": "/sources/edicts"},
         {"label": "Trade Documents", "href": "/sources/trade-docs"},
         {"label": "Methods & Data", "href": "/sources-method"},

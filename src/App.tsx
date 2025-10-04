@@ -38,6 +38,7 @@ const SupportResearch = lazy(() => import("./pages/SupportResearch"));
 // Lazy load article pages
 const MonsoonTradeClock = lazy(() => import("./pages/articles/MonsoonTradeClock"));
 const ScriptsThatSailed = lazy(() => import("./pages/articles/ScriptsThatSailed"));
+const ScriptsThatSailedII = lazy(() => import("./pages/articles/ScriptsThatSailedII"));
 const GondwanaToHimalaya = lazy(() => import("./pages/articles/GondwanaToHimalaya"));
 const IndianOceanPowerNetworks = lazy(() => import("./pages/articles/IndianOceanPowerNetworks"));
 const AshokaKandaharEdicts = lazy(() => import("./pages/articles/AshokaKandaharEdicts"));
@@ -116,6 +117,7 @@ const App = () => (
                   <Route path="/brand" element={<Brand />} />
                   <Route path="/monsoon-trade-clock" element={<MonsoonTradeClock />} />
                   <Route path="/scripts-that-sailed" element={<ScriptsThatSailed />} />
+                  <Route path="/scripts-that-sailed-ii" element={<ScriptsThatSailedII />} />
                   <Route path="/gondwana-to-himalaya" element={<GondwanaToHimalaya />} />
                   <Route path="/indian-ocean-power-networks" element={<IndianOceanPowerNetworks />} />
                   <Route path="/ashoka-kandahar-edicts" element={<AshokaKandaharEdicts />} />

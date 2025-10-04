@@ -2,7 +2,6 @@ import { LocalizedArticle } from '@/types/multilingual';
 
 export const scriptsThatSailedII: LocalizedArticle = {
   id: 'scripts-that-sailed-ii',
-  slug: '/scripts-that-sailed-ii',
   title: {
     en: 'Scripts that Sailed II: An Epigraphic Atlas from the Vaigai to Borneo, Champa, and Srīvijaya',
     hi: 'लिपियाँ जो समुद्र पार गयीं II: वैगै से बोर्नियो, चंपा और श्रीविजय तक एक शिलालेख मानचित्र',
@@ -313,11 +312,31 @@ For now, we conclude with a methodological plea: **Epigraphy without archaeology
     hi: `[Hindi translation would be added here - abbreviated for development]`,
     ta: `[Tamil translation would be added here - abbreviated for development]`
   },
-  localizations: ['en', 'hi', 'ta'],
-  tags: ['Epigraphy', 'Palaeography', 'Sanskrit', 'Southeast Asia', 'Maritime Trade', 'Scripts', 'Inscriptions', 'Tamil-Brāhmī', 'Pallava', 'Grantha'],
-  featuredImage: '/images/flatlay_scripts-that-sailed_4x3_v3.png',
-  readingTime: 45,
-  author: 'Kanika Rakesh',
-  publishDate: '2025-10-04',
-  lastUpdated: '2025-10-04'
+  tags: [
+    { en: 'Epigraphy', hi: 'शिलालेख-विज्ञान', ta: 'கல்வெட்டுவியல்' },
+    { en: 'Palaeography', hi: 'पुरालिपि-विज्ञान', ta: 'பழைய எழுத்துமுறை' },
+    { en: 'Sanskrit', hi: 'संस्कृत', ta: 'சமஸ்கிருதம்' },
+    { en: 'Southeast Asia', hi: 'दक्षिण-पूर्व एशिया', ta: 'தென்கிழக்கு ஆசியா' },
+    { en: 'Maritime Trade', hi: 'समुद्री व्यापार', ta: 'கடல் வணிகம்' },
+    { en: 'Scripts', hi: 'लिपियाँ', ta: 'எழுத்துமுறைகள்' },
+    { en: 'Inscriptions', hi: 'शिलालेख', ta: 'கல்வெட்டுகள்' },
+    { en: 'Tamil-Brāhmī', hi: 'तमिल-ब्राह्मी', ta: 'தமிழ்-பிராமி' },
+    { en: 'Pallava', hi: 'पल्लव', ta: 'பல்லவர்' },
+    { en: 'Grantha', hi: 'ग्रंथ', ta: 'கிரந்த' }
+  ],
+  metadata: {
+    en: {
+      confidence: 100,
+      translatedBy: 'Original Content',
+      lastUpdated: '2025-10-04'
+    },
+    hi: {
+      confidence: 50,
+      lastUpdated: '2025-10-04'
+    },
+    ta: {
+      confidence: 50,
+      lastUpdated: '2025-10-04'
+    }
+  }
 };
