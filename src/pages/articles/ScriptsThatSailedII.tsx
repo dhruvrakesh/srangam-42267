@@ -32,7 +32,7 @@ export default function ScriptsThatSailedII() {
         <PalaeographicComparison key="paleography" className="my-12" />,
         voCanhStele && <EnhancedInscriptionView key="vo-canh" inscription={voCanhStele} layout="full" />,
         kedukanBukit && <EnhancedInscriptionView key="kedukan-bukit" inscription={kedukanBukit} layout="full" />
-      ]}
+      ].filter(Boolean)}
     />
   );
 }
