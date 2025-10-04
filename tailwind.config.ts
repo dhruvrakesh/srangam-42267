@@ -30,6 +30,8 @@ export default {
 				hindi: ['Noto Serif Devanagari', 'serif'],
 				punjabi: ['Noto Sans Gurmukhi', 'sans-serif'],
 				gurmukhi: ['Noto Sans Gurmukhi', 'sans-serif'],
+				// Ancient script fonts for epigraphic content
+				brahmic: ['"Noto Sans Brahmi"', '"Noto Sans Grantha"', '"Noto Sans Kawi"', '"Noto Sans Cham"', 'serif'],
 			},
 			colors: {
         // Dharmic & Sanatan colors

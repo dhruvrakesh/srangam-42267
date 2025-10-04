@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+<defs><style><![CDATA[
+  .title{font:700 28px/1.2 Inter,system-ui}
+  .subtitle{font:500 16px/1.25 Inter,system-ui;fill:#334155}
+  .small{font:400 13px/1.2 Inter,system-ui;fill:#475569}
+  .hdr{font:700 16px/1.2 Inter,system-ui;fill:#0b3d5c}
+  .rowlbl{font:600 16px/1.2 Inter,system-ui;fill:#0f172a}
+  .cell{fill:#ffffff;stroke:#cbd5e1;stroke-width:1.2}
+  .panel{fill:#f8fafc;stroke:#cbd5e1;stroke-width:1.2}
+  .grid{stroke:#e2e8f0;stroke-width:1}
+  .glyph{font:600 40px/1.1 "Noto Sans Grantha","Noto Sans Kawi","Noto Sans Cham","Noto Sans Brahmi","Noto Serif Grantha","Nirmala UI","Segoe UI Historic",serif;fill:#0f172a}
+  .meta{font:500 12px/1.1 Inter,system-ui;fill:#334155}
+  .meta2{font:500 12px/1.1 Inter,system-ui;fill:#64748b}
+  .ductus{font:500 12px/1.1 Inter,system-ui;fill:#0b7285}
+    ]]></style></defs>
+
+  <text x="800.0" y="76" text-anchor="middle" class="title">Glyph Plate — Consonants</text>
+  <text x="800.0" y="102" text-anchor="middle" class="subtitle">Tamil‑Brāhmī → Grantha/Pallava → Kawi → Cham • Rows: ka, ma, ya, ra, śa</text>
+
+<rect x="90" y="126" width="1420" height="704" rx="12" class="panel"/>
+<rect x="90.0" y="126" width="355.0" height="117.33333333333333" class="cell" />
+<text x="267.5" y="189.66666666666666" text-anchor="middle" class="hdr">Tamil‑Brāhmī</text>
+<rect x="445.0" y="126" width="355.0" height="117.33333333333333" class="cell" />
+<text x="622.5" y="189.66666666666666" text-anchor="middle" class="hdr">Grantha / Pallava</text>
+<rect x="800.0" y="126" width="355.0" height="117.33333333333333" class="cell" />
+<text x="977.5" y="189.66666666666666" text-anchor="middle" class="hdr">Kawi</text>
+<rect x="1155.0" y="126" width="355.0" height="117.33333333333333" class="cell" />
+<text x="1332.5" y="189.66666666666666" text-anchor="middle" class="hdr">Cham</text>
+<text x="80" y="307.0" text-anchor="end" class="rowlbl">ka</text>
+<rect x="90.0" y="243.33333333333331" width="355.0" height="117.33333333333333" class="cell" />
+<text x="108.0" y="285.3333333333333" class="glyph">⟦glyph⟧</text>
+<text x="108.0" y="311.3333333333333" class="meta">Translit: ka</text>
+<text x="108.0" y="329.3333333333333" class="meta2">Unicode: U+____ (insert)</text>
+<text x="108.0" y="347.3333333333333" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="445.0" y="243.33333333333331" width="355.0" height="117.33333333333333" class="cell" />
+<text x="463.0" y="285.3333333333333" class="glyph">⟦glyph⟧</text>
+<text x="463.0" y="311.3333333333333" class="meta">Translit: ka</text>
+<text x="463.0" y="329.3333333333333" class="meta2">Unicode: U+____ (insert)</text>
+<text x="463.0" y="347.3333333333333" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="800.0" y="243.33333333333331" width="355.0" height="117.33333333333333" class="cell" />
+<text x="818.0" y="285.3333333333333" class="glyph">⟦glyph⟧</text>
+<text x="818.0" y="311.3333333333333" class="meta">Translit: ka</text>
+<text x="818.0" y="329.3333333333333" class="meta2">Unicode: U+____ (insert)</text>
+<text x="818.0" y="347.3333333333333" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="1155.0" y="243.33333333333331" width="355.0" height="117.33333333333333" class="cell" />
+<text x="1173.0" y="285.3333333333333" class="glyph">⟦glyph⟧</text>
+<text x="1173.0" y="311.3333333333333" class="meta">Translit: ka</text>
+<text x="1173.0" y="329.3333333333333" class="meta2">Unicode: U+____ (insert)</text>
+<text x="1173.0" y="347.3333333333333" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<text x="80" y="424.3333333333333" text-anchor="end" class="rowlbl">ma</text>
+<rect x="90.0" y="360.66666666666663" width="355.0" height="117.33333333333333" class="cell" />
+<text x="108.0" y="402.66666666666663" class="glyph">⟦glyph⟧</text>
+<text x="108.0" y="428.66666666666663" class="meta">Translit: ma</text>
+<text x="108.0" y="446.66666666666663" class="meta2">Unicode: U+____ (insert)</text>
+<text x="108.0" y="464.66666666666663" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="445.0" y="360.66666666666663" width="355.0" height="117.33333333333333" class="cell" />
+<text x="463.0" y="402.66666666666663" class="glyph">⟦glyph⟧</text>
+<text x="463.0" y="428.66666666666663" class="meta">Translit: ma</text>
+<text x="463.0" y="446.66666666666663" class="meta2">Unicode: U+____ (insert)</text>
+<text x="463.0" y="464.66666666666663" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="800.0" y="360.66666666666663" width="355.0" height="117.33333333333333" class="cell" />
+<text x="818.0" y="402.66666666666663" class="glyph">⟦glyph⟧</text>
+<text x="818.0" y="428.66666666666663" class="meta">Translit: ma</text>
+<text x="818.0" y="446.66666666666663" class="meta2">Unicode: U+____ (insert)</text>
+<text x="818.0" y="464.66666666666663" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="1155.0" y="360.66666666666663" width="355.0" height="117.33333333333333" class="cell" />
+<text x="1173.0" y="402.66666666666663" class="glyph">⟦glyph⟧</text>
+<text x="1173.0" y="428.66666666666663" class="meta">Translit: ma</text>
+<text x="1173.0" y="446.66666666666663" class="meta2">Unicode: U+____ (insert)</text>
+<text x="1173.0" y="464.66666666666663" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<text x="80" y="541.6666666666666" text-anchor="end" class="rowlbl">ya</text>
+<rect x="90.0" y="478.0" width="355.0" height="117.33333333333333" class="cell" />
+<text x="108.0" y="520.0" class="glyph">⟦glyph⟧</text>
+<text x="108.0" y="546.0" class="meta">Translit: ya</text>
+<text x="108.0" y="564.0" class="meta2">Unicode: U+____ (insert)</text>
+<text x="108.0" y="582.0" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="445.0" y="478.0" width="355.0" height="117.33333333333333" class="cell" />
+<text x="463.0" y="520.0" class="glyph">⟦glyph⟧</text>
+<text x="463.0" y="546.0" class="meta">Translit: ya</text>
+<text x="463.0" y="564.0" class="meta2">Unicode: U+____ (insert)</text>
+<text x="463.0" y="582.0" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="800.0" y="478.0" width="355.0" height="117.33333333333333" class="cell" />
+<text x="818.0" y="520.0" class="glyph">⟦glyph⟧</text>
+<text x="818.0" y="546.0" class="meta">Translit: ya</text>
+<text x="818.0" y="564.0" class="meta2">Unicode: U+____ (insert)</text>
+<text x="818.0" y="582.0" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="1155.0" y="478.0" width="355.0" height="117.33333333333333" class="cell" />
+<text x="1173.0" y="520.0" class="glyph">⟦glyph⟧</text>
+<text x="1173.0" y="546.0" class="meta">Translit: ya</text>
+<text x="1173.0" y="564.0" class="meta2">Unicode: U+____ (insert)</text>
+<text x="1173.0" y="582.0" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<text x="80" y="658.9999999999999" text-anchor="end" class="rowlbl">ra</text>
+<rect x="90.0" y="595.3333333333333" width="355.0" height="117.33333333333333" class="cell" />
+<text x="108.0" y="637.3333333333333" class="glyph">⟦glyph⟧</text>
+<text x="108.0" y="663.3333333333333" class="meta">Translit: ra</text>
+<text x="108.0" y="681.3333333333333" class="meta2">Unicode: U+____ (insert)</text>
+<text x="108.0" y="699.3333333333333" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="445.0" y="595.3333333333333" width="355.0" height="117.33333333333333" class="cell" />
+<text x="463.0" y="637.3333333333333" class="glyph">⟦glyph⟧</text>
+<text x="463.0" y="663.3333333333333" class="meta">Translit: ra</text>
+<text x="463.0" y="681.3333333333333" class="meta2">Unicode: U+____ (insert)</text>
+<text x="463.0" y="699.3333333333333" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="800.0" y="595.3333333333333" width="355.0" height="117.33333333333333" class="cell" />
+<text x="818.0" y="637.3333333333333" class="glyph">⟦glyph⟧</text>
+<text x="818.0" y="663.3333333333333" class="meta">Translit: ra</text>
+<text x="818.0" y="681.3333333333333" class="meta2">Unicode: U+____ (insert)</text>
+<text x="818.0" y="699.3333333333333" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="1155.0" y="595.3333333333333" width="355.0" height="117.33333333333333" class="cell" />
+<text x="1173.0" y="637.3333333333333" class="glyph">⟦glyph⟧</text>
+<text x="1173.0" y="663.3333333333333" class="meta">Translit: ra</text>
+<text x="1173.0" y="681.3333333333333" class="meta2">Unicode: U+____ (insert)</text>
+<text x="1173.0" y="699.3333333333333" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<text x="80" y="776.3333333333333" text-anchor="end" class="rowlbl">śa</text>
+<rect x="90.0" y="712.6666666666666" width="355.0" height="117.33333333333333" class="cell" />
+<text x="108.0" y="754.6666666666666" class="glyph">⟦glyph⟧</text>
+<text x="108.0" y="780.6666666666666" class="meta">Translit: śa</text>
+<text x="108.0" y="798.6666666666666" class="meta2">Unicode: U+____ (insert)</text>
+<text x="108.0" y="816.6666666666666" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="445.0" y="712.6666666666666" width="355.0" height="117.33333333333333" class="cell" />
+<text x="463.0" y="754.6666666666666" class="glyph">⟦glyph⟧</text>
+<text x="463.0" y="780.6666666666666" class="meta">Translit: śa</text>
+<text x="463.0" y="798.6666666666666" class="meta2">Unicode: U+____ (insert)</text>
+<text x="463.0" y="816.6666666666666" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="800.0" y="712.6666666666666" width="355.0" height="117.33333333333333" class="cell" />
+<text x="818.0" y="754.6666666666666" class="glyph">⟦glyph⟧</text>
+<text x="818.0" y="780.6666666666666" class="meta">Translit: śa</text>
+<text x="818.0" y="798.6666666666666" class="meta2">Unicode: U+____ (insert)</text>
+<text x="818.0" y="816.6666666666666" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="1155.0" y="712.6666666666666" width="355.0" height="117.33333333333333" class="cell" />
+<text x="1173.0" y="754.6666666666666" class="glyph">⟦glyph⟧</text>
+<text x="1173.0" y="780.6666666666666" class="meta">Translit: śa</text>
+<text x="1173.0" y="798.6666666666666" class="meta2">Unicode: U+____ (insert)</text>
+<text x="1173.0" y="816.6666666666666" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<text x="800.0" y="950" text-anchor="middle" class="small">Editable template • Replace ⟦glyph⟧ with actual characters and fill Unicode/ductus. Recommended fonts: Noto Sans Brahmi, Noto Sans Grantha, Noto Sans Kawi, Noto Sans Cham. Keep letterforms from estampage/photograph; record confidence (A–D) in QA table.</text>
+<text x="1588" y="986" text-anchor="end" class="small">Generated: 2025-10-04 11:01 UTC • Scripts Atlas Plates</text>
+</svg>

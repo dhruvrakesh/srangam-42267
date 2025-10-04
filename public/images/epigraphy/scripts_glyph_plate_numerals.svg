@@ -1,0 +1,220 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+<defs><style><![CDATA[
+  .title{font:700 28px/1.2 Inter,system-ui}
+  .subtitle{font:500 16px/1.25 Inter,system-ui;fill:#334155}
+  .small{font:400 13px/1.2 Inter,system-ui;fill:#475569}
+  .hdr{font:700 16px/1.2 Inter,system-ui;fill:#0b3d5c}
+  .rowlbl{font:600 16px/1.2 Inter,system-ui;fill:#0f172a}
+  .cell{fill:#ffffff;stroke:#cbd5e1;stroke-width:1.2}
+  .panel{fill:#f8fafc;stroke:#cbd5e1;stroke-width:1.2}
+  .grid{stroke:#e2e8f0;stroke-width:1}
+  .glyph{font:600 40px/1.1 "Noto Sans Grantha","Noto Sans Kawi","Noto Sans Cham","Noto Sans Brahmi","Noto Serif Grantha","Nirmala UI","Segoe UI Historic",serif;fill:#0f172a}
+  .meta{font:500 12px/1.1 Inter,system-ui;fill:#334155}
+  .meta2{font:500 12px/1.1 Inter,system-ui;fill:#64748b}
+  .ductus{font:500 12px/1.1 Inter,system-ui;fill:#0b7285}
+    ]]></style></defs>
+
+  <text x="800.0" y="76" text-anchor="middle" class="title">Glyph Plate — Numerals 1–9</text>
+  <text x="800.0" y="102" text-anchor="middle" class="subtitle">Tamil‑Brāhmī → Grantha/Pallava → Kawi → Cham • Columns = scripts; Rows = numerals</text>
+
+<rect x="90" y="126" width="1420" height="704" rx="12" class="panel"/>
+<rect x="90.0" y="126" width="355.0" height="70.4" class="cell" />
+<text x="267.5" y="166.2" text-anchor="middle" class="hdr">Tamil‑Brāhmī</text>
+<rect x="445.0" y="126" width="355.0" height="70.4" class="cell" />
+<text x="622.5" y="166.2" text-anchor="middle" class="hdr">Grantha / Pallava</text>
+<rect x="800.0" y="126" width="355.0" height="70.4" class="cell" />
+<text x="977.5" y="166.2" text-anchor="middle" class="hdr">Kawi</text>
+<rect x="1155.0" y="126" width="355.0" height="70.4" class="cell" />
+<text x="1332.5" y="166.2" text-anchor="middle" class="hdr">Cham</text>
+<text x="80" y="236.60000000000002" text-anchor="end" class="rowlbl">1</text>
+<rect x="90.0" y="196.4" width="355.0" height="70.4" class="cell" />
+<text x="108.0" y="238.4" class="glyph">⟦glyph⟧</text>
+<text x="108.0" y="264.4" class="meta">Translit: 1</text>
+<text x="108.0" y="282.4" class="meta2">Unicode: U+____ (insert)</text>
+<text x="108.0" y="300.4" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="445.0" y="196.4" width="355.0" height="70.4" class="cell" />
+<text x="463.0" y="238.4" class="glyph">⟦glyph⟧</text>
+<text x="463.0" y="264.4" class="meta">Translit: 1</text>
+<text x="463.0" y="282.4" class="meta2">Unicode: U+____ (insert)</text>
+<text x="463.0" y="300.4" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="800.0" y="196.4" width="355.0" height="70.4" class="cell" />
+<text x="818.0" y="238.4" class="glyph">⟦glyph⟧</text>
+<text x="818.0" y="264.4" class="meta">Translit: 1</text>
+<text x="818.0" y="282.4" class="meta2">Unicode: U+____ (insert)</text>
+<text x="818.0" y="300.4" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="1155.0" y="196.4" width="355.0" height="70.4" class="cell" />
+<text x="1173.0" y="238.4" class="glyph">⟦glyph⟧</text>
+<text x="1173.0" y="264.4" class="meta">Translit: 1</text>
+<text x="1173.0" y="282.4" class="meta2">Unicode: U+____ (insert)</text>
+<text x="1173.0" y="300.4" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<text x="80" y="307.0" text-anchor="end" class="rowlbl">2</text>
+<rect x="90.0" y="266.8" width="355.0" height="70.4" class="cell" />
+<text x="108.0" y="308.8" class="glyph">⟦glyph⟧</text>
+<text x="108.0" y="334.8" class="meta">Translit: 2</text>
+<text x="108.0" y="352.8" class="meta2">Unicode: U+____ (insert)</text>
+<text x="108.0" y="370.8" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="445.0" y="266.8" width="355.0" height="70.4" class="cell" />
+<text x="463.0" y="308.8" class="glyph">⟦glyph⟧</text>
+<text x="463.0" y="334.8" class="meta">Translit: 2</text>
+<text x="463.0" y="352.8" class="meta2">Unicode: U+____ (insert)</text>
+<text x="463.0" y="370.8" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="800.0" y="266.8" width="355.0" height="70.4" class="cell" />
+<text x="818.0" y="308.8" class="glyph">⟦glyph⟧</text>
+<text x="818.0" y="334.8" class="meta">Translit: 2</text>
+<text x="818.0" y="352.8" class="meta2">Unicode: U+____ (insert)</text>
+<text x="818.0" y="370.8" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="1155.0" y="266.8" width="355.0" height="70.4" class="cell" />
+<text x="1173.0" y="308.8" class="glyph">⟦glyph⟧</text>
+<text x="1173.0" y="334.8" class="meta">Translit: 2</text>
+<text x="1173.0" y="352.8" class="meta2">Unicode: U+____ (insert)</text>
+<text x="1173.0" y="370.8" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<text x="80" y="377.40000000000003" text-anchor="end" class="rowlbl">3</text>
+<rect x="90.0" y="337.20000000000005" width="355.0" height="70.4" class="cell" />
+<text x="108.0" y="379.20000000000005" class="glyph">⟦glyph⟧</text>
+<text x="108.0" y="405.20000000000005" class="meta">Translit: 3</text>
+<text x="108.0" y="423.20000000000005" class="meta2">Unicode: U+____ (insert)</text>
+<text x="108.0" y="441.20000000000005" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="445.0" y="337.20000000000005" width="355.0" height="70.4" class="cell" />
+<text x="463.0" y="379.20000000000005" class="glyph">⟦glyph⟧</text>
+<text x="463.0" y="405.20000000000005" class="meta">Translit: 3</text>
+<text x="463.0" y="423.20000000000005" class="meta2">Unicode: U+____ (insert)</text>
+<text x="463.0" y="441.20000000000005" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="800.0" y="337.20000000000005" width="355.0" height="70.4" class="cell" />
+<text x="818.0" y="379.20000000000005" class="glyph">⟦glyph⟧</text>
+<text x="818.0" y="405.20000000000005" class="meta">Translit: 3</text>
+<text x="818.0" y="423.20000000000005" class="meta2">Unicode: U+____ (insert)</text>
+<text x="818.0" y="441.20000000000005" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="1155.0" y="337.20000000000005" width="355.0" height="70.4" class="cell" />
+<text x="1173.0" y="379.20000000000005" class="glyph">⟦glyph⟧</text>
+<text x="1173.0" y="405.20000000000005" class="meta">Translit: 3</text>
+<text x="1173.0" y="423.20000000000005" class="meta2">Unicode: U+____ (insert)</text>
+<text x="1173.0" y="441.20000000000005" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<text x="80" y="447.8" text-anchor="end" class="rowlbl">4</text>
+<rect x="90.0" y="407.6" width="355.0" height="70.4" class="cell" />
+<text x="108.0" y="449.6" class="glyph">⟦glyph⟧</text>
+<text x="108.0" y="475.6" class="meta">Translit: 4</text>
+<text x="108.0" y="493.6" class="meta2">Unicode: U+____ (insert)</text>
+<text x="108.0" y="511.6" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="445.0" y="407.6" width="355.0" height="70.4" class="cell" />
+<text x="463.0" y="449.6" class="glyph">⟦glyph⟧</text>
+<text x="463.0" y="475.6" class="meta">Translit: 4</text>
+<text x="463.0" y="493.6" class="meta2">Unicode: U+____ (insert)</text>
+<text x="463.0" y="511.6" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="800.0" y="407.6" width="355.0" height="70.4" class="cell" />
+<text x="818.0" y="449.6" class="glyph">⟦glyph⟧</text>
+<text x="818.0" y="475.6" class="meta">Translit: 4</text>
+<text x="818.0" y="493.6" class="meta2">Unicode: U+____ (insert)</text>
+<text x="818.0" y="511.6" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="1155.0" y="407.6" width="355.0" height="70.4" class="cell" />
+<text x="1173.0" y="449.6" class="glyph">⟦glyph⟧</text>
+<text x="1173.0" y="475.6" class="meta">Translit: 4</text>
+<text x="1173.0" y="493.6" class="meta2">Unicode: U+____ (insert)</text>
+<text x="1173.0" y="511.6" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<text x="80" y="518.2" text-anchor="end" class="rowlbl">5</text>
+<rect x="90.0" y="478.0" width="355.0" height="70.4" class="cell" />
+<text x="108.0" y="520.0" class="glyph">⟦glyph⟧</text>
+<text x="108.0" y="546.0" class="meta">Translit: 5</text>
+<text x="108.0" y="564.0" class="meta2">Unicode: U+____ (insert)</text>
+<text x="108.0" y="582.0" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="445.0" y="478.0" width="355.0" height="70.4" class="cell" />
+<text x="463.0" y="520.0" class="glyph">⟦glyph⟧</text>
+<text x="463.0" y="546.0" class="meta">Translit: 5</text>
+<text x="463.0" y="564.0" class="meta2">Unicode: U+____ (insert)</text>
+<text x="463.0" y="582.0" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="800.0" y="478.0" width="355.0" height="70.4" class="cell" />
+<text x="818.0" y="520.0" class="glyph">⟦glyph⟧</text>
+<text x="818.0" y="546.0" class="meta">Translit: 5</text>
+<text x="818.0" y="564.0" class="meta2">Unicode: U+____ (insert)</text>
+<text x="818.0" y="582.0" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="1155.0" y="478.0" width="355.0" height="70.4" class="cell" />
+<text x="1173.0" y="520.0" class="glyph">⟦glyph⟧</text>
+<text x="1173.0" y="546.0" class="meta">Translit: 5</text>
+<text x="1173.0" y="564.0" class="meta2">Unicode: U+____ (insert)</text>
+<text x="1173.0" y="582.0" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<text x="80" y="588.6000000000001" text-anchor="end" class="rowlbl">6</text>
+<rect x="90.0" y="548.4000000000001" width="355.0" height="70.4" class="cell" />
+<text x="108.0" y="590.4000000000001" class="glyph">⟦glyph⟧</text>
+<text x="108.0" y="616.4000000000001" class="meta">Translit: 6</text>
+<text x="108.0" y="634.4000000000001" class="meta2">Unicode: U+____ (insert)</text>
+<text x="108.0" y="652.4000000000001" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="445.0" y="548.4000000000001" width="355.0" height="70.4" class="cell" />
+<text x="463.0" y="590.4000000000001" class="glyph">⟦glyph⟧</text>
+<text x="463.0" y="616.4000000000001" class="meta">Translit: 6</text>
+<text x="463.0" y="634.4000000000001" class="meta2">Unicode: U+____ (insert)</text>
+<text x="463.0" y="652.4000000000001" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="800.0" y="548.4000000000001" width="355.0" height="70.4" class="cell" />
+<text x="818.0" y="590.4000000000001" class="glyph">⟦glyph⟧</text>
+<text x="818.0" y="616.4000000000001" class="meta">Translit: 6</text>
+<text x="818.0" y="634.4000000000001" class="meta2">Unicode: U+____ (insert)</text>
+<text x="818.0" y="652.4000000000001" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="1155.0" y="548.4000000000001" width="355.0" height="70.4" class="cell" />
+<text x="1173.0" y="590.4000000000001" class="glyph">⟦glyph⟧</text>
+<text x="1173.0" y="616.4000000000001" class="meta">Translit: 6</text>
+<text x="1173.0" y="634.4000000000001" class="meta2">Unicode: U+____ (insert)</text>
+<text x="1173.0" y="652.4000000000001" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<text x="80" y="659.0000000000001" text-anchor="end" class="rowlbl">7</text>
+<rect x="90.0" y="618.8000000000001" width="355.0" height="70.4" class="cell" />
+<text x="108.0" y="660.8000000000001" class="glyph">⟦glyph⟧</text>
+<text x="108.0" y="686.8000000000001" class="meta">Translit: 7</text>
+<text x="108.0" y="704.8000000000001" class="meta2">Unicode: U+____ (insert)</text>
+<text x="108.0" y="722.8000000000001" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="445.0" y="618.8000000000001" width="355.0" height="70.4" class="cell" />
+<text x="463.0" y="660.8000000000001" class="glyph">⟦glyph⟧</text>
+<text x="463.0" y="686.8000000000001" class="meta">Translit: 7</text>
+<text x="463.0" y="704.8000000000001" class="meta2">Unicode: U+____ (insert)</text>
+<text x="463.0" y="722.8000000000001" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="800.0" y="618.8000000000001" width="355.0" height="70.4" class="cell" />
+<text x="818.0" y="660.8000000000001" class="glyph">⟦glyph⟧</text>
+<text x="818.0" y="686.8000000000001" class="meta">Translit: 7</text>
+<text x="818.0" y="704.8000000000001" class="meta2">Unicode: U+____ (insert)</text>
+<text x="818.0" y="722.8000000000001" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="1155.0" y="618.8000000000001" width="355.0" height="70.4" class="cell" />
+<text x="1173.0" y="660.8000000000001" class="glyph">⟦glyph⟧</text>
+<text x="1173.0" y="686.8000000000001" class="meta">Translit: 7</text>
+<text x="1173.0" y="704.8000000000001" class="meta2">Unicode: U+____ (insert)</text>
+<text x="1173.0" y="722.8000000000001" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<text x="80" y="729.4000000000001" text-anchor="end" class="rowlbl">8</text>
+<rect x="90.0" y="689.2" width="355.0" height="70.4" class="cell" />
+<text x="108.0" y="731.2" class="glyph">⟦glyph⟧</text>
+<text x="108.0" y="757.2" class="meta">Translit: 8</text>
+<text x="108.0" y="775.2" class="meta2">Unicode: U+____ (insert)</text>
+<text x="108.0" y="793.2" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="445.0" y="689.2" width="355.0" height="70.4" class="cell" />
+<text x="463.0" y="731.2" class="glyph">⟦glyph⟧</text>
+<text x="463.0" y="757.2" class="meta">Translit: 8</text>
+<text x="463.0" y="775.2" class="meta2">Unicode: U+____ (insert)</text>
+<text x="463.0" y="793.2" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="800.0" y="689.2" width="355.0" height="70.4" class="cell" />
+<text x="818.0" y="731.2" class="glyph">⟦glyph⟧</text>
+<text x="818.0" y="757.2" class="meta">Translit: 8</text>
+<text x="818.0" y="775.2" class="meta2">Unicode: U+____ (insert)</text>
+<text x="818.0" y="793.2" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="1155.0" y="689.2" width="355.0" height="70.4" class="cell" />
+<text x="1173.0" y="731.2" class="glyph">⟦glyph⟧</text>
+<text x="1173.0" y="757.2" class="meta">Translit: 8</text>
+<text x="1173.0" y="775.2" class="meta2">Unicode: U+____ (insert)</text>
+<text x="1173.0" y="793.2" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<text x="80" y="799.8000000000001" text-anchor="end" class="rowlbl">9</text>
+<rect x="90.0" y="759.6" width="355.0" height="70.4" class="cell" />
+<text x="108.0" y="801.6" class="glyph">⟦glyph⟧</text>
+<text x="108.0" y="827.6" class="meta">Translit: 9</text>
+<text x="108.0" y="845.6" class="meta2">Unicode: U+____ (insert)</text>
+<text x="108.0" y="863.6" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="445.0" y="759.6" width="355.0" height="70.4" class="cell" />
+<text x="463.0" y="801.6" class="glyph">⟦glyph⟧</text>
+<text x="463.0" y="827.6" class="meta">Translit: 9</text>
+<text x="463.0" y="845.6" class="meta2">Unicode: U+____ (insert)</text>
+<text x="463.0" y="863.6" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="800.0" y="759.6" width="355.0" height="70.4" class="cell" />
+<text x="818.0" y="801.6" class="glyph">⟦glyph⟧</text>
+<text x="818.0" y="827.6" class="meta">Translit: 9</text>
+<text x="818.0" y="845.6" class="meta2">Unicode: U+____ (insert)</text>
+<text x="818.0" y="863.6" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<rect x="1155.0" y="759.6" width="355.0" height="70.4" class="cell" />
+<text x="1173.0" y="801.6" class="glyph">⟦glyph⟧</text>
+<text x="1173.0" y="827.6" class="meta">Translit: 9</text>
+<text x="1173.0" y="845.6" class="meta2">Unicode: U+____ (insert)</text>
+<text x="1173.0" y="863.6" class="ductus">Ductus: ⟦stroke order / counters / terminal⟧</text>
+<text x="800.0" y="950" text-anchor="middle" class="small">Editable template • Replace ⟦glyph⟧ with digits in each script; fill Unicode code points. Record palaeographic notes (shape of 2/3/5 loops, counters) and date-bands.</text>
+<text x="1588" y="986" text-anchor="end" class="small">Generated: 2025-10-04 11:01 UTC • Scripts Atlas Plates</text>
+</svg>

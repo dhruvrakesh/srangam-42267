@@ -13,6 +13,7 @@ import { maritimeMemoriesSouthIndiaComplete } from './maritime-memories-south-in
 import { jambudvipaConnected } from './jambudvipa-connected';
 import { cosmicIslandSacredLand } from './cosmic-island-sacred-land';
 import { stonePurana } from './stone-purana';
+import { scriptsThatSailedII } from './scripts-that-sailed-ii';
 
 // Complete multilingual article registry
 export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
@@ -29,7 +30,8 @@ export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
   earthSeaSangam,
   jambudvipaConnected,
   cosmicIslandSacredLand,
-  stonePurana
+  stonePurana,
+  scriptsThatSailedII
 ];
 
 // Mapping from legacy slugs to multilingual article IDs
@@ -47,7 +49,8 @@ export const SLUG_TO_ID_MAP: Record<string, string> = {
   '/earth-sea-sangam': 'earth-sea-sangam',
   '/jambudvipa-connected': 'jambudvipa-connected',
   '/cosmic-island-sacred-land': 'cosmic-island-sacred-land',
-  '/stone-purana': 'stone-purana'
+  '/stone-purana': 'stone-purana',
+  '/scripts-that-sailed-ii': 'scripts-that-sailed-ii'
 };
 
 // Article metadata for display (readTime, author, date)
@@ -140,6 +143,12 @@ export const ARTICLE_METADATA: Record<string, {
     author: 'Nartiang Foundation Geo-Heritage Team',
     date: '2025-10-03',
     theme: 'Geology & Deep Time'
+  },
+  'scripts-that-sailed-ii': {
+    readTime: 45,
+    author: 'Kanika Rakesh',
+    date: '2025-10-04',
+    theme: 'Scripts & Inscriptions'
   }
 };
 
