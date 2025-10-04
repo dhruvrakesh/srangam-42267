@@ -48,7 +48,7 @@ const events: TimelineEvent[] = [
     location: 'East Kalimantan, Borneo',
     scriptType: 'Pallava',
     confidence: 'A',
-    description: 'Seven yupa pillars recording Mulavarman\'s ashvamedha sacrifice',
+    description: "Seven yupa pillars recording Mulavarman's ashvamedha sacrifice",
     color: 'bg-green-600'
   },
   {
