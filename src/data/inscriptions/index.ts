@@ -5,6 +5,8 @@ export * from './registry';
 // Re-export individual inscription data
 export * from './kandahar/metadata';
 export * from './kutai/metadata';
+export * from './vo-canh/metadata';
+export * from './kedukan-bukit/metadata';
 
 // Component exports
 export { ScriptViewer } from '@/components/inscriptions/ScriptViewer';

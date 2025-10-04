@@ -5,12 +5,14 @@ import { enhancedCulturalTerms } from './enhanced-cultural-terms';
 import { jambudvipaCulturalTerms } from './cultural-terms-jambudvipa';
 import { cosmicIslandCulturalTerms } from './cultural-terms-cosmic-island';
 import { stonePuranaCulturalTerms } from './cultural-terms-stone-purana';
+import { scriptsSailedIICulturalTerms } from './cultural-terms-scripts-sailed-ii';
 
 export const culturalTermsDatabase: Record<string, CulturalTerm> = {
   ...enhancedCulturalTerms,
   ...jambudvipaCulturalTerms.reduce((acc, term) => ({ ...acc, [term.term]: term }), {}),
   ...cosmicIslandCulturalTerms,
   ...stonePuranaCulturalTerms,
+  ...scriptsSailedIICulturalTerms,
   'dharma': {
     term: 'dharma',
     translations: {

@@ -1,11 +1,15 @@
 import { InscriptionShastra, InscriptionRegistry } from './interfaces';
 import { kandaharEdict } from './kandahar/metadata';
 import { kutaiYupa } from './kutai/metadata';
+import { voCanhStele } from './vo-canh/metadata';
+import { kedukanBukitStone } from './kedukan-bukit/metadata';
 
 class InscriptionRegistryImpl implements InscriptionRegistry {
   inscriptions: InscriptionShastra[] = [
     kandaharEdict,
-    kutaiYupa
+    kutaiYupa,
+    voCanhStele,
+    kedukanBukitStone
   ];
 
   getById(id: string): InscriptionShastra | undefined {
