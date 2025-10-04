@@ -16,9 +16,25 @@ export default function ScriptsThatSailedII() {
     kedukanBukit: inscriptionRegistry.getById('kedukan-bukit-palembang')
   };
 
+  // FIX 4: Debug logging to verify registry loading
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[ScriptsThatSailedII] Registry lookup results:', {
+      kandahar: !!inscriptions.kandahar,
+      kutai: !!inscriptions.kutai,
+      voCanh: !!inscriptions.voCanh,
+      kedukanBukit: !!inscriptions.kedukanBukit,
+      totalInRegistry: inscriptionRegistry.inscriptions?.length || 0
+    });
+  }
+
+  // FIX 2: TypeScript type guard for inscription validation
+  const isValidInscription = (inscription: any): inscription is typeof inscriptions.kandahar => {
+    return inscription !== undefined && inscription !== null;
+  };
+
   const dataComponents: React.ReactNode[] = [];
   
-  if (inscriptions.kandahar) {
+  if (isValidInscription(inscriptions.kandahar)) {
     dataComponents.push(
       <EnhancedInscriptionView 
         key="kandahar" 
@@ -31,7 +47,7 @@ export default function ScriptsThatSailedII() {
   dataComponents.push(<EpigraphicAtlasMap key="atlas-map" className="my-12" />);
   dataComponents.push(<EpigraphicTimeline key="timeline" className="my-12" />);
   
-  if (inscriptions.kutai) {
+  if (isValidInscription(inscriptions.kutai)) {
     dataComponents.push(
       <EnhancedInscriptionView 
         key="kutai" 
@@ -43,7 +59,7 @@ export default function ScriptsThatSailedII() {
   
   dataComponents.push(<PalaeographicComparison key="paleography" className="my-12" />);
   
-  if (inscriptions.voCanh) {
+  if (isValidInscription(inscriptions.voCanh)) {
     dataComponents.push(
       <EnhancedInscriptionView 
         key="vo-canh" 
@@ -53,7 +69,7 @@ export default function ScriptsThatSailedII() {
     );
   }
   
-  if (inscriptions.kedukanBukit) {
+  if (isValidInscription(inscriptions.kedukanBukit)) {
     dataComponents.push(
       <EnhancedInscriptionView 
         key="kedukan-bukit" 

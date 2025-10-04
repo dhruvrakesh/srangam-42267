@@ -149,14 +149,20 @@ const ArticleContent = React.memo(({
           {/* Enhanced Data Components */}
           {dataComponents.length > 0 && (
             <div className="mt-12 space-y-12">
-              {dataComponents.map((component, index) => (
-                <div 
-                  key={index} 
-                  className="bg-sandalwood/40 border border-burgundy/30 p-8 rounded-2xl backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01]"
-                >
-                  {component}
-                </div>
-              ))}
+              {dataComponents
+                .filter((component): component is React.ReactElement => 
+                  component !== null && 
+                  component !== undefined && 
+                  React.isValidElement(component)
+                )
+                .map((component, index) => (
+                  <div 
+                    key={index} 
+                    className="bg-sandalwood/40 border border-burgundy/30 p-8 rounded-2xl backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01]"
+                  >
+                    {component}
+                  </div>
+                ))}
             </div>
           )}
         </div>

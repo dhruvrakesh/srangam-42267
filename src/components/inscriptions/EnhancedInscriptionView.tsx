@@ -19,6 +19,12 @@ export const EnhancedInscriptionView = React.memo(({
   showComponents = ['script-viewer', 'translation-panel', 'visualization', 'commentary'],
   className 
 }: EnhancedInscriptionViewProps) => {
+  // FIX 1: Defensive null check
+  if (!inscription) {
+    console.warn('EnhancedInscriptionView: inscription is undefined');
+    return null;
+  }
+
   const { scripts, translations, culturalContext, visualComponents } = inscription;
 
   // Get visualization config if available
