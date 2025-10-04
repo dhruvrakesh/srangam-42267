@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -33,9 +33,11 @@ const confidenceBadgeStyles: Record<ConfidenceLevel, string> = {
   D: 'bg-gray-600 text-white'
 };
 
-export const EpigraphicAtlasMap: React.FC<EpigraphicAtlasMapProps> = ({ className }) => {
+const EpigraphicAtlasMapComponent: React.FC<EpigraphicAtlasMapProps> = ({ className }) => {
   const [selectedFilters, setSelectedFilters] = useState<ConfidenceLevel[]>(['A', 'B', 'C', 'D']);
   const [selectedInscription, setSelectedInscription] = useState<string | null>(null);
+  const [mapReady, setMapReady] = useState(false);
+  const mapKey = useRef(`epigraphic-map-${Date.now()}`).current;
 
   const inscriptions = inscriptionRegistry.inscriptions.filter(inscription => 
     inscription.location.coordinates
@@ -95,16 +97,20 @@ export const EpigraphicAtlasMap: React.FC<EpigraphicAtlasMapProps> = ({ classNam
       {/* Map container */}
       <div className="relative h-[600px] w-full">
         <MapContainer
+          key={mapKey}
           center={[10, 90]}
           zoom={4}
           scrollWheelZoom={false}
           className="h-full w-full"
+          whenReady={() => setMapReady(true)}
         >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          {filteredInscriptions.map(inscription => {
+          {mapReady && (
+            <>
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              {filteredInscriptions.map(inscription => {
             const coords = inscription.location.coordinates;
             if (!coords) return null;
 
@@ -152,7 +158,9 @@ export const EpigraphicAtlasMap: React.FC<EpigraphicAtlasMapProps> = ({ classNam
                 </Popup>
               </Marker>
             );
-          })}
+              })}
+            </>
+          )}
         </MapContainer>
       </div>
 
@@ -181,3 +189,6 @@ export const EpigraphicAtlasMap: React.FC<EpigraphicAtlasMapProps> = ({ classNam
     </Card>
   );
 };
+
+export const EpigraphicAtlasMap = React.memo(EpigraphicAtlasMapComponent);
+EpigraphicAtlasMap.displayName = 'EpigraphicAtlasMap';
