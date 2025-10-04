@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { ArticleProvider, useReadingProgress } from '@/components/context/ArticleContext';
 import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
 
-const ReadingProgressBar = React.memo(() => {
+const ReadingProgressBar = () => {
   const progress = useReadingProgress();
   
   return (
@@ -20,9 +20,7 @@ const ReadingProgressBar = React.memo(() => {
       />
     </div>
   );
-});
-
-ReadingProgressBar.displayName = 'ReadingProgressBar';
+};
 
 interface ArticlePageProps {
   title: MultilingualContent | string;
