@@ -9,10 +9,59 @@ import { scriptsThatSailedII } from '@/data/articles/scripts-that-sailed-ii';
 import { IconScript } from '@/components/icons';
 
 export default function ScriptsThatSailedII() {
-  const kandaharEdict = inscriptionRegistry.getById('kandahar-bilingual-edict');
-  const kutaiYupa = inscriptionRegistry.getById('kutai-yupa-borneo');
-  const voCanhStele = inscriptionRegistry.getById('vo-canh-stele-champa');
-  const kedukanBukit = inscriptionRegistry.getById('kedukan-bukit-palembang');
+  const inscriptions = {
+    kandahar: inscriptionRegistry.getById('kandahar-bilingual-edict'),
+    kutai: inscriptionRegistry.getById('kutai-yupa-borneo'),
+    voCanh: inscriptionRegistry.getById('vo-canh-stele-champa'),
+    kedukanBukit: inscriptionRegistry.getById('kedukan-bukit-palembang')
+  };
+
+  const dataComponents: React.ReactNode[] = [];
+  
+  if (inscriptions.kandahar) {
+    dataComponents.push(
+      <EnhancedInscriptionView 
+        key="kandahar" 
+        inscription={inscriptions.kandahar} 
+        layout="compact" 
+      />
+    );
+  }
+  
+  dataComponents.push(<EpigraphicAtlasMap key="atlas-map" className="my-12" />);
+  dataComponents.push(<EpigraphicTimeline key="timeline" className="my-12" />);
+  
+  if (inscriptions.kutai) {
+    dataComponents.push(
+      <EnhancedInscriptionView 
+        key="kutai" 
+        inscription={inscriptions.kutai} 
+        layout="full" 
+      />
+    );
+  }
+  
+  dataComponents.push(<PalaeographicComparison key="paleography" className="my-12" />);
+  
+  if (inscriptions.voCanh) {
+    dataComponents.push(
+      <EnhancedInscriptionView 
+        key="vo-canh" 
+        inscription={inscriptions.voCanh} 
+        layout="full" 
+      />
+    );
+  }
+  
+  if (inscriptions.kedukanBukit) {
+    dataComponents.push(
+      <EnhancedInscriptionView 
+        key="kedukan-bukit" 
+        inscription={inscriptions.kedukanBukit} 
+        layout="full" 
+      />
+    );
+  }
 
   return (
     <ArticlePage
@@ -24,15 +73,7 @@ export default function ScriptsThatSailedII() {
       readTime={45}
       author="Kanika Rakesh"
       date="2025-10-04"
-      dataComponents={[
-        kandaharEdict && <EnhancedInscriptionView key="kandahar" inscription={kandaharEdict} layout="compact" />,
-        <EpigraphicAtlasMap key="atlas-map" className="my-12" />,
-        <EpigraphicTimeline key="timeline" className="my-12" />,
-        kutaiYupa && <EnhancedInscriptionView key="kutai" inscription={kutaiYupa} layout="full" />,
-        <PalaeographicComparison key="paleography" className="my-12" />,
-        voCanhStele && <EnhancedInscriptionView key="vo-canh" inscription={voCanhStele} layout="full" />,
-        kedukanBukit && <EnhancedInscriptionView key="kedukan-bukit" inscription={kedukanBukit} layout="full" />
-      ].filter(Boolean)}
+      dataComponents={dataComponents}
     />
   );
 }
