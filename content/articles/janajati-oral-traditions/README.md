@@ -6,7 +6,7 @@ This folder contains the multilingual content for the research article exploring
 
 ### Content Files
 
-- **`en.md`**: English source content (canonical version, 1,444 lines)
+- **`en.md`**: English source content (canonical version, ~1,100 lines after bibliography cleanup)
 - Future translations will be added as `hi.md`, `ta.md`, `bn.md`, etc.
 
 ### Translation Directory
@@ -22,7 +22,8 @@ Translation metadata and structured content live under:
   - **C**: Inference with partial support
   - **D**: Oral memory or textual testimony without material confirmation
   
-- **42+ academic citations**: Peer-reviewed sources in MLA format
+- **16 academic citations**: Peer-reviewed sources in clean MLA 9 format
+- **3 figures**: Timeline panel, ritual comparanda, heritage integration schematic
 - **8 major sections**: From Harappan fire-altars to Jagannātha tribal cults
 - **Pan-Indian scope**: Sites from Rajasthan to Odisha to Andaman Islands
 

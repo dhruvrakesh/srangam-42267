@@ -190,21 +190,36 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
       return <a href={href} className="text-ocean hover:text-ocean-dark underline transition-colors" target="_blank" rel="noopener noreferrer" {...props}>{children}</a>;
     },
 
+    h1: ({ children, ...props }: any) => {
+      return (
+        <h1 
+          className={cn(
+            'text-4xl font-serif font-bold text-burgundy mt-12 mb-8',
+            'border-b-4 border-burgundy/40 pb-6',
+            scriptFont
+          )}
+          {...props}
+        >
+          {children}
+        </h1>
+      );
+    },
+
     h2: ({ children, ...props }: any) => {
       return (
-        <div className="relative mt-16 mb-8">
-          <div className="absolute -top-8 left-0 right-0 h-px bg-gradient-to-r from-transparent via-burgundy/30 to-transparent" />
+        <div className="relative mt-14 mb-7">
+          <div className="absolute -top-6 left-0 right-0 h-px bg-gradient-to-r from-transparent via-burgundy/30 to-transparent" />
           
           <h2 
             className={cn(
-              'text-3xl font-serif font-bold text-burgundy pb-4',
+              'text-2xl font-serif font-bold text-burgundy pb-3',
               'border-b-2 border-burgundy/30',
               'flex items-center gap-3',
               scriptFont
             )}
             {...props}
           >
-            <span className="text-saffron text-4xl">§</span>
+            <span className="text-saffron text-3xl">§</span>
             {children}
           </h2>
         </div>

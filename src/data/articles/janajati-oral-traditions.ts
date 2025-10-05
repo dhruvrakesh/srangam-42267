@@ -313,7 +313,7 @@ The remnant of an inactive river course, detectable by geological surveys. (E.g.
 | Gond oral epics paralleling Sanskrit itihāsa:                               | B for strong ethnographic documentation; C for the exact historical interplay with Sanskrit texts.         |
 | Mahābhārata astronomical dating attempts:                                   | B for scholarly effort and some convergence; C for lack of decisive proof (still speculative).             |
 
-# Works Cited (MLA 9)
+## Works Cited (MLA 9)
 
 - Achar, Narahari. “On the Astronomical Basis of the Date of the Mahabharata War.” Indian Journal of History of Science, vol. 44, no. 3, 2009, pp. 363–368.
 - Bhadra, B. K., A. K. Gupta, and J. R. Sharma. “Saraswati Nadi in Haryana and Its Linkage with the Vedic Saraswati River—Integrated Study Based on Satellite Images and Ground Data.” Journal of the Geological Society of India, vol. 73, 2009, pp. 273–288. Springer, doi:10.1007/s12594-009-0084-y.
