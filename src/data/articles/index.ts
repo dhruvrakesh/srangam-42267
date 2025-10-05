@@ -14,6 +14,7 @@ import { jambudvipaConnected } from './jambudvipa-connected';
 import { cosmicIslandSacredLand } from './cosmic-island-sacred-land';
 import { stonePurana } from './stone-purana';
 import { scriptsThatSailedII } from './scripts-that-sailed-ii';
+import { janajatiOralTraditions } from './janajati-oral-traditions';
 
 // Complete multilingual article registry
 export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
@@ -31,7 +32,8 @@ export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
   jambudvipaConnected,
   cosmicIslandSacredLand,
   stonePurana,
-  scriptsThatSailedII
+  scriptsThatSailedII,
+  janajatiOralTraditions
 ];
 
 // Mapping from legacy slugs to multilingual article IDs
@@ -50,7 +52,8 @@ export const SLUG_TO_ID_MAP: Record<string, string> = {
   '/jambudvipa-connected': 'jambudvipa-connected',
   '/cosmic-island-sacred-land': 'cosmic-island-sacred-land',
   '/stone-purana': 'stone-purana',
-  '/scripts-that-sailed-ii': 'scripts-that-sailed-ii'
+  '/scripts-that-sailed-ii': 'scripts-that-sailed-ii',
+  '/janajati-oral-traditions': 'janajati-oral-traditions'
 };
 
 // Article metadata for display (readTime, author, date)
@@ -149,6 +152,12 @@ export const ARTICLE_METADATA: Record<string, {
     author: 'Kanika Rakesh',
     date: '2025-10-04',
     theme: 'Scripts & Inscriptions'
+  },
+  'janajati-oral-traditions': {
+    readTime: 42,
+    author: 'Nartiang Foundation Research Team',
+    date: '2025-10-05',
+    theme: 'Ancient India'
   }
 };
 
