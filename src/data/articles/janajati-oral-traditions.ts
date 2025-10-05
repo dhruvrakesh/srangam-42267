@@ -384,20 +384,16 @@ https://www.scribd.com/document/161776181/Kali-Bang-An`,
     as: 'Pending professional translation',
     pn: 'Pending professional translation'
   },
-  tags: {
-    en: ['Sanatana Dharma', 'Janajatiya Traditions', 'Archaeology', 'Oral Traditions', 'Indian History', 'Harappan Civilization'],
-    hi: ['सनातन धर्म', 'जनजातीय परंपराएं', 'पुरातत्व', 'मौखिक परंपराएं', 'भारतीय इतिहास', 'हड़प्पा सभ्यता'],
-    ta: ['சனாதன தர்மம்', 'ஜனஜாதிய மரபுகள்', 'தொல்லியல்', 'வாய்வழி மரபுகள்', 'இந்திய வரலாறு', 'ஹரப்பன் நாகரிகம்'],
-    bn: ['সনাতন ধর্ম', 'জনজাতীয় ঐতিহ্য', 'প্রত্নতত্ত্ব', 'মৌখিক ঐতিহ্য', 'ভারতীয় ইতিহাস', 'হরপ্পা সভ্যতা'],
-    te: ['సనాతన ధర్మం', 'జనజాతీయ సంప్రదాయాలు', 'పురావస్తు శాస్త్రం', 'మౌఖిక సంప్రదాయాలు', 'భారత చరిత్ర', 'హరప్పా నాగరికత'],
-    kn: ['ಸನಾತನ ಧರ್ಮ', 'ಜನಜಾತೀಯ ಸಂಪ್ರದಾಯಗಳು', 'ಪುರಾತತ್ವ', 'ಮೌಖಿಕ ಸಂಪ್ರದಾಯಗಳು', 'ಭಾರತೀಯ ಇತಿಹಾಸ', 'ಹರಪ್ಪಾ ನಾಗರಿಕತೆ'],
-    pa: ['ਸਨਾਤਨ ਧਰਮ', 'ਜਨਜਾਤੀ ਪਰੰਪਰਾਵਾਂ', 'ਪੁਰਾਤੱਤਵ', 'ਮੌਖਿਕ ਪਰੰਪਰਾਵਾਂ', 'ਭਾਰਤੀ ਇਤਿਹਾਸ', 'ਹੜੱਪਾ ਸੱਭਿਅਤਾ'],
-    as: ['সনাতন ধৰ্ম', 'জনজাতীয় পৰম্পৰা', 'পুৰাতত্ত্ব', 'মৌখিক পৰম্পৰা', 'ভাৰতীয় ইতিহাস', 'হৰপ্পা সভ্যতা'],
-    pn: ['Pending']
-  },
+  tags: [
+    { en: 'Sanatana Dharma', hi: 'सनातन धर्म', ta: 'சனாதன தர்மம்', bn: 'সনাতন ধর্ম', te: 'సనాతన ధర్మం', kn: 'ಸನಾತನ ಧರ್ಮ', pa: 'ਸਨਾਤਨ ਧਰਮ', as: 'সনাতন ধৰ্ম', pn: 'Sanatana Dharma' },
+    { en: 'Janajatiya Traditions', hi: 'जनजातीय परंपराएं', ta: 'ஜனஜாதிய மரபுகள்', bn: 'জনজাতীয় ঐতিহ্য', te: 'జనజాతీయ సంప్రదాయాలు', kn: 'ಜನಜಾತೀಯ ಸಂಪ್ರದಾಯಗಳು', pa: 'ਜਨਜਾਤੀ ਪਰੰਪਰਾਵਾਂ', as: 'জনজাতীয় পৰম্পৰা', pn: 'Janajatiya Traditions' },
+    { en: 'Archaeology', hi: 'पुरातत्व', ta: 'தொல்லியல்', bn: 'প্রত্নতত্ত্ব', te: 'పురావస్తు శాస్త్రం', kn: 'ಪುರಾತತ್ವ', pa: 'ਪੁਰਾਤੱਤਵ', as: 'পুৰাতত্ত্ব', pn: 'Archaeology' },
+    { en: 'Oral Traditions', hi: 'मौखिक परंपराएं', ta: 'வாய்வழி மரபுகள்', bn: 'মৌখিক ঐতিহ্য', te: 'మౌఖిక సంప్రదాయాలు', kn: 'ಮೌಖಿಕ ಸಂಪ್ರದಾಯಗಳು', pa: 'ਮੌਖਿਕ ਪਰੰਪਰਾਵਾਂ', as: 'মৌখিক পৰম্পৰা', pn: 'Oral Traditions' },
+    { en: 'Indian History', hi: 'भारतीय इतिहास', ta: 'இந்திய வரலாறு', bn: 'ভারতীয় ইতিহাস', te: 'భారత చరిత్ర', kn: 'ಭಾರತೀಯ ಇತಿಹಾಸ', pa: 'ਭਾਰਤੀ ਇਤਿਹਾਸ', as: 'ভাৰতীয় ইতিহাস', pn: 'Indian History' },
+    { en: 'Harappan Civilization', hi: 'हड़प्पा सभ्यता', ta: 'ஹரப்பன் நாகரிகம்', bn: 'হরপ্পা সভ্যতা', te: 'హరప్పా నాగరికత', kn: 'ಹರಪ್ಪಾ ನಾಗರಿಕತೆ', pa: 'ਹੜੱਪਾ ਸੱਭਿਅਤਾ', as: 'হৰপ্পা সভ্যতা', pn: 'Harappan Civilization' }
+  ],
   metadata: {
     en: {
-      translationStatus: 'original',
       reviewedBy: 'Nartiang Foundation Research Team',
       lastUpdated: '2025-10-05',
       confidence: 95,
@@ -408,13 +404,13 @@ https://www.scribd.com/document/161776181/Kali-Bang-An`,
         '42+ academic citations from peer-reviewed sources'
       ]
     },
-    hi: { translationStatus: 'pending', reviewedBy: 'Pending', lastUpdated: '2025-10-05', confidence: 0, culturalNotes: [] },
-    ta: { translationStatus: 'pending', reviewedBy: 'Pending', lastUpdated: '2025-10-05', confidence: 0, culturalNotes: [] },
-    bn: { translationStatus: 'pending', reviewedBy: 'Pending', lastUpdated: '2025-10-05', confidence: 0, culturalNotes: [] },
-    te: { translationStatus: 'pending', reviewedBy: 'Pending', lastUpdated: '2025-10-05', confidence: 0, culturalNotes: [] },
-    kn: { translationStatus: 'pending', reviewedBy: 'Pending', lastUpdated: '2025-10-05', confidence: 0, culturalNotes: [] },
-    pa: { translationStatus: 'pending', reviewedBy: 'Pending', lastUpdated: '2025-10-05', confidence: 0, culturalNotes: [] },
-    as: { translationStatus: 'pending', reviewedBy: 'Pending', lastUpdated: '2025-10-05', confidence: 0, culturalNotes: [] },
-    pn: { translationStatus: 'pending', reviewedBy: 'Pending', lastUpdated: '2025-10-05', confidence: 0, culturalNotes: [] }
+    hi: { reviewedBy: 'Pending', lastUpdated: '2025-10-05', confidence: 0, culturalNotes: [] },
+    ta: { reviewedBy: 'Pending', lastUpdated: '2025-10-05', confidence: 0, culturalNotes: [] },
+    bn: { reviewedBy: 'Pending', lastUpdated: '2025-10-05', confidence: 0, culturalNotes: [] },
+    te: { reviewedBy: 'Pending', lastUpdated: '2025-10-05', confidence: 0, culturalNotes: [] },
+    kn: { reviewedBy: 'Pending', lastUpdated: '2025-10-05', confidence: 0, culturalNotes: [] },
+    pa: { reviewedBy: 'Pending', lastUpdated: '2025-10-05', confidence: 0, culturalNotes: [] },
+    as: { reviewedBy: 'Pending', lastUpdated: '2025-10-05', confidence: 0, culturalNotes: [] },
+    pn: { reviewedBy: 'Pending', lastUpdated: '2025-10-05', confidence: 0, culturalNotes: [] }
   }
 };
