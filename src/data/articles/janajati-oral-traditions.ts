@@ -40,10 +40,7 @@ Two framing principles guide this study. First is a **paired-evidence rule**: cu
 
 Methodologically, we start with A-class anchors—for instance, the fire-altars of Kalibangan, the flood stratum at Hastināpura, the Ghaggar–Hakra (Sarasvatī) palaeochannel, and Dvārakā's submerged architecture.
 
-![Figure 1: Archaeological Sites Map](/images/articles/janajati_fig1_archaeological_sites_map.png)  
-*Map showing A-class archaeological anchors: Kalibangan, Ghaggar-Hakra, Hastināpura, Kauśāmbī, Poompuhar, Dvārakā*
-
-![Figure 2: Oral Memory Timeline](/images/articles/janajati_fig2_oral_memory_timeline.png)  
+![Figure 1: Oral Memory Timeline](/images/articles/janajati_fig2_oral_memory_timeline.png)  
 *Timeline mapping scientific anchors to oral/literary memory*
 
 # I. Archaeology That Talks: Fire-Altars, Flood Layers, and the Fossil River
@@ -84,7 +81,6 @@ Confidence: A (the identification of the Sarasvati with the Ghaggar–Hakra pala
 
 Scope caution: The Sarasvati’s history is complex and composed of riverine shifts over millennia; it is not the case that a single enormous river flowed unchanged straight from Vedic times to now. Rather, there were successive fluvial regimes. So while it’s justified to equate the Vedic Sarasvatī with the now-dry Ghaggar-Hakra system, one must avoid simplistic assertions (e.g. "the Sarasvati flowed full during the entire Harappan era"). The scientific consensus is that parts of that river system had already begun drying by the late 2nd millennium BCE[20]. Still, the memory of a great river in that region, preserved in Veda and local legend, finds stunning confirmation in modern remote sensing.
 
-(See Figure 1 for a map plotting the Sarasvatī (Ghaggar–Hakra) palaeochannel and major Indus–Sarasvati Civilisation sites along its course, illustrating the overlap of geological and archaeological data.)
 
 # II. Ocean Memory: Cities the Sea Took—And Gave Back to History
 
@@ -337,11 +333,9 @@ The remnant of an inactive river course, detectable by geological surveys. (E.g.
 - Singh, Ajit, et al. “Counter-Intuitive Influence of Himalayan River Morphodynamics on Indus Civilisation Urbanisation.” Nature Communications, vol. 8, 2017, article 1617. doi:10.1038/s41467-017-01643-7.
 
 # List of Figures:
-
-- Fig. 1. Map of A-class sites in India: Kalibangan (fire-altars); Hastināpura and Kauśāmbī (flood and relocation); the Ghaggar–Hakra/Sarasvatī palaeoriver corridor (with dense Harappan sites); coastal Dvārakā (submerged city); and Poompuhar/Kāveripattinam (submerged port). (All key locations discussed in the text.)
-- Fig. 2. Timeline Panel: Aligning scientific/archaeological “anchors” with oral tradition timelines. For example, Hastinapura’s flood stratum (c. 800 BCE) alongside the epic Mahabharata chronology; Dvārakā and Poompuhar submergence episodes on a time axis with corresponding purāṇic/Sangam literary references; and the drying of the Sarasvatī river (c. 1900 BCE) next to late Vedic textual references. (Illustrates how tradition and science converge chronologically.)
-- Fig. 3. Ritual Comparanda: Side-by-side comparison of a Vedic yajña altar layout vs. the excavated fire-altar row at Kalibangan. Photographs of the Kalibangan brick altars (with ash-filled pits) next to a schematic of the Vedic agnicayana altars (e.g., falcon-shaped altar with multiple fire pits). (Shows formal parallels in ritual spaces separated by 2000 years.)
-- Fig. 4. Heritage Integration Schematic: A diagram showing how A/B-grade evidence (archaeological finds, dated events) feeds into concrete history and policy (e.g., where to excavate, what to preserve), whereas C/D-grade
+- Fig. 1. Timeline Panel: Aligning scientific/archaeological “anchors” with oral tradition timelines. For example, Hastinapura’s flood stratum (c. 800 BCE) alongside the epic Mahabharata chronology; Dvārakā and Poompuhar submergence episodes on a time axis with corresponding purāṇic/Sangam literary references; and the drying of the Sarasvatī river (c. 1900 BCE) next to late Vedic textual references. (Illustrates how tradition and science converge chronologically.)
+- Fig. 2. Ritual Comparanda: Side-by-side comparison of a Vedic yajña altar layout vs. the excavated fire-altar row at Kalibangan. Photographs of the Kalibangan brick altars (with ash-filled pits) next to a schematic of the Vedic agnicayana altars (e.g., falcon-shaped altar with multiple fire pits). (Shows formal parallels in ritual spaces separated by 2000 years.)
+- Fig. 3. Heritage Integration Schematic: A diagram showing how A/B-grade evidence (archaeological finds, dated events) feeds into concrete history and policy (e.g., where to excavate, what to preserve), whereas C/D-grade
 
 elements (living oral traditions, unverified legends) feed into documentation efforts and hypothesis generation rather than immediate assertions. (Emphasizes a balanced approach to blending oral tradition with science in heritage management.)
 

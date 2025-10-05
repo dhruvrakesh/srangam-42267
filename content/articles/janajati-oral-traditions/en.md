@@ -85,11 +85,7 @@ the Indo-Gangetic heartland, Odisha and the eastern coasts, the western
 seaboard (Dwarka, etc.), the Himalayan fringes, and peninsular
 groves---underscoring that the phenomena of interest are pan-Indian.
 
-*(Figures:* *Figure 1* *shows a map of the key archaeological sites
-("A-class" anchors) discussed in this study, and* *Figure 2* *is a
-timeline aligning those scientific anchors with the oral/literary
-traditions. Other figures illustrate specific comparisons as noted in
-the text.)*
+*(Figures:* *Figure 1* *is a timeline aligning scientific anchors with the oral/literary traditions. Other figures illustrate specific comparisons as noted in the text.)*
 
 ## I. Archaeology That Talks: Fire-Altars, Flood Layers, and the Fossil River {#i.-archaeology-that-talks-fire-altars-flood-layers-and-the-fossil-river}
 
@@ -285,11 +281,6 @@ that river system had already begun drying by the late 2nd millennium
 BCE[\[20\]](https://science.thewire.in/society/history/the-saraswati-is-a-river-that-never-was-and-flowed-always-in-the-peoples-hearts/#:~:text=,How).
 Still, the *memory* of a great river in that region, preserved in Veda
 and local legend, finds stunning confirmation in modern remote sensing.
-
-*(See* *Figure 1* *for a map plotting the Sarasvatī (Ghaggar--Hakra)
-palaeochannel and major Indus--Sarasvati Civilisation sites along its
-course, illustrating the overlap of geological and archaeological
-data.)*
 
 ## II. Ocean Memory: Cities the Sea Took---And Gave Back to History {#ii.-ocean-memory-cities-the-sea-tookand-gave-back-to-history}
 
