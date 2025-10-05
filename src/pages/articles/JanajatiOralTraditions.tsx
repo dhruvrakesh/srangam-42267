@@ -11,7 +11,7 @@ export default function JanajatiOralTraditions() {
       content={janajatiOralTraditions.content}
       tags={janajatiOralTraditions.tags}
       icon={IconLotus}
-      readTime={42}
+      readTime={55}
       author="Nartiang Foundation Research Team"
       date="2025-10-05"
     />
