@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -37,7 +37,20 @@ const EpigraphicAtlasMapComponent: React.FC<EpigraphicAtlasMapProps> = ({ classN
   const [selectedFilters, setSelectedFilters] = useState<ConfidenceLevel[]>(['A', 'B', 'C', 'D']);
   const [selectedInscription, setSelectedInscription] = useState<string | null>(null);
   const [mapReady, setMapReady] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const mapKey = useRef(`epigraphic-map-${Date.now()}`).current;
+  const mapInstanceRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (mapInstanceRef.current) return; // Prevent re-initialization
+    
+    const timer = setTimeout(() => {
+      mapInstanceRef.current = true;
+      setMounted(true);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const inscriptions = inscriptionRegistry.inscriptions.filter(inscription => 
     inscription.location.coordinates
@@ -63,6 +76,18 @@ const EpigraphicAtlasMapComponent: React.FC<EpigraphicAtlasMapProps> = ({ classN
   const filteredInscriptions = inscriptions.filter(inscription => 
     selectedFilters.includes(getConfidenceLevel(inscription.id))
   );
+
+  if (!mounted) {
+    return (
+      <Card className={cn('overflow-hidden', className)}>
+        <div className="h-[600px] flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-muted-foreground">Loading map...</p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className={cn('overflow-hidden', className)}>

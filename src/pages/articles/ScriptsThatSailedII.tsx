@@ -7,6 +7,7 @@ import { EpigraphicTimeline } from '@/components/inscriptions/EpigraphicTimeline
 import { inscriptionRegistry } from '@/data/inscriptions/registry';
 import { scriptsThatSailedII } from '@/data/articles/scripts-that-sailed-ii';
 import { IconScript } from '@/components/icons';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export default function ScriptsThatSailedII() {
   const inscriptions = {
@@ -44,7 +45,19 @@ export default function ScriptsThatSailedII() {
     );
   }
   
-  dataComponents.push(<EpigraphicAtlasMap key="atlas-map" className="my-12" />);
+  dataComponents.push(
+    <ErrorBoundary 
+      key="atlas-map" 
+      fallback={
+        <div className="my-12 p-8 border border-border rounded-lg text-center bg-muted/30">
+          <p className="text-muted-foreground">Map temporarily unavailable</p>
+          <p className="text-xs text-muted-foreground mt-2">Please refresh to try again</p>
+        </div>
+      }
+    >
+      <EpigraphicAtlasMap className="my-12" />
+    </ErrorBoundary>
+  );
   dataComponents.push(<EpigraphicTimeline key="timeline" className="my-12" />);
   
   if (isValidInscription(inscriptions.kutai)) {
