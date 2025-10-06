@@ -1,7 +1,36 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { ArticlePage } from '@/components/articles/ArticlePage';
 import { janajatiOralTraditions } from '@/data/articles/janajati-oral-traditions';
 import { IconLotus } from '@/components/icons';
+import { Card } from '@/components/ui/card';
+
+const RelatedReading = () => (
+  <Card className="my-12 p-6 bg-muted/30 border-border">
+    <h3 className="text-lg font-semibold mb-4 text-foreground">Related Reading</h3>
+    <div className="space-y-3">
+      <div className="font-medium text-sm mb-2 text-foreground">Sacred Ecology Series:</div>
+      <ul className="space-y-2 ml-4">
+        <li>
+          <Link to="/sacred-tree-harvest-rhythms" className="text-primary hover:underline font-medium">
+            Part 1: Under the Sacred Tree — Harvest Rhythms and Groves
+          </Link>
+          <p className="text-xs text-muted-foreground mt-1">
+            Living ritual practices (trees, groves, harvest festivals)
+          </p>
+        </li>
+        <li>
+          <Link to="/stone-song-and-sea" className="text-primary hover:underline font-medium">
+            Part 2: Stone, Song, and Sea — Petroglyphs to Monoliths
+          </Link>
+          <p className="text-xs text-muted-foreground mt-1">
+            Material culture (stone, sound, megaliths) preserves ritual calendars across deep time
+          </p>
+        </li>
+      </ul>
+    </div>
+  </Card>
+);
 
 export default function JanajatiOralTraditions() {
   return (
@@ -14,6 +43,7 @@ export default function JanajatiOralTraditions() {
       readTime={55}
       author="Nartiang Foundation Research Team"
       date="2025-10-05"
+      dataComponents={[<RelatedReading key="related-reading" />]}
     />
   );
 }

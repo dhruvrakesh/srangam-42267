@@ -1,10 +1,28 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { ArticlePage } from '@/components/articles/ArticlePage';
 import { IconBasalt } from '@/components/icons';
 import { PlateSpeedChart } from '@/components/articles/PlateSpeedChart';
 import { gondwanaToHimalaya } from '@/data/articles/gondwana-to-himalaya';
+import { Card } from '@/components/ui/card';
 
 // Multilingual content is properly loaded from data file - no hardcoded content needed
+
+const DeepTimeCulturalMemory = () => (
+  <Card className="my-12 p-6 bg-primary/5 border-primary/20">
+    <h3 className="text-lg font-semibold mb-3 text-foreground">Deep Time in Cultural Memory</h3>
+    <p className="text-sm text-muted-foreground mb-3">
+      Just as geological processes operate across vast timescales, cultural practices can persist through millennia. 
+      The concept of <em>longue durée</em> bridges geological and cultural deep time.
+    </p>
+    <Link to="/stone-song-and-sea" className="inline-flex items-center text-primary hover:underline font-medium text-sm">
+      Stone, Song, and Sea →
+    </Link>
+    <p className="text-xs text-muted-foreground mt-2">
+      Applies archaeological deep time methodology to petroglyphs, megaliths, and oral traditions—bridging geological and cultural longue durée
+    </p>
+  </Card>
+);
 
 const DeccanStepsComponent = () => (
   <div className="space-y-4">
@@ -49,7 +67,8 @@ export default function GondwanaToHimalaya() {
       date="2024-03-05"
       dataComponents={[
         <PlateSpeedChart key="plate-speed" />,
-        <DeccanStepsComponent key="deccan-steps" />
+        <DeccanStepsComponent key="deccan-steps" />,
+        <DeepTimeCulturalMemory key="deep-time-cultural" />
       ]}
     />
   );

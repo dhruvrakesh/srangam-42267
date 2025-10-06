@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { ArticlePage } from '@/components/articles/ArticlePage';
 import { cosmicIslandSacredLand } from '@/data/articles/cosmic-island-sacred-land';
 import { IconLotus } from '@/components/icons';
@@ -7,6 +8,26 @@ import { TranslationStatusHUD } from '@/components/i18n/TranslationStatusHUD';
 import { GatedLanguageSwitcher } from '@/components/i18n/GatedLanguageSwitcher';
 import { useArticleCoverage } from '@/hooks/useArticleCoverage';
 import { cosmicIslandSacredLandCoverage } from '@/lib/i18n/coverageData';
+import { Card } from '@/components/ui/card';
+
+const ExploreSacredEcology = () => (
+  <Card className="my-12 p-6 bg-muted/30 border-border">
+    <h3 className="text-lg font-semibold mb-4 text-foreground">Explore Sacred Ecology</h3>
+    <p className="text-sm text-muted-foreground mb-4">
+      Deep-dive into ritual calendars and material culture:
+    </p>
+    <div className="grid md:grid-cols-2 gap-3">
+      <Link to="/sacred-tree-harvest-rhythms" className="block p-4 rounded-lg bg-background hover:bg-muted/50 transition-colors border border-border">
+        <div className="font-medium text-sm mb-1 text-foreground">Sacred Tree Series Part 1</div>
+        <p className="text-xs text-muted-foreground">Harvest Rhythms and Living Groves</p>
+      </Link>
+      <Link to="/stone-song-and-sea" className="block p-4 rounded-lg bg-background hover:bg-muted/50 transition-colors border border-border">
+        <div className="font-medium text-sm mb-1 text-foreground">Sacred Tree Series Part 2</div>
+        <p className="text-xs text-muted-foreground">Stone, Song, and Sea — Megalith-grove pairings, acoustic sites, and the longue durée</p>
+      </Link>
+    </div>
+  </Card>
+);
 
 const CosmicIslandSacredLand: React.FC = () => {
   const { currentCoverage } = useArticleCoverage('cosmic-island-sacred-land');
@@ -51,7 +72,7 @@ const CosmicIslandSacredLand: React.FC = () => {
         readTime={42}
         author="Research Team"
         date="October 2, 2025"
-        dataComponents={[]}
+        dataComponents={[<ExploreSacredEcology key="explore-sacred-ecology" />]}
       />
     </>
   );
