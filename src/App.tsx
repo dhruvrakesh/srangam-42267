@@ -53,6 +53,7 @@ const JambudvipaConnected = lazy(() => import("./pages/articles/JambudvipaConnec
 const CosmicIslandSacredLand = lazy(() => import("./pages/articles/CosmicIslandSacredLand"));
 const StonePurana = lazy(() => import("./pages/articles/StonePurana"));
 const JanajatiOralTraditions = lazy(() => import("./pages/articles/JanajatiOralTraditions"));
+const SacredTreeHarvestRhythms = lazy(() => import("./pages/articles/SacredTreeHarvestRhythms"));
 const BatchBujangNagapattinamOcean = lazy(() => import("./pages/BatchBujangNagapattinamOcean"));
 const BatchMuzirisKutaiAshoka = lazy(() => import("./pages/BatchMuzirisKutaiAshoka"));
 const Sitemap = lazy(() => import("./pages/Sitemap"));

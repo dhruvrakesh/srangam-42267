@@ -16,6 +16,7 @@ import { cosmicIslandSacredLand } from './cosmic-island-sacred-land';
 import { stonePurana } from './stone-purana';
 import { scriptsThatSailedII } from './scripts-that-sailed-ii';
 import { janajatiOralTraditions } from './janajati-oral-traditions';
+import { sacredTreeHarvestRhythms } from './sacred-tree-harvest-rhythms';
 
 // Complete multilingual article registry
 export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
@@ -35,7 +36,8 @@ export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
   cosmicIslandSacredLand,
   stonePurana,
   scriptsThatSailedII,
-  janajatiOralTraditions
+  janajatiOralTraditions,
+  sacredTreeHarvestRhythms
 ];
 
 // Mapping from legacy slugs to multilingual article IDs
@@ -56,7 +58,8 @@ export const SLUG_TO_ID_MAP: Record<string, string> = {
   '/cosmic-island-sacred-land': 'cosmic-island-sacred-land',
   '/stone-purana': 'stone-purana',
   '/scripts-that-sailed-ii': 'scripts-that-sailed-ii',
-  '/janajati-oral-traditions': 'janajati-oral-traditions'
+  '/janajati-oral-traditions': 'janajati-oral-traditions',
+  '/sacred-tree-harvest-rhythms': 'sacred-tree-harvest-rhythms'
 };
 
 // Article metadata for display (readTime, author, date)
@@ -166,6 +169,12 @@ export const ARTICLE_METADATA: Record<string, {
     readTime: 42,
     author: 'Nartiang Foundation Research Team',
     date: '2025-10-05',
+    theme: 'Ancient India'
+  },
+  'sacred-tree-harvest-rhythms': {
+    readTime: 26,
+    author: 'Nartiang Foundation Research Team',
+    date: '2025-10-06',
     theme: 'Ancient India'
   }
 };
