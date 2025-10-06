@@ -71,6 +71,34 @@
     "sacredPathsDesc": "Three pillars of knowledge in the dharmic tradition",
     "viewAllResearch": "सर्वे अध्ययनम् | View All Research"
   },
+  "filters": {
+    "allArticles": "All Articles",
+    "articles": "articles",
+    "articlesFound": "articles found",
+    "articlesShowing": "articles",
+    "filterByTheme": "Filter by Theme"
+  },
+  "sort": {
+    "mostRecent": "Most Recent",
+    "oldest": "Oldest First",
+    "longestReads": "Longest Reads",
+    "shortestReads": "Shortest Reads",
+    "alphabetical": "A-Z by Title"
+  },
+  "actions": {
+    "showAll": "Show All",
+    "clearFilters": "Clear All Filters"
+  },
+  "search": {
+    "searchArticles": "Search articles by title or content...",
+    "noResults": "No articles match your search criteria"
+  },
+  "pages": {
+    "articles": {
+      "title": "Research Articles",
+      "description": "Explore our comprehensive collection of peer-reviewed research on Indian Ocean history, ancient civilizations, and maritime heritage"
+    }
+  },
   "collections": {
     "scriptsTradeTitle": "लेख संग्रह | Scripts & Trade Empire",
     "scriptsTradeItems": "Kandahar Edicts • Kutai Yūpa • Muziris Trade Corridors",

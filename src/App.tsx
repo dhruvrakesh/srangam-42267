@@ -22,6 +22,7 @@ const GeologyDeepTime = lazy(() => import("./pages/themes/GeologyDeepTime"));
 const EmpiresExchange = lazy(() => import("./pages/themes/EmpiresExchange"));
 
 // Lazy load secondary pages
+const Articles = lazy(() => import("./pages/Articles"));
 const FieldNotes = lazy(() => import("./pages/FieldNotes"));
 const MapsData = lazy(() => import("./pages/MapsData"));
 const ReadingRoom = lazy(() => import("./pages/ReadingRoom"));
@@ -100,6 +101,7 @@ const App = () => (
                 <Suspense fallback={<PageLoadingFallback />}>
                   <Routes>
                   <Route path="/" element={<Home />} />
+                  <Route path="/articles" element={<Articles />} />
                   <Route path="/themes/ancient-india" element={<AncientIndia />} />
                   <Route path="/themes/indian-ocean-world" element={<IndianOceanWorld />} />
                   <Route path="/themes/scripts-inscriptions" element={<ScriptsInscriptions />} />

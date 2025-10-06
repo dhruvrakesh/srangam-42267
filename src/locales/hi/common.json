@@ -61,10 +61,40 @@
   },
   "sections": {
     "recentResearch": "हाल के अनुसंधान",
+    "recentResearchDesc": "धर्म दृष्टि से हिंद महासागर इतिहास पर हमारे चल रहे अनुसंधान से नवीनतम खोजें",
     "featuredCollections": "विशेष संग्रह",
+    "featuredCollectionsDesc": "स्थान और समय में परस्पर जुड़े विषयों की खोज करने वाले संकलित अनुसंधान संग्रह",
     "researchThemes": "अनुसंधान विषय",
     "sacredPaths": "पवित्र पथ | पवित्र मार्ग",
-    "allResearch": "सभी अनुसंधान देखें"
+    "viewAllResearch": "सभी अनुसंधान देखें"
+  },
+  "filters": {
+    "allArticles": "सभी लेख",
+    "articles": "लेख",
+    "articlesFound": "लेख मिले",
+    "articlesShowing": "लेख",
+    "filterByTheme": "विषय के अनुसार फ़िल्टर करें"
+  },
+  "sort": {
+    "mostRecent": "सबसे हाल का",
+    "oldest": "पुराने से नए",
+    "longestReads": "सबसे लंबे लेख",
+    "shortestReads": "सबसे छोटे लेख",
+    "alphabetical": "अ से ज्ञ"
+  },
+  "actions": {
+    "showAll": "सभी दिखाएं",
+    "clearFilters": "सभी फ़िल्टर साफ़ करें"
+  },
+  "search": {
+    "searchArticles": "शीर्षक या सामग्री से लेख खोजें...",
+    "noResults": "आपकी खोज मानदंड से कोई लेख मेल नहीं खाता"
+  },
+  "pages": {
+    "articles": {
+      "title": "अनुसंधान लेख",
+      "description": "हिंद महासागर इतिहास, प्राचीन सभ्यताओं और समुद्री विरासत पर हमारे व्यापक समीक्षित अनुसंधान संग्रह का अन्वेषण करें"
+    }
   },
   "collections": {
     "scriptsTradeEmpire": "लिपि व्यापार साम्राज्य",

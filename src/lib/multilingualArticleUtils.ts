@@ -50,12 +50,83 @@ export const getDisplayArticles = (language: SupportedLanguage = 'en'): DisplayA
 };
 
 /**
- * Get featured articles (most recent 3)
+ * Get unique themes from all articles
  */
-export const getFeaturedArticles = (language: SupportedLanguage = 'en'): DisplayArticle[] => {
-  return getDisplayArticles(language)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) // Sort by date, newest first
-    .slice(0, 3);
+export const getAllThemes = (): string[] => {
+  const themes = new Set(
+    Object.values(ARTICLE_METADATA).map(meta => meta.theme)
+  );
+  return Array.from(themes).sort();
+};
+
+/**
+ * Get article count by theme
+ */
+export const getArticleCountByTheme = (theme: string): number => {
+  return Object.values(ARTICLE_METADATA).filter(
+    meta => meta.theme === theme
+  ).length;
+};
+
+/**
+ * Get articles with filtering and sorting
+ */
+export const getFilteredArticles = (
+  language: SupportedLanguage = 'en',
+  options: {
+    themes?: string[];
+    sortBy?: 'recent' | 'oldest' | 'longest' | 'shortest' | 'title';
+    limit?: number;
+  } = {}
+): DisplayArticle[] => {
+  let articles = getDisplayArticles(language);
+
+  // Filter by themes
+  if (options.themes && options.themes.length > 0) {
+    articles = articles.filter(article =>
+      options.themes!.includes(article.theme)
+    );
+  }
+
+  // Sort
+  switch (options.sortBy) {
+    case 'recent':
+      articles.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      break;
+    case 'oldest':
+      articles.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      break;
+    case 'longest':
+      articles.sort((a, b) => b.readTime - a.readTime);
+      break;
+    case 'shortest':
+      articles.sort((a, b) => a.readTime - b.readTime);
+      break;
+    case 'title':
+      articles.sort((a, b) => {
+        const titleA = typeof a.title === 'string' ? a.title : (a.title as any).en || '';
+        const titleB = typeof b.title === 'string' ? b.title : (b.title as any).en || '';
+        return titleA.localeCompare(titleB);
+      });
+      break;
+    default:
+      // Default to recent
+      articles.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }
+
+  // Apply limit
+  if (options.limit && options.limit > 0) {
+    articles = articles.slice(0, options.limit);
+  }
+
+  return articles;
+};
+
+/**
+ * Get featured articles (most recent, with optional limit)
+ */
+export const getFeaturedArticles = (language: SupportedLanguage = 'en', limit: number = 3): DisplayArticle[] => {
+  return getFilteredArticles(language, { sortBy: 'recent', limit });
 };
 
 /**

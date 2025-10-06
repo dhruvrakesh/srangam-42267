@@ -1,9 +1,11 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { ArticleCard } from "@/components/ui/ArticleCard";
 import { Button } from "@/components/ui/button";
-import { getFeaturedArticles } from "@/lib/multilingualArticleUtils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getFilteredArticles } from "@/lib/multilingualArticleUtils";
 import { useLanguage } from "@/components/language/LanguageProvider";
+import { ArticleThemeChips } from "@/components/articles/ArticleThemeChips";
 import { IconMonsoon, IconScript, IconBasalt, IconPort, IconEdict, IconDharmaChakra, IconSarnathLion, IconLotus, IconConch, IconOm } from "@/components/icons";
 import { Link } from "react-router-dom";
 import { ArrowRight, Waves, Mountain, BookOpen, Map, Users } from "lucide-react";
@@ -12,8 +14,41 @@ export default function Home() {
   const { t } = useTranslation();
   const { currentLanguage } = useLanguage();
   
-  // Memoize multilingual featured articles for performance
-  const featuredArticles = useMemo(() => getFeaturedArticles(currentLanguage), [currentLanguage]);
+  // Article browsing state
+  const [showAllArticles, setShowAllArticles] = useState(false);
+  const [selectedThemes, setSelectedThemes] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'longest' | 'shortest' | 'title'>('recent');
+
+  // Get filtered articles
+  const filteredArticles = useMemo(() => 
+    getFilteredArticles(currentLanguage, {
+      themes: selectedThemes.length > 0 ? selectedThemes : undefined,
+      sortBy,
+      limit: showAllArticles ? undefined : 6
+    }),
+    [currentLanguage, selectedThemes, sortBy, showAllArticles]
+  );
+
+  const totalArticles = useMemo(() => 
+    getFilteredArticles(currentLanguage, {
+      themes: selectedThemes.length > 0 ? selectedThemes : undefined,
+      sortBy
+    }).length,
+    [currentLanguage, selectedThemes, sortBy]
+  );
+
+  const handleThemeToggle = (theme: string) => {
+    if (theme === 'all') {
+      setSelectedThemes([]);
+    } else {
+      setSelectedThemes(prev =>
+        prev.includes(theme)
+          ? prev.filter(t => t !== theme)
+          : [...prev, theme]
+      );
+    }
+    setShowAllArticles(false); // Reset when changing filters
+  };
   
   const themes = useMemo(() => [
     {
@@ -140,7 +175,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Articles - Sacred Manuscript Style */}
+      {/* Featured Articles - Enhanced Browsing */}
       <section className="py-16 bg-sandalwood/20 relative">
         <div className="absolute inset-0 dharma-scroll opacity-30" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -151,22 +186,61 @@ export default function Home() {
             <h2 className="font-serif text-3xl font-bold text-foreground mb-4">
               {t('sections.recentResearch')}
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-2">
               {t('sections.recentResearchDesc')}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {filteredArticles.length} {t('filters.articlesShowing')}
             </p>
           </div>
 
+          {/* Filter Chips */}
+          <ArticleThemeChips 
+            selectedThemes={selectedThemes}
+            onThemeToggle={handleThemeToggle}
+          />
+
+          {/* Sort Dropdown */}
+          <div className="flex justify-end mb-6">
+            <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+              <SelectTrigger className="w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="recent">{t('sort.mostRecent')}</SelectItem>
+                <SelectItem value="oldest">{t('sort.oldest')}</SelectItem>
+                <SelectItem value="longest">{t('sort.longestReads')}</SelectItem>
+                <SelectItem value="shortest">{t('sort.shortestReads')}</SelectItem>
+                <SelectItem value="title">{t('sort.alphabetical')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Articles Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {featuredArticles.map((article, index) => (
+            {filteredArticles.map((article, index) => (
               <div key={article.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
                 <ArticleCard article={article} />
               </div>
             ))}
           </div>
 
-          <div className="text-center">
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            {!showAllArticles && filteredArticles.length < totalArticles && (
+              <Button 
+                onClick={() => setShowAllArticles(true)}
+                variant="outline" 
+                size="lg" 
+                className="border-2 border-ocean text-ocean hover:bg-ocean hover:text-cream transition-all duration-200 hover:scale-[1.02]"
+              >
+                <BookOpen size={20} className="mr-2" />
+                {t('actions.showAll')} ({totalArticles} {t('filters.articles')})
+              </Button>
+            )}
+            
             <Button asChild variant="outline" size="lg" className="border-2 border-saffron text-saffron hover:bg-saffron hover:text-charcoal-om transition-all duration-200 hover:scale-[1.02]">
-              <Link to="/field-notes">
+              <Link to="/articles">
                 <IconLotus size={20} className="mr-2" />
                 {t('sections.viewAllResearch')}
               </Link>
