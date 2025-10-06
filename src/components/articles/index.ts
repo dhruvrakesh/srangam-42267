@@ -16,3 +16,8 @@ export { PlateSpeedChart } from './PlateSpeedChart';
 export { ScholarlyDebatePanel } from './ScholarlyDebatePanel';
 export { SeasonalWindPattern } from './SeasonalWindPattern';
 export { TradeTimeline } from './TradeTimeline';
+export { SacredTreeMap } from './SacredTreeMap';
+export { SacredTreeSpeciesGallery } from './SacredTreeSpeciesGallery';
+export { HarvestRhythmsTimeline } from './HarvestRhythmsTimeline';
+export { MegalithAndGroveViewer } from './MegalithAndGroveViewer';
+export { TreeRiteEcologyMatrix } from './TreeRiteEcologyMatrix';
