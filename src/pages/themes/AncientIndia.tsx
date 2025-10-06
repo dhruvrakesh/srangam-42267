@@ -1,9 +1,12 @@
 import { ArticleCard } from "@/components/ui/ArticleCard";
 import { getArticlesByTheme } from "@/lib/multilingualArticleUtils";
 import { useLanguage } from "@/components/language/LanguageProvider";
-import { IconScript, IconSarnathLion, IconOm } from "@/components/icons";
+import { IconScript, IconSarnathLion, IconOm, IconLotus } from "@/components/icons";
 import { SourcesAndPins } from "@/components/oceanic/SourcesAndPins";
 import { CorrelationTable } from "@/components/oceanic/CorrelationTable";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 
 export default function AncientIndia() {
   const { currentLanguage } = useLanguage();
@@ -64,6 +67,63 @@ export default function AncientIndia() {
                 "The world is one family" — Maha Upanishad 6.72
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Sacred Ecology Series Featured Section */}
+        <div className="mb-12 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg p-8 border-2 border-primary/20">
+          <div className="flex items-center gap-3 mb-4">
+            <IconLotus className="w-8 h-8 text-primary" />
+            <div>
+              <h3 className="text-2xl font-semibold">Sacred Ecology Series</h3>
+              <p className="text-sm text-muted-foreground">Two-part exploration of ritual calendars and material culture</p>
+            </div>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-6 mt-6">
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-center justify-between mb-2">
+                  <Badge variant="outline">Part 1 of 2</Badge>
+                  <span className="text-xs text-muted-foreground">26 min read</span>
+                </div>
+                <CardTitle className="text-lg">Under the Sacred Tree</CardTitle>
+                <CardDescription>Harvest Rhythms, Groves, and Sky-Time</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm mb-4">
+                  17 tree species across Bhāratavarṣa—from banyan council-grounds to śāl blossom rites in Sarna groves. Explores living ritual practices as <em>scores</em> synchronized with seasons, monsoons, and star-time.
+                </p>
+                <Link to="/sacred-tree-harvest-rhythms" className="text-primary hover:underline text-sm font-medium">
+                  Read Part 1 →
+                </Link>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-center justify-between mb-2">
+                  <Badge variant="outline">Part 2 of 2</Badge>
+                  <span className="text-xs text-muted-foreground">32 min read</span>
+                </div>
+                <CardTitle className="text-lg">Stone, Song, and Sea</CardTitle>
+                <CardDescription>Janajāti Memory from Petroglyphs to Monoliths</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm mb-4">
+                  Material <em>venues</em> that preserve ritual—acoustic archaeology at Kupgal, megalithic gardens in Nartiang, cupules at Daraki-Chattān, oral archives in the Andamans. Introduces the <strong>Venue vs. Score</strong> methodological framework.
+                </p>
+                <Link to="/stone-song-and-sea" className="text-primary hover:underline text-sm font-medium">
+                  Read Part 2 →
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="mt-6 p-4 bg-background/50 rounded-lg border border-primary/10">
+            <p className="text-sm">
+              <strong>Methodological Innovation:</strong> The Venue vs. Score framework demonstrates how stone places preserve infrastructure while living rituals preserve performance—enabling rigorous study of <em>longue durée</em> continuity without essentialist claims.
+            </p>
           </div>
         </div>
 

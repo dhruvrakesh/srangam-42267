@@ -75,8 +75,9 @@ In honor of Dr. Bibek Debroy's monumental contribution to making Sanskrit texts 
 
 **Translation Coverage Statistics:**
 - ✅ **Navigation Elements**: 100% translated across all 9 languages
-- ✅ **Cultural Terms Database**: 800+ dharmic terms with cultural context
-- ✅ **Article Content Structure**: 18 articles fully converted to multilingual structure
+- ✅ **Cultural Terms Database**: 818+ dharmic terms with cultural context (18 new in Stone, Song, and Sea)
+- ✅ **Article Content Structure**: 20 articles fully converted to multilingual structure
+- ✅ **Sacred Ecology Series**: 2-part series (Sacred Tree + Stone, Song, and Sea) with Venue vs. Score framework
 - ✅ **Paired-Article Strategy**: Complex topics (e.g., Ashoka) presented through complementary perspectives
 - ✅ **Translation Quality Indicators**: Academic validation framework operational
 - ✅ **Expert Review System**: Scholar network integration for cultural authenticity
@@ -98,6 +99,8 @@ In honor of Dr. Bibek Debroy's monumental contribution to making Sanskrit texts 
 5. ✅ **Kutai Yupa Borneo**: Sanskrit epigraphy with Southeast Asian context
 6. ✅ **Pepper and Bullion**: Economic networks with Hindi/Punjabi translations
 7. ✅ **Riders on Monsoon**: Maritime navigation with cultural preservation
+8. ✅ **Sacred Tree: Harvest Rhythms** (NEW Oct 2025): Part 1 of Sacred Ecology series
+9. ✅ **Stone, Song, and Sea** (NEW Oct 2025): Part 2 of Sacred Ecology series with Venue vs. Score methodology
 8. ✅ **Gondwana to Himalaya**: Geological deep time with Sanskrit terminology
 9. ✅ **Indian Ocean Power Networks**: Naval expeditions across all 9 languages
 10. ✅ **Earth Sea Sangam**: Coastal geology with dharmic concepts

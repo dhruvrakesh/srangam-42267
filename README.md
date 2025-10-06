@@ -65,9 +65,30 @@ Srangam Digital features a sophisticated **69-point correlation matrix** that co
 **3. Multilingual Cultural Integration**
 - **9-Language Support**: Tamil, Sanskrit, Telugu, Kannada, Bengali, Hindi, Punjabi, Assamese, Pnar
 - **Cultural Terms Database**: 800+ dharmic concepts with etymological context
-- **18 Complete Articles**: Including paired-article strategy for complex topics (e.g., Ashoka's civilizational continuity + religious-political context)
+- **20 Complete Articles**: Including Sacred Ecology 2-part series (Sacred Tree + Stone, Song, and Sea)
 - **Confidence Indicators**: "Approximate" badges and scholarly debate notation
 - **Export Functionality**: JSON/CSV download for open access research
+
+### 🌳 Sacred Ecology Series (2-Part)
+
+**Part 1: Under the Sacred Tree — Harvest Rhythms and Groves**  
+17 tree species across Bhāratavarṣa, from banyan council-grounds to śāl blossom rites in Sarna groves. Explores living ritual practices as *scores* synchronized with sky-time, food-time, and place-time.  
+📖 [Read Part 1](/sacred-tree-harvest-rhythms) | 26 min read
+
+**Part 2: Stone, Song, and Sea — Petroglyphs to Monoliths**  
+Janajāti memory through material culture: acoustic archaeology at Kupgal, megalithic gardens in Nartiang, cupules at Daraki-Chattān, and oral archives in the Andamans. Introduces the **Venue vs. Score** methodological framework for studying cultural continuity.  
+📖 [Read Part 2](/stone-song-and-sea) | 32 min read
+
+**Together:** 15,000+ words of evidence-graded ethnographic-archaeological synthesis demonstrating *longue durée* continuities in Indian place-keeping practices.
+
+### Methodological Frameworks
+
+#### Venue vs. Score (Sacred Ecology Series)
+- **Venue:** Material infrastructure (stone sites, groves, acoustic spaces)
+- **Score:** Ritual performance (drum calls, step vocabularies, first-fruits rules)
+- **Continuity Model:** Venues persist while scores evolve; both required for legibility
+
+This framework enables rigorous analysis of cultural continuity without essentialist claims of "pristine survival." Applied across 9 new visual components including acoustic archaeology viewers, cupule chronology timelines, and lawscape visualizations.
 
 ## Book Compilation Framework
 
