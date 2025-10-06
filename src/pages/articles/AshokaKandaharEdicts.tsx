@@ -104,7 +104,27 @@ export default function AshokaKandaharEdicts() {
           credit="Epigraphic Survey Archive"
           className="mb-8"
         />,
-        <BilingualEdictComponent key="bilingual-edict" />
+        <BilingualEdictComponent key="bilingual-edict" />,
+        <div key="cross-reference" className="my-8 p-6 border-t-2 border-burgundy/30 bg-sand/10 rounded-lg">
+          <h3 className="text-lg font-serif font-semibold text-burgundy mb-3">
+            📚 Related Reading: Religious-Political Context
+          </h3>
+          <p className="text-muted-foreground mb-4">
+            For deeper context on Ashoka's religious-political environment and the Śramaṇa traditions 
+            that shaped Mauryan policy, see our companion article:
+          </p>
+          <a 
+            href="/reassessing-ashoka-legacy" 
+            className="inline-flex items-center gap-2 text-ocean hover:text-ocean-dark font-medium underline transition-colors"
+          >
+            <span>→</span>
+            <span>Reassessing Ashoka's Legacy: Buddhism, Politics, and Ancient Indian Sects</span>
+          </a>
+          <p className="text-sm text-muted-foreground mt-3 italic">
+            Challenges colonial narratives by examining how Magadha's 300+ years of Śramaṇa 
+            dominance shaped Ashoka's pragmatic dhamma statecraft.
+          </p>
+        </div>
       ]}
     />
   );

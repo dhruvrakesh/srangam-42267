@@ -76,7 +76,8 @@ In honor of Dr. Bibek Debroy's monumental contribution to making Sanskrit texts 
 **Translation Coverage Statistics:**
 - ✅ **Navigation Elements**: 100% translated across all 9 languages
 - ✅ **Cultural Terms Database**: 800+ dharmic terms with cultural context
-- ✅ **Article Content Structure**: 11+ articles fully converted to multilingual structure
+- ✅ **Article Content Structure**: 18 articles fully converted to multilingual structure
+- ✅ **Paired-Article Strategy**: Complex topics (e.g., Ashoka) presented through complementary perspectives
 - ✅ **Translation Quality Indicators**: Academic validation framework operational
 - ✅ **Expert Review System**: Scholar network integration for cultural authenticity
 - ✅ **Bibek Debroy Standards**: Sanskrit authenticity with vernacular accessibility
@@ -91,16 +92,23 @@ In honor of Dr. Bibek Debroy's monumental contribution to making Sanskrit texts 
 
 **Implemented Articles:**
 1. ✅ **Maritime Memories South India**: Complete multilingual structure with cultural tooltips
-2. ✅ **Ashoka Kandahar Edicts**: Sanskrit terms preserved with vernacular translations
-3. ✅ **Scripts That Sailed**: Monsoon trade networks with cultural context
-4. ✅ **Kutai Yupa Borneo**: Sanskrit epigraphy with Southeast Asian context
-5. ✅ **Pepper and Bullion**: Economic networks with Hindi/Punjabi translations
-6. ✅ **Riders on Monsoon**: Maritime navigation with cultural preservation
-7. ✅ **Gondwana to Himalaya**: Geological deep time with Sanskrit terminology
-8. ✅ **Indian Ocean Power Networks**: Naval expeditions across all 9 languages
-9. ✅ **Earth Sea Sangam**: Coastal geology with dharmic concepts
-10. ✅ **Monsoon Trade Clock**: Seasonal patterns with cultural timing
-11. ✅ **Chola Naval Raid**: Military history with Tamil-Sanskrit integration
+2. ✅ **Ashoka Kandahar Edicts**: Sanskrit terms preserved with vernacular translations (Part I: Civilizational Continuity)
+3. ✅ **Reassessing Ashoka's Legacy** (NEW Oct 2025): Post-colonial reassessment of Ashoka's religious identity (Part II: Religious-Political Context)
+4. ✅ **Scripts That Sailed**: Monsoon trade networks with cultural context
+5. ✅ **Kutai Yupa Borneo**: Sanskrit epigraphy with Southeast Asian context
+6. ✅ **Pepper and Bullion**: Economic networks with Hindi/Punjabi translations
+7. ✅ **Riders on Monsoon**: Maritime navigation with cultural preservation
+8. ✅ **Gondwana to Himalaya**: Geological deep time with Sanskrit terminology
+9. ✅ **Indian Ocean Power Networks**: Naval expeditions across all 9 languages
+10. ✅ **Earth Sea Sangam**: Coastal geology with dharmic concepts
+11. ✅ **Monsoon Trade Clock**: Seasonal patterns with cultural timing
+12. ✅ **Chola Naval Raid**: Military history with Tamil-Sanskrit integration
+13. ✅ **Jambudvipa Connected**: Comprehensive cultural-geographic synthesis
+14. ✅ **Cosmic Island Sacred Land**: Deep analysis of sacred geography
+15. ✅ **Stone Purana**: Geological heritage with cultural correlations
+16. ✅ **Scripts That Sailed II**: Extended epigraphic analysis
+17. ✅ **Janajati Oral Traditions**: Indigenous knowledge systems with evidence grading
+18. ✅ **Reassessing Ashoka's Legacy**: Śramaṇa dominance and Mauryan pluralism
 
 #### Cultural Context Preservation Engine
 

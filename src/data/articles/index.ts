@@ -26,6 +26,7 @@ export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
   gondwanaToHimalaya,
   indianOceanPowerNetworksComplete,
   ashokaKandaharEdictsComplete,
+  reassessingAshokaLegacy,
   kutaiYupaBorneo,
   cholaNavalRaid,
   pepperAndBullion,
@@ -46,6 +47,7 @@ export const SLUG_TO_ID_MAP: Record<string, string> = {
   '/gondwana-to-himalaya': 'gondwana-to-himalaya',
   '/indian-ocean-power-networks': 'indian-ocean-power-networks',
   '/ashoka-kandahar-edicts': 'ashoka-kandahar-edicts',
+  '/reassessing-ashoka-legacy': 'reassessing-ashoka-legacy',
   '/kutai-yupa-borneo': 'kutai-yupa-borneo',
   '/chola-naval-raid': 'chola-naval-raid',
   '/pepper-and-bullion': 'pepper-and-bullion',
@@ -104,6 +106,12 @@ export const ARTICLE_METADATA: Record<string, {
     readTime: 5,
     author: 'Dr. Epigraphy Specialist',
     date: '2024-03-18',
+    theme: 'Ancient India'
+  },
+  'reassessing-ashoka-legacy': {
+    readTime: 12,
+    author: 'Nartiang Foundation Research Team',
+    date: '2025-10-06',
     theme: 'Ancient India'
   },
   'kutai-yupa-borneo': {

@@ -65,6 +65,7 @@ Srangam Digital features a sophisticated **69-point correlation matrix** that co
 **3. Multilingual Cultural Integration**
 - **9-Language Support**: Tamil, Sanskrit, Telugu, Kannada, Bengali, Hindi, Punjabi, Assamese, Pnar
 - **Cultural Terms Database**: 800+ dharmic concepts with etymological context
+- **18 Complete Articles**: Including paired-article strategy for complex topics (e.g., Ashoka's civilizational continuity + religious-political context)
 - **Confidence Indicators**: "Approximate" badges and scholarly debate notation
 - **Export Functionality**: JSON/CSV download for open access research
 
