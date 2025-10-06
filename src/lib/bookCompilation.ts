@@ -43,7 +43,7 @@ export interface CompilationSettings {
 // Citation generator
 export const generateInTextCitation = (
   inscription: InscriptionShastra,
-  style: CitationStyle = 'modern-language-association'
+  style: CitationStyle = 'dharmic'
 ): string => {
   return generateCitation(inscription, style);
 };
