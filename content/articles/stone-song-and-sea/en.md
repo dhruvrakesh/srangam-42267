@@ -18,6 +18,22 @@ We adopt Nicole Boivin's concept of **performance landscapes**: environments whe
 
 ### 0.2 Venue vs. Score: The Central Distinction
 
+#### 0.2.1 Methodological Note: An Original Framework
+
+The **Venue vs. Score** distinction is an original methodological contribution of this research, not a pre-existing archaeological method. It synthesizes three scholarly traditions:
+
+1. **Fernand Braudel's *longue durée*** (1949): Distinguishing between enduring structures (*la longue durée*) and surface events (*histoire événementielle*)[^26]
+2. **Nicole Boivin's "performance landscapes"** (2004, 2007): Integrating visual, acoustic, and spatial elements in ritual archaeology[^1][^3]
+3. **Madhav Gadgil & Ramachandra Guha's cultural ecology** (1992): Treating ritual as functional labor with ecological consequences[^2]
+
+**Why create this framework?** Existing archaeological methods often struggle to connect material sites with living traditions without falling into two extremes:
+- **Romantic essentialism**: Claiming "unchanging traditions since the Stone Age"
+- **Disconnection skepticism**: Treating all modern rituals as recent inventions unrelated to ancient sites
+
+The Venue vs. Score framework offers a **middle path**: acknowledging material continuity (venues persist) while documenting adaptive evolution (scores change). This allows rigorous study of *structural rhyme* rather than requiring proof of *linear descent*.
+
+#### 0.2.2 Core Definitions
+
 The **Venue vs. Score** framework offers a methodologically rigorous way to study cultural continuity:
 
 - **VENUE**: Material infrastructure that persists across generations
@@ -33,6 +49,38 @@ The **Venue vs. Score** framework offers a methodologically rigorous way to stud
   - Seasonal harvest timing synchronized with monsoons
 
 **Key Insight**: Venues provide *infrastructure* while scores provide *performance*. Both are required for cultural legibility across time. A stone site without ritual use becomes archaeological debris; ritual practice without material anchors becomes untraceable oral memory.
+
+#### 0.2.3 Why This Distinction Matters (Plain Language)
+
+**Think of it like theater stages vs. plays**:
+- The **stage** (venue) stays—same theater building, same acoustics, same sight lines
+- The **plays** (score) change—Shakespeare to modern drama, but using the same infrastructure
+
+**Concrete example from Kupgal (Karnataka)**:
+- **VENUE** (persists 3000+ years):
+  - Granite boulders that ring like bells when struck
+  - Hilltop position overlooking pastoral routes
+  - Petroglyphs carved into rock faces
+  
+- **SCORE** (evolves but rhymes):
+  - **Neolithic (3000 BCE)**: Herders signal cattle movements with rock percussion
+  - **Contemporary**: Wāngalā festival uses *dama* drums with similar rhythmic patterns
+  - **What persists**: Using percussion for coordination; what changes: specific drum types and ritual contexts
+
+**Why avoid "pristine survival" claims?**
+Saying "modern Garo people do exactly what Neolithic herders did" would be:
+1. **Disrespectful** to living communities (treats them as "living fossils")
+2. **Inaccurate** (ignores 5,000 years of adaptation, innovation, agricultural shifts)
+3. **Methodologically weak** (cherry-picks similarities, ignores differences)
+
+Instead, we document **functional persistence**: Both Neolithic and contemporary communities solve coordination problems through percussion-based signaling—but in culturally specific, adaptive ways.
+
+#### 0.2.4 Benefits of This Approach
+
+1. **Rigorous distinction**: Separates material evidence (archaeological) from performance claims (ethnographic)
+2. **Multi-disciplinary integration**: Bridges archaeology, ethnography, ecology, and oral history
+3. **Transparent evidence grading**: Each claim tagged with H/M/L/D confidence levels
+4. **Avoids romantic primitivism**: Respects contemporary communities as adaptive problem-solvers, not museum relics
 
 **Confidence Level: H** *(Framework supported by case studies across Karnataka, Meghalaya, Kerala, Andaman)*
 
