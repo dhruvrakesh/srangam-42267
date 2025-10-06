@@ -1,17 +1,8 @@
 import { MultilingualContent } from '@/types/multilingual';
+import { LocalizedArticle } from '@/types/multilingual';
 
-interface Article {
-  id: string;
-  slug: string;
-  title: MultilingualContent;
-  dek: MultilingualContent;
-  content: MultilingualContent;
-  tags: string[];
-}
-
-export const stoneSongAndSea: Article = {
+export const stoneSongAndSea: LocalizedArticle = {
   id: 'stone-song-and-sea',
-  slug: 'stone-song-and-sea',
   title: {
     en: 'Stone, Song, and Sea: Janajāti Memory from Petroglyphs to Monoliths in the Indo-Oceanic Arc',
     hi: 'पत्थर, गीत और समुद्र: इंडो-ओशनिक चाप में पेट्रोग्लिफ से मेगालिथ तक जनजाति की स्मृति',
@@ -481,21 +472,22 @@ This article builds on fieldwork by Nicole Boivin (Kupgal), V.S. Wakankar (Darak
     pn: '[Translation in progress]'
   },
   tags: [
-    'Petroglyphs',
-    'Megaliths',
-    'Sacred Groves',
-    'Oral Traditions',
-    'Acoustic Archaeology',
-    'Janajātiya Knowledge',
-    'Deep Time',
-    'Northeast India',
-    'Khasi-Jaintia',
-    'Garo Hills',
-    'Karnataka',
-    'Andaman Islands',
-    'Cultural Ecology',
-    'Longue Durée'
-  ]
+    { en: 'Petroglyphs', hi: 'शैलचित्र', ta: 'பாறை ஓவியங்கள்', bn: 'শিলাচিত্র', te: 'రాతి చిత్రాలు', kn: 'ಶಿಲಾಚಿತ್ರಗಳು', pa: 'ਪੱਥਰ ਚਿੱਤਰ', as: 'শিলাচিত্ৰ', pn: 'Petroglyphs' },
+    { en: 'Megaliths', hi: 'महापाषाण', ta: 'பெருங்கற்கள்', bn: 'মেগালিথ', te: 'మహాశిలలు', kn: 'ಮಹಾಶಿಲೆಗಳು', pa: 'ਮਹਾਪਾਸ਼ਾਣ', as: 'মহাপাষাণ', pn: 'Megaliths' },
+    { en: 'Sacred Groves', hi: 'पवित्र उपवन', ta: 'புனித சோலைகள்', bn: 'পবিত্র বন', te: 'పవిత్ర తోటలు', kn: 'ಪವಿತ್ರ ತೋಪುಗಳು', pa: 'ਪਵਿੱਤਰ ਬਾਗ', as: 'পৱিত্ৰ উপবন', pn: 'Sacred Groves' },
+    { en: 'Oral Traditions', hi: 'मौखिक परंपराएं', ta: 'வாய்மொழி மரபுகள்', bn: 'মৌখিক ঐতিহ্য', te: 'మౌఖిక సంప్రదాయాలు', kn: 'ಮೌಖಿಕ ಸಂಪ್ರದಾಯಗಳು', pa: 'ਮੌਖਿਕ ਪਰੰਪਰਾਵਾਂ', as: 'মৌখিক পৰম্পৰা', pn: 'Oral Traditions' },
+    { en: 'Acoustic Archaeology', hi: 'ध्वनिक पुरातत्व', ta: 'ஒலி தொல்லியல்', bn: 'শব্দ প্রত্নতত্ত্ব', te: 'ధ్వని పురావస్తు శాస్త్రం', kn: 'ಅಕೌಸ್ಟಿಕ್ ಪುರಾತತ್ವಶಾಸ್ತ್ರ', pa: 'ਧੁਨੀ ਪੁਰਾਤੱਤਵ', as: 'ধ্বনিক পুৰাতত্ত্ব', pn: 'Acoustic Archaeology' },
+    { en: 'Janajātiya Knowledge', hi: 'जनजातीय ज्ञान', ta: 'ஜனஜாதிய அறிவு', bn: 'জনজাতীয় জ্ঞান', te: 'జనజాతీయ జ్ఞానం', kn: 'ಜನಜಾತೀಯ ಜ್ಞಾನ', pa: 'ਜਨਜਾਤੀ ਗਿਆਨ', as: 'জনজাতীয় জ্ঞান', pn: 'Janajātiya Knowledge' },
+    { en: 'Deep Time', hi: 'गहरा समय', ta: 'ஆழ்ந்த காலம்', bn: 'গভীর সময়', te: 'లోతైన కాలం', kn: 'ಆಳವಾದ ಸಮಯ', pa: 'ਡੂੰਘਾ ਸਮਾਂ', as: 'গভীৰ সময়', pn: 'Deep Time' },
+    { en: 'Northeast India', hi: 'पूर्वोत्तर भारत', ta: 'வடகிழக்கு இந்தியா', bn: 'উত্তর-পূর্ব ভারত', te: 'ఈశాన్య భారతదేశం', kn: 'ಈಶಾನ್ಯ ಭಾರತ', pa: 'ਉੱਤਰ-ਪੂਰਬੀ ਭਾਰਤ', as: 'উত্তৰ-পূব ভাৰত', pn: 'Northeast India' },
+    { en: 'Khasi-Jaintia', hi: 'खासी-जैंतिया', ta: 'கசி-ஜயந்தியா', bn: 'খাসি-জয়ন্তিয়া', te: 'ఖాసీ-జయంతియా', kn: 'ಖಾಸಿ-ಜಯಂತಿಯಾ', pa: 'ਖਾਸੀ-ਜੈਂਤੀਆ', as: 'খাচী-জয়ন্তীয়া', pn: 'Khasi-Jaintia' },
+    { en: 'Garo Hills', hi: 'गारो पहाड़ियाँ', ta: 'கரோ மலைகள்', bn: 'গারো পাহাড়', te: 'గారో కొండలు', kn: 'ಗಾರೋ ಬೆಟ್ಟಗಳು', pa: 'ਗਾਰੋ ਪਹਾੜੀਆਂ', as: 'গাৰো পাহাৰ', pn: 'Garo Hills' },
+    { en: 'Karnataka', hi: 'कर्नाटक', ta: 'கர்நாடகா', bn: 'কর্ণাটক', te: 'కర్ణాటక', kn: 'ಕರ್ನಾಟಕ', pa: 'ਕਰਨਾਟਕ', as: 'কৰ্ণাটক', pn: 'Karnataka' },
+    { en: 'Andaman Islands', hi: 'अंडमान द्वीप', ta: 'அந்தமான் தீவுகள்', bn: 'আন্দামান দ্বীপপুঞ্জ', te: 'అండమాన్ దీవులు', kn: 'ಅಂಡಮಾನ್ ದ್ವೀಪಗಳು', pa: 'ਅੰਡੇਮਾਨ ਟਾਪੂ', as: 'আন্দামান দ্বীপপুঞ্জ', pn: 'Andaman Islands' },
+    { en: 'Cultural Ecology', hi: 'सांस्कृतिक पारिस्थितिकी', ta: 'கலாச்சார சூழலியல்', bn: 'সাংস্কৃতিক পরিবেশবিদ্যা', te: 'సాంస్కృతిక పర్యావరణ శాస్త్రం', kn: 'ಸಾಂಸ್ಕೃತಿಕ ಪರಿಸರ ವಿಜ್ಞಾನ', pa: 'ਸੱਭਿਆਚਾਰਕ ਵਾਤਾਵਰਣ', as: 'সাংস্কৃতিক পৰিস্থিতিবিজ্ঞান', pn: 'Cultural Ecology' },
+    { en: 'Longue Durée', hi: 'दीर्घकालीन', ta: 'நீண்ட காலம்', bn: 'দীর্ঘস্থায়ী', te: 'దీర్ఘకాలం', kn: 'ದೀರ್ಘಕಾಲ', pa: 'ਲੰਬੀ ਅਵਧੀ', as: 'দীৰ্ঘকালীন', pn: 'Longue Durée' }
+  ],
+  metadata: {}
 };
 
 export const culturalTermsStoneSongSea = [
