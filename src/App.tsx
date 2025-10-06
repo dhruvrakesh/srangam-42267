@@ -42,6 +42,7 @@ const ScriptsThatSailedII = lazy(() => import("./pages/articles/ScriptsThatSaile
 const GondwanaToHimalaya = lazy(() => import("./pages/articles/GondwanaToHimalaya"));
 const IndianOceanPowerNetworks = lazy(() => import("./pages/articles/IndianOceanPowerNetworks"));
 const AshokaKandaharEdicts = lazy(() => import("./pages/articles/AshokaKandaharEdicts"));
+const ReasessingAshokaLegacy = lazy(() => import("./pages/articles/ReasessingAshokaLegacy"));
 const KutaiYupaBorneo = lazy(() => import("./pages/articles/KutaiYupaBorneo"));
 const MaritimeMemoriesSouthIndia = lazy(() => import("./pages/articles/MaritimeMemoriesSouthIndia"));
 const RidersOnMonsoon = lazy(() => import("./pages/articles/RidersOnMonsoon"));
@@ -121,7 +122,8 @@ const App = () => (
                   <Route path="/scripts-that-sailed-ii" element={<ScriptsThatSailedII />} />
                   <Route path="/gondwana-to-himalaya" element={<GondwanaToHimalaya />} />
                   <Route path="/indian-ocean-power-networks" element={<IndianOceanPowerNetworks />} />
-                  <Route path="/ashoka-kandahar-edicts" element={<AshokaKandaharEdicts />} />
+          <Route path="/ashoka-kandahar-edicts" element={<AshokaKandaharEdicts />} />
+          <Route path="/reassessing-ashoka-legacy" element={<ReasessingAshokaLegacy />} />
                   <Route path="/kutai-yupa-borneo" element={<KutaiYupaBorneo />} />
                   <Route path="/maritime-memories-south-india" element={<MaritimeMemoriesSouthIndia />} />
                   <Route path="/riders-on-monsoon" element={<RidersOnMonsoon />} />

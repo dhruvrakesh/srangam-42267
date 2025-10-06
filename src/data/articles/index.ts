@@ -1,5 +1,6 @@
 import { LocalizedArticle } from '@/types/multilingual';
 import { ashokaKandaharEdictsComplete } from './ashoka-kandahar-edicts-complete';
+import { reassessingAshokaLegacy } from './reassessing-ashoka-legacy';
 import { scriptsThatSailed } from './scripts-that-sailed';
 import { kutaiYupaBorneo } from './kutai-yupa-borneo';
 import { monsoonTradeClock } from './monsoon-trade-clock';
