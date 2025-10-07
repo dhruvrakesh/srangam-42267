@@ -50,6 +50,8 @@ By around **1400 BCE**, an Indo-Aryan elite had established itself in Mitanni (n
 
 These findings illustrate that **Indo-Aryan language and ritual ideas had spread well beyond the Subcontinent over 3,300 years ago**. Rather than being isolated, Vedic civilization was part of a greater Indo-Iranian world.
 
+*For a comprehensive examination of the Indo-Iranian schism, the Mitanni evidence, and the broader "Out of India" hypothesis, see [The Asura Exiles: Indo-Iranian Origins and the Vedic-Zoroastrian Schism](/asura-exiles-indo-iranian).*
+
 ## Kuru, Panchala and the First Indian States
 
 The Indian subcontinent saw the rise of organized states during the late Vedic period. The **Kuru and Panchāla kingdoms**, located in modern Haryana and western Uttar Pradesh, are identified with the **Painted Grey Ware (PGW) culture** (c.1200–600 BCE).

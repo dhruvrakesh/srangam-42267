@@ -127,6 +127,42 @@ export default function AncientIndia() {
           </div>
         </div>
 
+        {/* Indo-Iranian Origins Featured Section */}
+        <div className="mb-12 bg-gradient-to-r from-saffron/10 to-turmeric/10 rounded-lg p-8 border-2 border-saffron/20">
+          <div className="flex items-center gap-3 mb-4">
+            <IconOm className="w-8 h-8 text-saffron" />
+            <div>
+              <h3 className="text-2xl font-semibold">Indo-Iranian Origins</h3>
+              <p className="text-sm text-muted-foreground">Archaeological, linguistic, and mythological evidence for civilizational continuity</p>
+            </div>
+          </div>
+          
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-center justify-between mb-2">
+                <Badge variant="outline">Comprehensive Study</Badge>
+                <span className="text-xs text-muted-foreground">48 min read</span>
+              </div>
+              <CardTitle className="text-lg">The Asura Exiles</CardTitle>
+              <CardDescription>Indo-Iranian Origins, Mitanni, and the Vedic-Zoroastrian Schism</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm mb-4">
+                Archaeological, linguistic, and mythological evidence for an Indo-Iranian homeland in ancient India. Explores the Mitanni connection, the Out of India theory, and the memory of a civilizational schism preserved in scripture and stone.
+              </p>
+              <Link to="/asura-exiles-indo-iranian" className="text-primary hover:underline text-sm font-medium">
+                Read Full Article →
+              </Link>
+            </CardContent>
+          </Card>
+
+          <div className="mt-6 p-4 bg-background/50 rounded-lg border border-saffron/10">
+            <p className="text-sm">
+              <strong>Methodological Note:</strong> This article examines the controversial Out of India theory alongside mainstream scholarship. Interactive components allow readers to explore evidence with appropriate confidence levels and scholarly context.
+            </p>
+          </div>
+        </div>
+
         {/* Articles Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {themeArticles.map((article) => (

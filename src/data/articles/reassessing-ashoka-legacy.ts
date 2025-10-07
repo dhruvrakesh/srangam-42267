@@ -30,6 +30,8 @@ export const reassessingAshokaLegacy: LocalizedArticle = {
 
 This article serves as a critical companion to our examination of [Ashoka's Kandahar Edicts](/ashoka-kandahar-edicts), which highlighted the civilizational continuity from the Indus Valley through Vedic traditions to Mauryan governance. While that article emphasized **linguistic and cultural continuity**, this piece provides essential **religious-political context** by examining the Śramaṇa-dominated environment of Magadha that shaped Mauryan policy.
 
+*For a deeper exploration of Indo-Iranian origins and the civilizational transformations that preceded Mauryan India, see [The Asura Exiles: Indo-Iranian Origins and the Vedic-Zoroastrian Schism](/asura-exiles-indo-iranian).*
+
 For over a century, colonial and post-colonial scholarship portrayed Emperor Ashoka (r. c. 268–232 BCE) as a "Buddhist Constantine" – a zealous convert who made Buddhism the Mauryan state religion. This narrative, however, oversimplifies the complex religious landscape of ancient Magadha and ignores substantial evidence that Ashoka's *dhamma* was **pragmatic political philosophy** rather than sectarian evangelism.
 
 By examining the religious traditions that dominated Magadha from the 6th to 3rd centuries BCE, we can better understand why Ashoka's approach represented **continuity with Mauryan pluralism** rather than a radical Buddhist conversion.
