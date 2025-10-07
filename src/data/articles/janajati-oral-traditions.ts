@@ -40,6 +40,8 @@ Two framing principles guide this study. First is a **paired-evidence rule**: cu
 
 Methodologically, we start with A-class anchors—for instance, the fire-altars of Kalibangan, the flood stratum at Hastināpura, the Ghaggar–Hakra (Sarasvatī) palaeochannel, and Dvārakā's submerged architecture.
 
+*For a complementary exploration of how Vedic knowledge was systematically preserved through the Anukramaṇī indexing system and Sāyaṇa's commentaries, see [Śarīra and Ātman: The Preservation of the Vedas](/sarira-atman-vedic-preservation). While this article examines archaeological-oral convergence, that study focuses on textual preservation technology.*
+
 ![Figure 1: Oral Memory Timeline](/images/articles/janajati_fig2_oral_memory_timeline.png)  
 *Timeline mapping scientific anchors to oral/literary memory*
 

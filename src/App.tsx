@@ -57,6 +57,7 @@ const SacredTreeHarvestRhythms = lazy(() => import("./pages/articles/SacredTreeH
 const StoneSongAndSea = lazy(() => import("./pages/articles/StoneSongAndSea"));
 const CholaNavalRaid = lazy(() => import("./pages/articles/CholaNavalRaid"));
 const AsuraExilesIndoIranian = lazy(() => import("./pages/articles/AsuraExilesIndoIranian"));
+const SariraAtmanVedicPreservation = lazy(() => import("./pages/articles/SariraAtmanVedicPreservation"));
 const BatchBujangNagapattinamOcean = lazy(() => import("./pages/BatchBujangNagapattinamOcean"));
 const BatchMuzirisKutaiAshoka = lazy(() => import("./pages/BatchMuzirisKutaiAshoka"));
 const Sitemap = lazy(() => import("./pages/Sitemap"));
@@ -143,6 +144,7 @@ const App = () => (
               <Route path="/stone-song-and-sea" element={<StoneSongAndSea />} />
               <Route path="/chola-naval-raid" element={<CholaNavalRaid />} />
               <Route path="/asura-exiles-indo-iranian" element={<AsuraExilesIndoIranian />} />
+              <Route path="/sarira-atman-vedic-preservation" element={<SariraAtmanVedicPreservation />} />
                   <Route path="/themes/geology-deep-time/stone-purana" element={<StonePurana />} />
                   <Route path="/themes/ancient-india/pepper-routes" element={<IndianOceanPowerNetworks />} />
                   <Route path="/batch/bujang-nagapattinam-ocean" element={<BatchBujangNagapattinamOcean />} />

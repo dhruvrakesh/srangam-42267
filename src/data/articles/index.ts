@@ -19,6 +19,7 @@ import { janajatiOralTraditions } from './janajati-oral-traditions';
 import { stoneSongAndSea } from './stone-song-and-sea';
 import { sacredTreeHarvestRhythms } from './sacred-tree-harvest-rhythms';
 import { asuraExilesIndoIranian } from './asura-exiles-indo-iranian';
+import { sariraAndAtmanVedicPreservation } from './sarira-and-atman-vedic-preservation';
 
 // Complete multilingual article registry
 export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
@@ -41,7 +42,8 @@ export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
   janajatiOralTraditions,
   sacredTreeHarvestRhythms,
   stoneSongAndSea,
-  asuraExilesIndoIranian
+  asuraExilesIndoIranian,
+  sariraAndAtmanVedicPreservation
 ];
 
 // Mapping from legacy slugs to multilingual article IDs
@@ -65,7 +67,8 @@ export const SLUG_TO_ID_MAP: Record<string, string> = {
   '/janajati-oral-traditions': 'janajati-oral-traditions',
   '/sacred-tree-harvest-rhythms': 'sacred-tree-harvest-rhythms',
   '/stone-song-and-sea': 'stone-song-and-sea',
-  '/asura-exiles-indo-iranian': 'asura-exiles-indo-iranian'
+  '/asura-exiles-indo-iranian': 'asura-exiles-indo-iranian',
+  '/sarira-atman-vedic-preservation': 'sarira-atman-vedic-preservation'
 };
 
 // Article metadata for display (readTime, author, date)
@@ -191,6 +194,12 @@ export const ARTICLE_METADATA: Record<string, {
   },
   'asura-exiles-indo-iranian': {
     readTime: 48,
+    author: 'Nartiang Foundation Research Team',
+    date: '2025-10-07',
+    theme: 'Ancient India'
+  },
+  'sarira-atman-vedic-preservation': {
+    readTime: 38,
     author: 'Nartiang Foundation Research Team',
     date: '2025-10-07',
     theme: 'Ancient India'

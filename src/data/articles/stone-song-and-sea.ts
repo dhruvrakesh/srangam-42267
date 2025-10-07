@@ -43,6 +43,8 @@ This article adopts Braudel's *longue durée* perspective: cultural practices th
 
 Venues persist across millennia while scores evolve. Both are required for cultural legibility. A ringing rock without ritual context is geology; a harvest song without place-keeping is mere performance. Together they form a **performance landscape**.
 
+*This methodological framework parallels textual preservation systems examined in [Śarīra and Ātman: The Preservation of the Vedas](/sarira-atman-vedic-preservation), where the Anukramaṇīs function as "venue" (indexing infrastructure) and Sāyaṇa's commentary as "score" (interpretive performance). Both systems demonstrate how knowledge survives through dual channels.*
+
 ### 0.3 Cultural Ecology: Ritual as Work
 
 Rituals have measurable ecological effects: first-fruits rules protect biodiversity, sacred groves retain water, fishing closures time to monsoons sustain fisheries. We treat ritual not as symbolic overlay but as **work**—labor that shapes landscapes and sustains livelihoods.

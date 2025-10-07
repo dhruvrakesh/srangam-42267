@@ -118,8 +118,7 @@ function NodeButton({ node, selected, onClick }: { node: TriadNode; selected: bo
       `}
       style={{ 
         backgroundColor: node.color,
-        color: 'white',
-        ringColor: selected ? node.color : undefined
+        color: 'white'
       }}
     >
       {node.label}

@@ -163,6 +163,42 @@ export default function AncientIndia() {
           </div>
         </div>
 
+        {/* Vedic Knowledge Systems Featured Section */}
+        <div className="mb-12 bg-gradient-to-r from-turmeric/10 to-sandalwood/10 rounded-lg p-8 border-2 border-turmeric/20">
+          <div className="flex items-center gap-3 mb-4">
+            <IconOm className="w-8 h-8 text-turmeric" />
+            <div>
+              <h3 className="text-2xl font-semibold">Vedic Knowledge Systems</h3>
+              <p className="text-sm text-muted-foreground">Preservation technologies of oral tradition</p>
+            </div>
+          </div>
+          
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-center justify-between mb-2">
+                <Badge variant="outline">Textual Scholarship</Badge>
+                <span className="text-xs text-muted-foreground">38 min read</span>
+              </div>
+              <CardTitle className="text-lg">Śarīra and Ātman</CardTitle>
+              <CardDescription>The Preservation of the Vedas through the Anukramaṇīs and the Bhāṣya of Sāyaṇāchārya</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm mb-4">
+                How did oral texts survive millennia without corruption? The Anukramaṇīs provided the <em>śarīra</em> (body)—indexing each mantra by ṛṣi, devatā, and chandas. Sāyaṇāchārya's 14th-century commentary provided the <em>ātman</em> (soul)—preserving meaning during Vijayanagara's manuscript renaissance. Explores holographic preservation, metrical locks, and the technology of textual memory.
+              </p>
+              <Link to="/sarira-atman-vedic-preservation" className="text-primary hover:underline text-sm font-medium">
+                Read Full Article →
+              </Link>
+            </CardContent>
+          </Card>
+
+          <div className="mt-6 p-4 bg-background/50 rounded-lg border border-turmeric/10">
+            <p className="text-sm">
+              <strong>Historical Context:</strong> Sāyaṇāchārya's comprehensive commentary project (1330s-1380s) coincided with the Vijayanagara Empire's patronage of Sanskrit learning following centuries of manuscript destruction during Islamic invasions. This article examines preservation as <em>technology</em>, not mysticism.
+            </p>
+          </div>
+        </div>
+
         {/* Articles Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {themeArticles.map((article) => (

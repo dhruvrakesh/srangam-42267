@@ -2,6 +2,7 @@ import { ArticleCard } from "@/components/ui/ArticleCard";
 import { getArticlesByTheme } from "@/lib/multilingualArticleUtils";
 import { useLanguage } from "@/components/language/LanguageProvider";
 import { IconEdict, IconOm, IconScript } from "@/components/icons";
+import { Link } from "react-router-dom";
 
 export default function ScriptsInscriptions() {
   const { currentLanguage } = useLanguage();
@@ -98,6 +99,20 @@ export default function ScriptsInscriptions() {
               "The temple of letters is the abode of sacred knowledge, tradition, and wisdom"
             </p>
           </div>
+        </div>
+
+        {/* Oral Transmission Highlight */}
+        <div className="mb-12 bg-sand/20 backdrop-blur-sm rounded-lg p-6 border-2 border-laterite/20">
+          <div className="flex items-center gap-3 mb-3">
+            <IconOm size={32} className="text-saffron" />
+            <h3 className="text-xl font-semibold">Oral Transmission & Manuscript Culture</h3>
+          </div>
+          <p className="text-sm text-muted-foreground mb-3">
+            Before palm leaf and paper, knowledge traveled through voice. The Anukramaṇī technology—indexing mantras by ṛṣi, devatā, and chandas—preserved Vedic texts across millennia with extraordinary fidelity.
+          </p>
+          <Link to="/sarira-atman-vedic-preservation" className="text-primary hover:underline text-sm font-medium">
+            Śarīra and Ātman: The Preservation of the Vedas →
+          </Link>
         </div>
 
         {/* Articles Grid */}
