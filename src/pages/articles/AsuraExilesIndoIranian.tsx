@@ -17,7 +17,7 @@ export default function AsuraExilesIndoIranian() {
         <title>The Asura Exiles: Indo-Iranian Origins, Mitanni, and the Vedic-Zoroastrian Schism | Srangam</title>
         <meta 
           name="description" 
-          content="Archaeological, linguistic, and mythological evidence for an Indo-Iranian homeland in ancient India. Exploring the Mitanni connection, the Out of India theory, and the memory of a civilizational schism preserved in scripture and stone." 
+          content="Archaeological, linguistic, and mythological evidence for an Indo-Iranian homeland in ancient India. Explores the Mitanni connection, Vedic-Zoroastrian schism, and echoes of this civil war in Baudhayana memory, Massagetae-Jats traditions, and Shiva's Central Asian iconography." 
         />
         <meta property="og:title" content="The Asura Exiles: Indo-Iranian Origins and the Vedic-Zoroastrian Schism" />
         <meta property="og:description" content="Evidence for Indo-Iranian origins in ancient India through archaeology, linguistics, and mythology." />
@@ -31,7 +31,7 @@ export default function AsuraExilesIndoIranian() {
         content={asuraExilesIndoIranian.content}
         tags={asuraExilesIndoIranian.tags}
         icon={IconOm}
-        readTime={48}
+        readTime={52}
         author="Nartiang Foundation Research Team"
         date="2025-10-07"
         dataComponents={[

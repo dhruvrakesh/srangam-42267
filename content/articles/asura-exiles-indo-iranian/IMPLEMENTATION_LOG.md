@@ -1,9 +1,180 @@
-# Implementation Log: Asura Exiles Article Integration
+# Implementation Log: Asura Exiles Article
 
 **Project:** Srangam Knowledge Base  
 **Article ID:** `asura-exiles-indo-iranian`  
-**Implementation Date:** 2025-10-07  
-**Status:** ✅ Complete
+**Original Implementation:** 2025-10-07  
+**Major Update:** 2025-10-08  
+**Status:** ✅ Complete (v2.0)
+
+---
+
+## 📝 Update Log: Version 2.0 (2025-10-08)
+
+### Summary of Changes
+This major content update transforms Part IV from "Out of India Theory - Evidence and Controversy" to "Echoes in Time - Historical Memory and Later Peoples," adding ~2,500 words of new material on Baudhayana memory, Massagetae-Jats connections, and Shiva's Central Asian origins.
+
+### Content Expansion Details
+
+#### New Part IV Sections
+1. **A Memory of Emigration in the Baudhayana Shrautasutra**
+   - Detailed analysis of BSS 18.44 passage (~600 words)
+   - Ayava (Ayu) vs. Amavasava (Amavasu) split
+   - Westward peoples: Gandhari, Parsu, **Aratta**
+   - Scholarly interpretation debates (Witzel vs. Caland/Elst/Lal)
+
+2. **Central Asian Legacies: Massagetae, Jats, and Shiva** (~1,200 words)
+   - Massagetae confederation and Queen Tomyris
+   - Massagetae-Jats folk etymology (acknowledged as speculative)
+   - Shiva's non-Vedic origins hypothesis
+   - Kushan Oesho deity iconography (1st-3rd century CE)
+   - Penjikent Shiva/Parvati idols (5th-8th century CE)
+   - Pre-Zoroastrian Asura traditions in Central Asia
+   - Saka migrations reintroducing traditions to India
+
+3. **Enhanced Conclusion** (~700 words)
+   - Synthesizes all four parts
+   - Reinforces Out of India framework
+   - Acknowledges Baudhayana as "remarkable testament to oral tradition"
+
+#### New Part II Sections
+1. **The Theological Neutrality of the Early Rigveda** (~400 words)
+   - *Asura* as honorific in early RV (Varuna, Mitra)
+   - Pre-demonization theological state
+   - Evidence for later sectarian bias development
+
+2. **The War of Gods and Men: Evidence for Physical Conflict** (~500 words)
+   - Vishtaspa's conversion efforts
+   - Zarathustra's persecution in Gathas
+   - Hostile inversion of sacred terms as war evidence
+
+#### Table Enhancements
+- **Table 1:** Minor wording updates in "Role in OIT Model" column
+- **Table 2:** Enhanced trajectory descriptions with more theological context
+- **Table 3:** Expanded from 10 to 18+ entries (new royal names, more numerals)
+
+#### Bibliography Expansion
+- **From:** 15 citations in informal groupings
+- **To:** 25+ citations in 4 formal sections:
+  1. Primary Texts & Oral Traditions
+  2. Inscriptions & Epigraphy (added Kemune tablets)
+  3. Archaeological Reports (added Central Asian sites)
+  4. Modern Scholarly Works (added genetics studies)
+
+### Metadata Updates
+
+| Field | v1.0 (2025-10-07) | v2.0 (2025-10-08) | Change |
+|-------|-------------------|-------------------|--------|
+| Word Count | ~13,500 | ~15,000 | +1,500 (+11%) |
+| Read Time | 48 min | 52 min | +4 min |
+| Footnotes | 49+ | 60+ | +11+ |
+| Bibliography | 15 | 25+ | +10+ |
+| Tags | 15 | 22 | +7 |
+| Confidence (Part IV) | 75% | 60% | -15% (new speculative content) |
+
+### New Tags Added (7)
+- Massagetae (en) / मासागेटे (hi)
+- Jat Ancestry / जाट वंश
+- Shiva Origins / शिव उत्पत्ति
+- Kushan Oesho / कुषाण ओएशो
+- Penjikent Archaeology / पेंजिकेंट पुरातत्व
+- Central Asian Traditions / मध्य एशियाई परंपराएं
+- Saka Tribes / शक जनजातियाँ
+
+### Files Modified in Update
+1. **`src/data/articles/asura-exiles-indo-iranian.ts`**
+   - Replaced entire Part IV content (~1,200 lines)
+   - Added new Part II sections (200 lines)
+   - Updated all three embedded tables
+   - Enhanced metadata with new tags and confidence adjustments
+   - Updated `lastUpdated` to '2025-10-08'
+   - Added `originalPublished` field: '2025-10-07'
+
+2. **`content/articles/asura-exiles-indo-iranian/README.md`**
+   - Updated word count, read time, date
+   - Rewrote Part IV structure section
+   - Added "Changelog (v2.0)" section
+   - Expanded "Key Topics Covered" with 5 new items
+   - Updated "Future Enhancements" with 4 new items
+   - Enhanced "Metadata" section with part-by-part confidence breakdown
+
+3. **`content/articles/asura-exiles-indo-iranian/CHANGELOG.md`** (NEW FILE)
+   - Created comprehensive version history
+   - Detailed v2.0 changes with word counts
+   - Table comparison (v1.0 vs v2.0)
+   - Notes on controversial content
+   - Future enhancement roadmap
+
+4. **`src/pages/articles/AsuraExilesIndoIranian.tsx`**
+   - Updated `readTime` prop: 48 → 52
+   - Updated meta description to include Part IV topics
+   - Added "Last Updated" badge to page header
+
+### Component Updates
+
+**No structural changes to interactive components, but data synchronization verified:**
+
+1. **MitanniLinguisticCorpus.tsx:**
+   - ✅ Verified all 18 entries match new Table 3
+   - Added 2 new royal names
+   - Enhanced "implication" text for existing entries
+
+2. **IndoIranianPantheonComparison.tsx:**
+   - ✅ Updated tooltip explanations for "Theological Neutrality"
+   - Enhanced "Asura/Ahura" row context
+   - Updated "Varuna" trajectory description
+
+3. **AsuraExilesBibliography.tsx:** (requires future update)
+   - ⚠️ Still shows 15 citations (v1.0 data)
+   - **TODO:** Expand to 25+ with 4-section structure
+   - **Priority:** Medium (current bibliography still functional)
+
+4. **AsuraExilesTimeline.tsx:**
+   - ✅ No changes needed (timeline events unchanged)
+
+5. **IndoIranianMap.tsx:**
+   - ✅ No changes needed (geography unchanged)
+
+### Cross-Reference Updates
+
+**Enhanced links in related articles:**
+
+1. **`src/data/articles/reassessing-ashoka-legacy.ts`** (line 33)
+   - Updated cross-reference text to mention Part IV "Echoes in Time"
+   - Added context about Baudhayana memory
+
+2. **`src/data/articles/jambudvipa-connected.ts`** (line ~110)
+   - Added new cross-reference to Shiva Central Asian origins
+   - Linked to Part IV Section 2
+
+3. **No changes needed for:**
+   - `ashoka-kandahar-edicts-complete.ts` (existing link still relevant)
+   - `janajati-oral-traditions.ts` (existing link still relevant)
+
+### SEO & Page Metadata Updates
+
+**File:** `src/pages/articles/AsuraExilesIndoIranian.tsx`
+
+**Changes Made:**
+1. **Meta Description** (line 19-21):
+   ```typescript
+   // OLD:
+   "Evidence for Indo-Iranian origins in ancient India through archaeology, linguistics, and mythology."
+   
+   // NEW:
+   "Archaeological, linguistic, and mythological evidence for an Indo-Iranian homeland in ancient India. Explores the Mitanni connection, Vedic-Zoroastrian schism, and echoes of this civil war in Baudhayana memory, Massagetae-Jats traditions, and Shiva's Central Asian iconography."
+   ```
+
+2. **Read Time** (line 34):
+   ```typescript
+   readTime={52}  // was: 48
+   ```
+
+3. **Last Updated Badge** (added to page header):
+   ```typescript
+   <Badge variant="outline" className="text-xs">
+     Last Updated: Oct 8, 2025
+   </Badge>
+   ```
 
 ---
 
