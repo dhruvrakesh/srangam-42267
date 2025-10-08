@@ -309,23 +309,45 @@ export const asuraExilesIndoIranian: LocalizedArticle = {
     { en: 'Saka Tribes', hi: 'शक जनजातियाँ' }
   ],
   metadata: {
-    translationStatus: {
-      en: 'complete',
-      hi: 'title_dek_only',
-      ta: 'title_dek_only',
-      te: 'title_dek_only',
-      kn: 'title_dek_only',
-      bn: 'title_dek_only',
-      pa: 'title_dek_only',
-      as: 'title_dek_only',
-      pn: 'title_dek_only'
+    en: {
+      lastUpdated: '2025-10-08',
+      confidence: 75,
+      culturalNotes: [
+        'The Out of India Theory remains contested in mainstream Indo-European linguistics.',
+        'Part IV discusses speculative connections between Massagetae-Jats and Shiva\'s Central Asian origins that require further archaeological and genetic evidence.'
+      ]
     },
-    reviewStatus: 'published',
-    lastUpdated: '2025-10-08',
-    originalPublished: '2025-10-07',
-    confidence: 75,
-    culturalNotes: {
-      en: 'The Out of India Theory remains contested in mainstream Indo-European linguistics. Part IV discusses speculative connections between Massagetae-Jats and Shiva\'s Central Asian origins that require further archaeological and genetic evidence.'
+    hi: {
+      lastUpdated: '2025-10-08',
+      confidence: 70
+    },
+    ta: {
+      lastUpdated: '2025-10-08',
+      confidence: 70
+    },
+    te: {
+      lastUpdated: '2025-10-08',
+      confidence: 70
+    },
+    kn: {
+      lastUpdated: '2025-10-08',
+      confidence: 70
+    },
+    bn: {
+      lastUpdated: '2025-10-08',
+      confidence: 70
+    },
+    pa: {
+      lastUpdated: '2025-10-08',
+      confidence: 70
+    },
+    as: {
+      lastUpdated: '2025-10-08',
+      confidence: 70
+    },
+    pn: {
+      lastUpdated: '2025-10-08',
+      confidence: 70
     }
   }
 };

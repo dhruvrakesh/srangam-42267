@@ -193,7 +193,7 @@ export const ARTICLE_METADATA: Record<string, {
     theme: 'Ancient India'
   },
   'asura-exiles-indo-iranian': {
-    readTime: 48,
+    readTime: 52,
     author: 'Nartiang Foundation Research Team',
     date: '2025-10-07',
     theme: 'Ancient India'

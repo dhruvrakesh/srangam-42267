@@ -48,6 +48,8 @@ By the time of the **Nanda dynasty** (c. 345–322 BCE), Magadha's rulers themse
 
 Jain historical texts corroborate that **Jainism was dominant in Magadha under the Nandas**, with Jain ministers guiding state affairs. Indeed, the Sanskrit play *Mudrārākṣasa*, which dramatizes Chandragupta's rise, depicts Jains as prominent figures at the Nanda court and even as secret envoys working with Chanakya. In sum, **by the end of Nanda rule, heterodox ascetic traditions – Buddhist, Jain, and other Śramaṇas – held sway in Magadha's cultural and religious life**, overshadowing the old Vedic rites.
 
+*The preservation of dharmic knowledge through oral tradition connects to broader patterns of Indo-Iranian memory. The Baudhayana Shrautasutra (c. 800 BCE) preserves a remarkable account of westward migrations (Ayu eastward, Amavasu westward to Gandhara, Parsu, and Aratta), providing textual evidence for the 'Asura Exiles' from an Indian homeland. See [Asura Exiles: Echoes in Time](/asura-exiles-indo-iranian#part-iv-echoes-in-time) for detailed analysis.*
+
 ## Early Mauryan Religious Affiliations: Chandragupta and Bindusāra
 
 When **Chandragupta Maurya** overthrew the Nandas around 322 BCE, he inherited this pluralistic, Śramaṇa-leaning milieu. Jain tradition holds that in his later years, Chandragupta **embraced Jainism** and abdicated to become a Jain monk, eventually fasting to death at Shravanabelagola in Karnataka under the guidance of the monk Bhadrabahu. While some historians question the precise details, the story's persistence and archaeological evidence (including the site at Shravanabelagola) suggest **at minimum a strong Jain influence** on the early Mauryan court.

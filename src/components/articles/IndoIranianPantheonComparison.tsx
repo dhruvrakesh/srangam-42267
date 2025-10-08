@@ -25,7 +25,7 @@ const deityData: DeityData[] = [
     avestanName: "Ahura",
     avestanStatus: "God, esp. Ahura Mazda",
     trajectory: "elevated",
-    explanation: "In Iran, Ahura became the supreme designation for divinity, culminating in Ahura Mazda. In India, Asura gradually acquired demonic connotations.",
+    explanation: "The term 'Asura' in the early Rigveda was theologically neutral and often honorific, applied to both devas and pre-schism deities like Varuna and Mitra. Post-schism, it became demonized in Vedic tradition while elevated as the supreme divinity (Ahura Mazda) in Zoroastrianism. This inversion marks the core theological rupture.",
     protoForm: "*Asura - 'Powerful Lord'"
   },
   {
@@ -35,7 +35,7 @@ const deityData: DeityData[] = [
     avestanName: "Daeva",
     avestanStatus: "Demon, False God",
     trajectory: "demonized",
-    explanation: "The Deva class was elevated to supreme status in Vedic India, while Zarathustra explicitly condemned them as demons in the Avesta.",
+    explanation: "The Gathic reformation inverted the Vedic pantheon, demoting devas to 'daevas' (demons) in a systematic theological war. Evidence from Yasna 32.3 shows Zarathustra explicitly rejected the devas as followers of the 'Worst Mind' (Angra Mainyu). This 'War of Gods and Men' involved not just ideology but likely physical conflict between competing priestly factions.",
     protoForm: "*Daiva - 'Shining/Heavenly One'"
   },
   {
@@ -55,7 +55,7 @@ const deityData: DeityData[] = [
     avestanName: "Ahura Mazda (absorbed)",
     avestanStatus: "Supreme God",
     trajectory: "elevated",
-    explanation: "Varuna's role as cosmic sovereign and guardian of truth (Ṛta/Asha) was absorbed by Ahura Mazda in Iranian tradition. In India, he was gradually superseded by Indra.",
+    explanation: "Varuna (Vedic lord of cosmic order/Ṛta) corresponds to Avestan Varuṇa but shows complex trajectory. In early Rigveda, Varuna is a supreme Asura. Later Vedic texts show his gradual demotion as 'Asura' becomes pejorative. In Zoroastrianism, he's reduced to a minor water deity. This decline mirrors the broader Asura-Deva inversion during the schism period.",
     protoForm: "*Varu-na - 'Encompasser'"
   },
   {
