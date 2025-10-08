@@ -68,7 +68,7 @@ export const SLUG_TO_ID_MAP: Record<string, string> = {
   '/sacred-tree-harvest-rhythms': 'sacred-tree-harvest-rhythms',
   '/stone-song-and-sea': 'stone-song-and-sea',
   '/asura-exiles-indo-iranian': 'asura-exiles-indo-iranian',
-  '/sarira-atman-vedic-preservation': 'sarira-atman-vedic-preservation'
+  '/sarira-and-atman-vedic-preservation': 'sarira-and-atman-vedic-preservation'
 };
 
 // Article metadata for display (readTime, author, date)
@@ -198,7 +198,7 @@ export const ARTICLE_METADATA: Record<string, {
     date: '2025-10-07',
     theme: 'Ancient India'
   },
-  'sarira-atman-vedic-preservation': {
+  'sarira-and-atman-vedic-preservation': {
     readTime: 38,
     author: 'Nartiang Foundation Research Team',
     date: '2025-10-07',
