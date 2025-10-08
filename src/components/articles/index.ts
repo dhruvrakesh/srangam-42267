@@ -34,3 +34,10 @@ export { RitualSoundscapeMap } from './RitualSoundscapeMap';
 export { LawscapeVisualization } from './LawscapeVisualization';
 export { LittoralCalendarViewer } from './LittoralCalendarViewer';
 export { CounterPositionsPanel } from './CounterPositionsPanel';
+
+// Vedic Preservation components (Śarīra and Ātman article)
+export { AnukramaniTriadVisualization } from './AnukramaniTriadVisualization';
+export { VedicPreservationTimeline } from './VedicPreservationTimeline';
+export { AnukramaniTable } from './AnukramaniTable';
+export { GayatriMantraExplainer } from './GayatriMantraExplainer';
+export { SayanaMethodologyDiagram } from './SayanaMethodologyDiagram';
