@@ -16,9 +16,9 @@ import { ContextualCommentary } from '@/components/inscriptions/ContextualCommen
 export default function Epigraphy() {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
-  const [regionFilter, setRegionFilter] = useState('');
-  const [periodFilter, setPeriodFilter] = useState('');
-  const [scriptFilter, setScriptFilter] = useState('');
+  const [regionFilter, setRegionFilter] = useState('__all__');
+  const [periodFilter, setPeriodFilter] = useState('__all__');
+  const [scriptFilter, setScriptFilter] = useState('__all__');
   const [selectedInscription, setSelectedInscription] = useState<string | null>(null);
 
   const allInscriptions = inscriptionRegistry.inscriptions;
@@ -29,19 +29,19 @@ export default function Epigraphy() {
   // Apply filters
   let filteredInscriptions = searchQuery ? inscriptionRegistry.search(searchQuery) : allInscriptions;
   
-  if (regionFilter) {
+  if (regionFilter && regionFilter !== '__all__') {
     filteredInscriptions = filteredInscriptions.filter(inscription =>
       inscription.location.region.toLowerCase().includes(regionFilter.toLowerCase())
     );
   }
   
-  if (periodFilter) {
+  if (periodFilter && periodFilter !== '__all__') {
     filteredInscriptions = filteredInscriptions.filter(inscription =>
       `${inscription.period.dynasty} (${inscription.period.century})` === periodFilter
     );
   }
 
-  if (scriptFilter) {
+  if (scriptFilter && scriptFilter !== '__all__') {
     filteredInscriptions = filteredInscriptions.filter(inscription =>
       inscription.scripts.some(script => script.scriptType === scriptFilter)
     );
@@ -129,7 +129,7 @@ export default function Epigraphy() {
                         <SelectValue placeholder="Filter by region" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Regions</SelectItem>
+                        <SelectItem value="__all__">All Regions</SelectItem>
                         {allRegions.map((region) => (
                           <SelectItem key={region} value={region}>
                             {region}
@@ -143,7 +143,7 @@ export default function Epigraphy() {
                         <SelectValue placeholder="Filter by period" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Periods</SelectItem>
+                        <SelectItem value="__all__">All Periods</SelectItem>
                         {allPeriods.map((period) => (
                           <SelectItem key={period} value={period}>
                             {period}
@@ -157,7 +157,7 @@ export default function Epigraphy() {
                         <SelectValue placeholder="Filter by script" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Scripts</SelectItem>
+                        <SelectItem value="__all__">All Scripts</SelectItem>
                         {allScriptTypes.map((script) => (
                           <SelectItem key={script} value={script}>
                             {script.charAt(0).toUpperCase() + script.slice(1)}
