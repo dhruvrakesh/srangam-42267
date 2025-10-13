@@ -29,7 +29,8 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
   const getText = (): string => {
     const text = content[currentLanguage] || content.en || Object.values(content)[0] || '';
     if (typeof text === 'string') {
-      return text;
+      // CRITICAL FIX: Trim leading/trailing whitespace and normalize line breaks
+      return text.trim().replace(/^\s+/gm, '');
     }
     console.warn('ProfessionalTextFormatter received non-string content:', text);
     return '';
