@@ -98,15 +98,25 @@ export const rishiGenealogiesVedicTradition: LocalizedArticle = {
 <p>The ṛṣi genealogies of the Bhṛgus, Āṅgirasa, and Kāśyapas provide a window into the intellectual and spiritual landscape of the Vedic period. These families of inspired seer-poets not only composed the hymns of the Ṛgveda but also shaped the worldview, values, and practices of Vedic culture. By studying their hymns, stories, and inter-family connections, we can gain a deeper understanding of the origins of Hinduism and its enduring legacy.</p>
 `,
   },
-  tags: ['Rigveda', 'Vedic-History', 'Genealogies', 'Bhrigu', 'Angirasa', 'Kashyapa', 'Rishis'],
-  lastUpdated: '2025-01-14',
-  translator: 'Sanātana Research Institute',
-  translationMetadata: {
-    en: { confidence: 1.0 }
-  },
-  culturalNotes: [
-    'Ṛṣi (ऋषि): A seer or sage who "hears" divine hymns through deep meditation; etymologically from the root √dṛś, "to see."',
-    'Anukramaṇī (अनुक्रमणी): Ancient indices or "catalogs" systematically listing author, deity, meter for each Vedic hymn.',
-    'Gotra (गोत्र): Patrilineal clan identity; members of the same gotra trace descent from a common ancestor-ṛṣi.'
-  ]
+  tags: [
+    { en: 'Rigveda', hi: 'ऋग्वेद', ta: 'ரிக்வேதம்', te: 'ఋగ్వేదం', kn: 'ಋಗ್ವೇದ', bn: 'ঋগ্বেদ', pa: 'ਰਿਗਵੇਦ', as: 'ঋগ্বেদ', pn: 'ऋग्वेद' },
+    { en: 'Vedic History', hi: 'वैदिक इतिहास', ta: 'வேத வரலாறு', te: 'వేద చరిత్ర', kn: 'ವೈದಿಕ ಇತಿಹಾಸ', bn: 'বৈদিক ইতিহাস', pa: 'ਵੈਦਿਕ ਇਤਿਹਾਸ', as: 'বৈদিক ইতিহাস', pn: 'वैदिक इतिहास' },
+    { en: 'Genealogies', hi: 'वंशावली', ta: 'வம்சாவளி', te: 'వంశావళి', kn: 'ವಂಶಾವಳಿ', bn: 'বংশাবলী', pa: 'ਵੰਸ਼ਾਵਲੀ', as: 'বংশাৱলী', pn: 'वंशावळी' },
+    { en: 'Bhrigu', hi: 'भृगु', ta: 'பிருகு', te: 'భృగు', kn: 'ಭೃಗು', bn: 'ভৃগু', pa: 'ਭ੍ਰਿਗੂ', as: 'ভৃগু', pn: 'भृगु' },
+    { en: 'Angirasa', hi: 'आङ्गिरस', ta: 'ஆங்கிரச', te: 'ఆంగిరస', kn: 'ಆಂಗಿರಸ', bn: 'আঙ্গিরস', pa: 'ਆਂਗਿਰਸ', as: 'আঙ্গিৰস', pn: 'आंगिरस' },
+    { en: 'Kashyapa', hi: 'कश्यप', ta: 'காஶ்யப', te: 'కశ్యప', kn: 'ಕಶ್ಯಪ', bn: 'কশ্যপ', pa: 'ਕਸ਼ਯਪ', as: 'কশ্যপ', pn: 'कश्यप' },
+    { en: 'Rishis', hi: 'ऋषि', ta: 'ரிஷிகள்', te: 'ఋషులు', kn: 'ಋಷಿಗಳು', bn: 'ঋষি', pa: 'ਰਿਸ਼ੀ', as: 'ঋষি', pn: 'ऋषी' }
+  ],
+  metadata: {
+    en: { 
+      confidence: 1.0,
+      translatedBy: 'Sanātana Research Institute',
+      lastUpdated: '2025-01-14',
+      culturalNotes: [
+        'Ṛṣi (ऋषि): A seer or sage who "hears" divine hymns through deep meditation; etymologically from the root √dṛś, "to see."',
+        'Anukramaṇī (अनुक्रमणी): Ancient indices or "catalogs" systematically listing author, deity, meter for each Vedic hymn.',
+        'Gotra (गोत्र): Patrilineal clan identity; members of the same gotra trace descent from a common ancestor-ṛṣi.'
+      ]
+    }
+  }
 };
