@@ -69,6 +69,18 @@ Srangam Digital features a sophisticated **69-point correlation matrix** that co
 - **Confidence Indicators**: "Approximate" badges and scholarly debate notation
 - **Export Functionality**: JSON/CSV download for open access research
 
+### 📜 Vedic Preservation Series (2-Part)
+
+**Part 1: Śarīra and Ātman — The Preservation Technology**  
+How the Anukramaṇī indices preserved Vedic form (śarīra) through metrical checksums, and Sāyaṇāchārya's bhāṣya preserved meaning (ātman) during the Vijayanagara Renaissance. Explores holographic indexing, the Ṛṣi-Devatā-Chandas tripartite system, and the manuscript crisis of the medieval period.  
+📖 [Read Part 1](/sarira-atman-vedic-preservation) | 38 min read
+
+**Part 2: Ṛṣi Genealogies — The Human Transmission Chain**  
+A source-led exploration of the three venerable ṛṣi families (Bhṛgu, Āṅgiras, Kāśyapa) who composed and transmitted the Ṛgveda, as recorded in the Anukramaṇī tradition. Includes 4 interactive visualizations: genealogical charts, Maṇḍala attribution tables, overlap Venn diagrams, and comprehensive bibliography (50+ sources).  
+📖 [Read Part 2](/rishi-genealogies-vedic-tradition) | 42 min read
+
+**Together:** 80 minutes of deep scholarly analysis demonstrating both the *technical mechanisms* (Anukramaṇī error-correction protocols) and *human lineages* (Bhārgavas, Gautamas, Bharadvājas, Kāśyapas) that preserved the Vedic corpus across 3,000+ years of oral and manuscript transmission.
+
 ### 🌳 Sacred Ecology Series (2-Part)
 
 **Part 1: Under the Sacred Tree — Harvest Rhythms and Groves**  

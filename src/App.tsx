@@ -58,6 +58,7 @@ const StoneSongAndSea = lazy(() => import("./pages/articles/StoneSongAndSea"));
 const CholaNavalRaid = lazy(() => import("./pages/articles/CholaNavalRaid"));
 const AsuraExilesIndoIranian = lazy(() => import("./pages/articles/AsuraExilesIndoIranian"));
 const SariraAtmanVedicPreservation = lazy(() => import("./pages/articles/SariraAtmanVedicPreservation"));
+const RishiGenealogiesVedicTradition = lazy(() => import("./pages/articles/RishiGenealogiesVedicTradition"));
 const BatchBujangNagapattinamOcean = lazy(() => import("./pages/BatchBujangNagapattinamOcean"));
 const BatchMuzirisKutaiAshoka = lazy(() => import("./pages/BatchMuzirisKutaiAshoka"));
 const Sitemap = lazy(() => import("./pages/Sitemap"));

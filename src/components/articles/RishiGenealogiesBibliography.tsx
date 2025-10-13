@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Search, Download, Copy } from 'lucide-react';
@@ -11,35 +11,51 @@ interface BibEntry {
   id: string;
   type: 'primary' | 'anukramani' | 'modern' | 'online';
   citation: string;
-  year?: number;
+  year?: string;
   url?: string;
   notes?: string;
 }
 
 const bibliography: BibEntry[] = [
   // Primary Texts
-  { id: 'rv', type: 'primary', citation: 'Ṛgveda Saṁhitā. Trans. Jamison, Stephanie W. & Joel P. Brereton. The Rigveda: The Earliest Religious Poetry of India. 3 vols. Oxford University Press, 2014.' },
-  { id: 'av', type: 'primary', citation: 'Atharvaveda Saṁhitā. Ed. R. Roth & W.D. Whitney. Berlin, 1856.' },
-  { id: 'bd', type: 'primary', citation: 'Bṛhaddevatā (attributed to Śaunaka). Trans. A.A. Macdonell. Harvard Oriental Series, Vol. 5-6. Harvard University Press, 1904.' },
-  { id: 'sb', type: 'primary', citation: 'Śatapatha Brāhmaṇa. Trans. Julius Eggeling. Sacred Books of the East, Vols. 12, 26, 41, 43, 44. Oxford, 1882-1900.' },
-  { id: 'mbh', type: 'primary', citation: 'Mahābhārata (Ādiparvan). Critical Edition. Bhandarkar Oriental Research Institute, Pune, 1933-1966.' },
-
+  { id: 'rsis-primary-1', type: 'primary', citation: 'Ṛgveda Saṁhitā. Anukramaṇī attributions per Śaunaka. Translated by Ralph T.H. Griffith and others.', year: '~1500 BCE' },
+  { id: 'rsis-primary-2', type: 'primary', citation: 'Bṛhaddevatā attributed to Śaunaka. Translated and annotated by A.A. Macdonell.', year: '~500 BCE', url: 'https://www.wisdomlib.org/hinduism/book/brihaddevata-attributed-to-shaunaka/ocr', notes: 'Summarizes deities of Ṛgveda with legends surrounding hymn composition' },
+  { id: 'rsis-primary-3', type: 'primary', citation: 'Ṛgveda (Book 8, Hymn XCI). "Agni." Sacred-Texts.com.', url: 'https://sacred-texts.com/hin/rigveda/rv08091.htm', notes: 'Invokes Aurva and Apnavāna Bhṛgus as first fire-kindlers' },
+  { id: 'rsis-primary-4', type: 'primary', citation: 'Ṛgveda (Book 4, Hymn VII). "Agni." Sacred-Texts.com.', url: 'https://sacred-texts.com/hin/rigveda/rv04007.htm', notes: 'Apnavāna and Bhṛgus made Agni shine spreading from home to home' },
+  { id: 'rsis-primary-5', type: 'primary', citation: 'Śatapatha Brāhmaṇa. Referenced in Vedic Index regarding Cyavana\'s dual Bhārgava/Āṅgirasa identity.', year: '~800-600 BCE' },
+  { id: 'rsis-primary-6', type: 'primary', citation: 'Aitareya Brāhmaṇa. References to Cyavana Bhārgava and Bhṛgu clan activities.', year: '~1000-800 BCE' },
+  { id: 'rsis-primary-7', type: 'primary', citation: 'Taittirīya Upaniṣad. Narrative of Bhṛgu Vāruṇi learning ultimate truth from Varuṇa.', year: '~600 BCE' },
+  { id: 'rsis-primary-8', type: 'primary', citation: 'Atharvaveda. References to "Atharvāṅgirasāḥ" (compound of Atharvan and Aṅgiras).', year: '~1200-1000 BCE' },
+  { id: 'rsis-primary-9', type: 'primary', citation: 'Mahābhārata. Bhṛgu lineage including Jamadagni and Paraśurāma.', year: '~400 BCE-400 CE' },
+  { id: 'rsis-primary-10', type: 'primary', citation: 'Manu Smṛti. Attributed to Bhṛgu as narrator/editor.', year: '~200 BCE-200 CE' },
+  
   // Anukramaṇī Editions
-  { id: 'sarvank', type: 'anukramani', citation: 'Sarvānukramaṇī (of Kātyāyana). Ed. & trans. A.A. Macdonell. Oxford, 1886.', url: 'https://archive.org/details/rigvedasarvnukr00ktygoog' },
-  { id: 'rishyank', type: 'anukramani', citation: 'Ṛṣyanukramaṇī. In: Ṛgveda Anukramaṇī. Ed. Satya Prakash Singh. Meharchand Lachhmandas, 1978.' },
-
+  { id: 'rsis-anuk-1', type: 'anukramani', citation: 'Śaunaka. Sarvānukramaṇī (Complete Index to the Ṛgveda). Systematic catalog of Ṛgvedic hymns\' seers, deities, and meters.', year: '~500 BCE', notes: 'Primary source for ṛṣi attributions' },
+  { id: 'rsis-anuk-2', type: 'anukramani', citation: 'Ṛṣyanukramaṇī. Index specifically listing the seers (ṛṣis) of each Ṛgvedic hymn.', year: '~500 BCE' },
+  { id: 'rsis-anuk-3', type: 'anukramani', citation: 'Devatānukramaṇī. Index listing deities addressed in each Ṛgvedic hymn.', year: '~500 BCE' },
+  { id: 'rsis-anuk-4', type: 'anukramani', citation: 'Chandasānukramaṇī. Index cataloging the meters (chandas) of Ṛgvedic verses.', year: '~500 BCE' },
+  
   // Modern Scholarship
-  { id: 'macdonell-keith', type: 'modern', citation: 'Macdonell, A.A. & A.B. Keith. Vedic Index of Names and Subjects. 2 vols. John Murray, London, 1912.', year: 1912, url: 'https://www.scribd.com/doc/118083140/Vedic-Index-of-Names-and-Subject-Vol-2-by-Macdonell-Keith' },
-  { id: 'jamison-brereton', type: 'modern', citation: 'Jamison, Stephanie W. & Joel P. Brereton. The Rigveda: The Earliest Religious Poetry of India. 3 vols. Oxford University Press, 2014.', year: 2014 },
-  { id: 'witzel', type: 'modern', citation: 'Witzel, Michael. "Rigvedic History: Poets, Chieftains and Polities." In The Indo-Aryans of Ancient South Asia. Ed. George Erdosy. Walter de Gruyter, 1995.', year: 1995 },
-
-  // Online Resources
-  { id: 'dharmawiki-bhrigu', type: 'online', citation: '"Bhrigu." Dharmawiki. https://dharmawiki.org/Bhrigu', url: 'https://dharmawiki.org/Bhrigu' },
-  { id: 'dharmawiki-angirasa', type: 'online', citation: '"Angirasa (अङ्गिरसः)." Dharmawiki. https://dharmawiki.org/index.php/Angirasa', url: 'https://dharmawiki.org/index.php/Angirasa_(%E0%A4%85%E0%A4%99%E0%A5%8D%E0%A4%97%E0%A4%BF%E0%A4%B0%E0%A4%B8%E0%A4%83)' },
-  { id: 'hinduism-se-kashyapa', type: 'online', citation: '"Is Sage Kashyapa mentioned in the Vedas?" Hinduism Stack Exchange. https://hinduism.stackexchange.com/questions/45009', url: 'https://hinduism.stackexchange.com/questions/45009/is-sage-kashyapa-mentioned-in-the-vedas' },
-  { id: 'sacred-texts', type: 'online', citation: 'Griffith, Ralph T.H. The Rig Veda. Sacred-texts.com. https://sacred-texts.com/hin/rigveda/', url: 'https://sacred-texts.com/hin/rigveda/' },
-  { id: 'wikipedia-bharadvaja', type: 'online', citation: '"Bharadvaja." Wikipedia. https://en.wikipedia.org/wiki/Bharadvaja', url: 'https://en.wikipedia.org/wiki/Bharadvaja' },
-  { id: 'wikipedia-kashyapa', type: 'online', citation: '"Kashyapa." Wikipedia. https://en.wikipedia.org/wiki/Kashyapa', url: 'https://en.wikipedia.org/wiki/Kashyapa' },
+  { id: 'rsis-mod-1', type: 'modern', citation: 'Macdonell, A.A. & Keith, A.B. (1912). Vedic Index of Names and Subjects (2 volumes). London: John Murray.', year: '1912', url: 'https://www.scribd.com/doc/118083140/Vedic-Index-of-Names-and-Subject-Vol-2-by-Macdonell-Keith', notes: 'Foundational reference for Vedic lineage and identification details' },
+  { id: 'rsis-mod-2', type: 'modern', citation: 'Jamison, Stephanie W. & Brereton, Joel P. (2014). The Rigveda: The Earliest Religious Poetry of India (3 volumes). Oxford: Oxford University Press.', year: '2014', notes: 'Most comprehensive modern English translation with philological notes' },
+  { id: 'rsis-mod-3', type: 'modern', citation: 'Sāyaṇa (14th century CE). Ṛgveda Bhāṣya (Commentary on the Ṛgveda). Edited by Satya Prakash Singh (1978).', year: '1978', notes: 'Medieval commentary preserving traditional interpretations' },
+  { id: 'rsis-mod-4', type: 'modern', citation: 'Griffith, Ralph T.H. (1896). The Hymns of the Rigveda. Benares: E.J. Lazarus and Co.', year: '1896', url: 'https://sacred-texts.com/hin/rigveda/', notes: 'Classic English translation, public domain' },
+  { id: 'rsis-mod-5', type: 'modern', citation: 'Macdonell, A.A. (1904). The Bṛhad-devatā: Attributed to Śaunaka. Harvard Oriental Series, Vol. 5-6. Cambridge: Harvard University Press.', year: '1904' },
+  { id: 'rsis-mod-6', type: 'modern', citation: 'Aurobindo, Sri. "The Angirasa Legend in the Veda." In The Secret of the Veda. Renaissance: Sri Aurobindo Society.', url: 'https://renaissance.aurosociety.org/the-angiras-legend-in-the-veda/', notes: 'Esoteric interpretation of Āṅgirasa mythology' },
+  { id: 'rsis-mod-7', type: 'modern', citation: 'Vedic Index of Names and Subjects (Digital PDF). University of Cologne Sanskrit Lexicon Project.', url: 'https://www.sanskrit-lexicon.uni-koeln.de/scans/VEIScan/2013/downloads/vei2_bookmark.pdf', notes: 'Searchable digital version' },
+  
+  // Online Resources  
+  { id: 'rsis-online-1', type: 'online', citation: '"Is the Anukramani index of sages and deities of the Rig Veda available online?" Hinduism Stack Exchange.', url: 'https://hinduism.stackexchange.com/questions/2429/is-the-anukramani-index-of-sages-and-deities-of-the-rig-veda-available-online', notes: 'Community discussion on Anukramaṇī tradition and digital access' },
+  { id: 'rsis-online-2', type: 'online', citation: '"Gṛtsamada." Hindupedia: The Hindu Encyclopedia.', url: 'https://www.hindupedia.com/en/Gṛtsamada', notes: 'Encyclopedic entry on Gṛtsamada Śaunaka, son of Śunaka, Bhārgava identity' },
+  { id: 'rsis-online-3', type: 'online', citation: '"Angirasa (अङ्गिरसः)." Dharmawiki.', url: 'https://dharmawiki.org/index.php/Angirasa_(अङ्गिरसः)', notes: 'Comprehensive coverage of Āṅgirasa lineage, Paṇi legend, Soma hymns' },
+  { id: 'rsis-online-4', type: 'online', citation: '"Bharadvāja." Wikipedia.', url: 'https://en.wikipedia.org/wiki/Bharadvaja', notes: 'Overview of Bharadvāja Bārhaspatya, Maṇḍala VI attribution' },
+  { id: 'rsis-online-5', type: 'online', citation: '"Kashyapa." Wikipedia.', url: 'https://en.wikipedia.org/wiki/Kashyapa', notes: 'Kāśyapa genealogy, Purāṇic connections, Soma Pavamāna references' },
+  { id: 'rsis-online-6', type: 'online', citation: '"Is Sage Kashyapa mentioned in the Vedas?" Hinduism Stack Exchange.', url: 'https://hinduism.stackexchange.com/questions/45009/is-sage-kashyapa-mentioned-in-the-vedas', notes: 'Detailed analysis of Kāśyapa Mārīca hymns in Ṛgveda IX' },
+  { id: 'rsis-online-7', type: 'online', citation: '"Angirasa." Pali Names Dictionary. Palikanon.com.', url: 'https://www.palikanon.com/english/pali_names/ay/angirasa.htm', notes: 'Buddhist Pali sources referencing Vedic ṛṣi Aṅgiras' },
+  { id: 'rsis-online-8', type: 'online', citation: '"The Lost Sun and the Lost Cows." The Veda (CWSA - The Secret of the Veda).', url: 'https://theveda.org.in/rigveda/sa/15/the-lost-sun-and-the-lost-cows', notes: 'Discusses Bhṛgus and Angirasas acting in concert in Ṛgveda 1.60' },
+  { id: 'rsis-online-9', type: 'online', citation: '"Sarama Pani Samvada (सरमापणिसंवादः)." Dharmawiki.', url: 'https://dharmawiki.org/index.php/Sarama_Pani_Samvada_(सरमापणिसंवादः)', notes: 'Legend of Paṇis stealing devatas, Indra and Āṅgirasas recovering them' },
+  { id: 'rsis-online-10', type: 'online', citation: 'Sacred-Texts.com Ṛgveda Archive. Complete English translations by Griffith.', url: 'https://sacred-texts.com/hin/rigveda/', notes: 'Public domain repository for all Ṛgvedic hymns' },
+  { id: 'rsis-online-11', type: 'online', citation: 'Wisdom Library: Hindu Section. Searchable database of Purāṇic and Vedic sources.', url: 'https://www.wisdomlib.org/hinduism', notes: 'Digital repository for scholarly research' },
 ];
 
 const getTypeLabel = (type: string) => {

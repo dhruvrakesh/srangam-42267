@@ -46,7 +46,7 @@ export const sariraAndAtmanVedicPreservation: LocalizedArticle = {
 
       <h4>Ṛṣi (The Seer)</h4>
 
-      <p>The Anukramaṇīs meticulously record the <em>ṛṣi</em> (sage) or the family of <em>ṛṣis</em> recognized as the <em>mantra-draṣṭā</em>—the "seer of the mantra".<sup>1</sup> This is not authorship in the modern sense of invention but a record of the spiritual lineage through which the eternal Vedic knowledge was revealed.<sup>1</sup> This attribution preserves the historical and traditional provenance of the hymns, linking them to specific Vedic clans such as the Viśvāmitras, Vasiṣṭhas, Aṅgirasas, and Atreyas, whose collections form the core "family books" (Maṇḍalas 2-7) of the Ṛgveda.<sup>7</sup></p>
+      <p>The Anukramaṇīs meticulously record the <em>ṛṣi</em> (sage) or the family of <em>ṛṣis</em> recognized as the <em>mantra-draṣṭā</em>—the "seer of the mantra".<sup>1</sup> This is not authorship in the modern sense of invention but a record of the spiritual lineage through which the eternal Vedic knowledge was revealed.<sup>1</sup> This attribution preserves the historical and traditional provenance of the hymns, linking them to specific Vedic clans such as the <strong>Bhṛgus</strong>, <strong>Āṅgirasas</strong> (including the Viśvāmitras, Vasiṣṭhas, Gautamas, and Bharadvājas), and <strong>Kāśyapas</strong>, whose collections form the core "family books" (Maṇḍalas 2-7) of the Ṛgveda.<sup>7</sup> <strong>For a comprehensive exploration of these three venerable ṛṣi families—their genealogies, hymn attributions, and thematic legacies—see the companion article <a href="/rishi-genealogies-vedic-tradition">Ṛṣi Genealogies in Vedic Tradition: Bhṛgu, Āṅgiras, and Kāśyapa Lineages</a>.</strong></p>
 
       <h4>Devatā (The Deity)</h4>
 
@@ -63,6 +63,10 @@ export const sariraAndAtmanVedicPreservation: LocalizedArticle = {
       <p>The Anukramaṇī tradition was not an isolated phenomenon confined to the Ṛgveda but a comprehensive, pan-Vedic intellectual project. Indices were systematically developed for all four Vedas, demonstrating a concerted effort by ancient sages to standardize and preserve the entire <em>Śruti</em> canon.<sup>14</sup></p>
 
       [SEE COMPONENT: AnukramaniTable]
+
+      <div class="text-xs text-muted-foreground bg-muted/30 p-3 rounded-lg mt-4">
+        <strong>Ṛṣi Attribution in Practice:</strong> For detailed analysis of the ṛṣi families catalogued in these Anukramaṇīs—including the Bhārgavas of Maṇḍala II, the Gautamas and Bharadvājas (Āṅgirasas) of Maṇḍalas IV & VI, and the Kāśyapas of Maṇḍala IX—see the companion article <a href="/rishi-genealogies-vedic-tradition" class="underline">Ṛṣi Genealogies in Vedic Tradition</a>, which explores how the Anukramaṇī system preserved not just mantras but entire lineage traditions.
+      </div>
 
       <h3>Illustrative Example: Deconstructing Ṛgveda 3.62.10 (The Gāyatrī Mantra)</h3>
 

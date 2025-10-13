@@ -32,7 +32,7 @@ This article serves as a critical companion to our examination of [Ashoka's Kand
 
 *For a deeper exploration of Indo-Iranian origins and the civilizational transformations that preceded Mauryan India, see [The Asura Exiles: Indo-Iranian Origins and the Vedic-Zoroastrian Schism](/asura-exiles-indo-iranian).*
 
-*To understand how Vedic knowledge was preserved through oral and manuscript traditions despite political upheavals, see [Śarīra and Ātman: The Preservation of the Vedas](/sarira-atman-vedic-preservation), which examines the Vijayanagara manuscript renaissance under Sāyaṇāchārya.*
+*To understand how Vedic knowledge was preserved through oral and manuscript traditions despite political upheavals, see [Śarīra and Ātman: The Preservation of the Vedas](/sarira-atman-vedic-preservation), which examines the Vijayanagara manuscript renaissance under Sāyaṇāchārya. For context on the ṛṣi lineages (Bhṛgu, Āṅgiras, Kāśyapa) whose hymns and ritual knowledge formed the foundation of Mauryan Brahmanical expertise, see [Ṛṣi Genealogies in Vedic Tradition](/rishi-genealogies-vedic-tradition).*
 
 For over a century, colonial and post-colonial scholarship portrayed Emperor Ashoka (r. c. 268–232 BCE) as a "Buddhist Constantine" – a zealous convert who made Buddhism the Mauryan state religion. This narrative, however, oversimplifies the complex religious landscape of ancient Magadha and ignores substantial evidence that Ashoka's *dhamma* was **pragmatic political philosophy** rather than sectarian evangelism.
 
