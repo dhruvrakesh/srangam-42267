@@ -14,8 +14,8 @@ interface TimelineEvent {
 const events: TimelineEvent[] = [
   {
     year: -500,
-    title: 'Anukramaṇīs Composed',
-    description: 'Śaunaka and Kātyāyana systematize Vedic indices, establishing the Ṛṣi-Devatā-Chandas framework for textual preservation.',
+    title: 'Anukramaṇīs Systematized',
+    description: 'Śaunaka and Kātyāyana codify existing oral traditions into written indices, systematizing the Ṛṣi-Devatā-Chandas framework. This represents the formalization of ancient preservation technologies, not the composition of the Vedas themselves, which had been transmitted orally for millennia.',
     category: 'ancient',
     significance: 'high'
   },
@@ -82,6 +82,24 @@ export function VedicPreservationTimeline() {
   const minYear = -500;
   const maxYear = 1800;
 
+  const chronologyNote = (
+    <div className="mb-6 p-4 border-l-4 border-primary bg-muted/30 rounded-r-lg">
+      <div className="font-semibold text-sm mb-2 text-foreground">Chronological Framework</div>
+      <div className="text-xs text-muted-foreground space-y-2">
+        <p>
+          This timeline tracks the <strong>preservation history</strong> of Vedic knowledge, not its original composition. 
+          The earliest oral traditions of the Ṛgveda likely extend back 8,000-10,000+ years BP (Before Present), 
+          far predating the colonial-era "1500 BCE" theory debunked by archaeoastronomical, archaeological, 
+          and indigenous traditional evidence.
+        </p>
+        <p>
+          The dates shown here represent documented systematization and transmission milestones—moments when 
+          existing ancient knowledge was formalized, indexed, or rescued from crisis—not the origin of that knowledge itself.
+        </p>
+      </div>
+    </div>
+  );
+
   const filteredEvents = events.filter(
     e => e.year >= minYear + zoomRange[0] && e.year <= minYear + zoomRange[1]
   );
@@ -95,6 +113,7 @@ export function VedicPreservationTimeline() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {chronologyNote}
         {/* Timeline Visualization */}
         <div className="relative h-32 border-l-2 border-border pl-4">
           {filteredEvents.map((event, idx) => {

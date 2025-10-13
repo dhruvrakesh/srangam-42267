@@ -88,7 +88,12 @@ export function RishiGenealogiesBibliography() {
   );
 
   const sortedBib = [...filteredBib].sort((a, b) => {
-    if (sortBy === 'year' && a.year && b.year) return b.year - a.year;
+    if (sortBy === 'year' && a.year && b.year) {
+      const yearA = parseInt(a.year.replace(/[^0-9-]/g, ''), 10);
+      const yearB = parseInt(b.year.replace(/[^0-9-]/g, ''), 10);
+      if (isNaN(yearA) || isNaN(yearB)) return 0;
+      return yearB - yearA;
+    }
     if (sortBy === 'alpha') return a.citation.localeCompare(b.citation);
     return 0;
   });

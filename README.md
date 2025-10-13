@@ -79,7 +79,7 @@ How the Anukramaṇī indices preserved Vedic form (śarīra) through metrical c
 A source-led exploration of the three venerable ṛṣi families (Bhṛgu, Āṅgiras, Kāśyapa) who composed and transmitted the Ṛgveda, as recorded in the Anukramaṇī tradition. Includes 4 interactive visualizations: genealogical charts, Maṇḍala attribution tables, overlap Venn diagrams, and comprehensive bibliography (50+ sources).  
 📖 [Read Part 2](/rishi-genealogies-vedic-tradition) | 42 min read
 
-**Together:** 80 minutes of deep scholarly analysis demonstrating both the *technical mechanisms* (Anukramaṇī error-correction protocols) and *human lineages* (Bhārgavas, Gautamas, Bharadvājas, Kāśyapas) that preserved the Vedic corpus across 3,000+ years of oral and manuscript transmission.
+**Together:** 80 minutes of deep scholarly analysis demonstrating both the *technical mechanisms* (Anukramaṇī error-correction protocols) and *human lineages* (Bhārgavas, Gautamas, Bharadvājas, Kāśyapas) that preserved the Vedic corpus across millennia of oral and manuscript transmission, from immemorial antiquity through the medieval renaissance.
 
 ### 🌳 Sacred Ecology Series (2-Part)
 
