@@ -100,6 +100,14 @@ export function TopNavigation() {
                   </div>
                   <DropdownMenuItem asChild>
                     <Link 
+                      to="/sources"
+                      className="text-sm text-foreground hover:text-saffron transition-colors font-semibold"
+                    >
+                      Sources Index
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link 
                       to="/sources/edicts"
                       className="text-sm text-foreground hover:text-saffron transition-colors"
                     >
@@ -120,6 +128,14 @@ export function TopNavigation() {
                       className="text-sm text-foreground hover:text-saffron transition-colors"
                     >
                       Trade Documents
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link 
+                      to="/sources/sanskrit-terminology"
+                      className="text-sm text-foreground hover:text-saffron transition-colors"
+                    >
+                      Sanskrit Terminology
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>

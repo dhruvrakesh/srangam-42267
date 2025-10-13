@@ -68,8 +68,10 @@ const OceanicRouter = lazy(() => import("./pages/oceanic/OceanicRouter"));
 
 // Sources Pages  
 const Edicts = lazy(() => import("./pages/sources/Edicts"));
-const Epigraphy = lazy(() => import("./pages/sources/Epigraphy"));  
+const Epigraphy = lazy(() => import("./pages/sources/Epigraphy"));
 const TradeDocs = lazy(() => import("./pages/sources/TradeDocs"));
+const SourcesIndex = lazy(() => import("./pages/sources/Index"));
+const SanskritTerminology = lazy(() => import("./pages/sources/SanskritTerminology"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -118,9 +120,12 @@ const App = () => (
               <Route path="/reading-room" element={<ReadingRoom />} />
               
               {/* Sources Routes */}
+              <Route path="/sources" element={<SourcesIndex />} />
+              <Route path="/sources/index" element={<SourcesIndex />} />
               <Route path="/sources/edicts" element={<Edicts />} />
               <Route path="/sources/epigraphy" element={<Epigraphy />} />
               <Route path="/sources/trade-docs" element={<TradeDocs />} />
+              <Route path="/sources/sanskrit-terminology" element={<SanskritTerminology />} />
                   <Route path="/sources-method" element={<SourcesMethod />} />
                   <Route path="/search" element={<Search />} />
                   <Route path="/about" element={<About />} />
