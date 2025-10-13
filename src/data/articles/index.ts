@@ -20,6 +20,7 @@ import { stoneSongAndSea } from './stone-song-and-sea';
 import { sacredTreeHarvestRhythms } from './sacred-tree-harvest-rhythms';
 import { asuraExilesIndoIranian } from './asura-exiles-indo-iranian';
 import { sariraAndAtmanVedicPreservation } from './sarira-and-atman-vedic-preservation';
+import { rishiGenealogiesVedicTradition } from './rishi-genealogies-vedic-tradition';
 
 // Complete multilingual article registry
 export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
@@ -43,7 +44,8 @@ export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
   sacredTreeHarvestRhythms,
   stoneSongAndSea,
   asuraExilesIndoIranian,
-  sariraAndAtmanVedicPreservation
+  sariraAndAtmanVedicPreservation,
+  rishiGenealogiesVedicTradition
 ];
 
 // Mapping from legacy slugs to multilingual article IDs
@@ -68,7 +70,8 @@ export const SLUG_TO_ID_MAP: Record<string, string> = {
   '/sacred-tree-harvest-rhythms': 'sacred-tree-harvest-rhythms',
   '/stone-song-and-sea': 'stone-song-and-sea',
   '/asura-exiles-indo-iranian': 'asura-exiles-indo-iranian',
-  '/sarira-and-atman-vedic-preservation': 'sarira-and-atman-vedic-preservation'
+  '/sarira-and-atman-vedic-preservation': 'sarira-and-atman-vedic-preservation',
+  '/rishi-genealogies-vedic-tradition': 'rishi-genealogies-vedic-tradition'
 };
 
 // Article metadata for display (readTime, author, date)
@@ -202,6 +205,12 @@ export const ARTICLE_METADATA: Record<string, {
     readTime: 38,
     author: 'Nartiang Foundation Research Team',
     date: '2025-10-07',
+    theme: 'Ancient India'
+  },
+  'rishi-genealogies-vedic-tradition': {
+    readTime: 42,
+    author: 'Nartiang Foundation Research Team',
+    date: '2025-10-13',
     theme: 'Ancient India'
   }
 };

@@ -145,6 +145,7 @@ const App = () => (
               <Route path="/chola-naval-raid" element={<CholaNavalRaid />} />
               <Route path="/asura-exiles-indo-iranian" element={<AsuraExilesIndoIranian />} />
               <Route path="/sarira-and-atman-vedic-preservation" element={<SariraAtmanVedicPreservation />} />
+              <Route path="/rishi-genealogies-vedic-tradition" element={<RishiGenealogiesVedicTradition />} />
                   <Route path="/themes/geology-deep-time/stone-purana" element={<StonePurana />} />
                   <Route path="/themes/ancient-india/pepper-routes" element={<IndianOceanPowerNetworks />} />
                   <Route path="/batch/bujang-nagapattinam-ocean" element={<BatchBujangNagapattinamOcean />} />
