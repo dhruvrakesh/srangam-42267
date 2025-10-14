@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -12,6 +12,23 @@ interface MitanniMapProps {
 }
 
 export function MitanniMap({ markers, migrationPath }: MitanniMapProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsMounted(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!isMounted) {
+    return (
+      <div className="flex items-center justify-center h-full text-muted-foreground">
+        Initializing Mitanni map...
+      </div>
+    );
+  }
+
   return (
     <MapContainer center={[36.0, 40.0]} zoom={5} style={{ height: '100%', width: '100%' }}>
       <TileLayer 
