@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+
+// Lazy load map components to avoid context rendering conflicts
+const IndiaMap = React.lazy(() => import('./maps/IndiaMap').then(m => ({ default: m.IndiaMap })));
+const MitanniMap = React.lazy(() => import('./maps/MitanniMap').then(m => ({ default: m.MitanniMap })));
 
 // Fix leaflet default marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -14,12 +16,12 @@ L.Icon.Default.mergeOptions({
 });
 
 // Mitanni connection data
-const INDIA_MARKERS = [
+const INDIA_MARKERS: Array<{ name: string; coords: [number, number]; description: string }> = [
   { name: 'Sapta Sindhu Region', coords: [30.5, 75.0], description: 'Vedic heartland - Indra, Varuna, Mitra, Nasatyas worship' },
   { name: 'Rigvedic Core', coords: [31.0, 76.0], description: 'Horse and chariot culture, Soma rituals' }
 ];
 
-const MITANNI_MARKERS = [
+const MITANNI_MARKERS: Array<{ name: string; coords: [number, number]; description: string }> = [
   { name: 'Mitanni Kingdom', coords: [36.0, 40.0], description: '1380 BCE treaty with Hittites - Mi-it-ra, In-da-ra deities' },
   { name: 'Kikkuli Text Site', coords: [37.5, 38.5], description: 'Horse-training manual with Sanskrit numerical terms' }
 ];
@@ -81,48 +83,24 @@ export function MitanniVedicConnectionsMap() {
             <div className="grid md:grid-cols-2 gap-4">
               {/* India Map */}
               <div className="h-80 rounded overflow-hidden border border-border">
-                <MapContainer center={[30.5, 75.0]} zoom={5} style={{ height: '100%', width: '100%' }}>
-                  <TileLayer 
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                  />
-                  {INDIA_MARKERS.map((marker, idx) => (
-                    <Marker key={idx} position={marker.coords as [number, number]}>
-                      <Popup>
-                        <div className="text-xs">
-                          <div className="font-semibold">{marker.name}</div>
-                          <div className="text-muted-foreground">{marker.description}</div>
-                        </div>
-                      </Popup>
-                    </Marker>
-                  ))}
-                </MapContainer>
+                <Suspense fallback={
+                  <div className="h-full flex items-center justify-center text-muted-foreground">
+                    Loading India map...
+                  </div>
+                }>
+                  <IndiaMap markers={INDIA_MARKERS} />
+                </Suspense>
               </div>
 
               {/* Mitanni Map */}
               <div className="h-80 rounded overflow-hidden border border-border">
-                <MapContainer center={[36.0, 40.0]} zoom={5} style={{ height: '100%', width: '100%' }}>
-                  <TileLayer 
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                  />
-                  {MITANNI_MARKERS.map((marker, idx) => (
-                    <Marker key={idx} position={marker.coords as [number, number]}>
-                      <Popup>
-                        <div className="text-xs">
-                          <div className="font-semibold">{marker.name}</div>
-                          <div className="text-muted-foreground">{marker.description}</div>
-                        </div>
-                      </Popup>
-                    </Marker>
-                  ))}
-                  <Polyline 
-                    positions={MIGRATION_PATH} 
-                    color="hsl(var(--primary))" 
-                    weight={2} 
-                    dashArray="5, 10" 
-                  />
-                </MapContainer>
+                <Suspense fallback={
+                  <div className="h-full flex items-center justify-center text-muted-foreground">
+                    Loading Mitanni map...
+                  </div>
+                }>
+                  <MitanniMap markers={MITANNI_MARKERS} migrationPath={MIGRATION_PATH} />
+                </Suspense>
               </div>
             </div>
 
