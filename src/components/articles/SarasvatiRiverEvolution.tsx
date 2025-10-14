@@ -1,21 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
-import { MapContainer, TileLayer, Polyline, Marker, Popup } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 
-// Fix Leaflet icon issue
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-
-const DefaultIcon = L.icon({
-  iconUrl: icon,
-  shadowUrl: iconShadow,
-  iconAnchor: [12, 41],
-});
-
-L.Marker.prototype.options.icon = DefaultIcon;
+// Lazy load map component to avoid context rendering conflicts
+const SarasvatiRiverMap = React.lazy(() => 
+  import('./maps/SarasvatiRiverMap').then(m => ({ default: m.SarasvatiRiverMap }))
+);
 
 interface RiverLayer {
   period: string;
@@ -176,37 +166,16 @@ export function SarasvatiRiverEvolution() {
 
         {/* Map */}
         <div className="h-96 rounded overflow-hidden border border-border">
-          <MapContainer
-            center={[28.5, 74.0]}
-            zoom={6}
-            style={{ height: '100%', width: '100%' }}
-            scrollWheelZoom={false}
-          >
-            <TileLayer
-              attribution='&copy; OpenStreetMap contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          <Suspense fallback={
+            <div className="h-full flex items-center justify-center text-muted-foreground">
+              Loading Sarasvatī river map...
+            </div>
+          }>
+            <SarasvatiRiverMap 
+              currentLayer={currentLayer}
+              harappanSites={HARAPPAN_SITES}
             />
-            
-            {/* River Evolution */}
-            <Polyline
-              positions={currentLayer.coordinates}
-              color={currentLayer.color}
-              weight={currentLayer.weight}
-              dashArray={currentLayer.date === 0 ? '5, 10' : undefined}
-            />
-
-            {/* Harappan Sites */}
-            {HARAPPAN_SITES.map((site, idx) => (
-              <Marker key={idx} position={site.coordinates}>
-                <Popup>
-                  <div className="text-xs">
-                    <div className="font-semibold">{site.name}</div>
-                    <div className="text-muted-foreground">{site.period}</div>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
-          </MapContainer>
+          </Suspense>
         </div>
 
         {/* Ṛgveda References */}
