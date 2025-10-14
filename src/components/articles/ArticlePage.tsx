@@ -151,10 +151,10 @@ const ArticleContent = React.memo(({
                   React.isValidElement(component)
                 )
                 .map((component, index) => (
-                  <div 
-                    key={index} 
-                    className="bg-sandalwood/40 border border-burgundy/30 p-8 rounded-2xl backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01]"
-                  >
+                <div 
+                  key={index} 
+                  className="bg-sandalwood/40 border border-burgundy/30 p-8 rounded-2xl backdrop-blur-sm shadow-lg"
+                >
                     {component}
                   </div>
                 ))}
