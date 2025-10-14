@@ -21,6 +21,7 @@ import { sacredTreeHarvestRhythms } from './sacred-tree-harvest-rhythms';
 import { asuraExilesIndoIranian } from './asura-exiles-indo-iranian';
 import { sariraAndAtmanVedicPreservation } from './sarira-and-atman-vedic-preservation';
 import { rishiGenealogiesVedicTradition } from './rishi-genealogies-vedic-tradition';
+import { reassessingRigvedaAntiquity } from './reassessing-rigveda-antiquity';
 
 // Complete multilingual article registry
 export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [

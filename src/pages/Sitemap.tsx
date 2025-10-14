@@ -30,6 +30,7 @@ export default function Sitemap() {
         { title: "Maritime Memories South India", path: "/maritime-memories-south-india" },
         { title: "Riders on Monsoon", path: "/riders-on-monsoon" },
         { title: "Earth Sea Sangam", path: "/earth-sea-sangam" },
+        { title: "Reassessing Rigveda Antiquity", path: "/reassessing-rigveda-antiquity" },
       ]
     },
     {

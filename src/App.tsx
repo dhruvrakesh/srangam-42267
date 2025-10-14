@@ -59,6 +59,7 @@ const CholaNavalRaid = lazy(() => import("./pages/articles/CholaNavalRaid"));
 const AsuraExilesIndoIranian = lazy(() => import("./pages/articles/AsuraExilesIndoIranian"));
 const SariraAtmanVedicPreservation = lazy(() => import("./pages/articles/SariraAtmanVedicPreservation"));
 const RishiGenealogiesVedicTradition = lazy(() => import("./pages/articles/RishiGenealogiesVedicTradition"));
+const ReasessingRigvedaAntiquity = lazy(() => import("./pages/articles/ReasessingRigvedaAntiquity"));
 const BatchBujangNagapattinamOcean = lazy(() => import("./pages/BatchBujangNagapattinamOcean"));
 const BatchMuzirisKutaiAshoka = lazy(() => import("./pages/BatchMuzirisKutaiAshoka"));
 const Sitemap = lazy(() => import("./pages/Sitemap"));
@@ -151,7 +152,8 @@ const App = () => (
               <Route path="/chola-naval-raid" element={<CholaNavalRaid />} />
               <Route path="/asura-exiles-indo-iranian" element={<AsuraExilesIndoIranian />} />
               <Route path="/sarira-and-atman-vedic-preservation" element={<SariraAtmanVedicPreservation />} />
-              <Route path="/rishi-genealogies-vedic-tradition" element={<RishiGenealogiesVedicTradition />} />
+            <Route path="/rishi-genealogies-vedic-tradition" element={<RishiGenealogiesVedicTradition />} />
+            <Route path="/reassessing-rigveda-antiquity" element={<ReasessingRigvedaAntiquity />} />
                   <Route path="/themes/geology-deep-time/stone-purana" element={<StonePurana />} />
                   <Route path="/themes/ancient-india/pepper-routes" element={<IndianOceanPowerNetworks />} />
                   <Route path="/batch/bujang-nagapattinam-ocean" element={<BatchBujangNagapattinamOcean />} />
