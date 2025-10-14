@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Polyline, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -36,6 +36,23 @@ interface SarasvatiRiverMapProps {
 }
 
 export function SarasvatiRiverMap({ currentLayer, harappanSites }: SarasvatiRiverMapProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsMounted(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!isMounted) {
+    return (
+      <div className="flex items-center justify-center h-full text-muted-foreground">
+        Initializing Sarasvatī river map...
+      </div>
+    );
+  }
+
   return (
     <MapContainer
       center={[28.5, 74.0]}
