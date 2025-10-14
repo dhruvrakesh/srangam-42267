@@ -68,6 +68,10 @@ export const sariraAndAtmanVedicPreservation: LocalizedArticle = {
         <strong>Ṛṣi Attribution in Practice:</strong> For detailed analysis of the ṛṣi families catalogued in these Anukramaṇīs—including the Bhārgavas of Maṇḍala II, the Gautamas and Bharadvājas (Āṅgirasas) of Maṇḍalas IV & VI, and the Kāśyapas of Maṇḍala IX—see the companion article <a href="/rishi-genealogies-vedic-tradition" class="underline">Ṛṣi Genealogies in Vedic Tradition</a>, which explores how the Anukramaṇī system preserved not just mantras but entire lineage traditions.
       </div>
 
+      <div class="my-6 p-4 bg-primary/10 border-l-4 border-primary rounded">
+        <p><strong>Chronological Context:</strong> The Anukramaṇī system's preservation of the Ṛgveda across millennia validates indigenous claims of extreme antiquity. For comprehensive analysis of archaeological, astronomical, and geological evidence placing the Ṛgveda's composition in the 3rd millennium BCE or earlier, see <a href="/reassessing-rigveda-antiquity" class="underline font-semibold">Reassessing the Antiquity of the Rigveda</a>.</p>
+      </div>
+
       <h3>Illustrative Example: Deconstructing Ṛgveda 3.62.10 (The Gāyatrī Mantra)</h3>
 
       <p>The efficacy of the Anukramaṇī system is perfectly illustrated by its application to one of the most revered mantras in all of Hinduism, the Gāyatrī Mantra, which constitutes the tenth verse of the 62nd hymn of the third Maṇḍala of the Ṛgveda.<sup>18</sup></p>

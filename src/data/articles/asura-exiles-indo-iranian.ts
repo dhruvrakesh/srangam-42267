@@ -85,6 +85,10 @@ export const asuraExilesIndoIranian: LocalizedArticle = {
 </div>
 </div>
 
+<div class="my-6 p-4 bg-primary/10 border-l-4 border-primary rounded">
+  <p><strong>Chronological Implications:</strong> The presence of Vedic deities and Sanskrit horse-training terminology in 14th century BCE Mesopotamia provides a <em>terminus ante quem</em> for Ṛgvedic culture—it must predate 1500 BCE by several centuries to allow for westward migration and cultural preservation abroad. The full implications of Mitanni evidence for dating the Ṛgveda are explored in <a href="/reassessing-rigveda-antiquity" class="underline font-semibold">Reassessing the Antiquity of the Rigveda</a>, which synthesizes archaeological, astronomical, and geological data to propose a 3rd millennium BCE timeline.</p>
+</div>
+
 ### Shared Cosmology: Reconstructing Proto-Indo-Iranian Religion
 
 <p>The Proto-Indo-Iranian religious system, as reconstructed from comparative studies of the Rigveda and Avesta, reveals a shared pantheon and cosmological framework. Central to this system were the concepts of <em>Ṛta</em> (cosmic order) and the dualistic opposition between forces of truth (<em>Asha</em>) and falsehood (<em>Druj</em>). The early Indo-Iranian religion was polytheistic, venerating a pantheon of deities who governed natural and moral order. The terms <em>Deva</em> and <em>Asura</em> were originally honorific titles applied to powerful divine beings, without the later sectarian connotations.</p>

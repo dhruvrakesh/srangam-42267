@@ -46,7 +46,8 @@ export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
   stoneSongAndSea,
   asuraExilesIndoIranian,
   sariraAndAtmanVedicPreservation,
-  rishiGenealogiesVedicTradition
+  rishiGenealogiesVedicTradition,
+  reassessingRigvedaAntiquity
 ];
 
 // Mapping from legacy slugs to multilingual article IDs
@@ -72,7 +73,8 @@ export const SLUG_TO_ID_MAP: Record<string, string> = {
   '/stone-song-and-sea': 'stone-song-and-sea',
   '/asura-exiles-indo-iranian': 'asura-exiles-indo-iranian',
   '/sarira-and-atman-vedic-preservation': 'sarira-and-atman-vedic-preservation',
-  '/rishi-genealogies-vedic-tradition': 'rishi-genealogies-vedic-tradition'
+  '/rishi-genealogies-vedic-tradition': 'rishi-genealogies-vedic-tradition',
+  '/reassessing-rigveda-antiquity': 'reassessing-rigveda-antiquity'
 };
 
 // Article metadata for display (readTime, author, date)
@@ -212,6 +214,12 @@ export const ARTICLE_METADATA: Record<string, {
     readTime: 42,
     author: 'Nartiang Foundation Research Team',
     date: '2025-10-13',
+    theme: 'Ancient India'
+  },
+  'reassessing-rigveda-antiquity': {
+    readTime: 28,
+    author: 'Nartiang Foundation Research Team',
+    date: '2025-10-14',
     theme: 'Ancient India'
   }
 };

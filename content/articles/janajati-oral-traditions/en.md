@@ -70,6 +70,8 @@ palaeoriver[\[4\]](https://en.wikipedia.org/wiki/Nicak%E1%B9%A3u#:~:text=During%
 and the purāṇic account of Dvārakā's submergence against
 marine-archaeological
 finds[\[8\]](https://drs.nio.res.in/drs/bitstream/handle/2264/317/Curr_Sci_86_1256.pdf?sequence=1#:~:text=many%20folds%20during%20the%20medieval,last%20two%20decades%20in%20the)[\[9\]](https://drs.nio.res.in/drs/bitstream/handle/2264/317/Curr_Sci_86_1256.pdf?sequence=1#:~:text=town%20by%20reclaiming%2012%20yojana,words%20like%20pattana%20and%20Dronimukha).
+
+> **Chronological Anchor:** The Sarasvatī's geological history—flowing mightily in the 3rd millennium BCE, drying by 1900 BCE—provides an absolute chronological anchor for Ṛgvedic composition. For comprehensive analysis of this and other evidence (Mitanni, archaeo-astronomy, indigenous chronology) challenging colonial dating frameworks, see [Reassessing the Antiquity of the Rigveda](/reassessing-rigveda-antiquity).
 Where archaeo-astronomy is invoked (for dating epic events via celestial
 markers), we cite scholarly attempts alongside appropriate
 cautions[\[10\]](https://en.wikipedia.org/wiki/Nicak%E1%B9%A3u#:~:text=the%20King%20of%20Vatsa%20,8).

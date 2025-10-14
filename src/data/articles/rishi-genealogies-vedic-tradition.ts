@@ -29,6 +29,10 @@ export const rishiGenealogiesVedicTradition: LocalizedArticle = {
 
 <p>In Vedic culture, hymns of the Ṛgveda are attributed to inspired seer-poets (<em>ṛṣi</em>) who <em>heard</em> these verses in deep meditation and passed them down through their lineages. Over time, meticulous indices called <em>Anukramaṇīs</em> were compiled to preserve this attribution for each hymn: they list the authoring sage, the deity addressed, the meter, and other details. Foremost is the Śaunaka tradition's <em>Sarvānukramaṇī</em> (attributed to sage Śaunaka), which systematically catalogs the Ṛgvedic hymns' seers and deities. These ancient indices served a critical preservation function—not merely as genealogical records, but as sophisticated error-correction protocols for oral transmission.</p>
 
+<div class="my-6 p-4 bg-primary/10 border-l-4 border-primary rounded">
+  <p><strong>Chronological Depth:</strong> The multi-generational depth of these ṛṣi lineages—spanning the Bhārgavas, Āṅgirasas, and Kāśyapas across Ṛgvedic maṇḍalas—implies a compositional period far longer than the colonial 1500-1200 BCE window. For analysis of how archaeological, astronomical, and textual evidence pushes the Ṛgveda's chronology into the 3rd-4th millennium BCE, see <a href="/reassessing-rigveda-antiquity" class="underline font-semibold">Reassessing the Antiquity of the Rigveda</a>.</p>
+</div>
+
 <h2>The Bhṛgu Lineage</h2>
 
 <p>The Bhṛgus are among the oldest and most prominent ṛṣi families, with deep roots in Vedic tradition. Their foundational ancestor is Bhṛgu himself, often associated with the fire god Agni and known for his ascetic power (<em>tapas</em>). The Bhṛgus are credited with composing numerous hymns in the Ṛgveda, particularly in Mandala 9, which is dedicated to Soma Pavamana.</p>
