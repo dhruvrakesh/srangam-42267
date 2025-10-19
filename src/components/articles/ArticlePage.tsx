@@ -133,33 +133,35 @@ const ArticleContent = React.memo(({
         </header>
 
         {/* Professional Article Content */}
-              <div className="relative z-10 max-w-prose mx-auto">
-                <ProfessionalTextFormatter 
-                  content={typeof content === 'string' ? { en: content } : content} 
-                  enableCulturalTerms={true}
-                  enableDropCap={true}
-                  className="mb-12 break-words overflow-wrap-anywhere"
-                />
+        <div className="relative z-10">
+          <div className="max-w-4xl mx-auto px-6">
+            <ProfessionalTextFormatter 
+              content={typeof content === 'string' ? { en: content } : content} 
+              enableCulturalTerms={true}
+              enableDropCap={true}
+              className="mb-12"
+            />
 
-          {/* Enhanced Data Components */}
-          {dataComponents.length > 0 && (
-            <div className="mt-12 space-y-12">
-              {dataComponents
-                .filter((component): component is React.ReactElement => 
-                  component !== null && 
-                  component !== undefined && 
-                  React.isValidElement(component)
-                )
-                .map((component, index) => (
-                <div 
-                  key={index} 
-                  className="bg-sandalwood/40 border border-burgundy/30 p-8 rounded-2xl backdrop-blur-sm shadow-lg"
-                >
-                    {component}
-                  </div>
-                ))}
-            </div>
-          )}
+            {/* Enhanced Data Components */}
+            {dataComponents.length > 0 && (
+              <div className="mt-12 space-y-12">
+                {dataComponents
+                  .filter((component): component is React.ReactElement => 
+                    component !== null && 
+                    component !== undefined && 
+                    React.isValidElement(component)
+                  )
+                  .map((component, index) => (
+                    <div 
+                      key={index} 
+                      className="bg-sandalwood/40 border border-burgundy/30 p-8 rounded-2xl backdrop-blur-sm shadow-lg"
+                    >
+                      {component}
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
         </div>
       </article>
   );

@@ -218,6 +218,10 @@ export default {
             "sacred-float": "sacred-float 6s ease-in-out infinite",
             "mandala-rotation": "mandala-rotation 30s linear infinite",
             "gentle-bounce": "gentle-bounce 3s ease-in-out infinite"
+			},
+			textWrap: {
+				'balance': 'balance',
+				'pretty': 'pretty'
 			}
 		}
 	},

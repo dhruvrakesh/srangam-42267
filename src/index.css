@@ -141,7 +141,7 @@ All colors MUST be HSL.
 
   /* Professional text formatting */
   .prose {
-    @apply max-w-prose;
+    max-width: 896px;
     word-wrap: break-word;
     overflow-wrap: break-word;
     word-break: normal;
@@ -150,13 +150,14 @@ All colors MUST be HSL.
     -ms-hyphens: auto;
   }
 
-  /* Prevent awkward text breaking */
+  /* Ensure proper text flow */
   p, li, blockquote, td, th {
     overflow-wrap: break-word;
     word-wrap: break-word;
+    max-width: 100%;
   }
 
-  /* Sanskrit and long terms */
+  /* Protect cultural terms from breaking */
   em, strong, .cultural-term-highlight {
     hyphens: manual;
     word-break: keep-all;

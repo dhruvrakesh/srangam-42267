@@ -150,7 +150,7 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
               key={`p-${segmentKey++}`}
               className={cn(
                 'text-lg leading-relaxed mb-6 text-foreground/90',
-                'break-words overflow-wrap-anywhere',
+                'break-words',
                 scriptFont,
                 'hyphens-auto'
               )}
@@ -249,7 +249,7 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
         <p 
           className={cn(
             'text-lg leading-relaxed mb-6 text-foreground/90',
-            'break-words overflow-wrap-anywhere text-pretty',
+            'break-words',
             enableDropCap && 'first-letter:text-6xl first-letter:font-serif first-letter:font-bold',
             enableDropCap && 'first-letter:text-burgundy first-letter:float-left first-letter:mr-3',
             enableDropCap && 'first-letter:mt-1 first-letter:leading-none',
@@ -273,7 +273,7 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
       return (
         <li className={cn(
           'flex items-start gap-4 text-lg leading-relaxed text-foreground/90',
-          'break-words overflow-wrap-anywhere',
+          'break-words',
           scriptFont
         )} {...props}>
           <span className="text-saffron text-2xl font-bold leading-none mt-1">•</span>
@@ -292,7 +292,7 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
             'bg-gradient-to-r from-sandalwood/50 via-cream/30 to-transparent',
             'pl-8 pr-6 py-6 my-12 rounded-r-2xl',
             'relative overflow-hidden',
-            'break-words overflow-wrap-anywhere',
+            'break-words',
             scriptFont
           )}
           {...props}
