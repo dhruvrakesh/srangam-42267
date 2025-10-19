@@ -133,13 +133,13 @@ const ArticleContent = React.memo(({
         </header>
 
         {/* Professional Article Content */}
-        <div className="relative z-10">
-          <ProfessionalTextFormatter 
-            content={typeof content === 'string' ? { en: content } : content} 
-            enableCulturalTerms={true}
-            enableDropCap={true}
-            className="mb-12"
-          />
+              <div className="relative z-10 max-w-prose mx-auto">
+                <ProfessionalTextFormatter 
+                  content={typeof content === 'string' ? { en: content } : content} 
+                  enableCulturalTerms={true}
+                  enableDropCap={true}
+                  className="mb-12 break-words overflow-wrap-anywhere"
+                />
 
           {/* Enhanced Data Components */}
           {dataComponents.length > 0 && (

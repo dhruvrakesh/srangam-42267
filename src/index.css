@@ -132,7 +132,34 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Professional text formatting */
+  .prose {
+    @apply max-w-prose;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: normal;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    -ms-hyphens: auto;
+  }
+
+  /* Prevent awkward text breaking */
+  p, li, blockquote, td, th {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+  }
+
+  /* Sanskrit and long terms */
+  em, strong, .cultural-term-highlight {
+    hyphens: manual;
+    word-break: keep-all;
   }
 }
 
@@ -305,6 +332,11 @@ All colors MUST be HSL.
   @apply border border-saffron/20;
   @apply cursor-help;
   @apply transition-all duration-200;
+  
+  /* Prevent breaking cultural terms */
+  white-space: nowrap;
+  word-break: keep-all;
+  hyphens: none;
 }
 
 .cultural-term-highlight:hover {
