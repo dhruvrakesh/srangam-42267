@@ -194,6 +194,108 @@ The Srangam platform implements a navigation architecture based on classical San
 - Breadcrumb navigation uses Sanskrit terminology with dharmic symbols as separators
 - Sitemap organized by traditional knowledge categories: Śāstra, Itihāsa, Purāṇa
 
+## 🗄️ Database Architecture
+
+### Lovable Cloud Backend Integration
+
+Srangam Digital uses **Lovable Cloud** (Supabase PostgreSQL) for:
+- **Content Management**: 30+ articles stored in `srangam_articles` with multilingual JSONB
+- **Cultural Knowledge**: 800+ terms in `srangam_cultural_terms` with etymological context
+- **Evidence Linking**: 69-point correlation matrix in `srangam_correlation_matrix`
+- **AI Analysis**: Semantic search via `srangam_article_metadata.embeddings` (pgvector)
+- **Version Control**: Complete change history in `srangam_article_versions`
+- **Analytics**: Usage tracking in `srangam_article_analytics`
+
+### Schema Design Principles
+
+**1. Namespace Consistency**  
+All tables use `srangam_` prefix for clear brand identity and namespace separation.
+
+**2. Multilingual JSONB Architecture**  
+Content stored as `{en, ta, te, kn, bn, as, pn, hi, pa}` objects for flexible language support.
+
+**3. Public Research Access**  
+RLS policies enable open scholarship: published content is publicly readable, drafts are authenticated-only.
+
+**4. Cultural Authenticity**  
+Dharmic terms preserved with IAST transliteration, etymological roots, and usage tracking.
+
+### Database Tables (8 Core Tables)
+
+| Table | Purpose | Records | Multilingual |
+|-------|---------|---------|--------------|
+| `srangam_articles` | Core content repository | 30+ articles | ✅ JSONB |
+| `srangam_cultural_terms` | Dharmic concepts database | 800+ terms | ✅ JSONB |
+| `srangam_correlation_matrix` | Evidence linking (69-point) | 69 correlations | ✅ JSONB |
+| `srangam_article_metadata` | AI-generated insights | Per article | ✅ JSONB |
+| `srangam_article_versions` | Version control | Historical | ❌ |
+| `srangam_article_analytics` | Usage tracking | Daily aggregates | ❌ |
+| `srangam_translation_queue` | Translation workflow | Active tasks | ❌ |
+| `srangam_inscriptions` | Epigraphy data | Specialized | ✅ JSONB |
+
+### Key Features
+
+**Semantic Search**  
+```typescript
+// Vector similarity search using pgvector
+const results = await supabase.rpc('srangam_search_articles_semantic', {
+  query_embedding: userQueryVector,
+  match_threshold: 0.75,
+  match_count: 10
+});
+```
+
+**Geographic Queries**  
+```typescript
+// PostGIS-powered location search
+const correlations = await supabase
+  .from('srangam_correlation_matrix')
+  .select('*')
+  .filter('coordinates', 'st_dwithin', `POINT(${lng} ${lat})::geography, 50000`);
+```
+
+**Cultural Term Tracking**  
+```typescript
+// Automatic usage analytics
+await supabase.rpc('srangam_increment_term_usage', {
+  term_key: 'dharmashala'
+});
+```
+
+### Storage Architecture
+
+**`srangam-articles` Bucket**  
+- Markdown source files organized by language (`en/`, `ta/`, `te/`, etc.)
+- 10MB file size limit
+- Public read access (open scholarship model)
+- Authenticated write access
+
+**Dual Storage Pattern**:
+1. **Markdown files** in Storage (human-readable, version-controllable)
+2. **JSONB structured data** in database (queryable, indexable)
+
+### AI Integration
+
+**Lovable AI Gateway** powers:
+- **Content Analysis**: `google/gemini-2.5-pro` generates summaries, keywords, themes
+- **Semantic Search**: OpenAI-compatible embeddings create 1536-dimension vectors
+- **Translation Assistance**: Protected terms preserved during multilingual generation
+
+**No API keys required** - LOVABLE_API_KEY auto-provisioned.
+
+### Performance Optimizations
+
+- **Strategic Indexes**: Slug lookups, theme filtering, vector similarity, geographic queries
+- **RLS Policies**: Security without performance penalty
+- **JSONB Operators**: Efficient multilingual content access
+- **Function Triggers**: Auto-update timestamps, usage counters
+
+### Documentation
+
+For comprehensive database information:
+- **Schema Reference**: [docs/DATABASE_SCHEMA.md](./docs/DATABASE_SCHEMA.md)
+- **Context Guide**: [docs/DATABASE_CONTEXT.md](./docs/DATABASE_CONTEXT.md)
+
 #### Collection Taxonomy: संग्रह (Saṅgraha) as Primary Organizational Principle
 
 **Saṅgraha Philosophy:**

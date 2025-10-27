@@ -36,6 +36,43 @@ Our research methodology challenges prevailing academic narratives by:
 - **Deccan College**: Archaeological and anthropological research
 - **Regional Oriental Research Centers**: Collaborative scholarship network
 
+## 🗄️ Backend Architecture
+
+**Powered by Lovable Cloud**
+
+Srangam Digital uses Lovable Cloud (Supabase PostgreSQL) for robust data management:
+
+### Core Features
+- **Multilingual Content Repository**: JSONB-based storage for 9 languages (English, Tamil, Telugu, Kannada, Bengali, Assamese, Pnar, Hindi, Punjabi)
+- **Cultural Terms Database**: 800+ dharmic concepts with etymological context and IAST transliteration
+- **Semantic Search**: Vector embeddings (pgvector) for intelligent article discovery
+- **Geographic Correlation**: PostGIS-powered 69-point evidence matrix linking textual, archaeological, and geographic data
+- **Analytics Dashboard**: Real-time content performance tracking
+- **Version Control**: Complete change history for all content
+
+### Database Tables
+All tables use the `srangam_` prefix for namespace consistency:
+- `srangam_articles` - 30+ research articles with multilingual content
+- `srangam_cultural_terms` - 800+ terms with usage tracking
+- `srangam_correlation_matrix` - 69-point evidence linking system
+- `srangam_article_metadata` - AI-generated summaries, keywords, themes
+- `srangam_article_versions` - Complete edit history
+- `srangam_article_analytics` - Daily usage metrics
+- `srangam_translation_queue` - Translation workflow management
+- `srangam_inscriptions` - Specialized epigraphy data
+
+### AI Integration
+Powered by **Lovable AI Gateway** (no API keys required):
+- **Content Analysis**: `google/gemini-2.5-pro` for summaries and theme extraction
+- **Semantic Search**: OpenAI-compatible embeddings for similarity matching
+- **Translation Assistance**: Protected terms preserved during multilingual generation
+
+### Documentation
+For comprehensive database details:
+- **Schema Reference**: [docs/DATABASE_SCHEMA.md](./docs/DATABASE_SCHEMA.md)
+- **Context Guide**: [docs/DATABASE_CONTEXT.md](./docs/DATABASE_CONTEXT.md)
+- **Project Overview**: [SRANGAM_PROJECT.md](./SRANGAM_PROJECT.md)
+
 ### Sacred Geometry in Design
 Our visual design incorporates traditional Indian sacred geometry patterns including:
 - **Mandala Vatika**: Concentric circle patterns representing cosmic harmony
