@@ -1,61 +1,66 @@
-# Scripts Directory
+# Srangam Database Migration Scripts
 
-This directory contains automation scripts for the Srangam project.
+## Overview
+This directory contains scripts for migrating content from TypeScript files to the Srangam Supabase database.
 
-## Available Scripts
+## Scripts
 
-### `validate_cultural_terms.mjs`
+### `migrate-to-srangam-db.ts`
+Migrates existing articles and cultural terms from TypeScript data files to the database.
 
-**Purpose**: Validates cultural terms coverage across all articles and generates audit reports.
+**What it does:**
+- Migrates 24+ articles from `src/data/articles/` to `srangam_articles` table
+- Migrates 800+ cultural terms to `srangam_cultural_terms` table
+- Preserves multilingual JSONB structure
+- Handles batch inserts for performance
+- Provides verification and progress logging
 
-**Usage**:
+**Usage:**
 ```bash
-# Full validation with detailed output
-node scripts/validate_cultural_terms.mjs
+# Install tsx for TypeScript execution
+npm install -D tsx
 
-# Quick validation (minimal output)
-node scripts/validate_cultural_terms.mjs --quick
+# Run migration (environment variables loaded automatically from .env)
+npx tsx scripts/migrate-to-srangam-db.ts
 ```
 
-**What it does**:
-1. Extracts all `{{cultural:term}}` markers from article files
-2. Cross-references with cultural terms database
-3. Generates coverage statistics per article
-4. Creates priority matrix for missing terms (high/medium/low frequency)
-5. Outputs reports to `docs/` directory
+## Expected Output
 
-**Outputs**:
-- `docs/CULTURAL_TERMS_COVERAGE.md` - Human-readable markdown report
-- `docs/cultural-terms-audit.json` - Machine-readable JSON report
+```
+╔══════════════════════════════════════════════════════╗
+║   🚀 SRANGAM DATABASE MIGRATION                      ║
+║   Phase 3: Content Migration                         ║
+╚══════════════════════════════════════════════════════╝
 
-**Exit Codes**:
-- `0` - All validations passed
-- `1` - Some articles below 90% coverage threshold
+📝 Migrating Articles...
+   Total articles to migrate: 24
+   ✅ Successfully migrated 24 articles
 
-**Integration**:
-- Can be integrated into CI/CD pipeline
-- Can be used as pre-commit hook
-- Scheduled for monthly audits
+📚 Migrating Cultural Terms...
+   Total terms to migrate: 850
+   ⏳ Progress: 100/850 terms
+   ⏳ Progress: 200/850 terms
+   ...
+   ✅ Successfully migrated 850 cultural terms
 
----
+🔍 Verifying Migration...
+   ✅ Articles in database: 24
+   ✅ Cultural terms in database: 850
 
-## Adding New Scripts
+╔══════════════════════════════════════════════════════╗
+║   ✅ MIGRATION COMPLETE!                             ║
+╚══════════════════════════════════════════════════════╝
+```
 
-When adding new scripts to this directory:
+## Next Steps
 
-1. Use `.mjs` extension for ES modules
-2. Add shebang line: `#!/usr/bin/env node`
-3. Make executable: `chmod +x scripts/your-script.mjs`
-4. Document in this README
-5. Include usage examples
-6. Specify exit codes
-7. Add to package.json scripts if appropriate
+After successful migration:
+1. Run edge functions for AI analysis
+2. Generate embeddings for semantic search
+3. Update frontend to use database queries
 
----
+## Support
 
-## Future Scripts (Planned)
-
-- `monthly_audit.mjs` - Comprehensive monthly audit with unused term detection
-- `generate_term_report.mjs` - Generate detailed term etymology reports
-- `validate_translations.mjs` - Validate multilingual translation completeness
-- `export_glossary.mjs` - Export cultural terms glossary in various formats
+For issues, refer to:
+- [DATABASE_SCHEMA.md](../docs/DATABASE_SCHEMA.md)
+- [DATABASE_CONTEXT.md](../docs/DATABASE_CONTEXT.md)
