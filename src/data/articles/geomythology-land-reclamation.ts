@@ -196,5 +196,23 @@ The Paraśurāma and Kaśyapa myths demonstrate that ancient communities **obser
     hi: `// Hindi translation content would be here`,
     pa: `// Punjabi translation content would be here`
   },
-  tags: ['Geomythology', 'Kerala', 'Kashmir', 'Coastal Emergence', 'Lake Drainage', 'Paraśurāma', 'Kaśyapa', 'Serpent Cults', 'Holocene', 'Pleistocene']
+  tags: [
+    { en: 'Geomythology', ta: 'நிலவியல் புராணங்கள்', te: 'భౌగోళిక పురాణాలు', kn: 'ಭೂವೈಜ್ಞಾನಿಕ ಪುರಾಣಗಳು', bn: 'ভূতাত্ত্বিক পুরাণ', as: 'ভূতাত্ত্বিক পুৰাণ', pn: 'লৈবক শিনজনগী পুয়া ৱারী', hi: 'भूवैज्ञानिक पुराण', pa: 'ਭੂ-ਵਿਗਿਆਨਿਕ ਪੁਰਾਣ' },
+    { en: 'Kerala', ta: 'கேரளா', te: 'కేరళ', kn: 'ಕೇರಳ', bn: 'কেরালা', as: 'কেৰালা', pn: 'কেরালা', hi: 'केरल', pa: 'ਕੇਰਲਾ' },
+    { en: 'Kashmir', ta: 'காஷ்மீர்', te: 'కాశ్మీర్', kn: 'ಕಾಶ್ಮೀರ', bn: 'কাশ্মীর', as: 'কাশ্মীৰ', pn: 'কাশ্মীর', hi: 'कश्मीर', pa: 'ਕਸ਼ਮੀਰ' },
+    { en: 'Coastal Emergence', ta: 'கடற்கரை தோன்றல்', te: 'తీర ఉద్భవం', kn: 'ತೀರದ ಉದಯ', bn: 'উপকূল উত্থান', as: 'উপকূল উদ্ভৱ', pn: 'থরেৎ পুক্লক্পা', hi: 'तटीय उद्भव', pa: 'ਤੱਟੀ ਉਭਾਰ' },
+    { en: 'Lake Drainage', ta: 'ஏரி வடிகால்', te: 'సరస్సు నీటి ఖాళీ', kn: 'ಸರೋವರ ಬರಿದುಮಾಡುವಿಕೆ', bn: 'হ্রদ নিষ্কাশন', as: 'হ্ৰদ নিষ্কাশন', pn: 'পাৎ তাক্লকপা', hi: 'झील निकासी', pa: 'ਝੀਲ ਨਿਕਾਸੀ' },
+    { en: 'Paraśurāma', ta: 'பரசுராமர்', te: 'పరశురాముడు', kn: 'ಪರಶುರಾಮ', bn: 'পরশুরাম', as: 'পৰশুৰাম', pn: 'পরশুরাম', hi: 'परशुराम', pa: 'ਪਰਸ਼ੂਰਾਮ' },
+    { en: 'Kaśyapa', ta: 'கச்யபர்', te: 'కశ్యపుడు', kn: 'ಕಶ್ಯಪ', bn: 'কশ্যপ', as: 'কশ্যপ', pn: 'কশ্যপ', hi: 'कश्यप', pa: 'ਕਸ਼ਯਪ' },
+    { en: 'Serpent Cults', ta: 'பாம்பு வழிபாடு', te: 'సర్ప ఆరాధన', kn: 'ಸರ್ಪ ಆರಾಧನೆ', bn: 'সর্প পূজা', as: 'সৰ্প পূজা', pn: 'লাই খুম্নবা', hi: 'सर्प पंथ', pa: 'ਸੱਪ ਪੂਜਾ' },
+    { en: 'Holocene', ta: 'ஹோலோசீன்', te: 'హోలోసీన్', kn: 'ಹೊಲೊಸೀನ್', bn: 'হলোসিন', as: 'হলোচিন', pn: 'হোলোসিন', hi: 'होलोसीन', pa: 'ਹੋਲੋਸੀਨ' },
+    { en: 'Pleistocene', ta: 'ப்ளைஸ்டோசீன்', te: 'ప్లీస్టోసీన్', kn: 'ಪ್ಲೈಸ್ಟೊಸೀನ್', bn: 'প্লাইস্টোসিন', as: 'প্লাইষ্টচিন', pn: 'প্লাইস্টোসিন', hi: 'प्लायस्टोसीन', pa: 'ਪਲਾਈਸਟੋਸੀਨ' }
+  ],
+  metadata: {
+    en: {
+      translatedBy: 'Srangam Editorial Team',
+      lastUpdated: '2025-10-29',
+      confidence: 1.0
+    }
+  }
 };

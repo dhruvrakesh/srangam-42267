@@ -6,7 +6,7 @@
 // are added for key cultural terms to provide etymology and context, making
 // the page educational and interactive. The design follows the existing
 // Featured Collections pattern seen on the home page, using dharmic colours
-// and icons from the project’s icon set. The component relies on both the
+// and icons from the project's icon set. The component relies on both the
 // `CulturalTermTooltip` (for terms defined in `cultural-terms.ts`) and
 // `DharmicTooltip` (for custom terms like Parashurama and Kashyapa) to
 // display tooltips. To use this component, import it into `Home.tsx` and
@@ -94,13 +94,18 @@ const GeomythologySection: React.FC = () => {
             like the stories of
             {' '}
             <DharmicTooltip
+              term="parashurama"
               data={{
-                title: 'Paraśurāma',
-                translation: 'Reclaimer of Kerala',
-                transliteration: 'Parashurama',
+                term: 'parashurama',
+                iast: 'Paraśurāma',
                 etymology: 'paraśu (axe) + rāma (Rāma), the sixth avatar of Viṣṇu',
-                context:
-                  'In Kerala lore, Paraśurāma throws his axe into the sea to reclaim land; this myth encodes shoreline changes and serpent cults.'
+                culturalContext: 'In Kerala lore, Paraśurāma throws his axe into the sea to reclaim land; this myth encodes shoreline changes and serpent cults.',
+                translations: {
+                  en: {
+                    translation: 'Reclaimer of Kerala',
+                    explanation: 'The sixth avatar of Vishnu who reclaimed land from the sea'
+                  }
+                }
               }}
             >
               Paraśurāma
@@ -108,13 +113,18 @@ const GeomythologySection: React.FC = () => {
             {' '}and
             {' '}
             <DharmicTooltip
+              term="kashyapa"
               data={{
-                title: 'Kaśyapa',
-                translation: 'Sage who drained the lake',
-                transliteration: 'Kashyapa',
+                term: 'kashyapa',
+                iast: 'Kaśyapa',
                 etymology: 'kaccha (tortoise) or kaśyapa (turtle) root; a rishi from whom Kashmir derives its name',
-                context:
-                  'In Kashmir’s Satisaras legend, the sage Kaśyapa drains a primordial lake to make the valley habitable; the myth reflects geological uplift and hydrology.'
+                culturalContext: 'In Kashmir Satisaras legend, the sage Kashyapa drains a primordial lake to make the valley habitable; the myth reflects geological uplift and hydrology.',
+                translations: {
+                  en: {
+                    translation: 'Sage who drained the lake',
+                    explanation: 'Vedic sage who transformed Kashmir valley from a lake'
+                  }
+                }
               }}
             >
               Kaśyapa
