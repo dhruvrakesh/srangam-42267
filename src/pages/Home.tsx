@@ -9,6 +9,7 @@ import { ArticleThemeChips } from "@/components/articles/ArticleThemeChips";
 import { IconMonsoon, IconScript, IconBasalt, IconPort, IconEdict, IconDharmaChakra, IconSarnathLion, IconLotus, IconConch, IconOm } from "@/components/icons";
 import { Link } from "react-router-dom";
 import { ArrowRight, Waves, Mountain, BookOpen, Map, Users } from "lucide-react";
+import GeomythologySection from "@/components/home/GeomythologySection";
 
 export default function Home() {
   const { t } = useTranslation();
@@ -323,6 +324,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Geomythology & Cultural Continuity Section */}
+      <GeomythologySection />
 
       {/* Themes Grid - Dharmic Mandala Layout */}
       <section className="py-16 bg-background relative">
