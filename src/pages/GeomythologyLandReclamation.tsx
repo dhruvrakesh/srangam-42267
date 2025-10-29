@@ -19,17 +19,17 @@ export default function GeomythologyLandReclamation() {
     return <div>Article not found</div>;
   }
 
-  const title = typeof article.title === 'object' 
-    ? (article.title[currentLanguage] || article.title.en)
-    : article.title;
-    
-  const dek = typeof article.dek === 'object'
-    ? (article.dek[currentLanguage] || article.dek.en) 
-    : article.dek;
-    
-  const content = typeof article.content === 'object'
-    ? (article.content[currentLanguage] || article.content.en)
-    : article.content;
+  const getLocalizedString = (field: any): string => {
+    if (typeof field === 'string') return field;
+    if (typeof field === 'object' && field !== null) {
+      return (field[currentLanguage] as string) || (field.en as string) || '';
+    }
+    return '';
+  };
+
+  const title = getLocalizedString(article.title);
+  const dek = getLocalizedString(article.dek);
+  const content = getLocalizedString(article.content);
 
   return (
     <>
