@@ -22,6 +22,7 @@ import { asuraExilesIndoIranian } from './asura-exiles-indo-iranian';
 import { sariraAndAtmanVedicPreservation } from './sarira-and-atman-vedic-preservation';
 import { rishiGenealogiesVedicTradition } from './rishi-genealogies-vedic-tradition';
 import { reassessingRigvedaAntiquity } from './reassessing-rigveda-antiquity';
+import { geomythologyLandReclamation } from './geomythology-land-reclamation';
 
 // Complete multilingual article registry
 export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
@@ -47,7 +48,8 @@ export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
   asuraExilesIndoIranian,
   sariraAndAtmanVedicPreservation,
   rishiGenealogiesVedicTradition,
-  reassessingRigvedaAntiquity
+  reassessingRigvedaAntiquity,
+  geomythologyLandReclamation
 ];
 
 // Mapping from legacy slugs to multilingual article IDs
@@ -74,7 +76,8 @@ export const SLUG_TO_ID_MAP: Record<string, string> = {
   '/asura-exiles-indo-iranian': 'asura-exiles-indo-iranian',
   '/sarira-and-atman-vedic-preservation': 'sarira-and-atman-vedic-preservation',
   '/rishi-genealogies-vedic-tradition': 'rishi-genealogies-vedic-tradition',
-  '/reassessing-rigveda-antiquity': 'reassessing-rigveda-antiquity'
+  '/reassessing-rigveda-antiquity': 'reassessing-rigveda-antiquity',
+  '/geomythology-land-reclamation': 'geomythology-land-reclamation'
 };
 
 // Article metadata for display (readTime, author, date)
@@ -221,6 +224,12 @@ export const ARTICLE_METADATA: Record<string, {
     author: 'Nartiang Foundation Research Team',
     date: '2025-10-14',
     theme: 'Ancient India'
+  },
+  'geomythology-land-reclamation': {
+    readTime: 48,
+    author: 'Nartiang Foundation Research Team',
+    date: '2025-10-29',
+    theme: 'Sacred Ecology'
   }
 };
 

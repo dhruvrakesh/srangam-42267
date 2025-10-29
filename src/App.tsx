@@ -60,6 +60,7 @@ const AsuraExilesIndoIranian = lazy(() => import("./pages/articles/AsuraExilesIn
 const SariraAtmanVedicPreservation = lazy(() => import("./pages/articles/SariraAtmanVedicPreservation"));
 const RishiGenealogiesVedicTradition = lazy(() => import("./pages/articles/RishiGenealogiesVedicTradition"));
 const ReasessingRigvedaAntiquity = lazy(() => import("./pages/articles/ReasessingRigvedaAntiquity"));
+const GeomythologyLandReclamation = lazy(() => import("./pages/GeomythologyLandReclamation"));
 const BatchBujangNagapattinamOcean = lazy(() => import("./pages/BatchBujangNagapattinamOcean"));
 const BatchMuzirisKutaiAshoka = lazy(() => import("./pages/BatchMuzirisKutaiAshoka"));
 const Sitemap = lazy(() => import("./pages/Sitemap"));
@@ -154,6 +155,7 @@ const App = () => (
               <Route path="/sarira-and-atman-vedic-preservation" element={<SariraAtmanVedicPreservation />} />
             <Route path="/rishi-genealogies-vedic-tradition" element={<RishiGenealogiesVedicTradition />} />
             <Route path="/reassessing-rigveda-antiquity" element={<ReasessingRigvedaAntiquity />} />
+            <Route path="/geomythology-land-reclamation" element={<GeomythologyLandReclamation />} />
                   <Route path="/themes/geology-deep-time/stone-purana" element={<StonePurana />} />
                   <Route path="/themes/ancient-india/pepper-routes" element={<IndianOceanPowerNetworks />} />
                   <Route path="/batch/bujang-nagapattinam-ocean" element={<BatchBujangNagapattinamOcean />} />
