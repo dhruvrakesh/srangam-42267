@@ -46,37 +46,68 @@ function chunkText(text: string, maxChars: number = 1500): string[] {
   return chunks;
 }
 
+// JWT signing helper
+async function createJWT(serviceAccount: any): Promise<string> {
+  const header = { alg: 'RS256', typ: 'JWT' };
+  const now = Math.floor(Date.now() / 1000);
+  const payload = {
+    iss: serviceAccount.client_email,
+    scope: 'https://www.googleapis.com/auth/cloud-platform',
+    aud: 'https://oauth2.googleapis.com/token',
+    iat: now,
+    exp: now + 3600,
+  };
+
+  const encodedHeader = btoa(JSON.stringify(header)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  const encodedPayload = btoa(JSON.stringify(payload)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  const unsignedToken = `${encodedHeader}.${encodedPayload}`;
+
+  // Import the private key
+  const privateKey = serviceAccount.private_key.replace(/\\n/g, '\n');
+  const key = await crypto.subtle.importKey(
+    'pkcs8',
+    new TextEncoder().encode(privateKey).buffer,
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+
+  // Sign the token
+  const signature = await crypto.subtle.sign(
+    'RSASSA-PKCS1-v1_5',
+    key,
+    new TextEncoder().encode(unsignedToken)
+  );
+
+  const encodedSignature = btoa(String.fromCharCode(...new Uint8Array(signature)))
+    .replace(/=/g, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_');
+
+  return `${unsignedToken}.${encodedSignature}`;
+}
+
 // Get Google Cloud access token
 async function getGoogleAccessToken(): Promise<string> {
   const serviceAccount = JSON.parse(
     Deno.env.get('GOOGLE_SERVICE_ACCOUNT_JSON') || '{}'
   );
   
-  const jwtHeader = btoa(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
-  const now = Math.floor(Date.now() / 1000);
-  const jwtPayload = btoa(JSON.stringify({
-    iss: serviceAccount.client_email,
-    scope: 'https://www.googleapis.com/auth/cloud-platform',
-    aud: 'https://oauth2.googleapis.com/token',
-    iat: now,
-    exp: now + 3600,
-  }));
-  
-  // Note: In production, use proper JWT signing with the private key
-  // For now, use the service account JSON directly with Google Cloud SDK
+  const jwt = await createJWT(serviceAccount);
   
   const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
       grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-      assertion: `${jwtHeader}.${jwtPayload}`,
+      assertion: jwt,
     }),
   });
   
   if (!tokenResponse.ok) {
-    console.error('Token error:', await tokenResponse.text());
-    throw new Error('Failed to get access token');
+    const errorText = await tokenResponse.text();
+    console.error('Token error:', errorText);
+    throw new Error(`Failed to get access token: ${errorText}`);
   }
   
   const tokenData = await tokenResponse.json();
@@ -108,13 +139,16 @@ serve(async (req) => {
 
             console.log(`Generating TTS for chunk ${i + 1}/${chunks.length}`);
 
+            // Get access token for authentication
+            const accessToken = await getGoogleAccessToken();
+            
             const response = await fetch(
               'https://texttospeech.googleapis.com/v1/text:synthesize',
               {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
-                  'X-Goog-Api-Key': Deno.env.get('GOOGLE_CLOUD_API_KEY') || '',
+                  'Authorization': `Bearer ${accessToken}`,
                 },
                 body: JSON.stringify({
                   input: { ssml },
