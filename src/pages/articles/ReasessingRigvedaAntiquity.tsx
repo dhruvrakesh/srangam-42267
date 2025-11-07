@@ -8,6 +8,7 @@ import { MitanniVedicConnectionsMap } from '@/components/articles/MitanniVedicCo
 import { ArchaeoAstronomyCalculator } from '@/components/articles/ArchaeoAstronomyCalculator';
 import { RigvedaChronologyBibliography } from '@/components/articles/RigvedaChronologyBibliography';
 import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 import { Helmet } from 'react-helmet-async';
 
 export default function ReasessingRigvedaAntiquity() {
@@ -61,13 +62,15 @@ export default function ReasessingRigvedaAntiquity() {
           <RigvedaChronologyBibliography key="bibliography" />
         ]}
       />
-      <UniversalNarrator
-        content={contentForNarration}
-        contentType="article"
-        articleSlug="reassessing-rigveda-antiquity"
-        variant="sticky-bottom"
-        autoAnalyze={true}
-      />
+      <NarrationErrorBoundary>
+        <UniversalNarrator
+          content={contentForNarration}
+          contentType="article"
+          articleSlug="reassessing-rigveda-antiquity"
+          variant="sticky-bottom"
+          autoAnalyze={true}
+        />
+      </NarrationErrorBoundary>
     </>
   );
 }

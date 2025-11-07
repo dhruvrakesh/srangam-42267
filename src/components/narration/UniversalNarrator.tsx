@@ -26,6 +26,18 @@ export function UniversalNarrator({
   const { currentLanguage } = useLanguage();
   const [hasStarted, setHasStarted] = useState(false);
 
+  // Defensive check: ensure currentLanguage is available
+  if (!currentLanguage) {
+    console.warn('UniversalNarrator: currentLanguage not available');
+    return null;
+  }
+
+  // Defensive check: ensure content is not empty
+  if (!content || content.trim().length === 0) {
+    console.warn('UniversalNarrator: no content provided');
+    return null;
+  }
+
   const {
     status,
     progress,
@@ -52,11 +64,22 @@ export function UniversalNarrator({
       // Auto-select optimal voice if enabled
       let voiceConfig;
       if (autoAnalyze) {
-        voiceConfig = voiceStrategyEngine.selectVoice(
-          voiceStrategyEngine.analyzeContent(content, contentType),
-          currentLanguage,
-          contentType
-        );
+        try {
+          voiceConfig = voiceStrategyEngine.selectVoice(
+            voiceStrategyEngine.analyzeContent(content, contentType),
+            currentLanguage,
+            contentType
+          );
+        } catch (error) {
+          console.error('Voice selection failed, using default:', error);
+          // Fallback to default voice configuration
+          voiceConfig = {
+            provider: 'google-cloud' as const,
+            voiceId: 'en-US-Neural2-J',
+            languageCode: 'en-US',
+            name: 'Default Voice'
+          };
+        }
       }
 
       const config: NarrationConfig = {

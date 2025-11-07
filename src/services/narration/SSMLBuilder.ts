@@ -28,6 +28,12 @@ export class SSMLBuilder {
    * Build SSML for full article narration
    */
   buildForArticle(content: string, options: SSMLOptions): string {
+    // Defensive check: handle null/undefined/empty content
+    if (!content || typeof content !== 'string' || content.trim().length === 0) {
+      console.warn('SSMLBuilder: invalid content provided');
+      return '<speak></speak>';
+    }
+
     let ssml = `<speak>`;
     
     let processedContent = content;
@@ -58,6 +64,12 @@ export class SSMLBuilder {
    * Build SSML for glossary term (short-form)
    */
   buildForGlossary(term: string, etymology: string, context: string): string {
+    // Defensive checks
+    if (!term || typeof term !== 'string') {
+      console.warn('SSMLBuilder: invalid term provided');
+      return '<speak></speak>';
+    }
+
     const phoneme = SANSKRIT_PRONUNCIATION[term.toLowerCase()] || '';
     
     let ssml = `<speak>`;
