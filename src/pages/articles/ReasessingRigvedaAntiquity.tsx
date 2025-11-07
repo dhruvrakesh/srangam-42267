@@ -7,9 +7,15 @@ import { SarasvatiRiverEvolution } from '@/components/articles/SarasvatiRiverEvo
 import { MitanniVedicConnectionsMap } from '@/components/articles/MitanniVedicConnectionsMap';
 import { ArchaeoAstronomyCalculator } from '@/components/articles/ArchaeoAstronomyCalculator';
 import { RigvedaChronologyBibliography } from '@/components/articles/RigvedaChronologyBibliography';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
 import { Helmet } from 'react-helmet-async';
 
 export default function ReasessingRigvedaAntiquity() {
+  // Extract English content for narration
+  const contentForNarration = typeof reassessingRigvedaAntiquity.content === 'object' 
+    ? (reassessingRigvedaAntiquity.content.en as string || '')
+    : reassessingRigvedaAntiquity.content;
+
   return (
     <>
       <Helmet>
@@ -54,6 +60,13 @@ export default function ReasessingRigvedaAntiquity() {
           <ArchaeoAstronomyCalculator key="astronomy" />,
           <RigvedaChronologyBibliography key="bibliography" />
         ]}
+      />
+      <UniversalNarrator
+        content={contentForNarration}
+        contentType="article"
+        articleSlug="reassessing-rigveda-antiquity"
+        variant="sticky-bottom"
+        autoAnalyze={true}
       />
     </>
   );

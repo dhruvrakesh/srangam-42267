@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      narration_analytics: {
+        Row: {
+          article_slug: string
+          completed: boolean | null
+          created_at: string | null
+          device_type: string | null
+          id: string
+          language: string
+          playback_events: Json | null
+          provider: string
+          session_id: string
+          started_at: string
+          user_id: string | null
+          voice: string
+        }
+        Insert: {
+          article_slug: string
+          completed?: boolean | null
+          created_at?: string | null
+          device_type?: string | null
+          id?: string
+          language: string
+          playback_events?: Json | null
+          provider: string
+          session_id: string
+          started_at?: string
+          user_id?: string | null
+          voice: string
+        }
+        Update: {
+          article_slug?: string
+          completed?: boolean | null
+          created_at?: string | null
+          device_type?: string | null
+          id?: string
+          language?: string
+          playback_events?: Json | null
+          provider?: string
+          session_id?: string
+          started_at?: string
+          user_id?: string | null
+          voice?: string
+        }
+        Relationships: []
+      }
       spatial_ref_sys: {
         Row: {
           auth_name: string | null
