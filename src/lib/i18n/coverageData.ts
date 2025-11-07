@@ -163,6 +163,22 @@ export const cosmicIslandSacredLandCoverage: CoverageMap = {
 };
 
 /**
+ * Coverage data for Geomythology Land Reclamation article
+ */
+export const geomythologyLandReclamationCoverage: CoverageMap = {
+  'geomythology-land-reclamation': {
+    en: {
+      slug: 'geomythology-land-reclamation',
+      lang: 'en' as SupportedLanguage,
+      percent: 100,
+      totalKeys: 271,
+      translatedKeys: 271,
+      missingKeys: []
+    }
+  }
+};
+
+/**
  * Get coverage for a specific article and language
  */
 export function getArticleCoverage(slug: string, lang: SupportedLanguage) {
@@ -171,6 +187,9 @@ export function getArticleCoverage(slug: string, lang: SupportedLanguage) {
   }
   if (slug === 'cosmic-island-sacred-land') {
     return cosmicIslandSacredLandCoverage[slug]?.[lang];
+  }
+  if (slug === 'geomythology-land-reclamation') {
+    return geomythologyLandReclamationCoverage[slug]?.[lang];
   }
   return undefined;
 }
@@ -184,6 +203,9 @@ export function getArticleCoverageMap(slug: string) {
   }
   if (slug === 'cosmic-island-sacred-land') {
     return cosmicIslandSacredLandCoverage[slug] || {};
+  }
+  if (slug === 'geomythology-land-reclamation') {
+    return geomythologyLandReclamationCoverage[slug] || {};
   }
   return {};
 }
