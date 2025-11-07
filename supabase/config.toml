@@ -1,1 +1,10 @@
 project_id = "xjaizfjcpkjcqbyobcsh"
+
+[functions.tts-stream-google]
+verify_jwt = false
+
+[functions.tts-stream-openai]
+verify_jwt = false
+
+[functions.tts-save-drive]
+verify_jwt = false

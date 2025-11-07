@@ -2,6 +2,22 @@
 
 **A comprehensive digital platform preserving and presenting evidence for India's role as a primary source of global civilization, maritime innovation, and cultural dissemination.**
 
+## 🎧 Audio Narration Features
+
+Srangam Digital offers **AI-powered audio narration** for all articles:
+
+- **Languages**: All 9 supported languages (Tamil, Telugu, Kannada, Bengali, Hindi, Punjabi, Assamese, Manipuri, English)
+- **Quality**: Google Cloud Neural2 voices for academic clarity with perfect Sanskrit diacritics
+- **Speed**: Adjustable playback (0.5x - 2x)
+- **Offline**: Save MP3 files to Google Drive
+- **Cost**: FREE for first 4M characters/month (44 full articles)
+
+### Technical Stack
+- **Primary TTS**: Google Cloud Text-to-Speech (Neural2) - Superior Sanskrit pronunciation
+- **Fallback**: OpenAI TTS-1 for speed-critical English content
+- **Storage**: Google Drive via service account
+- **Streaming**: Real-time SSE with Web Audio API
+
 ## Project Mission & Philosophy
 
 ### Core Mission

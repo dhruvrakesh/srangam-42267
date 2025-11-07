@@ -8,6 +8,7 @@ import { MULTILINGUAL_ARTICLES } from '@/data/articles';
 import { ARTICLE_METADATA } from '@/data/articles';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
+import { ArticleNarrator } from '@/components/tts/ArticleNarrator';
 
 export default function GeomythologyLandReclamation() {
   const { currentLanguage } = useLanguage();
@@ -194,6 +195,13 @@ export default function GeomythologyLandReclamation() {
           </div>
         </div>
       </article>
+      
+      <ArticleNarrator
+        articleSlug="geomythology-land-reclamation"
+        content={content}
+        language={currentLanguage}
+        title={title}
+      />
     </>
   );
 }
