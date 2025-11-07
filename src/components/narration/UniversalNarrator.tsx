@@ -23,21 +23,10 @@ export function UniversalNarrator({
   className,
   autoAnalyze = true,
 }: UniversalNarratorProps) {
+  // ✅ ALL HOOKS MUST BE CALLED AT THE TOP - NEVER CONDITIONALLY
   const { currentLanguage } = useLanguage();
   const [hasStarted, setHasStarted] = useState(false);
-
-  // Defensive check: ensure currentLanguage is available
-  if (!currentLanguage) {
-    console.warn('UniversalNarrator: currentLanguage not available');
-    return null;
-  }
-
-  // Defensive check: ensure content is not empty
-  if (!content || content.trim().length === 0) {
-    console.warn('UniversalNarrator: no content provided');
-    return null;
-  }
-
+  
   const {
     status,
     progress,
@@ -53,6 +42,17 @@ export function UniversalNarrator({
     setSpeed,
     seek,
   } = useNarration({ speed: 1.0 });
+
+  // ✅ DEFENSIVE CHECKS AFTER ALL HOOKS
+  if (!currentLanguage) {
+    console.warn('UniversalNarrator: currentLanguage not available');
+    return null;
+  }
+
+  if (!content || content.trim().length === 0) {
+    console.warn('UniversalNarrator: no content provided');
+    return null;
+  }
 
   const handlePlay = useCallback(async () => {
     if (status === 'paused') {

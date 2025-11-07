@@ -6,6 +6,21 @@ export class VoiceStrategyEngine {
    * Analyze content to determine profile characteristics
    */
   analyzeContent(text: string, contentType: NarrationContentType): ContentProfile {
+    // ✅ DEFENSIVE CHECK: Handle null/undefined/empty text
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      console.warn('VoiceStrategyEngine: Invalid text provided for analysis');
+      return {
+        hasPoetry: false,
+        hasCitations: false,
+        hasSanskrit: false,
+        contentType: 'descriptive',
+        emotionalTone: 'neutral',
+        complexity: 'simple',
+        wordCount: 0,
+        sanskritTermCount: 0,
+      };
+    }
+
     const wordCount = text.split(/\s+/).length;
     
     // Detect Sanskrit terms (words with diacritics)
