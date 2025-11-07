@@ -23,6 +23,27 @@ function buildSSML(text: string, language: string): string {
   return ssmlWrapped;
 }
 
+// Map ISO 639-1 codes to Google TTS locale codes
+function mapLanguageCode(lang: string): string {
+  const languageMap: Record<string, string> = {
+    'en': 'en-US',
+    'hi': 'hi-IN',
+    'ta': 'ta-IN',
+    'te': 'te-IN',
+    'kn': 'kn-IN',
+    'bn': 'bn-IN',
+    'as': 'as-IN',
+    'pa': 'pa-IN',
+    'pn': 'en-IN', // Manipuri - fallback to English-India voice
+  };
+  
+  // If already in correct format (e.g., 'en-US'), return as-is
+  if (lang.includes('-')) return lang;
+  
+  // Otherwise map from short code
+  return languageMap[lang] || 'en-US';
+}
+
 // Smart text chunking at sentence boundaries
 function chunkText(text: string, maxChars: number = 1500): string[] {
   const chunks: string[] = [];
@@ -158,12 +179,15 @@ serve(async (req) => {
         try {
           for (let i = 0; i < chunks.length; i++) {
             const chunk = chunks[i];
-            const ssml = buildSSML(chunk, language);
+            const ssml = buildSSML(chunk, mapLanguageCode(language));
 
             console.log(`Generating TTS for chunk ${i + 1}/${chunks.length}`);
 
             // Get access token for authentication
             const accessToken = await getGoogleAccessToken();
+            
+            // Map language code to Google TTS format
+            const mappedLanguage = mapLanguageCode(language);
             
             const response = await fetch(
               'https://texttospeech.googleapis.com/v1/text:synthesize',
@@ -175,7 +199,7 @@ serve(async (req) => {
                 },
                 body: JSON.stringify({
                   input: { ssml },
-                  voice: { languageCode: language, name: voice },
+                  voice: { languageCode: mappedLanguage, name: voice },
                   audioConfig: { 
                     audioEncoding: 'MP3',
                     speakingRate: 1.0,
