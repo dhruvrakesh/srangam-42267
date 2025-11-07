@@ -42,7 +42,7 @@ export default function GeomythologyLandReclamation() {
         <meta name="keywords" content="geomythology, Kerala, Kashmir, Parashurama, Kashyapa, coastal emergence, sacred ecology" />
       </Helmet>
 
-      <article className="container mx-auto px-4 py-12 pb-32 max-w-4xl">
+      <article className="container mx-auto px-4 py-12 pb-64 max-w-4xl">
         {/* Article Header */}
         <header className="mb-12 space-y-6">
           <div className="flex items-center gap-3 flex-wrap">

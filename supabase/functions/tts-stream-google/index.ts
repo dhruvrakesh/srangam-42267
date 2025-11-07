@@ -46,6 +46,29 @@ function chunkText(text: string, maxChars: number = 1500): string[] {
   return chunks;
 }
 
+// Convert PEM format private key to ArrayBuffer
+function pemToArrayBuffer(pem: string): ArrayBuffer {
+  // Remove PEM headers and footers
+  const pemHeader = '-----BEGIN PRIVATE KEY-----';
+  const pemFooter = '-----END PRIVATE KEY-----';
+  const pemContents = pem
+    .replace(pemHeader, '')
+    .replace(pemFooter, '')
+    .replace(/\\n/g, '')
+    .replace(/\s/g, '');
+  
+  // Decode base64 to binary string
+  const binaryString = atob(pemContents);
+  
+  // Convert binary string to ArrayBuffer
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  
+  return bytes.buffer;
+}
+
 // JWT signing helper
 async function createJWT(serviceAccount: any): Promise<string> {
   const header = { alg: 'RS256', typ: 'JWT' };
@@ -62,11 +85,11 @@ async function createJWT(serviceAccount: any): Promise<string> {
   const encodedPayload = btoa(JSON.stringify(payload)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
   const unsignedToken = `${encodedHeader}.${encodedPayload}`;
 
-  // Import the private key
-  const privateKey = serviceAccount.private_key.replace(/\\n/g, '\n');
+  // Import the private key - convert PEM to ArrayBuffer
+  const privateKeyBuffer = pemToArrayBuffer(serviceAccount.private_key);
   const key = await crypto.subtle.importKey(
     'pkcs8',
-    new TextEncoder().encode(privateKey).buffer,
+    privateKeyBuffer,
     { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
     false,
     ['sign']
