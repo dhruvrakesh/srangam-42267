@@ -24,12 +24,35 @@ export function useNarration(initialConfig?: Partial<NarrationConfig>) {
     content: string,
     config: NarrationConfig
   ) => {
+    // ✅ Early validation
+    if (!content || content.trim().length === 0) {
+      console.warn('useNarration: Empty content provided, skipping playback');
+      return;
+    }
+
+    if (!config.language || !config.provider || !config.voice) {
+      console.error('useNarration: Invalid config provided', config);
+      setState(prev => ({
+        ...prev,
+        status: 'error',
+        error: 'Invalid narration configuration',
+      }));
+      return;
+    }
+
     try {
       setState(prev => ({ ...prev, status: 'loading', isLoading: true, error: undefined }));
 
       // Check cache first
       const contentHash = narrationService.generateContentHash(content, config);
-      const cached = await narrationService.getCachedAudio(contentHash, config);
+      
+      let cached;
+      try {
+        cached = await narrationService.getCachedAudio(contentHash, config);
+      } catch (cacheError) {
+        console.warn('Cache lookup failed, will stream from TTS:', cacheError);
+        cached = null;
+      }
 
       if (cached) {
         // Play from cache
@@ -39,7 +62,13 @@ export function useNarration(initialConfig?: Partial<NarrationConfig>) {
         
         audioRef.current.src = cached.url;
         audioRef.current.playbackRate = config.speed;
-        await audioRef.current.play();
+        
+        try {
+          await audioRef.current.play();
+        } catch (playError) {
+          console.error('Cached audio playback failed:', playError);
+          throw new Error('Audio playback blocked by browser. Please try clicking play again.');
+        }
 
         setState(prev => ({
           ...prev,
@@ -55,7 +84,8 @@ export function useNarration(initialConfig?: Partial<NarrationConfig>) {
       // Stream from TTS provider
       const audioChunks: Uint8Array[] = [];
       
-      for await (const chunk of narrationService.streamAudio(content, config)) {
+      try {
+        for await (const chunk of narrationService.streamAudio(content, config)) {
         if (chunk.audioContent.length > 0) {
           audioChunks.push(chunk.audioContent);
         }
@@ -81,7 +111,13 @@ export function useNarration(initialConfig?: Partial<NarrationConfig>) {
           
           audioRef.current.src = audioUrl;
           audioRef.current.playbackRate = config.speed;
-          await audioRef.current.play();
+          
+          try {
+            await audioRef.current.play();
+          } catch (playError) {
+            console.error('Streamed audio playback failed:', playError);
+            throw new Error('Audio playback blocked. Please check browser permissions.');
+          }
 
           setState(prev => ({
             ...prev,
@@ -102,13 +138,23 @@ export function useNarration(initialConfig?: Partial<NarrationConfig>) {
           }).catch(err => console.error('Failed to cache audio:', err));
         }
       }
+      } catch (streamError) {
+        console.error('TTS streaming error:', streamError);
+        throw new Error('Text-to-speech generation failed. Please try again later.');
+      }
     } catch (error) {
       console.error('Playback error:', error);
+      
+      let errorMessage = 'Playback failed';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       setState(prev => ({
         ...prev,
         status: 'error',
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Playback failed',
+        error: errorMessage,
       }));
     }
   }, []);

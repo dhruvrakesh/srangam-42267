@@ -1,5 +1,5 @@
 // Universal narrator component - can be used anywhere
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useLanguage } from '@/components/language/LanguageProvider';
 import { useNarration } from '@/hooks/useNarration';
 import { NarrationControls } from './NarrationControls';
@@ -43,15 +43,40 @@ export function UniversalNarrator({
     seek,
   } = useNarration({ speed: 1.0 });
 
-  // ✅ DEFENSIVE CHECKS AFTER ALL HOOKS
-  if (!currentLanguage) {
-    console.warn('UniversalNarrator: currentLanguage not available');
-    return null;
+  // ✅ Track initialization state
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  useEffect(() => {
+    // Wait for language context to initialize
+    if (currentLanguage) {
+      setIsInitializing(false);
+    }
+  }, [currentLanguage]);
+
+  // ✅ DEFENSIVE CHECKS AFTER ALL HOOKS - Return consistent structure
+  const shouldShowControls = Boolean(
+    !isInitializing &&
+    currentLanguage && 
+    content && 
+    content.trim().length > 0
+  );
+
+  // Show loading skeleton while initializing
+  if (isInitializing) {
+    return (
+      <div className="animate-pulse bg-muted/30 rounded-lg p-4 h-20" />
+    );
   }
 
-  if (!content || content.trim().length === 0) {
-    console.warn('UniversalNarrator: no content provided');
-    return null;
+  // If checks fail after initialization, show empty fragment instead of null
+  if (!shouldShowControls) {
+    if (!currentLanguage) {
+      console.warn('UniversalNarrator: currentLanguage not available after initialization');
+    }
+    if (!content || content.trim().length === 0) {
+      console.warn('UniversalNarrator: no content provided');
+    }
+    return <></>;
   }
 
   const handlePlay = useCallback(async () => {
