@@ -286,24 +286,62 @@ export function KashmirLakeTimeline() {
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <h5 className="font-medium text-sm mb-2">Composition</h5>
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <span>Clay:</span>
-                    <span className="font-medium">{selectedLayer.composition.clay}%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Silt:</span>
-                    <span className="font-medium">{selectedLayer.composition.silt}%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Sand:</span>
-                    <span className="font-medium">{selectedLayer.composition.sand}%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Volcanic Ash:</span>
-                    <span className="font-medium">{selectedLayer.composition.volcanicAsh}%</span>
+                <div className="space-y-3">
+                  {Object.entries({
+                    clay: { value: selectedLayer.composition.clay, color: '#8b4513' },
+                    silt: { value: selectedLayer.composition.silt, color: '#daa520' },
+                    sand: { value: selectedLayer.composition.sand, color: '#f4a460' },
+                    volcanicAsh: { value: selectedLayer.composition.volcanicAsh, color: '#696969' }
+                  }).map(([type, { value, color }]) => (
+                    <div key={type} className="space-y-1">
+                      {/* Label and Percentage */}
+                      <div className="flex justify-between text-sm">
+                        <span className="capitalize font-medium">
+                          {type === 'volcanicAsh' ? 'Volcanic Ash' : type}:
+                        </span>
+                        <span className="font-bold text-primary">{value}%</span>
+                      </div>
+                      
+                      {/* Visual Progress Bar */}
+                      <div className="h-3 bg-muted/30 rounded-full overflow-hidden border border-border">
+                        <div
+                          className="h-full transition-all duration-1000 ease-out flex items-center justify-end pr-2"
+                          style={{ 
+                            width: `${value}%`,
+                            backgroundColor: color
+                          }}
+                        >
+                          {value > 15 && (
+                            <span className="text-[10px] font-bold text-white drop-shadow-md">
+                              {value}%
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Composition Total Validator */}
+                <div className="mt-3 pt-3 border-t border-border">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">Total Composition:</span>
+                    <span className={`font-bold ${
+                      (selectedLayer.composition.clay + 
+                       selectedLayer.composition.silt + 
+                       selectedLayer.composition.sand + 
+                       selectedLayer.composition.volcanicAsh) === 100 
+                        ? "text-green-600" 
+                        : "text-amber-600"
+                    }`}>
+                      {selectedLayer.composition.clay + 
+                       selectedLayer.composition.silt + 
+                       selectedLayer.composition.sand + 
+                       selectedLayer.composition.volcanicAsh}%
+                    </span>
                   </div>
                 </div>
+                
                 <div className="mt-3 text-xs text-muted-foreground">
                   <strong>Period:</strong> {selectedLayer.period}
                   <br />
