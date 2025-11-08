@@ -68,15 +68,22 @@ export function UniversalNarrator({
     );
   }
 
-  // If checks fail after initialization, show empty fragment instead of null
+  // If checks fail after initialization, show visible error state
   if (!shouldShowControls) {
-    if (!currentLanguage) {
-      console.warn('UniversalNarrator: currentLanguage not available after initialization');
-    }
-    if (!content || content.trim().length === 0) {
-      console.warn('UniversalNarrator: no content provided');
-    }
-    return <></>;
+    const errorReason = !currentLanguage 
+      ? 'language context not initialized' 
+      : 'no content provided';
+    
+    return (
+      <div className="sticky bottom-0 left-0 right-0 z-40 border-t border-border bg-muted/30 backdrop-blur-sm">
+        <div className="container max-w-4xl mx-auto px-4 py-3">
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <span className="opacity-50">🔊</span>
+            <span>Audio narration unavailable ({errorReason})</span>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const handlePlay = useCallback(async () => {

@@ -52,6 +52,16 @@ export default function GeomythologyLandReclamation() {
   const content = getLocalizedString(article.content);
   const tags = article.tags.map(tag => getLocalizedString(tag));
 
+  // Debug: Validate content extraction for narrator
+  console.log('GeomythologyLandReclamation narrator debug:', {
+    hasArticle: !!article,
+    hasContent: !!article.content,
+    contentType: typeof article.content,
+    contentLength: content.length,
+    contentPreview: content.substring(0, 100) + '...',
+    currentLanguage
+  });
+
   return (
     <>
       <ArticlePage
@@ -66,17 +76,17 @@ export default function GeomythologyLandReclamation() {
         dataComponents={[
           <Suspense key="parashurama-suspense" fallback={<VisualizationLoading />}>
             <VisualizationErrorBoundary visualizationName="Paraśurāma Coastal Map">
-              <ParashuramaCoastMap />
+              {typeof window !== 'undefined' && <ParashuramaCoastMap />}
             </VisualizationErrorBoundary>
           </Suspense>,
           <Suspense key="kashmir-suspense" fallback={<VisualizationLoading />}>
             <VisualizationErrorBoundary visualizationName="Kashmir Lake Timeline">
-              <KashmirLakeTimeline />
+              {typeof window !== 'undefined' && <KashmirLakeTimeline />}
             </VisualizationErrorBoundary>
           </Suspense>,
           <Suspense key="fossil-suspense" fallback={<VisualizationLoading />}>
             <VisualizationErrorBoundary visualizationName="Fossil Worship Sites Map">
-              <FossilWorshipSitesMap />
+              {typeof window !== 'undefined' && <FossilWorshipSitesMap />}
             </VisualizationErrorBoundary>
           </Suspense>
         ]}

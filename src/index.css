@@ -145,9 +145,9 @@ All colors MUST be HSL.
     word-wrap: break-word;
     overflow-wrap: break-word;
     word-break: normal;
-    hyphens: auto;
-    -webkit-hyphens: auto;
-    -ms-hyphens: auto;
+    hyphens: manual;
+    -webkit-hyphens: manual;
+    -ms-hyphens: manual;
   }
 
   /* Ensure proper text flow */
@@ -157,9 +157,14 @@ All colors MUST be HSL.
     max-width: 100%;
   }
 
-  /* Protect cultural terms from breaking */
-  em, strong, .cultural-term-highlight {
-    hyphens: manual;
+  /* Protect cultural and technical terms from breaking */
+  em, strong, .cultural-term-highlight,
+  .no-hyphenate,
+  [lang="sa"], [lang="ta"], [lang="hi"],
+  code, kbd, samp {
+    hyphens: none !important;
+    -webkit-hyphens: none !important;
+    -ms-hyphens: none !important;
     word-break: keep-all;
   }
 }

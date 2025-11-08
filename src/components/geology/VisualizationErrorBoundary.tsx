@@ -11,15 +11,16 @@ interface Props {
 interface State {
   hasError: boolean;
   error?: Error;
+  retryCount: number;
 }
 
 export class VisualizationErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, retryCount: 0 };
   }
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): Partial<State> {
     return { hasError: true, error };
   }
 
@@ -32,7 +33,22 @@ export class VisualizationErrorBoundary extends Component<Props, State> {
   }
 
   handleRetry = () => {
-    this.setState({ hasError: false, error: undefined });
+    const { retryCount } = this.state;
+    
+    if (retryCount >= 2) {
+      // After 2 failed retries, suggest page reload
+      this.setState({ 
+        error: new Error('Maximum retry attempts reached. Please refresh the page to try again.')
+      });
+      return;
+    }
+    
+    // Increment retry counter and clear error
+    this.setState({ 
+      hasError: false, 
+      error: undefined,
+      retryCount: retryCount + 1
+    });
   };
 
   render() {

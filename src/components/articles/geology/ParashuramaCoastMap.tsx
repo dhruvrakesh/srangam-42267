@@ -17,6 +17,11 @@ L.Icon.Default.mergeOptions({
 });
 
 export function ParashuramaCoastMap() {
+  // Guard against SSR - Leaflet only works in browser
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
   const [selectedPeriod, setSelectedPeriod] = useState<string>('modern');
   const [animationProgress, setAnimationProgress] = useState<number>(100);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
