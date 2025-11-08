@@ -12,10 +12,17 @@ import {
   PortMigrationMap, 
   SeaLevelChart 
 } from '@/components/articles/geology';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 
 export default function EarthSeaSangam() {
+  const contentForNarration = typeof earthSeaSangam.content === 'object' 
+    ? (earthSeaSangam.content.en as string || '')
+    : earthSeaSangam.content;
+
   return (
-    <ArticlePage
+    <>
+      <ArticlePage
       title={earthSeaSangam.title}
       dek={earthSeaSangam.dek}
       content={earthSeaSangam.content}
@@ -77,6 +84,16 @@ export default function EarthSeaSangam() {
           </CardContent>
         </Card>
       ]}
-    />
+      />
+      <NarrationErrorBoundary>
+        <UniversalNarrator
+          content={contentForNarration}
+          contentType="article"
+          articleSlug="earth-sea-sangam"
+          variant="sticky-bottom"
+          autoAnalyze={true}
+        />
+      </NarrationErrorBoundary>
+    </>
   );
 }

@@ -6,10 +6,17 @@ import { reassessingAshokaLegacy } from '@/data/articles/reassessing-ashoka-lega
 import { MagadhaReligiousTimeline } from '@/components/articles/MagadhaReligiousTimeline';
 import { MagadhaRegionMap } from '@/components/articles/MagadhaRegionMap';
 import { ScholarlyDebatePanel } from '@/components/articles/ScholarlyDebatePanel';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 
 export default function ReasessingAshokaLegacy() {
+  const contentForNarration = typeof reassessingAshokaLegacy.content === 'object' 
+    ? (reassessingAshokaLegacy.content.en as string || '')
+    : reassessingAshokaLegacy.content;
+
   return (
-    <ArticlePage
+    <>
+      <ArticlePage
       title={reassessingAshokaLegacy.title}
       dek={reassessingAshokaLegacy.dek}
       content={reassessingAshokaLegacy.content}
@@ -50,6 +57,16 @@ export default function ReasessingAshokaLegacy() {
           One should honor another man's sect... Whoever praises his own sect or blames other sects... does so out of devotion to his own sect, thinking 'I will glorify my own sect.' But doing so, he injures his own sect more gravely.
         </InteractiveQuote>
       ]}
-    />
+      />
+      <NarrationErrorBoundary>
+        <UniversalNarrator
+          content={contentForNarration}
+          contentType="article"
+          articleSlug="reassessing-ashoka-legacy"
+          variant="sticky-bottom"
+          autoAnalyze={true}
+        />
+      </NarrationErrorBoundary>
+    </>
   );
 }

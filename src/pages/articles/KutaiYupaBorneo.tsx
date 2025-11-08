@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom';
 import { IconScript } from '@/components/icons';
 import { ResponsiveImage } from '@/components/ui/ResponsiveImage';
 import { kutaiYupaBorneo } from '@/data/articles/kutai-yupa-borneo';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 
 const PillarSilhouetteComponent = () => {
   const pillars = Array.from({ length: 7 }, (_, i) => i + 1);
@@ -61,8 +63,13 @@ const PillarSilhouetteComponent = () => {
 // Multilingual content is properly loaded from data file - no hardcoded content needed
 
 export default function KutaiYupaBorneo() {
+  const contentForNarration = typeof kutaiYupaBorneo.content === 'object' 
+    ? (kutaiYupaBorneo.content.en as string || '')
+    : kutaiYupaBorneo.content;
+
   return (
-    <ArticlePage
+    <>
+      <ArticlePage
       title={kutaiYupaBorneo.title}
       dek={kutaiYupaBorneo.dek}
       content={kutaiYupaBorneo.content}
@@ -94,6 +101,16 @@ export default function KutaiYupaBorneo() {
           </Link>
         </div>
       ]}
-    />
+      />
+      <NarrationErrorBoundary>
+        <UniversalNarrator
+          content={contentForNarration}
+          contentType="article"
+          articleSlug="kutai-yupa-borneo"
+          variant="sticky-bottom"
+          autoAnalyze={true}
+        />
+      </NarrationErrorBoundary>
+    </>
   );
 }

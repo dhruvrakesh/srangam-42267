@@ -5,12 +5,19 @@ import { MonsoonMap } from '@/components/articles/MonsoonMap';
 import { PepperCargoTable } from '@/components/articles/PepperCargoTable';
 import { ResponsiveImage } from '@/components/ui/ResponsiveImage';
 import { monsoonTradeClock } from '@/data/articles/monsoon-trade-clock';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 
 // Multilingual content is properly loaded from data file - no hardcoded content needed
 
 export default function MonsoonTradeClock() {
+  const contentForNarration = typeof monsoonTradeClock.content === 'object' 
+    ? (monsoonTradeClock.content.en as string || '')
+    : monsoonTradeClock.content;
+
   return (
-    <ArticlePage
+    <>
+      <ArticlePage
       title={monsoonTradeClock.title}
       dek={monsoonTradeClock.dek}
       content={monsoonTradeClock.content}
@@ -32,6 +39,16 @@ export default function MonsoonTradeClock() {
         <MonsoonMap key="monsoon-map" />,
         <PepperCargoTable key="pepper-cargo" />
       ]}
-    />
+      />
+      <NarrationErrorBoundary>
+        <UniversalNarrator
+          content={contentForNarration}
+          contentType="article"
+          articleSlug="monsoon-trade-clock"
+          variant="sticky-bottom"
+          autoAnalyze={true}
+        />
+      </NarrationErrorBoundary>
+    </>
   );
 }

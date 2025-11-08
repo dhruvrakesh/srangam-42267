@@ -7,6 +7,8 @@ import { Bibliography } from '@/components/articles/Bibliography';
 import { ResponsiveImage } from '@/components/ui/ResponsiveImage';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 
 // Import generated images
 import romanAmphora from '@/assets/roman-amphora_archaeology_4x3_v1.jpg';
@@ -18,8 +20,13 @@ import { pepperAndBullion } from '@/data/articles/pepper-and-bullion';
 // Multilingual content is properly loaded from data file - no hardcoded content needed
 
 export default function PepperAndBullion() {
+  const contentForNarration = typeof pepperAndBullion.content === 'object' 
+    ? (pepperAndBullion.content.en as string || '')
+    : pepperAndBullion.content;
+
   return (
-    <ArticlePage
+    <>
+      <ArticlePage
       title={pepperAndBullion.title}
       dek={pepperAndBullion.dek}
       content={pepperAndBullion.content}
@@ -151,6 +158,16 @@ export default function PepperAndBullion() {
           </Link>
         </div>
       ]}
-    />
+      />
+      <NarrationErrorBoundary>
+        <UniversalNarrator
+          content={contentForNarration}
+          contentType="article"
+          articleSlug="pepper-and-bullion"
+          variant="sticky-bottom"
+          autoAnalyze={true}
+        />
+      </NarrationErrorBoundary>
+    </>
   );
 }

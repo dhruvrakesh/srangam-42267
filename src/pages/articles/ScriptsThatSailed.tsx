@@ -7,11 +7,18 @@ import { SeasonalWindPattern } from '@/components/articles/SeasonalWindPattern';
 import { CulturalDiffusionMap } from '@/components/articles/CulturalDiffusionMap';
 import { FestivalCalendar } from '@/components/articles/FestivalCalendar';
 import { scriptsThatSailed } from '@/data/articles/scripts-that-sailed';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 
 
 export default function ScriptsThatSailed() {
+  const contentForNarration = typeof scriptsThatSailed.content === 'object' 
+    ? (scriptsThatSailed.content.en as string || '')
+    : scriptsThatSailed.content;
+
   return (
-    <ArticlePage
+    <>
+      <ArticlePage
       title={scriptsThatSailed.title}
       dek={scriptsThatSailed.dek}
       content={scriptsThatSailed.content}
@@ -44,6 +51,16 @@ export default function ScriptsThatSailed() {
           className="mt-8"
         />
       ]}
-    />
+      />
+      <NarrationErrorBoundary>
+        <UniversalNarrator
+          content={contentForNarration}
+          contentType="article"
+          articleSlug="scripts-that-sailed"
+          variant="sticky-bottom"
+          autoAnalyze={true}
+        />
+      </NarrationErrorBoundary>
+    </>
   );
 }

@@ -5,6 +5,8 @@ import { ResponsiveImage } from '@/components/ui/ResponsiveImage';
 import { AncientIndiaTimeline } from '@/components/articles/AncientIndiaTimeline';
 import { IndoIranianMap } from '@/components/articles/IndoIranianMap';
 import { ashokaKandaharEdictsComplete } from '@/data/articles/ashoka-kandahar-edicts-complete';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 
 
 const BilingualEdictComponent = () => (
@@ -64,8 +66,13 @@ const BilingualEdictComponent = () => (
 );
 
 export default function AshokaKandaharEdicts() {
+  const contentForNarration = typeof ashokaKandaharEdictsComplete.content === 'object' 
+    ? (ashokaKandaharEdictsComplete.content.en as string || '')
+    : ashokaKandaharEdictsComplete.content;
+
   return (
-    <ArticlePage
+    <>
+      <ArticlePage
       title={ashokaKandaharEdictsComplete.title}
       dek={ashokaKandaharEdictsComplete.dek}
       content={ashokaKandaharEdictsComplete.content}
@@ -126,6 +133,16 @@ export default function AshokaKandaharEdicts() {
           </p>
         </div>
       ]}
-    />
+      />
+      <NarrationErrorBoundary>
+        <UniversalNarrator
+          content={contentForNarration}
+          contentType="article"
+          articleSlug="ashoka-kandahar-edicts"
+          variant="sticky-bottom"
+          autoAnalyze={true}
+        />
+      </NarrationErrorBoundary>
+    </>
   );
 }

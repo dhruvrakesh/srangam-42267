@@ -5,6 +5,8 @@ import { IconBasalt } from '@/components/icons';
 import { PlateSpeedChart } from '@/components/articles/PlateSpeedChart';
 import { gondwanaToHimalaya } from '@/data/articles/gondwana-to-himalaya';
 import { Card } from '@/components/ui/card';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 
 // Multilingual content is properly loaded from data file - no hardcoded content needed
 
@@ -55,8 +57,13 @@ const DeccanStepsComponent = () => (
 );
 
 export default function GondwanaToHimalaya() {
+  const contentForNarration = typeof gondwanaToHimalaya.content === 'object' 
+    ? (gondwanaToHimalaya.content.en as string || '')
+    : gondwanaToHimalaya.content;
+
   return (
-    <ArticlePage
+    <>
+      <ArticlePage
       title={gondwanaToHimalaya.title}
       dek={gondwanaToHimalaya.dek}
       content={gondwanaToHimalaya.content}
@@ -70,6 +77,16 @@ export default function GondwanaToHimalaya() {
         <DeccanStepsComponent key="deccan-steps" />,
         <DeepTimeCulturalMemory key="deep-time-cultural" />
       ]}
-    />
+      />
+      <NarrationErrorBoundary>
+        <UniversalNarrator
+          content={contentForNarration}
+          contentType="article"
+          articleSlug="gondwana-to-himalaya"
+          variant="sticky-bottom"
+          autoAnalyze={true}
+        />
+      </NarrationErrorBoundary>
+    </>
   );
 }

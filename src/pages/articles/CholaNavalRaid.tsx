@@ -3,6 +3,8 @@ import { ArticlePage } from '@/components/articles/ArticlePage';
 import { IconPort } from '@/components/icons';
 import { ResponsiveImage } from '@/components/ui/ResponsiveImage';
 import { cholaNavalRaid } from '@/data/articles/chola-naval-raid';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 
 // Multilingual content is properly loaded from data file - no hardcoded content needed
 
@@ -65,8 +67,13 @@ const ConvoyLanesComponent = () => (
 );
 
 export default function CholaNavalRaid() {
+  const contentForNarration = typeof cholaNavalRaid.content === 'object' 
+    ? (cholaNavalRaid.content.en as string || '')
+    : cholaNavalRaid.content;
+
   return (
-    <ArticlePage
+    <>
+      <ArticlePage
       title={cholaNavalRaid.title}
       dek={cholaNavalRaid.dek}
       content={cholaNavalRaid.content}
@@ -87,6 +94,16 @@ export default function CholaNavalRaid() {
         />,
         <ConvoyLanesComponent key="convoy-lanes" />
       ]}
-    />
+      />
+      <NarrationErrorBoundary>
+        <UniversalNarrator
+          content={contentForNarration}
+          contentType="article"
+          articleSlug="chola-naval-raid"
+          variant="sticky-bottom"
+          autoAnalyze={true}
+        />
+      </NarrationErrorBoundary>
+    </>
   );
 }
