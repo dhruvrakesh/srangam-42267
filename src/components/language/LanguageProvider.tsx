@@ -54,14 +54,18 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     return getScriptFontUtil(language);
   };
 
-  // Apply font size adjustments
+  // Apply font size adjustments and script font
   useEffect(() => {
     if (preferences.fontSizeAdjustment !== 0) {
       document.documentElement.style.fontSize = `${16 + preferences.fontSizeAdjustment}px`;
     } else {
       document.documentElement.style.fontSize = '';
     }
-  }, [preferences.fontSizeAdjustment]);
+    
+    // Apply script font class to document root
+    const fontClass = getScriptFont();
+    document.documentElement.className = fontClass;
+  }, [preferences.fontSizeAdjustment, currentLanguage]);
 
   const value: LanguageContextType = {
     currentLanguage,
@@ -74,9 +78,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
   return (
     <I18nLoadingBoundary>
       <LanguageContext.Provider value={value}>
-        <div className={getScriptFont()}>
-          {children}
-        </div>
+        {children}
       </LanguageContext.Provider>
     </I18nLoadingBoundary>
   );
