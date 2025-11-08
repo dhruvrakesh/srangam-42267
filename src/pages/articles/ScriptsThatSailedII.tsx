@@ -8,8 +8,14 @@ import { inscriptionRegistry } from '@/data/inscriptions/registry';
 import { scriptsThatSailedII } from '@/data/articles/scripts-that-sailed-ii';
 import { IconScript } from '@/components/icons';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 
 export default function ScriptsThatSailedII() {
+  const contentForNarration = typeof scriptsThatSailedII.content === 'object'
+    ? ((scriptsThatSailedII.content as any).en as string || '')
+    : scriptsThatSailedII.content as string;
+
   const inscriptions = {
     kandahar: inscriptionRegistry.getById('kandahar-bilingual-edict'),
     kutai: inscriptionRegistry.getById('kutai-yupa-borneo'),
@@ -93,16 +99,26 @@ export default function ScriptsThatSailedII() {
   }
 
   return (
-    <ArticlePage
-      title={scriptsThatSailedII.title}
-      dek={scriptsThatSailedII.dek}
-      content={scriptsThatSailedII.content}
-      tags={scriptsThatSailedII.tags}
-      icon={IconScript}
-      readTime={45}
-      author="Kanika Rakesh"
-      date="2025-10-04"
-      dataComponents={dataComponents}
-    />
+    <>
+      <ArticlePage
+        title={scriptsThatSailedII.title}
+        dek={scriptsThatSailedII.dek}
+        content={scriptsThatSailedII.content}
+        tags={scriptsThatSailedII.tags}
+        icon={IconScript}
+        readTime={45}
+        author="Kanika Rakesh"
+        date="2025-10-04"
+        dataComponents={dataComponents}
+      />
+      <NarrationErrorBoundary>
+        <UniversalNarrator
+          content={contentForNarration}
+          contentType="article"
+          variant="sticky-bottom"
+          autoAnalyze={true}
+        />
+      </NarrationErrorBoundary>
+    </>
   );
 }

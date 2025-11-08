@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 import { 
   ExpandableSection, 
   InteractiveQuote, 
@@ -222,6 +224,10 @@ const sidebarItems = [
 export default function IndianOceanPowerNetworks() {
   const [activeSection, setActiveSection] = useState("introduction");
 
+  const contentForNarration = typeof indianOceanPowerNetworksComplete.content === 'object'
+    ? ((indianOceanPowerNetworksComplete.content as any).en as string || '')
+    : indianOceanPowerNetworksComplete.content as string;
+
   const highlights = createHighlights([
     { text: "black gold", type: "concept", tooltip: "Pepper was so valuable it was used as currency" },
     { text: "monsoon winds", type: "concept", tooltip: "Seasonal wind patterns that enabled direct ocean crossings" },
@@ -229,7 +235,8 @@ export default function IndianOceanPowerNetworks() {
   ]);
 
   return (
-    <div className="relative">
+    <>
+      <div className="relative">
       <ContextualSidebar items={sidebarItems} position="right" />
       
       <ArticlePage
@@ -549,6 +556,15 @@ export default function IndianOceanPowerNetworks() {
           </div>
         ]}
       />
-    </div>
+      </div>
+      <NarrationErrorBoundary>
+        <UniversalNarrator
+          content={contentForNarration}
+          contentType="article"
+          variant="sticky-bottom"
+          autoAnalyze={true}
+        />
+      </NarrationErrorBoundary>
+    </>
   );
 }

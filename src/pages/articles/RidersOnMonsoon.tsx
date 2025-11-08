@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { ridersOnMonsoon } from '@/data/articles/riders-on-monsoon';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 
 // Using multilingual content from data file instead of hardcoded English
 
@@ -56,6 +58,10 @@ const navigationSources = [
 ];
 
 export default function RidersOnMonsoon() {
+  const contentForNarration = typeof ridersOnMonsoon.content === 'object'
+    ? ((ridersOnMonsoon.content as any).en as string || '')
+    : ridersOnMonsoon.content as string;
+
   const dataComponents = [
     <ResponsiveImage
       key="palm-leaf"
@@ -168,16 +174,26 @@ export default function RidersOnMonsoon() {
   ];
 
   return (
-    <ArticlePage
-      title={ridersOnMonsoon.title}
-      dek={ridersOnMonsoon.dek}
-      content={ridersOnMonsoon.content}
-      tags={ridersOnMonsoon.tags}
-      icon={IconMonsoon}
-      readTime={16}
-      author="Nartiang Foundation"
-      date="March 25, 2024"
-      dataComponents={dataComponents}
-    />
+    <>
+      <ArticlePage
+        title={ridersOnMonsoon.title}
+        dek={ridersOnMonsoon.dek}
+        content={ridersOnMonsoon.content}
+        tags={ridersOnMonsoon.tags}
+        icon={IconMonsoon}
+        readTime={16}
+        author="Nartiang Foundation"
+        date="March 25, 2024"
+        dataComponents={dataComponents}
+      />
+      <NarrationErrorBoundary>
+        <UniversalNarrator
+          content={contentForNarration}
+          contentType="article"
+          variant="sticky-bottom"
+          autoAnalyze={true}
+        />
+      </NarrationErrorBoundary>
+    </>
   );
 }

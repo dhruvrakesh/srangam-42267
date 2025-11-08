@@ -5,6 +5,8 @@ import { IconBasalt } from '@/components/icons/IconBasalt';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 import { 
   SiwalikMegafaunaViewer,
   GhaggarHakraPaleoMap,
@@ -82,41 +84,55 @@ const RelatedGeologyArticles = () => (
 );
 
 export default function StonePurana() {
+  const contentForNarration = typeof stonePurana.content === 'object'
+    ? ((stonePurana.content as any).en as string || '')
+    : stonePurana.content as string;
+
   return (
-    <ArticlePage
-      title={stonePurana.title}
-      dek={stonePurana.dek}
-      content={stonePurana.content}
-      tags={stonePurana.tags}
-      icon={IconBasalt}
-      readTime={38}
-      author="Nartiang Foundation Geo-Heritage Team"
-      date="2025-10-03"
-      dataComponents={[
-        <ResponsiveImage
-          key="cover"
-          src="/images/geology/western-ghats-cross-section.jpg"
-          alt="Western Ghats geological cross-section showing Deccan Traps basalt layers"
-          caption="The Deccan Traps: 68-66 million years of volcanic history frozen in stone"
-          className="rounded-lg shadow-2xl mb-8"
-        />,
-        <InteractiveFossilMap key="fig1-interactive" />,
-        <DeepTimeTimeline key="fig2-interactive" />,
-        <GeoHeritageMap key="heritage-map" />,
-        <GeologicalTimelineInteractive key="timeline-chart" />,
-        <GlossaryQuickMap key="glossary" />,
-        <SiwalikMegafaunaViewer key="fig3" />,
-        <GhaggarHakraPaleoMap key="fig4" />,
-        <CulturalCorrelationMatrix key="correlation-matrix" />,
-        <ResponsiveImage
-          key="fossil"
-          src="/images/archaeology/poompuhar-underwater.jpg"
-          alt="Underwater archaeological remains showing stone structures"
-          caption="Submerged sites along India's coasts: where geology meets mythology"
-          className="rounded-lg shadow-2xl my-8"
-        />,
-        <RelatedGeologyArticles key="related" />
-      ]}
-    />
+    <>
+      <ArticlePage
+        title={stonePurana.title}
+        dek={stonePurana.dek}
+        content={stonePurana.content}
+        tags={stonePurana.tags}
+        icon={IconBasalt}
+        readTime={38}
+        author="Nartiang Foundation Geo-Heritage Team"
+        date="2025-10-03"
+        dataComponents={[
+          <ResponsiveImage
+            key="cover"
+            src="/images/geology/western-ghats-cross-section.jpg"
+            alt="Western Ghats geological cross-section showing Deccan Traps basalt layers"
+            caption="The Deccan Traps: 68-66 million years of volcanic history frozen in stone"
+            className="rounded-lg shadow-2xl mb-8"
+          />,
+          <InteractiveFossilMap key="fig1-interactive" />,
+          <DeepTimeTimeline key="fig2-interactive" />,
+          <GeoHeritageMap key="heritage-map" />,
+          <GeologicalTimelineInteractive key="timeline-chart" />,
+          <GlossaryQuickMap key="glossary" />,
+          <SiwalikMegafaunaViewer key="fig3" />,
+          <GhaggarHakraPaleoMap key="fig4" />,
+          <CulturalCorrelationMatrix key="correlation-matrix" />,
+          <ResponsiveImage
+            key="fossil"
+            src="/images/archaeology/poompuhar-underwater.jpg"
+            alt="Underwater archaeological remains showing stone structures"
+            caption="Submerged sites along India's coasts: where geology meets mythology"
+            className="rounded-lg shadow-2xl my-8"
+          />,
+          <RelatedGeologyArticles key="related" />
+        ]}
+      />
+      <NarrationErrorBoundary>
+        <UniversalNarrator
+          content={contentForNarration}
+          contentType="article"
+          variant="sticky-bottom"
+          autoAnalyze={true}
+        />
+      </NarrationErrorBoundary>
+    </>
   );
 }
