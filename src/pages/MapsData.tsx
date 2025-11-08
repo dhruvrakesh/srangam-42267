@@ -7,6 +7,7 @@ import { LazyMonsoonAnimation } from "@/components/interactive/LazyMonsoonAnimat
 import { PlateTimeline } from "@/components/interactive/PlateTimeline";
 import { useState, useCallback, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from "react-router-dom";
 import { IconConch, IconDharmaChakra } from "@/components/icons";
 import { 
   CosmicOceanHero, 
@@ -20,13 +21,71 @@ import portsData from '@/data/cosmic_ocean/ports.json';
 import monsoonData from '@/data/cosmic_ocean/monsoon.json';
 import cosmicOceanI18n from '@/data/cosmic_ocean/i18n.json';
 
+// Layer configuration for different map views
+const LAYER_CONFIGS: Record<string, { title: string; description: string; filters: string[]; layers: string[] }> = {
+  ports: {
+    title: "Ports & Emporia",
+    description: "Major trading ports and emporia of the Indian Ocean maritime network",
+    filters: ["malabar", "coromandel"],
+    layers: ["ports"]
+  },
+  hubs: {
+    title: "Transoceanic Hubs",
+    description: "Key transoceanic trading centers connecting multiple maritime regions",
+    filters: ["red-sea"],
+    layers: ["ports"]
+  },
+  guilds: {
+    title: "Epigraphy & Guilds",
+    description: "Merchant guild inscriptions and epigraphic evidence of maritime trade",
+    filters: ["inscriptions"],
+    layers: ["ports"]
+  },
+  hoards: {
+    title: "Coin Hoards",
+    description: "Roman and Indian coin hoard discoveries indicating trade patterns",
+    filters: ["archaeology"],
+    layers: ["ports"]
+  },
+  forts: {
+    title: "Forts & Naval Infrastructure",
+    description: "Naval bases, fortifications, and strategic coastal installations",
+    filters: [],
+    layers: ["ports"]
+  },
+  waypoints: {
+    title: "Coastal Waypoints",
+    description: "Intermediate ports and navigation waypoints along trade routes",
+    filters: [],
+    layers: ["ports", "routes"]
+  },
+  corridors: {
+    title: "Interior Trade Corridors",
+    description: "Inland trade routes connecting ports to interior markets",
+    filters: [],
+    layers: ["routes"]
+  }
+};
+
 export default function MapsData() {
+  const [searchParams] = useSearchParams();
+  const layerParam = searchParams.get('layer');
+  const layerConfig = layerParam ? LAYER_CONFIGS[layerParam] : null;
+  
   const [activeModal, setActiveModal] = useState<'ports' | 'monsoon' | 'timeline' | null>(null);
-  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+  const [selectedFilters, setSelectedFilters] = useState<string[]>(layerConfig?.filters || []);
   const [showEvidence, setShowEvidence] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState('all');
-  const [enabledLayers, setEnabledLayers] = useState(['ports', 'monsoon']);
+  const [enabledLayers, setEnabledLayers] = useState(layerConfig?.layers || ['ports', 'monsoon']);
   const { i18n } = useTranslation();
+
+  // Update filters and layers when URL param changes
+  useEffect(() => {
+    if (layerConfig) {
+      setSelectedFilters(layerConfig.filters);
+      setEnabledLayers(layerConfig.layers);
+    }
+  }, [layerParam]);
   
   const handleFilterToggle = useCallback((filter: string) => {
     setSelectedFilters(prev => 
@@ -83,8 +142,32 @@ export default function MapsData() {
       <div className="absolute inset-0 bg-gradient-to-t from-background/10 via-transparent to-background/5" />
       
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Breadcrumb Navigation */}
+        {layerConfig && (
+          <div className="mb-6">
+            <nav className="flex items-center space-x-2 text-sm text-muted-foreground">
+              <Link to="/maps-data" className="hover:text-foreground transition-colors">
+                Maps & Data
+              </Link>
+              <span>/</span>
+              <span className="text-foreground font-medium">{layerConfig.title}</span>
+            </nav>
+          </div>
+        )}
+
         {/* Enhanced Hero Section */}
-        <CosmicOceanHero />
+        {layerConfig ? (
+          <div className="text-center mb-12">
+            <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-foreground">
+              {layerConfig.title}
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
+              {layerConfig.description}
+            </p>
+          </div>
+        ) : (
+          <CosmicOceanHero />
+        )}
 
         {/* Interactive Controls */}
         <div className="mb-8">

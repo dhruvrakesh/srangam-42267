@@ -1,28 +1,360 @@
 {
   "type": "FeatureCollection",
+  "metadata": {
+    "title": "Oceanic Bharat Maritime Layers",
+    "description": "GeoJSON collection of historical maritime data for the Indian Ocean world",
+    "version": "1.0.0",
+    "updated": "2025-01-08",
+    "license": "CC BY 4.0",
+    "citation": "Srangam Digital Humanities Project"
+  },
   "features": [
     {
       "type": "Feature",
       "properties": {
-        "name": "Ports & Emporia",
-        "type": "ports",
-        "description": "Major trading ports of the Indian Ocean"
+        "id": "muziris",
+        "name": "Muziris (Kodungallur)",
+        "type": "port",
+        "category": "Ports & Emporia",
+        "region": "Malabar",
+        "period": "1st c. CE–",
+        "specialization": "Spice trade",
+        "evidence": "texts, archaeology",
+        "description": "Major port on the Malabar coast, mentioned in classical sources as a center for spice trade.",
+        "tags": ["malabar", "spice", "roman-trade"]
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [80.2707, 13.0827]
+        "coordinates": [76.26, 10.21]
       }
     },
     {
-      "type": "Feature", 
+      "type": "Feature",
       "properties": {
-        "name": "Transoceanic Hubs",
-        "type": "hubs",
-        "description": "Key transoceanic trading centers"
+        "id": "berenike",
+        "name": "Berenike",
+        "type": "port",
+        "category": "Ports & Emporia",
+        "region": "Red Sea",
+        "period": "1st c. CE–",
+        "specialization": "Red Sea trade",
+        "evidence": "archaeology",
+        "description": "Archaeological site with evidence of Indian Ocean trade connections.",
+        "tags": ["red-sea", "archaeology", "roman"]
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [76.2673, 10.8505]
+        "coordinates": [35.50, 23.91]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "myos_hormos",
+        "name": "Myos Hormos",
+        "type": "port",
+        "category": "Ports & Emporia",
+        "region": "Red Sea",
+        "period": "1st c. CE–",
+        "specialization": "Red Sea gateway",
+        "evidence": "texts, archaeology",
+        "description": "Roman Red Sea port mentioned in classical geographical sources.",
+        "tags": ["red-sea", "roman"]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [34.26, 26.16]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "nagapattinam",
+        "name": "Nagapattinam",
+        "type": "hub",
+        "category": "Transoceanic Hubs",
+        "region": "Coromandel",
+        "period": "Chola (9th-13th c.)",
+        "specialization": "Merchant guilds, Buddhist center",
+        "evidence": "inscriptions, architecture",
+        "description": "Major Chola port with merchant guild inscriptions documenting maritime networks.",
+        "tags": ["coromandel", "inscriptions", "chola", "guilds"]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [79.84, 10.77]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "kedah_bujang",
+        "name": "Kedah (Bujang Valley)",
+        "type": "hub",
+        "category": "Transoceanic Hubs",
+        "region": "Malaya",
+        "period": "4th–10th c.",
+        "specialization": "Iron smelting, entrepot",
+        "evidence": "archaeology",
+        "description": "Archaeological complex with evidence of maritime trade and industrial activity.",
+        "tags": ["archaeology", "southeast-asia", "iron"]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [100.50, 5.69]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "bharuch",
+        "name": "Bharuch (Barygaza)",
+        "type": "hub",
+        "category": "Transoceanic Hubs",
+        "region": "Gujarat",
+        "period": "1st c. CE–",
+        "specialization": "Gateway to northern India",
+        "evidence": "texts, archaeology",
+        "description": "Major port mentioned in Periplus as gateway to Gujarat and northern trade routes.",
+        "tags": ["gujarat", "periplus"]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [72.99, 21.70]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "quanzhou",
+        "name": "Quanzhou (Zayton)",
+        "type": "hub",
+        "category": "Transoceanic Hubs",
+        "region": "East China",
+        "period": "Song-Yuan (10th-14th c.)",
+        "specialization": "East terminus of maritime routes",
+        "evidence": "texts, archaeology",
+        "description": "Major Chinese port with South and Southeast Asian connections.",
+        "tags": ["china", "silk-road"]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [118.58, 24.87]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "takuapa",
+        "name": "Takuapa",
+        "type": "guild_inscription",
+        "category": "Epigraphy & Guilds",
+        "region": "Thai Peninsula",
+        "period": "10th c.",
+        "specialization": "Tamil merchant guild",
+        "evidence": "inscriptions",
+        "description": "Tamil inscription documenting merchant guild presence in Southeast Asia.",
+        "tags": ["inscriptions", "tamil", "guilds"]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [98.27, 8.75]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "kutai_yupa",
+        "name": "Kutai Yupa Inscriptions",
+        "type": "guild_inscription",
+        "category": "Epigraphy & Guilds",
+        "region": "Borneo",
+        "period": "4th-5th c.",
+        "specialization": "Earliest Sanskrit in Southeast Asia",
+        "evidence": "inscriptions",
+        "description": "Stone pillars with Sanskrit inscriptions showing Indianized culture.",
+        "tags": ["inscriptions", "sanskrit", "borneo"]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [117.15, 0.54]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "karur_hoard",
+        "name": "Karur Coin Hoard",
+        "type": "coin_hoard",
+        "category": "Coin Hoards",
+        "region": "Tamil Nadu",
+        "period": "1st c. CE",
+        "specialization": "Roman gold coins",
+        "evidence": "archaeology",
+        "description": "Over 1000 Roman gold coins discovered, indicating extensive trade.",
+        "tags": ["archaeology", "coins", "roman-trade"]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [78.08, 10.96]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "arikamedu",
+        "name": "Arikamedu",
+        "type": "coin_hoard",
+        "category": "Coin Hoards",
+        "region": "Tamil Nadu",
+        "period": "1st c. BCE - 2nd c. CE",
+        "specialization": "Indo-Roman trading station",
+        "evidence": "archaeology",
+        "description": "Roman pottery, coins, and beads indicating direct trade contact.",
+        "tags": ["archaeology", "roman-trade"]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [79.77, 11.93]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "diu_fort",
+        "name": "Diu Fortifications",
+        "type": "naval_base",
+        "category": "Forts & Naval",
+        "region": "Gujarat",
+        "period": "16th c.",
+        "specialization": "Portuguese naval base",
+        "evidence": "architecture",
+        "description": "Strategic Portuguese fort controlling Arabian Sea access.",
+        "tags": ["portuguese", "naval"]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [70.99, 20.71]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "quilon",
+        "name": "Quilon (Kollam)",
+        "type": "waypoint",
+        "category": "Waypoints",
+        "region": "Kerala",
+        "period": "9th c. onwards",
+        "specialization": "Pepper coast waypoint",
+        "evidence": "texts, architecture",
+        "description": "Important waypoint mentioned by Arab and Chinese travelers.",
+        "tags": ["malabar", "waypoint"]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [76.59, 8.89]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "calicut",
+        "name": "Calicut (Kozhikode)",
+        "type": "waypoint",
+        "category": "Waypoints",
+        "region": "Kerala",
+        "period": "Medieval",
+        "specialization": "Zamorin's capital",
+        "evidence": "texts, architecture",
+        "description": "Major medieval port visited by Vasco da Gama in 1498.",
+        "tags": ["malabar", "zamorin", "portuguese"]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [75.78, 11.25]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "palghat_gap",
+        "name": "Palghat Gap",
+        "type": "corridor",
+        "category": "Interior Corridors",
+        "region": "Western Ghats",
+        "period": "Ancient onwards",
+        "specialization": "Mountain pass for spice transport",
+        "evidence": "geography, texts",
+        "description": "Natural gap through Western Ghats connecting coast to interior.",
+        "tags": ["trade-route", "ghats"]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [76.65, 10.77]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "monsoon_sw",
+        "name": "Southwest Monsoon Route",
+        "type": "route",
+        "category": "Trade Routes",
+        "season": "June-September",
+        "description": "Summer monsoon route from Arabia to India",
+        "direction": "northeast"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [45.0, 12.0],
+          [55.0, 15.0],
+          [65.0, 17.0],
+          [73.0, 10.0]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "monsoon_ne",
+        "name": "Northeast Monsoon Route",
+        "type": "route",
+        "category": "Trade Routes",
+        "season": "November-February",
+        "description": "Winter monsoon return route from India to Arabia",
+        "direction": "southwest"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [73.0, 10.0],
+          [65.0, 17.0],
+          [55.0, 15.0],
+          [45.0, 12.0]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "bay_of_bengal_route",
+        "name": "Bay of Bengal Trade Route",
+        "type": "route",
+        "category": "Trade Routes",
+        "description": "Coromandel to Southeast Asia route",
+        "direction": "east"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [80.0, 11.0],
+          [85.0, 10.0],
+          [90.0, 9.0],
+          [95.0, 8.0],
+          [100.0, 6.0]
+        ]
       }
     }
   ]
