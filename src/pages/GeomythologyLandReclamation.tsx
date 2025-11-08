@@ -1,13 +1,33 @@
-import React from 'react';
-import { Mountain } from 'lucide-react';
+import React, { Suspense } from 'react';
+import { Mountain, Loader2 } from 'lucide-react';
 import { ArticlePage } from '@/components/articles/ArticlePage';
 import { MULTILINGUAL_ARTICLES, ARTICLE_METADATA } from '@/data/articles';
-import { ParashuramaCoastMap } from '@/components/articles/geology/ParashuramaCoastMap';
-import { KashmirLakeTimeline } from '@/components/articles/geology/KashmirLakeTimeline';
-import { FossilWorshipSitesMap } from '@/components/articles/geology/FossilWorshipSitesMap';
 import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
 import { useLanguage } from '@/components/language/LanguageProvider';
+import { VisualizationErrorBoundary } from '@/components/geology/VisualizationErrorBoundary';
+import { Card, CardContent } from '@/components/ui/card';
+
+// Lazy load visualizations to prevent SSR issues with Leaflet and D3
+const ParashuramaCoastMap = React.lazy(() => 
+  import('@/components/articles/geology/ParashuramaCoastMap').then(m => ({ default: m.ParashuramaCoastMap }))
+);
+const KashmirLakeTimeline = React.lazy(() =>
+  import('@/components/articles/geology/KashmirLakeTimeline').then(m => ({ default: m.KashmirLakeTimeline }))
+);
+const FossilWorshipSitesMap = React.lazy(() =>
+  import('@/components/articles/geology/FossilWorshipSitesMap').then(m => ({ default: m.FossilWorshipSitesMap }))
+);
+
+// Loading fallback component
+const VisualizationLoading = () => (
+  <Card className="my-8 bg-muted/20">
+    <CardContent className="flex items-center justify-center h-64">
+      <Loader2 className="w-6 h-6 animate-spin mr-2 text-muted-foreground" />
+      <span className="text-muted-foreground">Loading visualization...</span>
+    </CardContent>
+  </Card>
+);
 
 export default function GeomythologyLandReclamation() {
   const { currentLanguage } = useLanguage();
@@ -44,9 +64,21 @@ export default function GeomythologyLandReclamation() {
         author={metadata.author}
         date={metadata.date}
         dataComponents={[
-          <ParashuramaCoastMap key="parashurama-map" />,
-          <KashmirLakeTimeline key="kashmir-timeline" />,
-          <FossilWorshipSitesMap key="fossil-sites-map" />
+          <Suspense key="parashurama-suspense" fallback={<VisualizationLoading />}>
+            <VisualizationErrorBoundary visualizationName="Paraśurāma Coastal Map">
+              <ParashuramaCoastMap />
+            </VisualizationErrorBoundary>
+          </Suspense>,
+          <Suspense key="kashmir-suspense" fallback={<VisualizationLoading />}>
+            <VisualizationErrorBoundary visualizationName="Kashmir Lake Timeline">
+              <KashmirLakeTimeline />
+            </VisualizationErrorBoundary>
+          </Suspense>,
+          <Suspense key="fossil-suspense" fallback={<VisualizationLoading />}>
+            <VisualizationErrorBoundary visualizationName="Fossil Worship Sites Map">
+              <FossilWorshipSitesMap />
+            </VisualizationErrorBoundary>
+          </Suspense>
         ]}
       />
 
