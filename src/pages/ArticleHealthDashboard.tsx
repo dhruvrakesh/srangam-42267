@@ -34,19 +34,19 @@ const ARTICLE_INVENTORY: ArticleHealth[] = [
   { slug: 'sacred-tree-harvest-rhythms', name: 'Sacred Tree Harvest Rhythms', category: 'complex', status: 'healthy', narratorIntegrated: true, visualizationCount: 7, issues: [] },
   { slug: 'scripts-that-sailed-ii', name: 'Scripts That Sailed II', category: 'complex', status: 'healthy', narratorIntegrated: true, visualizationCount: 5, issues: [] },
   { slug: 'stone-purana', name: 'Stone Purana', category: 'complex', status: 'warning', narratorIntegrated: true, visualizationCount: 9, issues: ['Load time may exceed 4s'] },
-  { slug: 'stone-song-and-sea', name: 'Stone Song and Sea', category: 'complex', status: 'healthy', narratorIntegrated: true, visualizationCount: 11, issues: [] },
+  { slug: 'reassessing-rigveda-antiquity', name: 'Reassessing Rigveda Antiquity', category: 'complex', status: 'healthy', narratorIntegrated: true, visualizationCount: 5, issues: [] },
   
   // i18n Articles
   { slug: 'cosmic-island-sacred-land', name: 'Cosmic Island Sacred Land', category: 'i18n', status: 'healthy', narratorIntegrated: true, visualizationCount: 4, issues: [] },
   { slug: 'janajati-oral-traditions', name: 'Janajati Oral Traditions', category: 'i18n', status: 'healthy', narratorIntegrated: true, visualizationCount: 3, issues: [] },
-  { slug: 'maritime-memories-south-india', name: 'Maritime Memories South India', category: 'i18n', status: 'healthy', narratorIntegrated: true, visualizationCount: 2, issues: [] },
+  { slug: 'maritime-memories-south-india', name: 'Maritime Memories South India', category: 'i18n', status: 'warning', narratorIntegrated: true, visualizationCount: 2, issues: ['Missing articleSlug prop'] },
+  { slug: 'jambudvipa-connected', name: 'Jambudvipa Connected', category: 'i18n', status: 'healthy', narratorIntegrated: true, visualizationCount: 8, issues: [] },
   
-  // Not Integrated
-  { slug: 'asura-exiles-indo-iranian', name: 'Asura Exiles Indo-Iranian', category: 'simple', status: 'error', narratorIntegrated: false, visualizationCount: 5, issues: ['Narrator not integrated'] },
-  { slug: 'reassessing-rigveda-antiquity', name: 'Reassessing Rigveda Antiquity', category: 'simple', status: 'error', narratorIntegrated: false, visualizationCount: 5, issues: ['Narrator not integrated'] },
-  { slug: 'rishi-genealogies-vedic-tradition', name: 'Rishi Genealogies Vedic Tradition', category: 'simple', status: 'error', narratorIntegrated: false, visualizationCount: 4, issues: ['Narrator not integrated'] },
-  { slug: 'sarira-atman-vedic-preservation', name: 'Sarira Atman Vedic Preservation', category: 'simple', status: 'error', narratorIntegrated: false, visualizationCount: 5, issues: ['Narrator not integrated'] },
-  { slug: 'jambudvipa-connected', name: 'Jambudvipa Connected', category: 'i18n', status: 'error', narratorIntegrated: false, visualizationCount: 8, issues: ['Narrator not integrated'] },
+  // Not Integrated (Vedic Tradition)
+  { slug: 'asura-exiles-indo-iranian', name: 'Asura Exiles Indo-Iranian', category: 'vedic', status: 'error', narratorIntegrated: false, visualizationCount: 5, issues: ['Narrator not integrated'] },
+  { slug: 'rishi-genealogies-vedic-tradition', name: 'Rishi Genealogies Vedic Tradition', category: 'vedic', status: 'error', narratorIntegrated: false, visualizationCount: 4, issues: ['Narrator not integrated'] },
+  { slug: 'sarira-atman-vedic-preservation', name: 'Sarira Atman Vedic Preservation', category: 'vedic', status: 'error', narratorIntegrated: false, visualizationCount: 5, issues: ['Narrator not integrated'] },
+  { slug: 'stone-song-and-sea', name: 'Stone Song and Sea', category: 'vedic', status: 'error', narratorIntegrated: false, visualizationCount: 11, issues: ['Narrator not integrated'] },
 ];
 
 export default function ArticleHealthDashboard() {
