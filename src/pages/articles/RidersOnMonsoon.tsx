@@ -190,6 +190,7 @@ export default function RidersOnMonsoon() {
         <UniversalNarrator
           content={contentForNarration}
           contentType="article"
+          articleSlug="riders-on-monsoon"
           variant="sticky-bottom"
           autoAnalyze={true}
         />

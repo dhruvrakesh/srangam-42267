@@ -86,6 +86,7 @@ const CosmicIslandSacredLand: React.FC = () => {
         <UniversalNarrator
           content={contentForNarration}
           contentType="article"
+          articleSlug="cosmic-island-sacred-land"
           variant="sticky-bottom"
           autoAnalyze={true}
         />

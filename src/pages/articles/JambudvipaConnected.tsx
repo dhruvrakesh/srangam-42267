@@ -87,6 +87,7 @@ const JambudvipaConnected: React.FC = () => {
         <UniversalNarrator
           content={contentForNarration}
           contentType="article"
+          articleSlug="jambudvipa-connected"
           variant="sticky-bottom"
           autoAnalyze={true}
         />

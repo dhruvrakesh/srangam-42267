@@ -129,6 +129,7 @@ export default function StonePurana() {
         <UniversalNarrator
           content={contentForNarration}
           contentType="article"
+          articleSlug="stone-purana"
           variant="sticky-bottom"
           autoAnalyze={true}
         />

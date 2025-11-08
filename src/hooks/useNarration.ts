@@ -157,7 +157,7 @@ export function useNarration(initialConfig?: Partial<NarrationConfig>) {
         error: errorMessage,
       }));
     }
-  }, []);
+  }, [state.speed, state.config]);
 
   /**
    * Pause playback
@@ -260,16 +260,36 @@ export function useNarration(initialConfig?: Partial<NarrationConfig>) {
     };
   }, []);
 
-  // Cleanup
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
+      // Cancel any ongoing TTS streams
+      narrationService.cancel();
+      
+      // Stop and cleanup audio
       if (audioRef.current) {
         audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        
+        // Revoke blob URLs to free memory
         if (audioRef.current.src.startsWith('blob:')) {
           URL.revokeObjectURL(audioRef.current.src);
         }
+        
+        // Remove event listeners
+        audioRef.current.removeEventListener('timeupdate', () => {});
+        audioRef.current.removeEventListener('ended', () => {});
+        audioRef.current.removeEventListener('loadedmetadata', () => {});
+        
+        // Clear the audio element
+        audioRef.current.src = '';
+        audioRef.current = null;
       }
+      
+      // Close audio context
       audioContextRef.current?.close();
+      audioContextRef.current = null;
+      sourceBufferRef.current = null;
     };
   }, []);
 

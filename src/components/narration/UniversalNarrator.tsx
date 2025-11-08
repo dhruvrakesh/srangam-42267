@@ -43,47 +43,9 @@ export function UniversalNarrator({
     seek,
   } = useNarration({ speed: 1.0 });
 
-  // ✅ Track initialization state
-  const [isInitializing, setIsInitializing] = useState(true);
-
-  useEffect(() => {
-    // Wait for language context to initialize
-    if (currentLanguage) {
-      setIsInitializing(false);
-    }
-  }, [currentLanguage]);
-
-  // ✅ DEFENSIVE CHECKS AFTER ALL HOOKS - Return consistent structure
-  const shouldShowControls = Boolean(
-    !isInitializing &&
-    currentLanguage && 
-    content && 
-    content.trim().length > 0
-  );
-
-  // Show loading skeleton while initializing
-  if (isInitializing) {
-    return (
-      <div className="animate-pulse bg-muted/30 rounded-lg p-4 h-20" />
-    );
-  }
-
-  // If checks fail after initialization, show visible error state
-  if (!shouldShowControls) {
-    const errorReason = !currentLanguage 
-      ? 'language context not initialized' 
-      : 'no content provided';
-    
-    return (
-      <div className="sticky bottom-0 left-0 right-0 z-40 border-t border-border bg-muted/30 backdrop-blur-sm">
-        <div className="container max-w-4xl mx-auto px-4 py-3">
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <span className="opacity-50">🔊</span>
-            <span>Audio narration unavailable ({errorReason})</span>
-          </div>
-        </div>
-      </div>
-    );
+  // ✅ Simple validation - don't over-render
+  if (!currentLanguage || !content || content.trim().length === 0) {
+    return null; // Fail silently to avoid error cascades
   }
 
   const handlePlay = useCallback(async () => {

@@ -61,6 +61,7 @@ export default function JanajatiOralTraditions() {
         <UniversalNarrator
           content={contentForNarration}
           contentType="article"
+          articleSlug="janajati-oral-traditions"
           variant="sticky-bottom"
           autoAnalyze={true}
         />

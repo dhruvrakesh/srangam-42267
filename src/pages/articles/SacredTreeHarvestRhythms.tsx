@@ -82,6 +82,7 @@ export default function SacredTreeHarvestRhythms() {
         <UniversalNarrator
           content={contentForNarration}
           contentType="article"
+          articleSlug="sacred-tree-harvest-rhythms"
           variant="sticky-bottom"
           autoAnalyze={true}
         />

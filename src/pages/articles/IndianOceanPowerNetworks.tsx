@@ -561,6 +561,7 @@ export default function IndianOceanPowerNetworks() {
         <UniversalNarrator
           content={contentForNarration}
           contentType="article"
+          articleSlug="indian-ocean-power-networks"
           variant="sticky-bottom"
           autoAnalyze={true}
         />

@@ -54,18 +54,32 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     return getScriptFontUtil(language);
   };
 
-  // Apply font size adjustments and script font
+  // Apply font size adjustments
   useEffect(() => {
     if (preferences.fontSizeAdjustment !== 0) {
       document.documentElement.style.fontSize = `${16 + preferences.fontSizeAdjustment}px`;
     } else {
       document.documentElement.style.fontSize = '';
     }
-    
-    // Apply script font class to document root
+  }, [preferences.fontSizeAdjustment]);
+
+  // Apply script font class without overwriting other classes
+  useEffect(() => {
     const fontClass = getScriptFont();
-    document.documentElement.className = fontClass;
-  }, [preferences.fontSizeAdjustment, currentLanguage]);
+    const root = document.documentElement;
+    
+    // Remove any existing font-* classes
+    root.classList.forEach(className => {
+      if (className.startsWith('font-')) {
+        root.classList.remove(className);
+      }
+    });
+    
+    // Add new font class
+    if (fontClass) {
+      root.classList.add(fontClass);
+    }
+  }, [currentLanguage]);
 
   const value: LanguageContextType = {
     currentLanguage,

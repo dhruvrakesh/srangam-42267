@@ -115,6 +115,7 @@ export default function ScriptsThatSailedII() {
         <UniversalNarrator
           content={contentForNarration}
           contentType="article"
+          articleSlug="scripts-that-sailed-ii"
           variant="sticky-bottom"
           autoAnalyze={true}
         />
