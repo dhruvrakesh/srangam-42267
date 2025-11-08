@@ -5,3 +5,5 @@ export { GeoHeritageMap } from './GeoHeritageMap';
 export { InteractiveFossilMap } from './InteractiveFossilMap';
 export { DeepTimeTimeline } from './DeepTimeTimeline';
 export { CulturalCorrelationMatrix } from './CulturalCorrelationMatrix';
+export { GeologicalTimeLegend } from './GeologicalTimeLegend';
+export { VisualizationErrorBoundary } from './VisualizationErrorBoundary';

@@ -4,10 +4,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Mountain } from 'lucide-react';
 import { karewaLayers, crossSectionPoints, lakePhases } from '@/data/geology/kashmir-lake-data';
 import type { KarewaLayer } from '@/data/geology/kashmir-lake-data';
+import { GeologicalTimeLegend } from '@/components/geology/GeologicalTimeLegend';
 
 export function KashmirLakeTimeline() {
   const [selectedLayer, setSelectedLayer] = useState<KarewaLayer | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [visibleLayerIds, setVisibleLayerIds] = useState<string[]>(
+    karewaLayers.map(l => l.id)
+  );
+  const [timeRange, setTimeRange] = useState<[number, number]>([0, 900000]);
   const timelineRef = useRef<SVGSVGElement>(null);
   const crossSectionRef = useRef<SVGSVGElement>(null);
 
@@ -30,8 +35,17 @@ export function KashmirLakeTimeline() {
     const height = 600;
     const margin = { top: 20, right: 150, bottom: 40, left: 100 };
 
-    // Y-axis: Time scale using actual data range
-    const maxYear = Math.max(...karewaLayers.map(l => l.startYearBP));
+    // Filter layers based on visibility and time range
+    const visibleLayers = karewaLayers.filter(l => 
+      visibleLayerIds.includes(l.id) &&
+      l.endYearBP >= timeRange[0] &&
+      l.startYearBP <= timeRange[1]
+    );
+
+    // Y-axis: Time scale using visible data range
+    const maxYear = visibleLayers.length > 0 
+      ? Math.max(...visibleLayers.map(l => l.startYearBP))
+      : 900000;
     const minYear = 0;
     const yScale = d3.scaleLinear()
       .domain([maxYear, minYear])
@@ -40,7 +54,7 @@ export function KashmirLakeTimeline() {
     // Draw layers
     const layerGroup = svg.append('g');
 
-    karewaLayers.forEach((layer) => {
+    visibleLayers.forEach((layer) => {
       const rectHeight = yScale(layer.endYearBP) - yScale(layer.startYearBP);
       
       layerGroup.append('rect')
@@ -105,7 +119,7 @@ export function KashmirLakeTimeline() {
     } catch (error) {
       console.error('D3 timeline rendering error:', error);
     }
-  }, []);
+  }, [visibleLayerIds, timeRange, isMounted]);
 
   useEffect(() => {
     if (!crossSectionRef.current) {
@@ -216,6 +230,33 @@ export function KashmirLakeTimeline() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Interactive Legend */}
+        <GeologicalTimeLegend
+          selectedLayer={selectedLayer}
+          onLayerSelect={setSelectedLayer}
+          onFilterChange={setVisibleLayerIds}
+          onTimeRangeChange={setTimeRange}
+        />
+
+        {/* Filter Status */}
+        {(visibleLayerIds.length < karewaLayers.length || 
+          timeRange[0] !== 0 || 
+          timeRange[1] !== 900000) && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-sm">
+            <strong>Active Filters:</strong> 
+            {visibleLayerIds.length < karewaLayers.length && (
+              <span className="ml-2">
+                {karewaLayers.length - visibleLayerIds.length} layer(s) hidden
+              </span>
+            )}
+            {(timeRange[0] !== 0 || timeRange[1] !== 900000) && (
+              <span className="ml-2">
+                Time range: {(timeRange[0]/1000).toFixed(0)}ka - {(timeRange[1]/1000).toFixed(0)}ka BP
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Vertical Timeline */}
         <div className="bg-muted/20 rounded-lg p-4 overflow-x-auto">
           <svg
