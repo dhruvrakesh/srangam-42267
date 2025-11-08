@@ -9,10 +9,26 @@ import { MitanniLinguisticCorpus } from '@/components/articles/MitanniLinguistic
 import { AsuraExilesTimeline } from '@/components/articles/AsuraExilesTimeline';
 import { AsuraExilesBibliography } from '@/components/articles/AsuraExilesBibliography';
 import { IndoIranianMap } from '@/components/articles/IndoIranianMap';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 
 export default function AsuraExilesIndoIranian() {
+  // Extract English content for narration
+  const contentForNarration = typeof asuraExilesIndoIranian.content === 'object'
+    ? (asuraExilesIndoIranian.content.en as string || '')
+    : asuraExilesIndoIranian.content;
+
   return (
     <>
+      <NarrationErrorBoundary>
+        <UniversalNarrator 
+          content={contentForNarration}
+          contentType="article"
+          articleSlug="asura-exiles-indo-iranian"
+          variant="sticky-bottom"
+          autoAnalyze
+        />
+      </NarrationErrorBoundary>
       <Helmet>
         <title>The Asura Exiles: Indo-Iranian Origins, Mitanni, and the Vedic-Zoroastrian Schism | Srangam</title>
         <meta 
