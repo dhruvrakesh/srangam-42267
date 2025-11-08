@@ -11,10 +11,14 @@ export function KashmirLakeTimeline() {
   const crossSectionRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
-    if (!timelineRef.current) return;
+    if (!timelineRef.current) {
+      console.warn('Kashmir timeline ref not ready');
+      return;
+    }
 
-    const svg = d3.select(timelineRef.current);
-    svg.selectAll('*').remove();
+    try {
+      const svg = d3.select(timelineRef.current);
+      svg.selectAll('*').remove();
 
     const width = 800;
     const height = 600;
@@ -90,14 +94,20 @@ export function KashmirLakeTimeline() {
       .attr('text-anchor', 'middle')
       .attr('class', 'text-sm font-semibold fill-current')
       .text('Karewa Formation Timeline');
-
+    } catch (error) {
+      console.error('D3 timeline rendering error:', error);
+    }
   }, []);
 
   useEffect(() => {
-    if (!crossSectionRef.current) return;
+    if (!crossSectionRef.current) {
+      console.warn('Kashmir cross-section ref not ready');
+      return;
+    }
 
-    const svg = d3.select(crossSectionRef.current);
-    svg.selectAll('*').remove();
+    try {
+      const svg = d3.select(crossSectionRef.current);
+      svg.selectAll('*').remove();
 
     const width = 800;
     const height = 300;
@@ -169,7 +179,9 @@ export function KashmirLakeTimeline() {
       .attr('text-anchor', 'middle')
       .attr('class', 'text-sm font-semibold fill-current')
       .text('Kashmir Valley Cross-Section (West to East)');
-
+    } catch (error) {
+      console.error('D3 cross-section rendering error:', error);
+    }
   }, []);
 
   return (

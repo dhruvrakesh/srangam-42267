@@ -8,17 +8,13 @@ import { Slider } from '@/components/ui/slider';
 import { Play, Pause, Waves } from 'lucide-react';
 import { nagaShrines, coastlineLayers, seaLevelTimeline } from '@/data/geology/parashurama-coastal-data';
 
-// Fix Leaflet default icon issue
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-
-const DefaultIcon = L.icon({
-  iconUrl: icon,
-  shadowUrl: iconShadow,
-  iconAnchor: [12, 41],
+// Fix Leaflet default icon using CDN URLs
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
-
-L.Marker.prototype.options.icon = DefaultIcon;
 
 export function ParashuramaCoastMap() {
   const [selectedPeriod, setSelectedPeriod] = useState<string>('modern');
