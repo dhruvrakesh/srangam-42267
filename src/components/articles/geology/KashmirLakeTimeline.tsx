@@ -7,8 +7,14 @@ import type { KarewaLayer } from '@/data/geology/kashmir-lake-data';
 
 export function KashmirLakeTimeline() {
   const [selectedLayer, setSelectedLayer] = useState<KarewaLayer | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
   const timelineRef = useRef<SVGSVGElement>(null);
   const crossSectionRef = useRef<SVGSVGElement>(null);
+
+  // Client-side mounting check to prevent SSR issues
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!timelineRef.current) {
@@ -24,9 +30,11 @@ export function KashmirLakeTimeline() {
     const height = 600;
     const margin = { top: 20, right: 150, bottom: 40, left: 100 };
 
-    // Y-axis: Time scale
+    // Y-axis: Time scale using actual data range
+    const maxYear = Math.max(...karewaLayers.map(l => l.startYearBP));
+    const minYear = 0;
     const yScale = d3.scaleLinear()
-      .domain([900000, 0])
+      .domain([maxYear, minYear])
       .range([margin.top, height - margin.bottom]);
 
     // Draw layers
@@ -113,9 +121,9 @@ export function KashmirLakeTimeline() {
     const height = 300;
     const margin = { top: 40, right: 40, bottom: 60, left: 60 };
 
-    // X-axis: Distance
+    // X-axis: Distance using actual data points
     const xScale = d3.scaleLinear()
-      .domain([0, 2])
+      .domain([0, crossSectionPoints.length - 1])
       .range([margin.left, width - margin.right]);
 
     // Y-axis: Elevation
@@ -183,6 +191,18 @@ export function KashmirLakeTimeline() {
       console.error('D3 cross-section rendering error:', error);
     }
   }, []);
+
+  // Prevent SSR rendering of D3/client-only visualization
+  if (!isMounted) {
+    return (
+      <Card className="my-8 bg-sandalwood/40 border-burgundy/30">
+        <CardContent className="flex items-center justify-center h-64">
+          <Mountain className="w-6 h-6 animate-pulse mr-2 text-muted-foreground" />
+          <span className="text-muted-foreground">Loading geological timeline...</span>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="my-8 bg-sandalwood/40 border-burgundy/30">
