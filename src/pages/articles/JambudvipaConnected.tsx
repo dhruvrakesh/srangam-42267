@@ -11,9 +11,16 @@ import { TranslationStatusHUD } from '@/components/i18n/TranslationStatusHUD';
 import { GatedLanguageSwitcher } from '@/components/i18n/GatedLanguageSwitcher';
 import { useArticleCoverage } from '@/hooks/useArticleCoverage';
 import { jambudvipaConnectedCoverage } from '@/lib/i18n/coverageData';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 
 const JambudvipaConnected: React.FC = () => {
   const { coverageMap, currentCoverage, currentLanguage } = useArticleCoverage('jambudvipa-connected');
+  
+  // Extract content based on current language with fallback chain
+  const contentForNarration = (typeof jambudvipaConnected.content === 'object'
+    ? (jambudvipaConnected.content[currentLanguage] || jambudvipaConnected.content.en || '')
+    : jambudvipaConnected.content) as string;
   
   return (
     <>
@@ -75,6 +82,15 @@ const JambudvipaConnected: React.FC = () => {
           <CulturalDiffusionMap key="cultural-map" />
         ]}
       />
+      
+      <NarrationErrorBoundary>
+        <UniversalNarrator
+          content={contentForNarration}
+          contentType="article"
+          variant="sticky-bottom"
+          autoAnalyze={true}
+        />
+      </NarrationErrorBoundary>
     </>
   );
 };

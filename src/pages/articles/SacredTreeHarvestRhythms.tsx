@@ -11,6 +11,9 @@ import { TreeRiteEcologyMatrix } from '@/components/articles/TreeRiteEcologyMatr
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
+import { useArticleCoverage } from '@/hooks/useArticleCoverage';
 
 const SeriesBanner = () => (
   <div className="bg-primary/5 border-l-4 border-primary px-6 py-4 mb-8">
@@ -28,6 +31,13 @@ const SeriesBanner = () => (
 );
 
 export default function SacredTreeHarvestRhythms() {
+  const { currentLanguage } = useArticleCoverage('sacred-tree-harvest-rhythms');
+  
+  // Extract content based on current language with fallback chain
+  const contentForNarration = (typeof sacredTreeHarvestRhythms.content === 'object'
+    ? (sacredTreeHarvestRhythms.content[currentLanguage] || sacredTreeHarvestRhythms.content.en || '')
+    : sacredTreeHarvestRhythms.content) as string;
+  
   return (
     <>
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -67,6 +77,15 @@ export default function SacredTreeHarvestRhythms() {
           </CardContent>
         </Card>
       </div>
+      
+      <NarrationErrorBoundary>
+        <UniversalNarrator
+          content={contentForNarration}
+          contentType="article"
+          variant="sticky-bottom"
+          autoAnalyze={true}
+        />
+      </NarrationErrorBoundary>
     </>
   );
 }

@@ -9,6 +9,8 @@ import { GatedLanguageSwitcher } from '@/components/i18n/GatedLanguageSwitcher';
 import { useArticleCoverage } from '@/hooks/useArticleCoverage';
 import { cosmicIslandSacredLandCoverage } from '@/lib/i18n/coverageData';
 import { Card } from '@/components/ui/card';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 
 const ExploreSacredEcology = () => (
   <Card className="my-12 p-6 bg-muted/30 border-border">
@@ -30,7 +32,12 @@ const ExploreSacredEcology = () => (
 );
 
 const CosmicIslandSacredLand: React.FC = () => {
-  const { currentCoverage } = useArticleCoverage('cosmic-island-sacred-land');
+  const { currentCoverage, currentLanguage } = useArticleCoverage('cosmic-island-sacred-land');
+  
+  // Extract content based on current language with fallback chain
+  const contentForNarration = (typeof cosmicIslandSacredLand.content === 'object'
+    ? (cosmicIslandSacredLand.content[currentLanguage] || cosmicIslandSacredLand.content.en || '')
+    : cosmicIslandSacredLand.content) as string;
   
   return (
     <>
@@ -74,6 +81,15 @@ const CosmicIslandSacredLand: React.FC = () => {
         date="October 2, 2025"
         dataComponents={[<ExploreSacredEcology key="explore-sacred-ecology" />]}
       />
+      
+      <NarrationErrorBoundary>
+        <UniversalNarrator
+          content={contentForNarration}
+          contentType="article"
+          variant="sticky-bottom"
+          autoAnalyze={true}
+        />
+      </NarrationErrorBoundary>
     </>
   );
 };

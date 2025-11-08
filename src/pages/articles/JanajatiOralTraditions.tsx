@@ -4,6 +4,9 @@ import { ArticlePage } from '@/components/articles/ArticlePage';
 import { janajatiOralTraditions } from '@/data/articles/janajati-oral-traditions';
 import { IconLotus } from '@/components/icons';
 import { Card } from '@/components/ui/card';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
+import { useArticleCoverage } from '@/hooks/useArticleCoverage';
 
 const RelatedReading = () => (
   <Card className="my-12 p-6 bg-muted/30 border-border">
@@ -33,17 +36,35 @@ const RelatedReading = () => (
 );
 
 export default function JanajatiOralTraditions() {
+  const { currentLanguage } = useArticleCoverage('janajati-oral-traditions');
+  
+  // Extract content based on current language with fallback chain
+  const contentForNarration = (typeof janajatiOralTraditions.content === 'object'
+    ? (janajatiOralTraditions.content[currentLanguage] || janajatiOralTraditions.content.en || '')
+    : janajatiOralTraditions.content) as string;
+  
   return (
-    <ArticlePage
-      title={janajatiOralTraditions.title}
-      dek={janajatiOralTraditions.dek}
-      content={janajatiOralTraditions.content}
-      tags={janajatiOralTraditions.tags}
-      icon={IconLotus}
-      readTime={55}
-      author="Nartiang Foundation Research Team"
-      date="2025-10-05"
-      dataComponents={[<RelatedReading key="related-reading" />]}
-    />
+    <>
+      <ArticlePage
+        title={janajatiOralTraditions.title}
+        dek={janajatiOralTraditions.dek}
+        content={janajatiOralTraditions.content}
+        tags={janajatiOralTraditions.tags}
+        icon={IconLotus}
+        readTime={55}
+        author="Nartiang Foundation Research Team"
+        date="2025-10-05"
+        dataComponents={[<RelatedReading key="related-reading" />]}
+      />
+      
+      <NarrationErrorBoundary>
+        <UniversalNarrator
+          content={contentForNarration}
+          contentType="article"
+          variant="sticky-bottom"
+          autoAnalyze={true}
+        />
+      </NarrationErrorBoundary>
+    </>
   );
 }
