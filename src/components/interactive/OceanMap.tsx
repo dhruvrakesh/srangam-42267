@@ -48,11 +48,6 @@ export function OceanMap({
   const [isLoading, setIsLoading] = useState(true);
   const [mapError, setMapError] = useState<string | null>(null);
 
-  // Debug: Log enabledLayers changes
-  useEffect(() => {
-    console.log('OceanMap enabledLayers changed:', enabledLayers);
-  }, [enabledLayers]);
-
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
@@ -71,14 +66,11 @@ export function OceanMap({
 
     map.on('load', async () => {
       try {
-        console.log('Map loaded, adding data sources...');
-        
         // Load and add ports layer with error handling
         try {
           const portsResponse = await fetch(DATA_ENDPOINTS.ports);
           if (!portsResponse.ok) throw new Error(`Failed to load ports: ${portsResponse.status}`);
           const portsData = await portsResponse.json();
-          console.log('Ports data loaded:', portsData.features?.length, 'features');
           
           map.addSource('ports', {
             type: 'geojson',
@@ -145,9 +137,8 @@ export function OceanMap({
           const monsoonResponse = await fetch(DATA_ENDPOINTS.monsoon);
           if (!monsoonResponse.ok) throw new Error(`Failed to load monsoon: ${monsoonResponse.status}`);
           const monsoonData = await monsoonResponse.json();
-          console.log('Monsoon data loaded:', monsoonData.features?.length, 'features');
           
-          map.addSource('monsoon', { 
+          map.addSource('monsoon', {
             type: 'geojson', 
             data: monsoonData 
           });
@@ -172,9 +163,8 @@ export function OceanMap({
           const routesResponse = await fetch(DATA_ENDPOINTS.routes);
           if (!routesResponse.ok) throw new Error(`Failed to load routes: ${routesResponse.status}`);
           const routesData = await routesResponse.json();
-          console.log('Routes data loaded:', routesData.features?.length, 'features');
           
-          map.addSource('routes', { 
+          map.addSource('routes', {
             type: 'geojson', 
             data: routesData 
           });
@@ -197,7 +187,6 @@ export function OceanMap({
 
         // Set initial layer visibility - wait for layers to be added
         setTimeout(() => {
-          console.log('Setting initial layer visibility:', enabledLayers);
           setLayerVisibility(map, 'ports', enabledLayers.includes('ports'));
           setLayerVisibility(map, 'monsoon', enabledLayers.includes('monsoon'));
           setLayerVisibility(map, 'routes', enabledLayers.includes('routes'));
@@ -287,8 +276,6 @@ export function OceanMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
-    
-    console.log('Updating layer visibility:', enabledLayers);
     
     // Wait for layers to be fully loaded before setting visibility
     setTimeout(() => {
@@ -447,14 +434,11 @@ function setLayerVisibility(map: Map, kind: 'ports' | 'monsoon' | 'routes', show
     : kind === 'monsoon' 
     ? ['monsoon-lines'] 
     : ['routes-lines'];
-  
-  console.log(`Setting ${kind} visibility to ${show}`, layerIds);
     
   layerIds.forEach(id => {
     if (map.getLayer(id)) {
       map.setLayoutProperty(id, 'visibility', show ? 'visible' : 'none');
-      console.log(`Layer ${id} visibility set to ${show ? 'visible' : 'none'}`);
-    } else {
+    } else if (import.meta.env.DEV) {
       console.warn(`Layer ${id} not found on map`);
     }
   });

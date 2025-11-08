@@ -28,11 +28,6 @@ export default function MapsData() {
   const [enabledLayers, setEnabledLayers] = useState(['ports', 'monsoon']);
   const { i18n } = useTranslation();
   
-  // Debug: Log initial and subsequent enabledLayers state changes
-  useEffect(() => {
-    console.log('MapsData enabledLayers state:', enabledLayers);
-  }, [enabledLayers]);
-  
   const handleFilterToggle = useCallback((filter: string) => {
     setSelectedFilters(prev => 
       prev.includes(filter) 
@@ -42,14 +37,11 @@ export default function MapsData() {
   }, []);
 
   const handleLayerToggle = useCallback((layerId: string) => {
-    console.log('Layer toggle requested:', layerId);
-    setEnabledLayers(prev => {
-      const newLayers = prev.includes(layerId)
+    setEnabledLayers(prev => 
+      prev.includes(layerId)
         ? prev.filter(id => id !== layerId)
-        : [...prev, layerId];
-      console.log('EnabledLayers updated:', prev, '->', newLayers);
-      return newLayers;
-    });
+        : [...prev, layerId]
+    );
   }, []);
 
   const handleOpenReadingRoom = useCallback((ref: string) => {

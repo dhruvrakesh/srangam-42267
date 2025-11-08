@@ -52,16 +52,6 @@ export default function GeomythologyLandReclamation() {
   const content = getLocalizedString(article.content);
   const tags = article.tags.map(tag => getLocalizedString(tag));
 
-  // Debug: Validate content extraction for narrator
-  console.log('GeomythologyLandReclamation narrator debug:', {
-    hasArticle: !!article,
-    hasContent: !!article.content,
-    contentType: typeof article.content,
-    contentLength: content.length,
-    contentPreview: content.substring(0, 100) + '...',
-    currentLanguage
-  });
-
   return (
     <>
       <ArticlePage
