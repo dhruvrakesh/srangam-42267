@@ -7,6 +7,8 @@ import { IconPort } from '@/components/icons';
 import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { maritimeMemoriesSouthIndiaArticle } from '@/data/articles/maritime-memories-south-india';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 
 const content = `
 ## Introduction
@@ -95,8 +97,22 @@ In following the trail of black pepper from the Western Ghats to the Roman Forum
 `;
 
 export default function MaritimeMemoriesSouthIndia() {
+  // Extract English content for narration
+  const contentForNarration = typeof maritimeMemoriesSouthIndiaArticle.content === 'object'
+    ? (maritimeMemoriesSouthIndiaArticle.content.en as string || '')
+    : maritimeMemoriesSouthIndiaArticle.content;
+
   return (
-    <ArticlePage
+    <>
+      <NarrationErrorBoundary>
+        <UniversalNarrator 
+          content={contentForNarration}
+          contentType="article"
+          articleSlug="maritime-memories-south-india"
+          variant="sticky-bottom"
+        />
+      </NarrationErrorBoundary>
+      <ArticlePage
       title={maritimeMemoriesSouthIndiaArticle.title}
       dek={maritimeMemoriesSouthIndiaArticle.dek}
       content={maritimeMemoriesSouthIndiaArticle.content}
@@ -146,5 +162,6 @@ export default function MaritimeMemoriesSouthIndia() {
         <Bibliography key="bibliography" />
       ]}
     />
+    </>
   );
 }
