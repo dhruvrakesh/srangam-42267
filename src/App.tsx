@@ -70,6 +70,12 @@ const OceanicRouter = lazy(() => import("./pages/oceanic/OceanicRouter"));
 
 // Admin Pages
 const MarkdownImport = lazy(() => import("./pages/admin/MarkdownImport"));
+const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
+const TagManagement = lazy(() => import("./pages/admin/TagManagement"));
+const CrossReferencesBrowser = lazy(() => import("./pages/admin/CrossReferencesBrowser"));
+const CulturalTermsExplorer = lazy(() => import("./pages/admin/CulturalTermsExplorer"));
+const ImportAnalytics = lazy(() => import("./pages/admin/ImportAnalytics"));
+import { AdminLayout } from "./components/admin/AdminLayout";
 
 // Sources Pages
 const Edicts = lazy(() => import("./pages/sources/Edicts"));
@@ -171,9 +177,15 @@ const App = () => (
                   {/* Oceanic Bharat article system */}
                   <Route path="/oceanic/*" element={<OceanicRouter />} />
                   
-                  {/* Admin Routes */}
-                  <Route path="/admin" element={<MarkdownImport />} />
-                  <Route path="/admin/import" element={<MarkdownImport />} />
+                  {/* Admin Routes with Layout */}
+                  <Route path="/admin" element={<AdminLayout />}>
+                    <Route index element={<Dashboard />} />
+                    <Route path="import" element={<MarkdownImport />} />
+                    <Route path="tags" element={<TagManagement />} />
+                    <Route path="cross-refs" element={<CrossReferencesBrowser />} />
+                    <Route path="cultural-terms" element={<CulturalTermsExplorer />} />
+                    <Route path="analytics" element={<ImportAnalytics />} />
+                  </Route>
                   
                   <Route path="*" element={<NotFound />} />
                   </Routes>

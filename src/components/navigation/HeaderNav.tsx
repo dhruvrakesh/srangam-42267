@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, ChevronDown, Globe, Menu as MenuIcon, X, Home, Map as MapIcon, BookOpen, List } from "lucide-react";
+import { Search, ChevronDown, Globe, Menu as MenuIcon, X, Home, Map as MapIcon, BookOpen, List, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/Logo";
 import { EnhancedLanguageSwitcher } from "@/components/language/EnhancedLanguageSwitcher";
@@ -155,6 +155,12 @@ export function HeaderNav() {
             {cfg.primary.map((item) => (
               <NavNode key={item.label} item={item} onItemClick={handleNavClick} />
             ))}
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/admin" className="gap-2">
+                <LayoutDashboard className="h-4 w-4" />
+                Admin
+              </Link>
+            </Button>
           </nav>
 
           {/* Spacer */}
