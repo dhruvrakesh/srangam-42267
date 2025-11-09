@@ -40,7 +40,11 @@ interface ImportResult {
   stats?: {
     wordCount: number;
     termsExtracted: number;
+    termsMatched?: number;
+    termsCreated?: number;
     citationsCreated: number;
+    crossReferencesCreated?: number;
+    markdownSourceSaved?: boolean;
   };
   error?: string;
 }
@@ -253,7 +257,16 @@ slug: "${slug}"
 
       toast({
         title: '✅ Import successful!',
-        description: `${data.stats.wordCount} words, ${data.stats.termsExtracted} terms extracted`,
+        description: (
+          <div className="mt-2 space-y-1 text-sm">
+            <p><strong>Article:</strong> {data.slug}</p>
+            <p><strong>Word Count:</strong> {data.stats?.wordCount?.toLocaleString()}</p>
+            <p><strong>Cultural Terms:</strong> {data.stats?.termsExtracted} 
+              ({data.stats?.termsCreated} new, {data.stats?.termsMatched} matched)</p>
+            <p><strong>Cross-References:</strong> {data.stats?.crossReferencesCreated || 0} connections</p>
+            <p><strong>Read Time:</strong> {data.stats?.readTimeMinutes} min</p>
+          </div>
+        ),
       });
 
       // Clear form

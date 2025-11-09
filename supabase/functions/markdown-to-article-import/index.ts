@@ -45,6 +45,8 @@ interface ImportResponse {
     termsCreated?: number;
     citationsCreated: number;
     readTimeMinutes: number;
+    crossReferencesCreated?: number;
+    markdownSourceSaved?: boolean;
   };
   error?: string;
 }
@@ -78,36 +80,46 @@ function extractFrontmatter(markdown: string): { frontmatter: FrontMatter | null
   }
 }
 
-// Extract citations from markdown
+// Extract citations from markdown (improved MLA9 format support)
 function extractCitations(markdown: string): Array<{ text: string; url?: string; number?: number }> {
   const citations: Array<{ text: string; url?: string; number?: number }> = [];
   
-  // Pattern: [[1]](url) or [Author Year] or (Author, Year)
-  const citationPatterns = [
-    /\[\[(\d+)\]\]\(([^)]+)\)/g,  // [[1]](url)
-    /\[([^\]]+\s+\d{4}[a-z]?)\]/g, // [Author 2020]
-    /\(([^)]+,\s*\d{4}[a-z]?)\)/g, // (Author, 2020)
-  ];
-
-  citationPatterns.forEach(pattern => {
-    let match;
-    while ((match = pattern.exec(markdown)) !== null) {
-      if (match[2]) {
-        // Numbered citation with URL
-        citations.push({
-          text: match[0],
-          url: match[2],
-          number: parseInt(match[1])
-        });
-      } else {
-        // Author-year citation
-        citations.push({
-          text: match[1],
-        });
-      }
-    }
-  });
-
+  // Pattern 1: Inline MLA9 format - (Author, Title)
+  const inlinePattern = /\(([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*),\s+([^)]+)\)/g;
+  let match;
+  
+  while ((match = inlinePattern.exec(markdown)) !== null) {
+    const author = match[1];
+    const title = match[2];
+    citations.push({
+      text: `${author}, ${title}`,
+    });
+  }
+  
+  // Pattern 2: Numbered citations - [[1]](url)
+  const numberedPattern = /\[\[(\d+)\]\]\(([^)]+)\)/g;
+  while ((match = numberedPattern.exec(markdown)) !== null) {
+    citations.push({
+      text: match[0],
+      url: match[2],
+      number: parseInt(match[1])
+    });
+  }
+  
+  // Pattern 3: Bibliography section
+  const bibliographyMatch = markdown.match(/##\s*(?:Bibliography|References|Works\s+Cited)\s*\n([\s\S]+?)(?=\n##|$)/i);
+  
+  if (bibliographyMatch) {
+    const biblioText = bibliographyMatch[1];
+    const entries = biblioText
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0 && !line.startsWith('#'));
+    
+    entries.forEach(entry => citations.push({ text: entry }));
+  }
+  
+  console.log(`Extracted ${citations.length} citations`);
   return citations;
 }
 
@@ -294,6 +306,8 @@ Deno.serve(async (req) => {
     }
 
     // Step 8: Save original markdown source
+    console.log('Saving markdown source for article:', articleId);
+    
     const { error: markdownError } = await supabase
       .from('srangam_markdown_sources')
       .upsert({
@@ -307,7 +321,12 @@ Deno.serve(async (req) => {
       });
 
     if (markdownError) {
-      console.error('Error saving markdown source:', markdownError);
+      console.error('❌ Error saving markdown source:', markdownError);
+      console.error('Error code:', markdownError.code);
+      console.error('Error details:', markdownError.details);
+      console.error('Error hint:', markdownError.hint);
+    } else {
+      console.log('✅ Markdown source saved successfully');
     }
 
     // Step 9: Link to chapter if specified
@@ -395,7 +414,128 @@ Deno.serve(async (req) => {
     console.log(`   - Successfully saved: ${termsSaved.length}`);
     console.log(`\n📝 Terms saved:`, termsSaved.slice(0, 10).join(', ') + (termsSaved.length > 10 ? '...' : ''));
 
-    // Step 11: Return success response
+    // ==========================================
+    // STEP 11: GENERATE CROSS-REFERENCES
+    // ==========================================
+    console.log('\n🔗 Detecting cross-references...');
+
+    const crossRefsToCreate = [];
+
+    // Query existing PUBLISHED articles (exclude current article)
+    const { data: existingArticles, error: articlesError } = await supabase
+      .from('srangam_articles')
+      .select('id, slug, tags, theme, title')
+      .eq('status', 'published')
+      .neq('id', articleId);
+
+    if (articlesError) {
+      console.error('Error querying articles for cross-references:', articlesError);
+    } else if (existingArticles && existingArticles.length > 0) {
+      console.log(`Analyzing ${existingArticles.length} existing articles...`);
+
+      for (const other of existingArticles) {
+        // A) TAG SIMILARITY SCORING
+        const sharedTags = tags.filter(tag => other.tags?.includes(tag)) || [];
+        
+        if (sharedTags.length >= 2) {
+          const strength = Math.min(10, sharedTags.length * 2);
+          crossRefsToCreate.push({
+            source_article_id: articleId,
+            target_article_id: other.id,
+            reference_type: 'thematic',
+            strength,
+            bidirectional: true,
+            context_description: {
+              sharedTags,
+              reason: `Shares ${sharedTags.length} topic tags: ${sharedTags.join(', ')}`,
+              detectedAt: new Date().toISOString(),
+              detectionMethod: 'tag_similarity'
+            }
+          });
+          console.log(`  ✓ Thematic link with "${other.title?.en || other.slug}" (${sharedTags.length} tags, strength: ${strength})`);
+        }
+        
+        // B) SAME THEME MATCHING
+        if (other.theme === theme && theme) {
+          crossRefsToCreate.push({
+            source_article_id: articleId,
+            target_article_id: other.id,
+            reference_type: 'same_theme',
+            strength: 7,
+            bidirectional: true,
+            context_description: {
+              theme,
+              reason: `Both articles explore the theme: ${theme}`,
+              detectedAt: new Date().toISOString(),
+              detectionMethod: 'theme_matching'
+            }
+          });
+          console.log(`  ✓ Theme link with "${other.title?.en || other.slug}" (theme: ${theme})`);
+        }
+      }
+      
+      // C) EXPLICIT TEXT REFERENCE DETECTION
+      // Pattern: (see: article-slug) or (See: article-slug) or (See also: article-slug)
+      const contentText = typeof content === 'string' ? content : 
+        (content?.en || JSON.stringify(content));
+      
+      const explicitRefs = contentText.match(/\(see:?\s+([a-z0-9-]+)\)/gi) || [];
+      
+      for (const ref of explicitRefs) {
+        const match = ref.match(/\(see:?\s+([a-z0-9-]+)\)/i);
+        if (match) {
+          const targetSlug = match[1];
+          const targetArticle = existingArticles.find(a => a.slug === targetSlug);
+          
+          if (targetArticle) {
+            crossRefsToCreate.push({
+              source_article_id: articleId,
+              target_article_id: targetArticle.id,
+              reference_type: 'explicit_citation',
+              strength: 10,
+              bidirectional: false,
+              context_description: {
+                citationText: ref,
+                reason: `Explicitly cited in text: "${ref}"`,
+                detectedAt: new Date().toISOString(),
+                detectionMethod: 'text_pattern_matching'
+              }
+            });
+            console.log(`  ✓ Explicit citation to "${targetArticle.title?.en || targetSlug}"`);
+          } else {
+            console.warn(`  ⚠️  Citation to unknown slug: "${targetSlug}"`);
+          }
+        }
+      }
+      
+      // BULK INSERT CROSS-REFERENCES
+      if (crossRefsToCreate.length > 0) {
+        // Remove duplicates (same source + target + type)
+        const uniqueRefs = crossRefsToCreate.filter((ref, index, self) =>
+          index === self.findIndex(r => 
+            r.source_article_id === ref.source_article_id &&
+            r.target_article_id === ref.target_article_id &&
+            r.reference_type === ref.reference_type
+          )
+        );
+        
+        const { error: xrefError } = await supabase
+          .from('srangam_cross_references')
+          .insert(uniqueRefs);
+        
+        if (xrefError) {
+          console.error('❌ Error creating cross-references:', xrefError);
+        } else {
+          console.log(`✅ Created ${uniqueRefs.length} cross-references`);
+        }
+      } else {
+        console.log('ℹ️  No cross-references detected');
+      }
+    } else {
+      console.log('ℹ️  No existing articles to cross-reference');
+    }
+
+    // Step 12: Return success response
     const response: ImportResponse = {
       success: true,
       articleId,
@@ -407,6 +547,8 @@ Deno.serve(async (req) => {
         termsCreated,
         citationsCreated: citations.length,
         readTimeMinutes,
+        crossReferencesCreated: crossRefsToCreate.length,
+        markdownSourceSaved: !markdownError,
       },
     };
 

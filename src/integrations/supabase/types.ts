@@ -826,7 +826,7 @@ export type Database = {
           {
             foreignKeyName: "srangam_markdown_sources_article_id_fkey"
             columns: ["article_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "srangam_articles"
             referencedColumns: ["id"]
           },
