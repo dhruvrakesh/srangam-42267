@@ -130,6 +130,102 @@ export type Database = {
           },
         ]
       }
+      srangam_article_bibliography: {
+        Row: {
+          article_id: string | null
+          bibliography_id: string | null
+          citation_context: string | null
+          created_at: string
+          id: string
+          is_primary_source: boolean | null
+          page_numbers: string | null
+          quote: string | null
+        }
+        Insert: {
+          article_id?: string | null
+          bibliography_id?: string | null
+          citation_context?: string | null
+          created_at?: string
+          id?: string
+          is_primary_source?: boolean | null
+          page_numbers?: string | null
+          quote?: string | null
+        }
+        Update: {
+          article_id?: string | null
+          bibliography_id?: string | null
+          citation_context?: string | null
+          created_at?: string
+          id?: string
+          is_primary_source?: boolean | null
+          page_numbers?: string | null
+          quote?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_article_bibliography_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "srangam_article_bibliography_bibliography_id_fkey"
+            columns: ["bibliography_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_bibliography_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      srangam_article_chapters: {
+        Row: {
+          article_id: string | null
+          chapter_id: string | null
+          created_at: string
+          custom_introduction: string | null
+          id: string
+          include_bibliography: boolean | null
+          include_full_text: boolean | null
+          sequence_number: number
+        }
+        Insert: {
+          article_id?: string | null
+          chapter_id?: string | null
+          created_at?: string
+          custom_introduction?: string | null
+          id?: string
+          include_bibliography?: boolean | null
+          include_full_text?: boolean | null
+          sequence_number: number
+        }
+        Update: {
+          article_id?: string | null
+          chapter_id?: string | null
+          created_at?: string
+          custom_introduction?: string | null
+          id?: string
+          include_bibliography?: boolean | null
+          include_full_text?: boolean | null
+          sequence_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_article_chapters_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "srangam_article_chapters_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_book_chapters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       srangam_article_metadata: {
         Row: {
           ai_keywords: string[] | null
@@ -335,6 +431,150 @@ export type Database = {
         }
         Relationships: []
       }
+      srangam_bibliography_entries: {
+        Row: {
+          archive_location: string | null
+          authors: Json | null
+          citation_count: number | null
+          citation_key: string
+          created_at: string
+          doi: string | null
+          editors: Json | null
+          entry_type: string
+          full_citation_apa: string | null
+          full_citation_chicago: string | null
+          full_citation_mla: string | null
+          id: string
+          isbn: string | null
+          issn: string | null
+          issue: string | null
+          journal: string | null
+          notes: Json | null
+          pages: string | null
+          publisher: string | null
+          tags: string[] | null
+          title: Json
+          updated_at: string
+          url: string | null
+          volume: string | null
+          year: number | null
+        }
+        Insert: {
+          archive_location?: string | null
+          authors?: Json | null
+          citation_count?: number | null
+          citation_key: string
+          created_at?: string
+          doi?: string | null
+          editors?: Json | null
+          entry_type: string
+          full_citation_apa?: string | null
+          full_citation_chicago?: string | null
+          full_citation_mla?: string | null
+          id?: string
+          isbn?: string | null
+          issn?: string | null
+          issue?: string | null
+          journal?: string | null
+          notes?: Json | null
+          pages?: string | null
+          publisher?: string | null
+          tags?: string[] | null
+          title: Json
+          updated_at?: string
+          url?: string | null
+          volume?: string | null
+          year?: number | null
+        }
+        Update: {
+          archive_location?: string | null
+          authors?: Json | null
+          citation_count?: number | null
+          citation_key?: string
+          created_at?: string
+          doi?: string | null
+          editors?: Json | null
+          entry_type?: string
+          full_citation_apa?: string | null
+          full_citation_chicago?: string | null
+          full_citation_mla?: string | null
+          id?: string
+          isbn?: string | null
+          issn?: string | null
+          issue?: string | null
+          journal?: string | null
+          notes?: Json | null
+          pages?: string | null
+          publisher?: string | null
+          tags?: string[] | null
+          title?: Json
+          updated_at?: string
+          url?: string | null
+          volume?: string | null
+          year?: number | null
+        }
+        Relationships: []
+      }
+      srangam_book_chapters: {
+        Row: {
+          actual_word_count: number | null
+          chapter_id: string
+          chapter_number: number
+          conclusion: Json | null
+          created_at: string
+          description: Json | null
+          editors: Json | null
+          id: string
+          introduction: Json | null
+          publication_target: string | null
+          status: string | null
+          subtitle: Json | null
+          target_page_count: number | null
+          target_word_count: number | null
+          title: Json
+          updated_at: string
+          volume_number: number
+        }
+        Insert: {
+          actual_word_count?: number | null
+          chapter_id: string
+          chapter_number: number
+          conclusion?: Json | null
+          created_at?: string
+          description?: Json | null
+          editors?: Json | null
+          id?: string
+          introduction?: Json | null
+          publication_target?: string | null
+          status?: string | null
+          subtitle?: Json | null
+          target_page_count?: number | null
+          target_word_count?: number | null
+          title: Json
+          updated_at?: string
+          volume_number: number
+        }
+        Update: {
+          actual_word_count?: number | null
+          chapter_id?: string
+          chapter_number?: number
+          conclusion?: Json | null
+          created_at?: string
+          description?: Json | null
+          editors?: Json | null
+          id?: string
+          introduction?: Json | null
+          publication_target?: string | null
+          status?: string | null
+          subtitle?: Json | null
+          target_page_count?: number | null
+          target_word_count?: number | null
+          title?: Json
+          updated_at?: string
+          volume_number?: number
+        }
+        Relationships: []
+      }
       srangam_correlation_matrix: {
         Row: {
           article_slug: string | null
@@ -382,6 +622,57 @@ export type Database = {
           theme?: string
         }
         Relationships: []
+      }
+      srangam_cross_references: {
+        Row: {
+          bidirectional: boolean | null
+          context_description: Json | null
+          created_at: string
+          created_by: string | null
+          id: string
+          reference_type: string
+          source_article_id: string | null
+          strength: number | null
+          target_article_id: string | null
+        }
+        Insert: {
+          bidirectional?: boolean | null
+          context_description?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          reference_type: string
+          source_article_id?: string | null
+          strength?: number | null
+          target_article_id?: string | null
+        }
+        Update: {
+          bidirectional?: boolean | null
+          context_description?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          reference_type?: string
+          source_article_id?: string | null
+          strength?: number | null
+          target_article_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_cross_references_source_article_id_fkey"
+            columns: ["source_article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "srangam_cross_references_target_article_id_fkey"
+            columns: ["target_article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       srangam_cultural_terms: {
         Row: {
@@ -487,6 +778,59 @@ export type Database = {
           translations?: Json
         }
         Relationships: []
+      }
+      srangam_markdown_sources: {
+        Row: {
+          article_id: string | null
+          content_hash: string | null
+          conversion_metadata: Json | null
+          created_at: string
+          file_path: string | null
+          git_branch: string | null
+          git_commit_hash: string | null
+          id: string
+          last_sync_at: string | null
+          markdown_content: string
+          sync_status: string | null
+          updated_at: string
+        }
+        Insert: {
+          article_id?: string | null
+          content_hash?: string | null
+          conversion_metadata?: Json | null
+          created_at?: string
+          file_path?: string | null
+          git_branch?: string | null
+          git_commit_hash?: string | null
+          id?: string
+          last_sync_at?: string | null
+          markdown_content: string
+          sync_status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          article_id?: string | null
+          content_hash?: string | null
+          conversion_metadata?: Json | null
+          created_at?: string
+          file_path?: string | null
+          git_branch?: string | null
+          git_commit_hash?: string | null
+          id?: string
+          last_sync_at?: string | null
+          markdown_content?: string
+          sync_status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_markdown_sources_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       srangam_translation_queue: {
         Row: {
