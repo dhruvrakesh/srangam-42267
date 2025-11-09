@@ -176,14 +176,16 @@ export default function MarkdownImport() {
     // Extract title from first heading or first line
     const firstLine = rawMarkdown.split('\n')[0];
     const title = firstLine.replace(/^#+\s*/, '').trim() || 'Untitled Article';
+    const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
     
+    // Quote all string values for YAML safety (handles special chars like –, :, diacritics)
     const frontmatter = `---
-title: ${title}
-author: NF Research Team
+title: "${title.replace(/"/g, '\\"')}"
+author: "NF Research Team"
 date: ${new Date().toISOString().split('T')[0]}
-theme: Ancient India
+theme: "Ancient India"
 tags: []
-slug: ${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}
+slug: "${slug}"
 ---
 
 `;

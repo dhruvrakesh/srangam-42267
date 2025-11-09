@@ -62,7 +62,17 @@ function extractFrontmatter(markdown: string): { frontmatter: FrontMatter | null
     return { frontmatter, content };
   } catch (error) {
     console.error('Error parsing frontmatter:', error);
-    return { frontmatter: null, content: markdown };
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `YAML parsing failed. Make sure titles and other text fields are wrapped in quotes.\n\n` +
+      `Example:\n` +
+      `---\n` +
+      `title: "Your Article Title Here"\n` +
+      `author: "Author Name"\n` +
+      `theme: "Ancient India"\n` +
+      `---\n\n` +
+      `Error details: ${errorMessage}`
+    );
   }
 }
 
