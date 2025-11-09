@@ -6,10 +6,26 @@ import { MandalaAttributionTable } from '@/components/articles/MandalaAttributio
 import { RishiOverlapVisualization } from '@/components/articles/RishiOverlapVisualization';
 import { RishiGenealogiesBibliography } from '@/components/articles/RishiGenealogiesBibliography';
 import { IconOm } from '@/components/icons';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 
 export default function RishiGenealogiesVedicTradition() {
+  // Extract English content for narration
+  const contentForNarration = typeof rishiGenealogiesVedicTradition.content === 'object'
+    ? (rishiGenealogiesVedicTradition.content.en as string || '')
+    : rishiGenealogiesVedicTradition.content;
+
   return (
     <>
+      <NarrationErrorBoundary>
+        <UniversalNarrator 
+          content={contentForNarration}
+          contentType="article"
+          articleSlug="rishi-genealogies-vedic-tradition"
+          variant="sticky-bottom"
+          autoAnalyze
+        />
+      </NarrationErrorBoundary>
       <Helmet>
         <title>Ṛṣi Genealogies in Vedic Tradition | Srangam Digital</title>
         <meta 
