@@ -41,6 +41,8 @@ interface ImportResponse {
   stats?: {
     wordCount: number;
     termsExtracted: number;
+    termsMatched?: number;
+    termsCreated?: number;
     citationsCreated: number;
     readTimeMinutes: number;
   };
@@ -113,18 +115,34 @@ function extractCitations(markdown: string): Array<{ text: string; url?: string;
 function extractCulturalTerms(markdown: string): string[] {
   const terms = new Set<string>();
   
-  // Pattern: *Term* or _Term_ (italics in markdown)
-  const italicPattern = /[*_]([^*_]+)[*_]/g;
+  console.log('Starting cultural terms extraction...');
+  
+  // Enhanced pattern: *Term* or _Term_ (italics in markdown)
+  const italicPattern = /[*_]([^*_\n]+)[*_]/g;
   let match;
+  let totalMatches = 0;
   
   while ((match = italicPattern.exec(markdown)) !== null) {
+    totalMatches++;
     const term = match[1].trim();
-    // Only include if it contains Sanskrit/Indic characters or diacritics
-    if (term.length > 2 && /[āīūṛṝḷḹēōṁḥṇṭḍśṣ]/i.test(term)) {
+    
+    // Comprehensive Sanskrit/Indic diacritics detection
+    // Covers: IAST, Devanagari, and common transliteration patterns
+    const hasSanskritDiacritics = /[āīūṛṝḷḹēōṁṃḥṇṭḍśṣñḻṅ]/i.test(term);
+    const hasDevanagari = /[\u0900-\u097F]/i.test(term);
+    const hasCommonSanskritWords = /\b(veda|purana|dharma|karma|bhakti|yoga|tantra|mantra|shastra|sutra)\b/i.test(term);
+    
+    const isSanskritTerm = term.length > 2 && (hasSanskritDiacritics || hasDevanagari || hasCommonSanskritWords);
+    
+    if (isSanskritTerm) {
       terms.add(term);
+      console.log(`✓ Extracted term: "${term}" (diacritics: ${hasSanskritDiacritics}, devanagari: ${hasDevanagari})`);
+    } else {
+      console.log(`✗ Skipped: "${term}" (no Sanskrit markers)`);
     }
   }
-
+  
+  console.log(`Total italic patterns found: ${totalMatches}, Sanskrit terms extracted: ${terms.size}`);
   return Array.from(terms);
 }
 
@@ -312,23 +330,70 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Step 10: Match and increment cultural terms
+    // Step 10: Save cultural terms to database
+    console.log(`Processing ${culturalTerms.length} cultural terms...`);
     let termsMatched = 0;
+    let termsCreated = 0;
+    const termsSaved: string[] = [];
+    
     for (const term of culturalTerms) {
-      const normalizedTerm = term.toLowerCase();
-      const { data: existingTerm } = await supabase
+      const normalizedTerm = term.toLowerCase().trim();
+      
+      // Check if term already exists
+      const { data: existingTerm, error: lookupError } = await supabase
         .from('srangam_cultural_terms')
-        .select('id')
+        .select('id, term, usage_count')
         .ilike('term', normalizedTerm)
-        .single();
+        .maybeSingle();
+
+      if (lookupError) {
+        console.error(`Error looking up term "${term}":`, lookupError);
+        continue;
+      }
 
       if (existingTerm) {
-        await supabase.rpc('srangam_increment_term_usage', { term_key: normalizedTerm });
-        termsMatched++;
+        // Increment usage count for existing term
+        const { error: updateError } = await supabase
+          .from('srangam_cultural_terms')
+          .update({ usage_count: existingTerm.usage_count + 1 })
+          .eq('id', existingTerm.id);
+        
+        if (!updateError) {
+          termsMatched++;
+          termsSaved.push(`${term} (matched, count: ${existingTerm.usage_count + 1})`);
+          console.log(`✓ Incremented existing term: "${term}" → count: ${existingTerm.usage_count + 1}`);
+        } else {
+          console.error(`✗ Failed to increment term "${term}":`, updateError);
+        }
+      } else {
+        // Create new term with basic metadata
+        const { error: insertError } = await supabase
+          .from('srangam_cultural_terms')
+          .insert({
+            term: normalizedTerm,
+            translations: {
+              en: term, // Original term as English entry
+            },
+            usage_count: 1,
+            created_at: new Date().toISOString(),
+          });
+
+        if (!insertError) {
+          termsCreated++;
+          termsSaved.push(`${term} (new)`);
+          console.log(`✓ Created new term: "${term}"`);
+        } else {
+          console.error(`✗ Failed to create term "${term}":`, insertError);
+        }
       }
     }
 
-    console.log(`Matched ${termsMatched} existing cultural terms`);
+    console.log(`\n📊 Cultural Terms Summary:`);
+    console.log(`   - Total extracted: ${culturalTerms.length}`);
+    console.log(`   - Matched existing: ${termsMatched}`);
+    console.log(`   - Created new: ${termsCreated}`);
+    console.log(`   - Successfully saved: ${termsSaved.length}`);
+    console.log(`\n📝 Terms saved:`, termsSaved.slice(0, 10).join(', ') + (termsSaved.length > 10 ? '...' : ''));
 
     // Step 11: Return success response
     const response: ImportResponse = {
@@ -338,6 +403,8 @@ Deno.serve(async (req) => {
       stats: {
         wordCount,
         termsExtracted: culturalTerms.length,
+        termsMatched,
+        termsCreated,
         citationsCreated: citations.length,
         readTimeMinutes,
       },
