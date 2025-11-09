@@ -362,6 +362,18 @@ Deno.serve(async (req) => {
     for (const term of culturalTerms) {
       const normalizedTerm = term.toLowerCase().trim();
       
+      // 🔥 VALIDATION FILTER - Skip invalid terms
+      const isURL = /^https?:\/\//.test(term);
+      const hasMarkdownSyntax = /[\[\]\(\)#`]/.test(term);
+      const isTooLong = term.length > 50;
+      const isTooShort = term.length < 3;
+      const isNumericOnly = /^\d+$/.test(term);
+      
+      if (isURL || hasMarkdownSyntax || isTooLong || isTooShort || isNumericOnly) {
+        console.log(`⏭️  Skipping invalid term: "${term.substring(0, 50)}${term.length > 50 ? '...' : ''}"`);
+        continue;
+      }
+      
       // Check if term already exists
       const { data: existingTerm, error: lookupError } = await supabase
         .from('srangam_cultural_terms')
@@ -394,8 +406,10 @@ Deno.serve(async (req) => {
           .from('srangam_cultural_terms')
           .insert({
             term: normalizedTerm,
+            display_term: term,  // Use original term for display
+            module: 'general',   // Default module for imported terms
             translations: {
-              en: term, // Original term as English entry
+              en: term,
             },
             usage_count: 1,
             created_at: new Date().toISOString(),
