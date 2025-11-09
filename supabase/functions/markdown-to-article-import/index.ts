@@ -239,6 +239,10 @@ Deno.serve(async (req) => {
       : frontmatter.title?.en || 'Untitled';
     
     const slug = frontmatter.slug || generateSlug(titleText);
+    
+    // Extract tags and theme for use in cross-reference detection
+    const tags = frontmatter.tags || [];
+    const theme = frontmatter.theme || 'Ancient India';
 
     const articleData = {
       slug,
@@ -251,8 +255,8 @@ Deno.serve(async (req) => {
       content: { en: htmlContent },
       author: frontmatter.author || 'Nartiang Foundation Research Team',
       published_date: frontmatter.date || new Date().toISOString().split('T')[0],
-      theme: frontmatter.theme || 'Ancient India',
-      tags: frontmatter.tags || [],
+      theme: theme,
+      tags: tags,
       read_time_minutes: frontmatter.readTime || readTimeMinutes,
       status: 'published',
       featured: false,
@@ -476,8 +480,11 @@ Deno.serve(async (req) => {
       
       // C) EXPLICIT TEXT REFERENCE DETECTION
       // Pattern: (see: article-slug) or (See: article-slug) or (See also: article-slug)
-      const contentText = typeof content === 'string' ? content : 
-        (content?.en || JSON.stringify(content));
+      const contentText = typeof articleData.content === 'string' 
+        ? articleData.content 
+        : (articleData.content && typeof articleData.content === 'object' && 'en' in articleData.content 
+          ? String(articleData.content.en) 
+          : JSON.stringify(articleData.content));
       
       const explicitRefs = contentText.match(/\(see:?\s+([a-z0-9-]+)\)/gi) || [];
       

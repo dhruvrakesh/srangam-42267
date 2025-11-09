@@ -91,11 +91,11 @@ export const ArticleCrossReferences = ({ articleId, className }: ArticleCrossRef
                   <ArrowRight className="w-4 h-4 mt-1 text-muted-foreground flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <h5 className="font-medium text-sm line-clamp-1">
-                      {ref.target.title?.en || ref.target.slug}
+                      {(ref.target.title as any)?.en || ref.target.slug}
                     </h5>
-                    {ref.context_description?.reason && (
+                    {(ref.context_description as any)?.reason && (
                       <p className="text-xs text-muted-foreground mt-1">
-                        {ref.context_description.reason}
+                        {(ref.context_description as any).reason}
                       </p>
                     )}
                     <div className="flex items-center gap-2 mt-2">
