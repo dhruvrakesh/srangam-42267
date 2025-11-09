@@ -155,10 +155,10 @@ export function HeaderNav() {
             {cfg.primary.map((item) => (
               <NavNode key={item.label} item={item} onItemClick={handleNavClick} />
             ))}
-            <Button variant="ghost" size="sm" asChild>
+            <Button variant="outline" size="sm" asChild className="ml-2">
               <Link to="/admin" className="gap-2">
                 <LayoutDashboard className="h-4 w-4" />
-                Admin
+                <span className="font-medium">Admin</span>
               </Link>
             </Button>
           </nav>
@@ -308,6 +308,18 @@ function MobileNavContent({
             )}
           </div>
         ))}
+        
+        {/* Admin Link - Mobile */}
+        <div className="pt-4 border-t border-border">
+          <Link
+            to="/admin"
+            className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent hover:text-accent-foreground font-medium"
+            onClick={onItemClick}
+          >
+            <LayoutDashboard className="h-4 w-4" />
+            Admin Dashboard
+          </Link>
+        </div>
       </nav>
     </div>
   );
