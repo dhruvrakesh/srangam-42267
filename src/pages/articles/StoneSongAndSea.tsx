@@ -17,6 +17,8 @@ import {
   CounterPositionsPanel,
   MegalithAndGroveViewer
 } from '@/components/articles';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 
 // Series context banner
 const SeriesBanner = () => (
@@ -56,8 +58,22 @@ const RelatedArticles = () => (
 );
 
 export default function StoneSongAndSea() {
+  // Extract English content for narration
+  const contentForNarration = typeof stoneSongAndSea.content === 'object'
+    ? (stoneSongAndSea.content.en as string || '')
+    : stoneSongAndSea.content;
+
   return (
     <>
+      <NarrationErrorBoundary>
+        <UniversalNarrator 
+          content={contentForNarration}
+          contentType="article"
+          articleSlug="stone-song-and-sea"
+          variant="sticky-bottom"
+          autoAnalyze
+        />
+      </NarrationErrorBoundary>
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <SeriesBanner />
       </div>
