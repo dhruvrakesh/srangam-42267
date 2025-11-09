@@ -471,16 +471,22 @@ slug: "${slug}"
                     </div>
                   </div>
 
-                  {extractedMetadata.tags && extractedMetadata.tags.length > 0 && (
-                    <div>
-                      <Label className="mb-2 block">Tags</Label>
-                      <div className="flex gap-2 flex-wrap">
+                  <div className="space-y-2">
+                    <Label>Tags</Label>
+                    {extractedMetadata.tags && extractedMetadata.tags.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
                         {extractedMetadata.tags.map((tag, i) => (
-                          <Badge key={i} variant="outline">{tag}</Badge>
+                          <Badge key={i} variant="secondary">
+                            {tag}
+                          </Badge>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        No tags in frontmatter - AI will generate them during import
+                      </p>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             )}
