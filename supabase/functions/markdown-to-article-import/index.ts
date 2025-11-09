@@ -1,6 +1,13 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 import { parse as parseYaml } from 'https://deno.land/std@0.208.0/yaml/mod.ts';
-import { marked } from 'https://esm.sh/marked@11.1.1';
+import { Marked } from 'https://esm.sh/marked@11.1.1';
+
+// Configure marked for synchronous parsing
+const marked = new Marked({
+  async: false,
+  gfm: true,
+  breaks: false,
+});
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -169,7 +176,7 @@ Deno.serve(async (req) => {
     console.log('Frontmatter extracted:', frontmatter);
 
     // Step 2: Convert markdown to HTML
-    const htmlContent = marked.parse(content) as string;
+    const htmlContent = marked.parse(content);
     
     // Step 3: Calculate metadata
     const wordCount = calculateWordCount(content);
@@ -332,10 +339,11 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Error in markdown import:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message || 'Unknown error occurred' 
+        error: errorMessage
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
