@@ -168,7 +168,10 @@ Deno.serve(async (req) => {
     
     if (!frontmatter) {
       return new Response(
-        JSON.stringify({ success: false, error: 'No frontmatter found in markdown' }),
+        JSON.stringify({ 
+          success: false, 
+          error: 'No frontmatter found. Please add YAML frontmatter at the top of your markdown:\n\n---\ntitle: Your Article Title\nauthor: Author Name\ndate: 2025-11-09\ntheme: Ancient India\ntags: []\n---\n\nOr use the "Generate Frontmatter" button in the UI.'
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

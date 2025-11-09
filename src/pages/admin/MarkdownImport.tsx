@@ -3,7 +3,7 @@ import { Upload, FileText, Loader2, CheckCircle, Circle, AlertCircle } from 'luc
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -161,6 +161,45 @@ export default function MarkdownImport() {
     setExtractedMetadata(metadata);
   };
 
+  // Generate frontmatter template
+  const generateFrontmatter = () => {
+    const hasFrontmatter = rawMarkdown.trim().startsWith('---');
+    
+    if (hasFrontmatter) {
+      toast({
+        title: '⚠️ Frontmatter already exists',
+        description: 'This markdown already has frontmatter',
+      });
+      return;
+    }
+    
+    // Extract title from first heading or first line
+    const firstLine = rawMarkdown.split('\n')[0];
+    const title = firstLine.replace(/^#+\s*/, '').trim() || 'Untitled Article';
+    
+    const frontmatter = `---
+title: ${title}
+author: NF Research Team
+date: ${new Date().toISOString().split('T')[0]}
+theme: Ancient India
+tags: []
+slug: ${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}
+---
+
+`;
+    
+    setRawMarkdown(frontmatter + rawMarkdown);
+    
+    // Re-extract metadata
+    const metadata = extractMetadata(frontmatter + rawMarkdown);
+    setExtractedMetadata(metadata);
+    
+    toast({
+      title: '✅ Frontmatter added',
+      description: 'Review and edit the frontmatter before importing',
+    });
+  };
+
   // Handle import
   const handleImport = async () => {
     if (!rawMarkdown.trim()) {
@@ -315,6 +354,23 @@ export default function MarkdownImport() {
                   rows={8}
                   className="font-mono text-sm"
                 />
+
+                {rawMarkdown && !rawMarkdown.trim().startsWith('---') && (
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Missing Frontmatter</AlertTitle>
+                    <AlertDescription>
+                      This markdown doesn't have frontmatter. Click the button below to generate it.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {rawMarkdown && (
+                  <Button onClick={generateFrontmatter} variant="outline" className="w-full">
+                    <FileText className="mr-2 h-4 w-4" />
+                    Generate Frontmatter
+                  </Button>
+                )}
               </CardContent>
             </Card>
 
@@ -434,13 +490,14 @@ export default function MarkdownImport() {
                         {BOOK_CHAPTERS[0].label}
                       </SelectItem>
                       {BOOK_CHAPTERS.slice(1).map(group => (
-                        <optgroup key={group.group} label={group.group}>
+                        <SelectGroup key={group.group}>
+                          <SelectLabel>{group.group}</SelectLabel>
                           {group.options.map(option => (
                             <SelectItem key={option.value} value={option.value}>
                               {option.label}
                             </SelectItem>
                           ))}
-                        </optgroup>
+                        </SelectGroup>
                       ))}
                     </SelectContent>
                   </Select>
