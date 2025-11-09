@@ -240,9 +240,39 @@ Deno.serve(async (req) => {
     
     const slug = frontmatter.slug || generateSlug(titleText);
     
-    // Extract tags and theme for use in cross-reference detection
-    const tags = frontmatter.tags || [];
+    // Extract theme
     const theme = frontmatter.theme || 'Ancient India';
+    
+    // Phase 3: AI-powered tag generation if tags are missing
+    let tags = frontmatter.tags || [];
+    
+    if (!tags || tags.length === 0) {
+      console.log('🏷️ No tags found in frontmatter, calling AI tag generation...');
+      
+      try {
+        const tagGenResponse = await supabase.functions.invoke('generate-article-tags', {
+          body: {
+            title: titleText,
+            theme: theme,
+            culturalTerms: culturalTerms,
+            contentPreview: markdownContent.slice(0, 1000)
+          }
+        });
+
+        if (tagGenResponse.data?.success && tagGenResponse.data?.tags) {
+          tags = tagGenResponse.data.tags;
+          console.log(`✅ AI generated ${tags.length} tags:`, tags);
+        } else {
+          console.warn('⚠️ Tag generation failed:', tagGenResponse.data?.message || tagGenResponse.error);
+          tags = []; // Keep empty if AI fails
+        }
+      } catch (tagError) {
+        console.error('❌ Error calling tag generation:', tagError);
+        tags = []; // Keep empty if service fails
+      }
+    } else {
+      console.log(`📋 Using ${tags.length} tags from frontmatter:`, tags);
+    }
 
     const articleData = {
       slug,

@@ -832,6 +832,39 @@ export type Database = {
           },
         ]
       }
+      srangam_tags: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          last_used: string | null
+          related_tags: Json | null
+          tag_name: string
+          usage_count: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          last_used?: string | null
+          related_tags?: Json | null
+          tag_name: string
+          usage_count?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          last_used?: string | null
+          related_tags?: Json | null
+          tag_name?: string
+          usage_count?: number | null
+        }
+        Relationships: []
+      }
       srangam_translation_queue: {
         Row: {
           article_id: string | null
@@ -1055,6 +1088,14 @@ export type Database = {
             }
             Returns: string
           }
+      analyze_tag_cooccurrence: {
+        Args: never
+        Returns: {
+          cooccurrence_count: number
+          tag1: string
+          tag2: string
+        }[]
+      }
       check_audio_cache: {
         Args: { p_content_hash: string; p_lang: string; p_slug: string }
         Returns: {

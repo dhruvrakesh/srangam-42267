@@ -8,3 +8,12 @@ verify_jwt = false
 
 [functions.tts-save-drive]
 verify_jwt = false
+
+[functions.generate-article-tags]
+verify_jwt = false
+
+[functions.analyze-tag-relationships]
+verify_jwt = false
+
+[functions.markdown-to-article-import]
+verify_jwt = false
