@@ -7,10 +7,26 @@ import { AnukramaniTable } from '@/components/articles/AnukramaniTable';
 import { GayatriMantraExplainer } from '@/components/articles/GayatriMantraExplainer';
 import { SayanaMethodologyDiagram } from '@/components/articles/SayanaMethodologyDiagram';
 import { IconOm } from '@/components/icons';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 
 export default function SariraAtmanVedicPreservation() {
+  // Extract English content for narration
+  const contentForNarration = typeof sariraAndAtmanVedicPreservation.content === 'object'
+    ? (sariraAndAtmanVedicPreservation.content.en as string || '')
+    : sariraAndAtmanVedicPreservation.content;
+
   return (
     <>
+      <NarrationErrorBoundary>
+        <UniversalNarrator 
+          content={contentForNarration}
+          contentType="article"
+          articleSlug="sarira-atman-vedic-preservation"
+          variant="sticky-bottom"
+          autoAnalyze
+        />
+      </NarrationErrorBoundary>
       <Helmet>
         <title>Śarīra and Ātman: The Preservation of the Vedas | Srangam Digital</title>
         <meta 
