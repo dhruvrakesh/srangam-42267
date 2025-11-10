@@ -1,6 +1,8 @@
 import React from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
   Upload,
@@ -8,6 +10,8 @@ import {
   Network,
   Languages,
   BarChart3,
+  LogOut,
+  User,
 } from "lucide-react";
 import {
   Sidebar,
@@ -58,6 +62,7 @@ const adminNavItems = [
 
 export function AdminLayout() {
   const location = useLocation();
+  const { user, isAdmin, signOut } = useAuth();
 
   return (
     <ErrorBoundary>
@@ -95,11 +100,34 @@ export function AdminLayout() {
 
           <main className="flex-1 w-full">
             {/* Sidebar trigger visible on mobile/collapsed state */}
-            <div className="sticky top-0 z-10 flex h-14 items-center border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
-              <SidebarTrigger className="mr-2" />
-              <h1 className="text-lg font-semibold text-foreground">
-                Admin Dashboard
-              </h1>
+            <div className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
+              <div className="flex items-center gap-2">
+                <SidebarTrigger className="mr-2" />
+                <h1 className="text-lg font-semibold text-foreground">
+                  Admin Dashboard
+                </h1>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <User className="h-4 w-4" />
+                  <span className="truncate max-w-[150px]">{user?.email}</span>
+                  {isAdmin && (
+                    <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-medium">
+                      Admin
+                    </span>
+                  )}
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => signOut()}
+                  className="gap-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </Button>
+              </div>
             </div>
 
             <div className="p-6">

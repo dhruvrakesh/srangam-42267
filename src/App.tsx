@@ -9,6 +9,8 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LanguageProvider } from "@/components/language/LanguageProvider";
 import { HelmetProvider } from 'react-helmet-async';
 import { Loader2 } from 'lucide-react';
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/admin/ProtectedRoute";
 
 // Immediate load for critical pages
 import Home from "./pages/Home";
@@ -75,6 +77,7 @@ const TagManagement = lazy(() => import("./pages/admin/TagManagement"));
 const CrossReferencesBrowser = lazy(() => import("./pages/admin/CrossReferencesBrowser"));
 const CulturalTermsExplorer = lazy(() => import("./pages/admin/CulturalTermsExplorer"));
 const ImportAnalytics = lazy(() => import("./pages/admin/ImportAnalytics"));
+const Auth = lazy(() => import("./pages/Auth"));
 import { AdminLayout } from "./components/admin/AdminLayout";
 
 // Sources Pages
@@ -111,14 +114,15 @@ const App = () => (
   <ErrorBoundary>
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
-        <LanguageProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Layout>
-                <Suspense fallback={<PageLoadingFallback />}>
-                  <Routes>
+        <AuthProvider>
+          <LanguageProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Layout>
+                  <Suspense fallback={<PageLoadingFallback />}>
+                    <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/articles" element={<Articles />} />
                   <Route path="/themes/ancient-india" element={<AncientIndia />} />
@@ -177,8 +181,11 @@ const App = () => (
                   {/* Oceanic Bharat article system */}
                   <Route path="/oceanic/*" element={<OceanicRouter />} />
                   
-                  {/* Admin Routes with Layout */}
-                  <Route path="/admin" element={<AdminLayout />}>
+                  {/* Auth Route */}
+                  <Route path="/auth" element={<Auth />} />
+                  
+                  {/* Admin Routes with Layout - Protected */}
+                  <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
                     <Route index element={<Dashboard />} />
                     <Route path="import" element={<MarkdownImport />} />
                     <Route path="tags" element={<TagManagement />} />
@@ -189,11 +196,12 @@ const App = () => (
                   
                   <Route path="*" element={<NotFound />} />
                   </Routes>
-                </Suspense>
-            </Layout>
-          </BrowserRouter>
-        </TooltipProvider>
-        </LanguageProvider>
+                  </Suspense>
+              </Layout>
+            </BrowserRouter>
+          </TooltipProvider>
+          </LanguageProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </HelmetProvider>
   </ErrorBoundary>

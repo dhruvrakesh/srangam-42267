@@ -1,6 +1,7 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Card,
   CardContent,
@@ -86,22 +87,8 @@ export default function TagManagement() {
   const [deletingTag, setDeleteingTag] = useState<Tag | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-
-  // Check authentication status on mount
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        console.error("No active session - user may not be authenticated");
-        toast({
-          title: "Authentication Required",
-          description: "Please log in to manage tags",
-          variant: "destructive",
-        });
-      }
-    };
-    checkAuth();
-  }, [toast]);
+  
+  const { isAdmin, isLoading: isCheckingRole } = useAuth();
 
   // Fetch tags
   const { data: tags, isLoading } = useQuery({
@@ -282,11 +269,27 @@ export default function TagManagement() {
   };
 
   const handleEdit = (tag: Tag) => {
+    if (!isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "Only administrators can edit tags",
+        variant: "destructive",
+      });
+      return;
+    }
     setEditingTag(tag);
     setEditDialogOpen(true);
   };
 
   const handleDelete = (tag: Tag) => {
+    if (!isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "Only administrators can delete tags",
+        variant: "destructive",
+      });
+      return;
+    }
     setDeleteingTag(tag);
     setDeleteDialogOpen(true);
   };
@@ -476,6 +479,8 @@ export default function TagManagement() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleEdit(tag)}
+                            disabled={!isAdmin || isCheckingRole}
+                            title={!isAdmin ? "Admin access required" : "Edit tag"}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -483,7 +488,14 @@ export default function TagManagement() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleDelete(tag)}
-                            disabled={tag.usage_count > 0}
+                            disabled={!isAdmin || isCheckingRole || tag.usage_count > 0}
+                            title={
+                              !isAdmin 
+                                ? "Admin access required" 
+                                : tag.usage_count > 0 
+                                ? "Cannot delete tag in use" 
+                                : "Delete tag"
+                            }
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
