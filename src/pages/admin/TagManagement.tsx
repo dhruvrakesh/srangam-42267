@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -87,6 +87,22 @@ export default function TagManagement() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
+  // Check authentication status on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.error("No active session - user may not be authenticated");
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to manage tags",
+          variant: "destructive",
+        });
+      }
+    };
+    checkAuth();
+  }, [toast]);
+
   // Fetch tags
   const { data: tags, isLoading } = useQuery({
     queryKey: ["admin-tags"],
@@ -104,19 +120,44 @@ export default function TagManagement() {
   // Update tag mutation
   const updateTagMutation = useMutation({
     mutationFn: async (tag: Partial<Tag> & { id: string }) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("srangam_tags")
         .update({
           tag_name: tag.tag_name,
           category: tag.category,
           description: tag.description,
         })
-        .eq("id", tag.id);
+        .eq("id", tag.id)
+        .select();
 
       if (error) throw error;
+      
+      // Verify row was actually updated
+      if (!data || data.length === 0) {
+        throw new Error("Failed to update tag - no rows modified. Check authentication and permissions.");
+      }
+      
+      return data[0];
+    },
+    onMutate: async (updatedTag) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["admin-tags"] });
+
+      // Snapshot previous value
+      const previousTags = queryClient.getQueryData(["admin-tags"]);
+
+      // Optimistically update cache
+      queryClient.setQueryData(["admin-tags"], (old: Tag[] | undefined) =>
+        old?.map((tag) => 
+          tag.id === updatedTag.id 
+            ? { ...tag, ...updatedTag }
+            : tag
+        ) || []
+      );
+
+      return { previousTags };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-tags"] });
       toast({
         title: "Tag updated",
         description: "Tag has been successfully updated.",
@@ -124,12 +165,22 @@ export default function TagManagement() {
       setEditDialogOpen(false);
       setEditingTag(null);
     },
-    onError: (error) => {
+    onError: (error, updatedTag, context) => {
+      // Rollback on error
+      if (context?.previousTags) {
+        queryClient.setQueryData(["admin-tags"], context.previousTags);
+      }
+      
+      console.error("Update tag error:", error);
       toast({
         title: "Error",
         description: `Failed to update tag: ${error.message}`,
         variant: "destructive",
       });
+    },
+    onSettled: () => {
+      // Always refetch to ensure sync
+      queryClient.invalidateQueries({ queryKey: ["admin-tags"] });
     },
   });
 
