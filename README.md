@@ -155,6 +155,53 @@ Janajāti memory through material culture: acoustic archaeology at Kupgal, megal
 
 This framework enables rigorous analysis of cultural continuity without essentialist claims of "pristine survival." Applied across 9 new visual components including acoustic archaeology viewers, cupule chronology timelines, and lawscape visualizations.
 
+## 📊 Admin Dashboard
+
+Srangam includes a comprehensive admin dashboard for managing scholarly content and analyzing the knowledge base.
+
+### Features
+- **Dashboard Overview**: Real-time statistics on articles, tags, cross-references, and cultural terms
+- **Markdown Import**: Upload scholarly articles with AI-powered enrichment
+  - Automatic tag generation using Gemini 2.5 Flash
+  - Cross-reference detection and network building
+  - Cultural term extraction and translation tracking
+- **Tag Management**: View, edit, and categorize tags with analytics
+  - Category distribution pie chart (Period, Concept, Location, Subject, Methodology)
+  - Top 20 tags bar chart by usage
+  - CRUD operations with validation
+- **Cross-Reference Browser**: Interactive force-directed graph of article connections
+  - 5 article nodes, 11 cross-reference edges
+  - Color-coded by theme and reference type
+  - Article detail panel with connection analysis
+- **Cultural Terms Explorer**: Manage 49+ Sanskrit/cultural terms with translations
+  - Usage distribution charts
+  - Module categorization (vedic, puranic, buddhist, general)
+- **Import Analytics**: Track import trends and content metrics
+  - Timeline charts showing article creation
+  - Read time distribution analysis
+
+### Access
+Navigate to `/admin` to access the dashboard (requires authentication).
+
+### Documentation
+- [Admin Dashboard Architecture](./docs/ADMIN_DASHBOARD_ARCHITECTURE.md) - Complete system overview with diagrams
+- [AI Tag Generation System](./docs/AI_TAG_GENERATION_SYSTEM.md) - Lovable AI integration and taxonomy guide
+- [Network Visualization Guide](./docs/NETWORK_VISUALIZATION_GUIDE.md) - Force-directed graph implementation
+- [System Flowcharts](./docs/SYSTEM_FLOWCHARTS.md) - Compilation of all Mermaid diagrams
+- [Database Schema (Admin)](./docs/DATABASE_SCHEMA_ADMIN.md) - Table specifications and ERD
+- [Maintenance Guide](./docs/MAINTENANCE_GUIDE.md) - Troubleshooting and common tasks
+
+### Technology Stack (Admin)
+- **Frontend**: React 18 + TypeScript + Vite
+- **UI Components**: Shadcn/UI + Radix UI + Tailwind CSS
+- **Charts**: Recharts (pie, bar, line charts)
+- **Network Visualization**: react-force-graph-2d
+- **Backend**: Lovable Cloud (Supabase PostgreSQL)
+- **Edge Functions**: Deno runtime with TypeScript
+- **AI Integration**: Lovable AI Gateway (Gemini 2.5 Flash, temperature 0.3)
+
+---
+
 ## Book Compilation Framework
 
 ### Academic Publication Strategy
