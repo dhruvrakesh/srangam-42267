@@ -12,6 +12,7 @@ import {
   BarChart3,
   LogOut,
   User,
+  FileText,
 } from "lucide-react";
 import {
   Sidebar,
@@ -32,6 +33,11 @@ const adminNavItems = [
     title: "Dashboard",
     url: "/admin",
     icon: LayoutDashboard,
+  },
+  {
+    title: "Articles",
+    url: "/admin/articles",
+    icon: FileText,
   },
   {
     title: "Import Articles",

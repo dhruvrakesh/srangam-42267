@@ -1,14 +1,19 @@
-import React, { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, BookText, TrendingUp } from "lucide-react";
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { DataTable, createSortableHeader } from "@/components/admin/DataTable";
+import { ColumnDef } from "@tanstack/react-table";
+import { Badge } from "@/components/ui/badge";
+import { BookText, TrendingUp } from "lucide-react";
 
 const MODULE_COLORS = {
   'vedic': 'hsl(var(--chart-1))',
@@ -16,129 +21,171 @@ const MODULE_COLORS = {
   'buddhist': 'hsl(var(--chart-3))',
   'jain': 'hsl(var(--chart-4))',
   'general': 'hsl(var(--chart-5))',
-  'other': 'hsl(var(--muted))',
+  'default': 'hsl(var(--muted))',
+};
+
+type CulturalTerm = {
+  id: string;
+  term: string;
+  display_term: string;
+  translations: any;
+  module: string;
+  usage_count: number;
 };
 
 export default function CulturalTermsExplorer() {
-  const [searchQuery, setSearchQuery] = useState("");
   const [moduleFilter, setModuleFilter] = useState<string>("all");
 
   const { data: terms, isLoading } = useQuery({
-    queryKey: ['cultural-terms'],
+    queryKey: ["cultural-terms"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('srangam_cultural_terms')
-        .select('*')
-        .order('usage_count', { ascending: false });
-      
+        .from("srangam_cultural_terms")
+        .select("*")
+        .order("usage_count", { ascending: false });
+
       if (error) throw error;
-      return data || [];
-    }
+      return data as CulturalTerm[];
+    },
   });
 
-  // Filter and search terms
   const filteredTerms = useMemo(() => {
     if (!terms) return [];
     
-    return terms.filter(term => {
-      const matchesSearch = !searchQuery || 
-        term.term.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        term.display_term?.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const matchesModule = moduleFilter === "all" || term.module === moduleFilter;
-      
-      return matchesSearch && matchesModule;
-    });
-  }, [terms, searchQuery, moduleFilter]);
+    let filtered = [...terms];
+    
+    if (moduleFilter !== "all") {
+      filtered = filtered.filter((term) => term.module === moduleFilter);
+    }
+    
+    return filtered;
+  }, [terms, moduleFilter]);
 
-  // Get unique modules
   const modules = useMemo(() => {
     if (!terms) return [];
-    return Array.from(new Set(terms.map(t => t.module))).filter(Boolean);
+    return Array.from(new Set(terms.map((t) => t.module))).filter(Boolean);
   }, [terms]);
 
-  // Calculate stats
   const stats = useMemo(() => {
     if (!terms) return { total: 0, totalUsages: 0, avgUsage: 0 };
-    
     const totalUsages = terms.reduce((sum, term) => sum + (term.usage_count || 0), 0);
     return {
       total: terms.length,
       totalUsages,
-      avgUsage: terms.length > 0 ? (totalUsages / terms.length).toFixed(2) : 0
+      avgUsage: terms.length > 0 ? (totalUsages / terms.length).toFixed(2) : 0,
     };
   }, [terms]);
 
-  // Prepare top 30 terms data
   const top30Terms = useMemo(() => {
     if (!terms) return [];
     return terms
       .slice(0, 30)
-      .map(term => ({
+      .map((term) => ({
         name: term.display_term || term.term,
         usage: term.usage_count || 0,
-        module: term.module
+        module: term.module,
       }));
   }, [terms]);
 
-  // Prepare module breakdown data
   const moduleBreakdown = useMemo(() => {
     if (!terms) return [];
-    
     const breakdown = terms.reduce((acc, term) => {
-      const module = term.module || 'other';
+      const module = term.module || "default";
       acc[module] = (acc[module] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
-
     return Object.entries(breakdown).map(([module, count]) => ({
       name: module,
-      value: count
+      value: count,
     }));
   }, [terms]);
 
-  // Get translation preview
   const getTranslationPreview = (translations: any) => {
-    if (!translations) return "—";
-    const langs = Object.keys(translations);
-    if (langs.length === 0) return "—";
-    
-    const firstLang = langs[0];
-    const translation = translations[firstLang]?.translation || "—";
-    const extra = langs.length > 1 ? ` +${langs.length - 1} more` : "";
-    return `${translation}${extra}`;
+    if (!translations) return "No translations";
+    if (typeof translations === "string") return translations;
+    if (Array.isArray(translations)) {
+      return translations.length > 0
+        ? `${translations[0]}${translations.length > 1 ? ` +${translations.length - 1} more` : ""}`
+        : "No translations";
+    }
+    if (typeof translations === "object") {
+      const keys = Object.keys(translations);
+      return keys.length > 0 ? translations[keys[0]] : "No translations";
+    }
+    return "No translations";
   };
+
+  const columns: ColumnDef<CulturalTerm>[] = [
+    {
+      accessorKey: "term",
+      header: createSortableHeader("Term"),
+      cell: ({ row }) => (
+        <code className="text-sm font-mono bg-muted px-2 py-1 rounded">
+          {row.getValue("term")}
+        </code>
+      ),
+    },
+    {
+      accessorKey: "display_term",
+      header: createSortableHeader("Display Term"),
+      cell: ({ row }) => {
+        const displayTerm = row.getValue("display_term") as string;
+        return displayTerm || <span className="text-muted-foreground">—</span>;
+      },
+    },
+    {
+      accessorKey: "translations",
+      header: "Translations",
+      cell: ({ row }) => {
+        const preview = getTranslationPreview(row.getValue("translations"));
+        return <span className="text-sm">{preview}</span>;
+      },
+    },
+    {
+      accessorKey: "module",
+      header: createSortableHeader("Module"),
+      cell: ({ row }) => {
+        const module = row.getValue("module") as string;
+        const moduleColor = MODULE_COLORS[module as keyof typeof MODULE_COLORS] || MODULE_COLORS.default;
+        return (
+          <Badge
+            style={{
+              backgroundColor: moduleColor,
+              color: "hsl(var(--background))",
+            }}
+          >
+            {module}
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "usage_count",
+      header: createSortableHeader("Usage Count"),
+      cell: ({ row }) => {
+        const count = row.getValue("usage_count") as number;
+        return <span className="font-medium">{count}</span>;
+      },
+    },
+  ];
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">
-            Cultural Terms Explorer
-          </h2>
-          <p className="text-muted-foreground">
-            Browse and manage Sanskrit and cultural terminology
-          </p>
-        </div>
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Loading cultural terms...</p>
-        </div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-muted-foreground">Loading cultural terms...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight text-foreground">
-          Cultural Terms Explorer
-        </h2>
+        <h2 className="text-3xl font-bold tracking-tight">Cultural Terms Explorer</h2>
         <p className="text-muted-foreground">
           Browse and manage Sanskrit and cultural terminology
         </p>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -150,7 +197,6 @@ export default function CulturalTermsExplorer() {
             <p className="text-xs text-muted-foreground">Unique cultural terms</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Usages</CardTitle>
@@ -161,7 +207,6 @@ export default function CulturalTermsExplorer() {
             <p className="text-xs text-muted-foreground">Across all articles</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Avg Usage</CardTitle>
@@ -174,149 +219,87 @@ export default function CulturalTermsExplorer() {
         </Card>
       </div>
 
-      {/* Search and Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Search & Filter</CardTitle>
+          <CardTitle>Filter</CardTitle>
+          <CardDescription>Filter cultural terms by module</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search terms..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8"
-              />
-            </div>
-            <Select value={moduleFilter} onValueChange={setModuleFilter}>
-              <SelectTrigger className="w-full md:w-[200px]">
-                <SelectValue placeholder="All Modules" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Modules</SelectItem>
-                {modules.map(module => (
-                  <SelectItem key={module} value={module}>{module}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <Select value={moduleFilter} onValueChange={setModuleFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Filter by module" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Modules</SelectItem>
+              {modules.map((module) => (
+                <SelectItem key={module} value={module}>
+                  {module}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </CardContent>
       </Card>
 
-      {/* Cultural Terms Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Cultural Terms ({filteredTerms.length})</CardTitle>
+          <CardTitle>Cultural Terms Database</CardTitle>
+          <CardDescription>
+            Showing {filteredTerms.length} terms
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Term</TableHead>
-                  <TableHead>Display</TableHead>
-                  <TableHead>Translations</TableHead>
-                  <TableHead>Module</TableHead>
-                  <TableHead className="text-right">Usage Count</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredTerms.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center text-muted-foreground">
-                      No terms found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredTerms.map((term) => (
-                    <TableRow key={term.id}>
-                      <TableCell className="font-mono text-sm">{term.term}</TableCell>
-                      <TableCell>{term.display_term || "—"}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground max-w-xs truncate">
-                        {getTranslationPreview(term.translations)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{term.module}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right font-medium">{term.usage_count || 0}</TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          <DataTable
+            columns={columns}
+            data={filteredTerms}
+            searchKey="term"
+            searchPlaceholder="Search terms, translations..."
+          />
         </CardContent>
       </Card>
 
-      {/* Analytics Charts */}
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Top 30 Terms Bar Chart */}
         <Card>
           <CardHeader>
             <CardTitle>Top 30 Terms by Usage</CardTitle>
           </CardHeader>
           <CardContent>
-            <ChartContainer
-              config={{
-                usage: {
-                  label: "Usage Count",
-                  color: "hsl(var(--chart-1))",
-                },
-              }}
-              className="h-[400px]"
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={top30Terms} layout="vertical" margin={{ left: 100, right: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis dataKey="name" type="category" width={90} fontSize={12} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="usage" fill="hsl(var(--chart-1))" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart data={top30Terms} layout="vertical" margin={{ left: 100, right: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" />
+                <YAxis dataKey="name" type="category" width={90} fontSize={12} />
+                <Tooltip />
+                <Bar dataKey="usage" fill="hsl(var(--chart-1))" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        {/* Module Breakdown Pie Chart */}
         <Card>
           <CardHeader>
             <CardTitle>Terms by Module</CardTitle>
           </CardHeader>
           <CardContent>
-            <ChartContainer
-              config={{
-                vedic: { label: "Vedic", color: "hsl(var(--chart-1))" },
-                puranic: { label: "Puranic", color: "hsl(var(--chart-2))" },
-                buddhist: { label: "Buddhist", color: "hsl(var(--chart-3))" },
-                jain: { label: "Jain", color: "hsl(var(--chart-4))" },
-                general: { label: "General", color: "hsl(var(--chart-5))" },
-                other: { label: "Other", color: "hsl(var(--muted))" },
-              }}
-              className="h-[400px]"
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={moduleBreakdown}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={120}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {moduleBreakdown.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={MODULE_COLORS[entry.name as keyof typeof MODULE_COLORS] || MODULE_COLORS.other} />
-                    ))}
-                  </Pie>
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                </PieChart>
-              </ResponsiveContainer>
-            </ChartContainer>
+            <ResponsiveContainer width="100%" height={400}>
+              <PieChart>
+                <Pie
+                  data={moduleBreakdown}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={120}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {moduleBreakdown.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={MODULE_COLORS[entry.name as keyof typeof MODULE_COLORS] || MODULE_COLORS.default} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
       </div>

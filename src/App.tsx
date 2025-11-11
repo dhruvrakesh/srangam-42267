@@ -73,6 +73,7 @@ const OceanicRouter = lazy(() => import("./pages/oceanic/OceanicRouter"));
 // Admin Pages
 const MarkdownImport = lazy(() => import("./pages/admin/MarkdownImport"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
+const ArticleManagement = lazy(() => import("./pages/admin/ArticleManagement"));
 const TagManagement = lazy(() => import("./pages/admin/TagManagement"));
 const CrossReferencesBrowser = lazy(() => import("./pages/admin/CrossReferencesBrowser"));
 const CulturalTermsExplorer = lazy(() => import("./pages/admin/CulturalTermsExplorer"));
@@ -187,6 +188,7 @@ const App = () => (
                   {/* Admin Routes with Layout - Protected */}
                   <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
                     <Route index element={<Dashboard />} />
+                    <Route path="articles" element={<ArticleManagement />} />
                     <Route path="import" element={<MarkdownImport />} />
                     <Route path="tags" element={<TagManagement />} />
                     <Route path="cross-refs" element={<CrossReferencesBrowser />} />
