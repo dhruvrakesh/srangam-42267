@@ -112,41 +112,71 @@ Respond with a JSON object with this exact structure:
     const aiData = await aiResponse.json();
     const enrichedContent = JSON.parse(aiData.choices[0].message.content);
 
-    console.log("AI enrichment successful, updating database...");
+    // ✅ VALIDATE the AI response structure
+    if (!enrichedContent.translations || !enrichedContent.translations.en) {
+      console.error(`❌ Invalid AI response structure for term: ${term}`, JSON.stringify(enrichedContent, null, 2));
+      return new Response(
+        JSON.stringify({ 
+          error: "AI returned incomplete data structure", 
+          term: term,
+          displayTerm: displayTerm,
+          received: enrichedContent 
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // ✅ VALIDATE required English fields
+    const enTranslation = enrichedContent.translations.en;
+    if (!enTranslation.translation || !enTranslation.transliteration || !enTranslation.etymology || !enTranslation.culturalContext) {
+      console.error(`❌ Missing required English translation fields for term: ${term}`, JSON.stringify(enTranslation, null, 2));
+      return new Response(
+        JSON.stringify({ 
+          error: "AI returned incomplete English translation", 
+          term: term,
+          displayTerm: displayTerm,
+          received: enTranslation 
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`✅ AI enrichment validated successfully for: ${term}`);
 
     // Update the database
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // ✅ Update database with safe defaults and optional chaining
     const { data: updateData, error: updateError } = await supabase
       .from('srangam_cultural_terms')
       .update({
         translations: enrichedContent.translations,
-        transliteration: enrichedContent.translations.en.transliteration,
+        transliteration: enrichedContent.translations.en?.transliteration || term,
         etymology: {
-          en: enrichedContent.translations.en.etymology,
-          hi: enrichedContent.translations.hi?.etymology,
-          ta: enrichedContent.translations.ta?.etymology,
-          te: enrichedContent.translations.te?.etymology,
-          ml: enrichedContent.translations.ml?.etymology,
-          kn: enrichedContent.translations.kn?.etymology,
-          bn: enrichedContent.translations.bn?.etymology,
-          gu: enrichedContent.translations.gu?.etymology,
-          mr: enrichedContent.translations.mr?.etymology
+          en: enrichedContent.translations.en?.etymology || null,
+          hi: enrichedContent.translations.hi?.etymology || null,
+          ta: enrichedContent.translations.ta?.etymology || null,
+          te: enrichedContent.translations.te?.etymology || null,
+          ml: enrichedContent.translations.ml?.etymology || null,
+          kn: enrichedContent.translations.kn?.etymology || null,
+          bn: enrichedContent.translations.bn?.etymology || null,
+          gu: enrichedContent.translations.gu?.etymology || null,
+          mr: enrichedContent.translations.mr?.etymology || null
         },
         context: {
-          en: enrichedContent.translations.en.culturalContext,
-          hi: enrichedContent.translations.hi?.culturalContext,
-          ta: enrichedContent.translations.ta?.culturalContext,
-          te: enrichedContent.translations.te?.culturalContext,
-          ml: enrichedContent.translations.ml?.culturalContext,
-          kn: enrichedContent.translations.kn?.culturalContext,
-          bn: enrichedContent.translations.bn?.culturalContext,
-          gu: enrichedContent.translations.gu?.culturalContext,
-          mr: enrichedContent.translations.mr?.culturalContext
+          en: enrichedContent.translations.en?.culturalContext || null,
+          hi: enrichedContent.translations.hi?.culturalContext || null,
+          ta: enrichedContent.translations.ta?.culturalContext || null,
+          te: enrichedContent.translations.te?.culturalContext || null,
+          ml: enrichedContent.translations.ml?.culturalContext || null,
+          kn: enrichedContent.translations.kn?.culturalContext || null,
+          bn: enrichedContent.translations.bn?.culturalContext || null,
+          gu: enrichedContent.translations.gu?.culturalContext || null,
+          mr: enrichedContent.translations.mr?.culturalContext || null
         },
-        module: enrichedContent.module,
+        module: enrichedContent.module || "philosophy-religion",
         synonyms: enrichedContent.synonyms || [],
         related_terms: enrichedContent.relatedTerms || []
       })
@@ -154,14 +184,19 @@ Respond with a JSON object with this exact structure:
       .select();
 
     if (updateError) {
-      console.error("Database update error:", updateError);
+      console.error(`❌ Database update error for term: ${term}`, updateError);
       return new Response(
-        JSON.stringify({ error: "Failed to update database", details: updateError.message }),
+        JSON.stringify({ 
+          error: "Failed to update database", 
+          term: term,
+          displayTerm: displayTerm,
+          details: updateError.message 
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Successfully enriched term: ${term}`);
+    console.log(`✅ Successfully enriched term: ${displayTerm || term}`);
 
     return new Response(
       JSON.stringify({ 
