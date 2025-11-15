@@ -160,6 +160,47 @@ function extractCulturalTerms(markdown: string): string[] {
   return Array.from(terms);
 }
 
+// Generate fallback frontmatter from content when none exists
+function generateFallbackFrontmatter(content: string, filePath?: string): FrontMatter {
+  console.log('🔧 Generating fallback frontmatter from content...');
+  
+  // Extract title from first H1 heading
+  const h1Match = content.match(/^#\s+(.+)$/m);
+  let title = h1Match ? h1Match[1].trim() : '';
+  
+  // If no H1 found, try to extract from filename
+  if (!title && filePath) {
+    title = filePath
+      .replace(/\.md$/, '')
+      .replace(/.*\//, '') // Remove path
+      .replace(/[_-]/g, ' ')
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+  
+  // Last resort: use "Untitled Article"
+  if (!title) {
+    title = 'Untitled Article';
+  }
+  
+  // Extract first paragraph as dek (skip headings)
+  const paragraphMatch = content.match(/\n\n([^#\n][^\n]{20,})/);
+  const dek = paragraphMatch ? paragraphMatch[1].substring(0, 200).trim() : '';
+  
+  console.log(`✓ Extracted title: "${title}"`);
+  console.log(`✓ Extracted dek: "${dek.substring(0, 50)}..."`);
+  
+  return {
+    title,
+    author: 'Nartiang Foundation Research Team',
+    date: new Date().toISOString().split('T')[0],
+    theme: 'Ancient India',
+    tags: [], // Will be AI-generated later in the pipeline
+    dek: dek || undefined
+  };
+}
+
 // Calculate word count
 function calculateWordCount(text: string): number {
   return text.split(/\s+/).filter(word => word.length > 0).length;
@@ -205,20 +246,18 @@ Deno.serve(async (req) => {
 
     console.log('Starting markdown import...');
 
-    // Step 1: Extract frontmatter
-    const { frontmatter, content } = extractFrontmatter(markdownContent);
+    // Step 1: Extract frontmatter (or generate fallback)
+    let { frontmatter, content } = extractFrontmatter(markdownContent);
     
     if (!frontmatter) {
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'No frontmatter found. Please add YAML frontmatter at the top of your markdown:\n\n---\ntitle: Your Article Title\nauthor: Author Name\ndate: 2025-11-09\ntheme: Ancient India\ntags: []\n---\n\nOr use the "Generate Frontmatter" button in the UI.'
-        }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      console.log('⚠️ No frontmatter detected, generating fallback from content...');
+      frontmatter = generateFallbackFrontmatter(content, githubFilePath);
+      console.log('✅ Fallback frontmatter generated successfully');
+    } else {
+      console.log('✓ Frontmatter extracted from YAML');
     }
 
-    console.log('Frontmatter extracted:', frontmatter);
+    console.log('Frontmatter:', frontmatter);
 
     // Step 2: Convert markdown to HTML
     const htmlContent = marked.parse(content);
