@@ -45,6 +45,8 @@ import {
   Search,
   Filter,
   Tag as TagIcon,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
@@ -503,6 +505,64 @@ export default function TagManagement() {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Bulk Actions Card - AI Categorization */}
+          {selectedTags.size > 0 && (
+            <Card className="bg-muted/50 border-primary/50">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  Bulk Actions ({selectedTags.size} tags selected)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4">
+                  <Button
+                    onClick={suggestCategoriesWithAI}
+                    disabled={suggestingCategories}
+                    className="gap-2"
+                  >
+                    {suggestingCategories ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Analyzing with AI...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4" />
+                        AI Suggest Categories
+                      </>
+                    )}
+                  </Button>
+                  
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="bulk-category" className="text-sm">
+                      Or manually set:
+                    </Label>
+                    <Select value={bulkCategory} onValueChange={setBulkCategory}>
+                      <SelectTrigger id="bulk-category" className="w-[180px]">
+                        <SelectValue placeholder="Choose category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CATEGORIES.filter(c => c !== "Uncategorized").map((cat) => (
+                          <SelectItem key={cat} value={cat}>
+                            {cat}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      onClick={handleBulkCategorize}
+                      disabled={!bulkCategory}
+                      variant="secondary"
+                    >
+                      Apply to Selected
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <div className="rounded-md border">
             <Table>
