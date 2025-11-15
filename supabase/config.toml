@@ -1,5 +1,8 @@
 project_id = "xjaizfjcpkjcqbyobcsh"
 
+[functions.extract-purana-references]
+verify_jwt = false
+
 [functions.enrich-cultural-term]
 verify_jwt = false
 
