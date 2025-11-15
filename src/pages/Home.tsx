@@ -3,40 +3,68 @@ import { useTranslation } from "react-i18next";
 import { ArticleCard } from "@/components/ui/ArticleCard";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getFilteredArticles } from "@/lib/multilingualArticleUtils";
+import { getFilteredArticles, getMergedDisplayArticles, getDisplayArticles } from "@/lib/multilingualArticleUtils";
 import { useLanguage } from "@/components/language/LanguageProvider";
 import { ArticleThemeChips } from "@/components/articles/ArticleThemeChips";
 import { IconMonsoon, IconScript, IconBasalt, IconPort, IconEdict, IconDharmaChakra, IconSarnathLion, IconLotus, IconConch, IconOm } from "@/components/icons";
 import { Link } from "react-router-dom";
 import { ArrowRight, Waves, Mountain, BookOpen, Map, Users } from "lucide-react";
 import GeomythologySection from "@/components/home/GeomythologySection";
+import { usePublishedArticles } from "@/hooks/usePublishedArticles";
 
 export default function Home() {
   const { t } = useTranslation();
   const { currentLanguage } = useLanguage();
   
-  // Article browsing state
+  const { data: databaseArticles = [], isLoading } = usePublishedArticles();
+  
   const [showAllArticles, setShowAllArticles] = useState(false);
   const [selectedThemes, setSelectedThemes] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'longest' | 'shortest' | 'title'>('recent');
 
-  // Get filtered articles
-  const filteredArticles = useMemo(() => 
-    getFilteredArticles(currentLanguage, {
-      themes: selectedThemes.length > 0 ? selectedThemes : undefined,
-      sortBy,
-      limit: showAllArticles ? undefined : 6
-    }),
-    [currentLanguage, selectedThemes, sortBy, showAllArticles]
-  );
+  const filteredArticles = useMemo(() => {
+    const staticArticles = getDisplayArticles(currentLanguage);
+    const mergedArticles = getMergedDisplayArticles(staticArticles, databaseArticles, currentLanguage);
 
-  const totalArticles = useMemo(() => 
-    getFilteredArticles(currentLanguage, {
-      themes: selectedThemes.length > 0 ? selectedThemes : undefined,
-      sortBy
-    }).length,
-    [currentLanguage, selectedThemes, sortBy]
-  );
+    let filtered = mergedArticles;
+    if (selectedThemes.length > 0) {
+      filtered = mergedArticles.filter(article =>
+        selectedThemes.includes(article.theme)
+      );
+    }
+
+    switch (sortBy) {
+      case 'recent':
+        filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        break;
+      case 'oldest':
+        filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        break;
+      case 'longest':
+        filtered.sort((a, b) => b.readTime - a.readTime);
+        break;
+      case 'shortest':
+        filtered.sort((a, b) => a.readTime - b.readTime);
+        break;
+      case 'title':
+        filtered.sort((a, b) => {
+          const titleA = typeof a.title === 'string' ? a.title : (a.title as any).en || '';
+          const titleB = typeof b.title === 'string' ? b.title : (b.title as any).en || '';
+          return titleA.localeCompare(titleB);
+        });
+        break;
+    }
+
+    return showAllArticles ? filtered : filtered.slice(0, 6);
+  }, [currentLanguage, selectedThemes, sortBy, showAllArticles, databaseArticles]);
+
+  const totalArticles = useMemo(() => {
+    const staticArticles = getDisplayArticles(currentLanguage);
+    const merged = getMergedDisplayArticles(staticArticles, databaseArticles, currentLanguage);
+    return selectedThemes.length > 0
+      ? merged.filter(a => selectedThemes.includes(a.theme)).length
+      : merged.length;
+  }, [currentLanguage, selectedThemes, databaseArticles]);
 
   const handleThemeToggle = (theme: string) => {
     if (theme === 'all') {
