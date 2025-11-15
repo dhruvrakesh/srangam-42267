@@ -14,10 +14,20 @@ interface GitHubFile {
   type: string;
 }
 
+interface DuplicateMatch {
+  github_file: GitHubFile;
+  matched_article: any;
+  confidence: number;
+  method: string;
+  reasoning?: string;
+}
+
 interface ScanResult {
   new_files: GitHubFile[];
   updated_files: GitHubFile[];
   synced_files: GitHubFile[];
+  confirmed_duplicates: DuplicateMatch[];
+  potential_duplicates: DuplicateMatch[];
   total_in_github: number;
   total_in_db: number;
   last_scan: string;
@@ -76,32 +86,94 @@ Deno.serve(async (req) => {
       (dbSources || []).map(s => [s.file_path, s])
     );
 
-    // Categorize files
+    // Categorize files with duplicate detection
     const newFiles: GitHubFile[] = [];
     const updatedFiles: GitHubFile[] = [];
     const syncedFiles: GitHubFile[] = [];
+    const confirmedDuplicates: DuplicateMatch[] = [];
+    const potentialDuplicates: DuplicateMatch[] = [];
+
+    console.log('🔍 Starting duplicate detection analysis...');
 
     for (const file of markdownFiles) {
       const dbEntry = dbMap.get(file.path);
       
-      if (!dbEntry) {
-        // File exists in GitHub but not in database
-        newFiles.push(file);
-        console.log(`🆕 New file: ${file.name}`);
-      } else if (dbEntry.git_commit_hash !== file.sha) {
+      if (dbEntry && dbEntry.git_commit_hash === file.sha) {
+        // Exact match - file is synced
+        syncedFiles.push(file);
+        continue;
+      } else if (dbEntry && dbEntry.git_commit_hash !== file.sha) {
         // File exists but hash changed (file was updated)
         updatedFiles.push(file);
         console.log(`🔄 Updated file: ${file.name} (hash changed)`);
-      } else {
-        // File is synced
-        syncedFiles.push(file);
+        continue;
       }
+
+      // File not in database by path - check for duplicates
+      try {
+        // Fetch markdown content for duplicate detection
+        const mdResponse = await fetch(file.download_url);
+        let githubContent = '';
+        
+        if (mdResponse.ok) {
+          githubContent = await mdResponse.text();
+        }
+
+        // Call duplicate detection function
+        const { data: duplicateCheck, error: dupError } = await supabase.functions.invoke(
+          'detect-duplicate-articles',
+          {
+            body: {
+              github_file: file,
+              github_content: githubContent
+            }
+          }
+        );
+
+        if (dupError) {
+          console.error(`Error checking duplicates for ${file.name}:`, dupError);
+          newFiles.push(file);
+          continue;
+        }
+
+        if (duplicateCheck.is_duplicate) {
+          const duplicateMatch: DuplicateMatch = {
+            github_file: file,
+            matched_article: duplicateCheck.matched_article,
+            confidence: duplicateCheck.confidence,
+            method: duplicateCheck.method,
+            reasoning: duplicateCheck.reasoning
+          };
+
+          // High confidence duplicates (>90%)
+          if (duplicateCheck.confidence > 90) {
+            confirmedDuplicates.push(duplicateMatch);
+            console.log(`🔴 Confirmed duplicate: ${file.name} (${duplicateCheck.confidence.toFixed(1)}%)`);
+          } else {
+            // Medium confidence (60-90%)
+            potentialDuplicates.push(duplicateMatch);
+            console.log(`🟡 Potential duplicate: ${file.name} (${duplicateCheck.confidence.toFixed(1)}%)`);
+          }
+        } else {
+          // Not a duplicate - genuinely new file
+          newFiles.push(file);
+          console.log(`🆕 New file: ${file.name}`);
+        }
+      } catch (error) {
+        console.error(`Error processing ${file.name}:`, error);
+        newFiles.push(file); // Default to treating as new if error
+      }
+
+      // Rate limiting: wait 300ms between files to avoid API throttling
+      await new Promise(resolve => setTimeout(resolve, 300));
     }
 
     const result: ScanResult = {
       new_files: newFiles,
       updated_files: updatedFiles,
       synced_files: syncedFiles,
+      confirmed_duplicates: confirmedDuplicates,
+      potential_duplicates: potentialDuplicates,
       total_in_github: markdownFiles.length,
       total_in_db: dbSources?.length || 0,
       last_scan: new Date().toISOString()
@@ -111,6 +183,8 @@ Deno.serve(async (req) => {
     console.log(`   - New files: ${newFiles.length}`);
     console.log(`   - Updated files: ${updatedFiles.length}`);
     console.log(`   - Synced files: ${syncedFiles.length}`);
+    console.log(`   - Confirmed duplicates: ${confirmedDuplicates.length}`);
+    console.log(`   - Potential duplicates: ${potentialDuplicates.length}`);
     console.log(`   - Total in GitHub: ${markdownFiles.length}`);
     console.log(`   - Total in DB: ${dbSources?.length || 0}`);
 

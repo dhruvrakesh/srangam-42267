@@ -69,6 +69,32 @@ Deno.serve(async (req) => {
         const markdownContent = await mdResponse.text();
         console.log(`   ✓ Fetched ${markdownContent.length} characters`);
 
+        // Check for duplicates before importing
+        console.log(`   🔍 Checking for duplicates...`);
+        const { data: duplicateCheck, error: dupError } = await supabase.functions.invoke(
+          'detect-duplicate-articles',
+          {
+            body: {
+              github_file: file,
+              github_content: markdownContent
+            }
+          }
+        );
+
+        if (!dupError && duplicateCheck?.is_duplicate && duplicateCheck.confidence > 90 && !overwrite_existing) {
+          console.log(`   ⏭️ Skipping - High confidence duplicate (${duplicateCheck.confidence.toFixed(1)}%)`);
+          
+          results.push({
+            file_path: file.path,
+            file_name: file.name,
+            success: false,
+            error: `Duplicate of existing article: "${duplicateCheck.matched_article?.title?.en || duplicateCheck.matched_article?.slug}" (${duplicateCheck.confidence.toFixed(1)}% confidence, ${duplicateCheck.method})`
+          });
+          
+          failureCount++;
+          continue; // Skip this file
+        }
+
         // Call markdown-to-article-import function
         const { data: importData, error: importError } = await supabase.functions.invoke(
           'markdown-to-article-import',
