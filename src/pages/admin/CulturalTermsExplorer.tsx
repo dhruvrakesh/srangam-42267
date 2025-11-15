@@ -106,18 +106,34 @@ export default function CulturalTermsExplorer() {
     }));
   }, [terms]);
 
-  const getTranslationPreview = (translations: any) => {
+  const getTranslationPreview = (translations: any): string => {
     if (!translations) return "No translations";
     if (typeof translations === "string") return translations;
+    
+    // Handle new enriched format: { en: { translation, etymology, ... } }
+    if (typeof translations === "object" && !Array.isArray(translations)) {
+      const keys = Object.keys(translations);
+      if (keys.length === 0) return "No translations";
+      
+      // Check if it's the new enriched format
+      const firstKey = keys[0];
+      const firstValue = translations[firstKey];
+      
+      if (firstValue && typeof firstValue === "object" && firstValue.translation) {
+        // New format: Show count of languages
+        return `${keys.length} language${keys.length > 1 ? 's' : ''} (${keys.join(', ')})`;
+      }
+      
+      // Old format: Just a string value
+      return typeof firstValue === "string" ? firstValue : "Invalid format";
+    }
+    
     if (Array.isArray(translations)) {
       return translations.length > 0
         ? `${translations[0]}${translations.length > 1 ? ` +${translations.length - 1} more` : ""}`
         : "No translations";
     }
-    if (typeof translations === "object") {
-      const keys = Object.keys(translations);
-      return keys.length > 0 ? translations[keys[0]] : "No translations";
-    }
+    
     return "No translations";
   };
 
@@ -213,8 +229,13 @@ export default function CulturalTermsExplorer() {
       accessorKey: "translations",
       header: "Translations",
       cell: ({ row }) => {
-        const preview = getTranslationPreview(row.getValue("translations"));
-        return <span className="text-sm">{preview}</span>;
+        const translations = row.getValue("translations");
+        const preview = getTranslationPreview(translations);
+        return (
+          <div className="text-sm text-muted-foreground max-w-[200px] truncate">
+            {preview}
+          </div>
+        );
       },
     },
     {
