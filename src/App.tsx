@@ -78,6 +78,7 @@ const TagManagement = lazy(() => import("./pages/admin/TagManagement"));
 const CrossReferencesBrowser = lazy(() => import("./pages/admin/CrossReferencesBrowser"));
 const CulturalTermsExplorer = lazy(() => import("./pages/admin/CulturalTermsExplorer"));
 const ImportAnalytics = lazy(() => import("./pages/admin/ImportAnalytics"));
+const PuranaReferences = lazy(() => import("./pages/admin/PuranaReferences"));
 const Auth = lazy(() => import("./pages/Auth"));
 import { AdminLayout } from "./components/admin/AdminLayout";
 
@@ -193,6 +194,7 @@ const App = () => (
                     <Route path="tags" element={<TagManagement />} />
                     <Route path="cross-refs" element={<CrossReferencesBrowser />} />
                     <Route path="cultural-terms" element={<CulturalTermsExplorer />} />
+                    <Route path="purana-refs" element={<PuranaReferences />} />
                     <Route path="analytics" element={<ImportAnalytics />} />
                   </Route>
                   

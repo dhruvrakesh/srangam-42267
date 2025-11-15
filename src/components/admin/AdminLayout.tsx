@@ -13,6 +13,7 @@ import {
   LogOut,
   User,
   FileText,
+  BookOpen,
 } from "lucide-react";
 import {
   Sidebar,
@@ -58,6 +59,11 @@ const adminNavItems = [
     title: "Cultural Terms",
     url: "/admin/cultural-terms",
     icon: Languages,
+  },
+  {
+    title: "Purana References",
+    url: "/admin/purana-refs",
+    icon: BookOpen,
   },
   {
     title: "Analytics",

@@ -1340,6 +1340,16 @@ export type Database = {
         Returns: boolean
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
+      get_purana_statistics: {
+        Args: never
+        Returns: {
+          article_count: number
+          avg_confidence: number
+          citation_count: number
+          purana_category: string
+          purana_name: string
+        }[]
+      }
       gettransactionid: { Args: never; Returns: unknown }
       has_role: {
         Args: {
