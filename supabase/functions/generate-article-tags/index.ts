@@ -163,26 +163,57 @@ Generate 5-8 relevant tags for this article.`;
     console.log('💭 Reasoning:', parsedResponse.reasoning);
 
     // Fuzzy matching and normalization
-    const normalizedTags = generatedTags.map((tag: string) => {
-      const lowerTag = tag.toLowerCase();
+    const normalizedTagsWithCategories = (Array.isArray(parsedResponse.tags) ? parsedResponse.tags : []).map((genTag: any) => {
+      const tagName = typeof genTag === 'string' ? genTag : genTag.name;
+      const category = typeof genTag === 'string' ? null : genTag.category;
+      const lowerTag = tagName.toLowerCase();
       
       // Check for exact match (case-insensitive)
       const exactMatch = existingTags.find(et => et.toLowerCase() === lowerTag);
-      if (exactMatch) return exactMatch;
+      if (exactMatch) {
+        return { 
+          name: exactMatch, 
+          category: tagCategories[exactMatch] || category 
+        };
+      }
       
-      // Check for close variants (simple fuzzy matching)
+      // Check for close variants
       const closeMatch = existingTags.find(et => {
         const lowerExisting = et.toLowerCase();
         return lowerExisting.includes(lowerTag) || lowerTag.includes(lowerExisting);
       });
       
       if (closeMatch) {
-        console.log(`🔄 Normalized "${tag}" → "${closeMatch}"`);
-        return closeMatch;
+        console.log(`🔄 Normalized "${tagName}" → "${closeMatch}"`);
+        return { 
+          name: closeMatch, 
+          category: tagCategories[closeMatch] || category 
+        };
       }
       
-      return tag; // Keep as new tag
+      return { name: tagName, category };
     });
+
+    const normalizedTags = normalizedTagsWithCategories.map((t: any) => t.name);
+
+    // Create new tags with categories
+    const newTags = normalizedTagsWithCategories.filter((t: any) => !existingTags.includes(t.name));
+    if (newTags.length > 0) {
+      console.log(`📝 Creating ${newTags.length} new tags with categories:`, newTags);
+      const { error: insertError } = await supabase
+        .from('srangam_tags')
+        .insert(
+          newTags.map((tag: any) => ({
+            tag_name: tag.name,
+            category: tag.category || null,
+            usage_count: 1,
+          }))
+        );
+      
+      if (insertError) {
+        console.error('Error creating new tags:', insertError);
+      }
+    }
 
     const response: TagGenerationResponse = {
       success: true,

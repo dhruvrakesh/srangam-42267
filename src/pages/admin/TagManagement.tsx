@@ -87,6 +87,9 @@ export default function TagManagement() {
   const [deletingTag, setDeleteingTag] = useState<Tag | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+  const [bulkCategory, setBulkCategory] = useState<string>("");
+  const [suggestingCategories, setSuggestingCategories] = useState(false);
   
   const { isAdmin, isLoading: isCheckingRole } = useAuth();
 
@@ -306,6 +309,102 @@ export default function TagManagement() {
     }
   };
 
+  const toggleTagSelection = (tagId: string) => {
+    const newSelection = new Set(selectedTags);
+    if (newSelection.has(tagId)) {
+      newSelection.delete(tagId);
+    } else {
+      newSelection.add(tagId);
+    }
+    setSelectedTags(newSelection);
+  };
+
+  const handleBulkCategorize = async () => {
+    if (selectedTags.size === 0 || !bulkCategory) {
+      toast({
+        title: "Selection Required",
+        description: "Please select tags and choose a category.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const updates = Array.from(selectedTags).map(async (tagId) => {
+      return supabase
+        .from("srangam_tags")
+        .update({ category: bulkCategory })
+        .eq("id", tagId);
+    });
+
+    const results = await Promise.allSettled(updates);
+    const successCount = results.filter(r => r.status === 'fulfilled').length;
+
+    queryClient.invalidateQueries({ queryKey: ["admin-tags"] });
+    
+    toast({
+      title: "Bulk Update Complete",
+      description: `Successfully categorized ${successCount} tags as "${bulkCategory}".`,
+    });
+
+    setSelectedTags(new Set());
+    setBulkCategory("");
+  };
+
+  const suggestCategoriesWithAI = async () => {
+    if (!tags) return;
+
+    const uncategorizedTags = tags.filter(t => !t.category || t.category === "Uncategorized");
+    
+    if (uncategorizedTags.length === 0) {
+      toast({
+        title: "All Tags Categorized",
+        description: "All tags already have categories assigned.",
+      });
+      return;
+    }
+
+    setSuggestingCategories(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('suggest-tag-categories', {
+        body: {
+          tags: uncategorizedTags.map(t => ({
+            id: t.id,
+            tag_name: t.tag_name,
+            description: t.description,
+            usage_count: t.usage_count
+          }))
+        }
+      });
+
+      if (error) throw error;
+
+      const updates = data.suggestions.map(async (suggestion: any) => {
+        return supabase
+          .from("srangam_tags")
+          .update({ category: suggestion.category })
+          .eq("id", suggestion.tagId);
+      });
+
+      await Promise.allSettled(updates);
+      queryClient.invalidateQueries({ queryKey: ["admin-tags"] });
+
+      toast({
+        title: "AI Categorization Complete",
+        description: `Successfully categorized ${data.suggestions.length} tags.`,
+      });
+    } catch (error) {
+      console.error("AI suggestion error:", error);
+      toast({
+        title: "Suggestion Failed",
+        description: error instanceof Error ? error.message : "Failed to get AI suggestions",
+        variant: "destructive",
+      });
+    } finally {
+      setSuggestingCategories(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -409,6 +508,20 @@ export default function TagManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[50px]">
+                    <input
+                      type="checkbox"
+                      checked={selectedTags.size === filteredAndSortedTags.length && filteredAndSortedTags.length > 0}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedTags(new Set(filteredAndSortedTags.map(t => t.id)));
+                        } else {
+                          setSelectedTags(new Set());
+                        }
+                      }}
+                      className="cursor-pointer"
+                    />
+                  </TableHead>
                   <TableHead>
                     <Button
                       variant="ghost"
@@ -456,6 +569,14 @@ export default function TagManagement() {
                 ) : (
                   filteredAndSortedTags.map((tag) => (
                     <TableRow key={tag.id}>
+                      <TableCell>
+                        <input
+                          type="checkbox"
+                          checked={selectedTags.has(tag.id)}
+                          onChange={() => toggleTagSelection(tag.id)}
+                          className="cursor-pointer"
+                        />
+                      </TableCell>
                       <TableCell className="font-medium">
                         {tag.tag_name}
                       </TableCell>

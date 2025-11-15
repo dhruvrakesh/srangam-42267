@@ -6,6 +6,9 @@ verify_jwt = false
 [functions.batch-enrich-terms]
 verify_jwt = false
 
+[functions.suggest-tag-categories]
+verify_jwt = false
+
 [functions.tts-stream-google]
 verify_jwt = false
 
