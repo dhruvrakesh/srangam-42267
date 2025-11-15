@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Sheet,
   SheetContent,
@@ -22,7 +23,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Network, Search, ArrowRight, ExternalLink, Gauge } from "lucide-react";
+import {
+  Network,
+  Search,
+  ArrowRight,
+  ExternalLink,
+  Gauge,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
+} from "lucide-react";
 import ForceGraph2D from "react-force-graph-2d";
 
 const THEME_COLORS: Record<string, string> = {
@@ -36,6 +46,20 @@ const TYPE_COLORS: Record<string, string> = {
   same_theme: "#81C784",
   thematic: "#FFB74D",
   explicit_citation: "#64B5F6",
+};
+
+// Tag-based color categories for better visual grouping
+const PERIOD_TAGS = ["Vedic Period", "Mauryan Empire", "Ancient India", "Sangam Period"];
+const SUBJECT_TAGS = ["Puranic Literature", "Sanskrit Literature", "Ṛgveda", "Mahābhārata", "Rāmāyaṇa"];
+const CONCEPT_TAGS = ["Cultural Continuity", "Religious Pluralism", "Textual Analysis", "Philosophy"];
+const LOCATION_TAGS = ["Tamil Nadu", "Kashmir", "Kerala", "South India", "North India"];
+
+const NODE_CATEGORY_COLORS = {
+  period: "#64B5F6",      // Blue - Historical/Period
+  subject: "#FFB74D",     // Orange - Textual Studies
+  concept: "#81C784",     // Green - Conceptual/Philosophical
+  location: "#F06292",    // Pink - Geographic/Regional
+  default: "#9E9E9E",     // Gray - Uncategorized
 };
 
 interface ArticleNode {
@@ -64,6 +88,11 @@ export default function CrossReferencesBrowser() {
     thematic: true,
     explicit_citation: true,
   });
+  const [layoutType, setLayoutType] = useState<"force" | "radial">("force");
+  const [dimensions, setDimensions] = useState({ width: 1200, height: 600 });
+  
+  const containerRef = useRef<HTMLDivElement>(null);
+  const graphRef = useRef<any>(null);
 
   // Fetch articles
   const { data: articles = [], isLoading: articlesLoading } = useQuery({
@@ -91,6 +120,22 @@ export default function CrossReferencesBrowser() {
     },
   });
 
+  // Responsive canvas sizing
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (containerRef.current) {
+        setDimensions({
+          width: containerRef.current.clientWidth,
+          height: Math.max(600, containerRef.current.clientWidth * 0.5),
+        });
+      }
+    };
+    
+    updateDimensions();
+    window.addEventListener("resize", updateDimensions);
+    return () => window.removeEventListener("resize", updateDimensions);
+  }, []);
+
   // Create articles map for quick lookups
   const articlesMap = useMemo(() => {
     const map: Record<string, any> = {};
@@ -99,6 +144,18 @@ export default function CrossReferencesBrowser() {
     });
     return map;
   }, [articles]);
+
+  // Get node color based on dominant tag category
+  const getNodeColor = useCallback((article: any): string => {
+    const tags = article.tags || [];
+    
+    if (tags.some((t: string) => PERIOD_TAGS.includes(t))) return NODE_CATEGORY_COLORS.period;
+    if (tags.some((t: string) => SUBJECT_TAGS.includes(t))) return NODE_CATEGORY_COLORS.subject;
+    if (tags.some((t: string) => CONCEPT_TAGS.includes(t))) return NODE_CATEGORY_COLORS.concept;
+    if (tags.some((t: string) => LOCATION_TAGS.includes(t))) return NODE_CATEGORY_COLORS.location;
+    
+    return NODE_CATEGORY_COLORS.default;
+  }, []);
 
   // Calculate connection counts
   const connectionCounts = useMemo(() => {
@@ -123,14 +180,30 @@ export default function CrossReferencesBrowser() {
         ref.strength <= 10
     );
 
-    const nodes: ArticleNode[] = filteredArticles.map((article: any) => ({
-      id: article.id,
-      name: article.title?.en || article.slug,
-      val: connectionCounts[article.id] || 1,
-      color: THEME_COLORS[article.theme] || THEME_COLORS.Default,
-      group: article.theme,
-      slug: article.slug,
-    }));
+    const nodes: ArticleNode[] = filteredArticles.map((article: any) => {
+      const node = {
+        id: article.id,
+        name: article.title?.en || article.slug,
+        val: connectionCounts[article.id] || 1,
+        color: getNodeColor(article),
+        group: article.theme,
+        slug: article.slug,
+      };
+      
+      // Apply radial layout if selected
+      if (layoutType === "radial") {
+        const sorted = [...filteredArticles].sort(
+          (a: any, b: any) => (connectionCounts[b.id] || 0) - (connectionCounts[a.id] || 0)
+        );
+        const index = sorted.findIndex((a: any) => a.id === article.id);
+        const angle = (index / sorted.length) * 2 * Math.PI;
+        const radius = 100 + (connectionCounts[article.id] || 0) * 5;
+        (node as any).fx = Math.cos(angle) * radius;
+        (node as any).fy = Math.sin(angle) * radius;
+      }
+      
+      return node;
+    });
 
     const links: GraphLink[] = filteredRefs.map((ref: any) => ({
       source: ref.source_article_id,
@@ -142,7 +215,7 @@ export default function CrossReferencesBrowser() {
     }));
 
     return { nodes, links };
-  }, [articles, crossRefs, searchQuery, typeFilters, connectionCounts]);
+  }, [articles, crossRefs, searchQuery, typeFilters, connectionCounts, layoutType, getNodeColor]);
 
   // Selected article data
   const selectedArticle = useMemo(() => {
@@ -162,6 +235,25 @@ export default function CrossReferencesBrowser() {
   const handleNodeClick = useCallback((node: ArticleNode) => {
     setSelectedNode(node.id);
   }, []);
+
+  const handleZoomIn = () => {
+    if (graphRef.current) {
+      graphRef.current.zoom(2, 400);
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (graphRef.current) {
+      graphRef.current.zoom(0.5, 400);
+    }
+  };
+
+  const handleResetView = () => {
+    if (graphRef.current) {
+      graphRef.current.centerAt(0, 0, 400);
+      graphRef.current.zoom(1, 400);
+    }
+  };
 
   const toggleTypeFilter = (type: keyof typeof typeFilters) => {
     setTypeFilters((prev) => ({ ...prev, [type]: !prev[type] }));
@@ -241,10 +333,10 @@ export default function CrossReferencesBrowser() {
         </Card>
       </div>
 
-      {/* Filters */}
+      {/* Filters & Controls */}
       <Card>
         <CardHeader>
-          <CardTitle>Filters</CardTitle>
+          <CardTitle>Filters & Layout</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-2">
@@ -256,39 +348,86 @@ export default function CrossReferencesBrowser() {
               className="max-w-sm"
             />
           </div>
-          <div className="flex flex-wrap gap-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="same_theme"
-                checked={typeFilters.same_theme}
-                onCheckedChange={() => toggleTypeFilter("same_theme")}
-              />
-              <Label htmlFor="same_theme" className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: TYPE_COLORS.same_theme }} />
-                Same Theme
-              </Label>
+          
+          <div className="flex flex-wrap gap-6">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Reference Types</Label>
+              <div className="flex flex-wrap gap-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="same_theme"
+                    checked={typeFilters.same_theme}
+                    onCheckedChange={() => toggleTypeFilter("same_theme")}
+                  />
+                  <Label htmlFor="same_theme" className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: TYPE_COLORS.same_theme }} />
+                    Same Theme
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="thematic"
+                    checked={typeFilters.thematic}
+                    onCheckedChange={() => toggleTypeFilter("thematic")}
+                  />
+                  <Label htmlFor="thematic" className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: TYPE_COLORS.thematic }} />
+                    Thematic
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="explicit_citation"
+                    checked={typeFilters.explicit_citation}
+                    onCheckedChange={() => toggleTypeFilter("explicit_citation")}
+                  />
+                  <Label htmlFor="explicit_citation" className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: TYPE_COLORS.explicit_citation }} />
+                    Explicit Citation
+                  </Label>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="thematic"
-                checked={typeFilters.thematic}
-                onCheckedChange={() => toggleTypeFilter("thematic")}
-              />
-              <Label htmlFor="thematic" className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: TYPE_COLORS.thematic }} />
-                Thematic
-              </Label>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Layout Type</Label>
+              <RadioGroup value={layoutType} onValueChange={(v) => setLayoutType(v as "force" | "radial")}>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="force" id="force" />
+                  <Label htmlFor="force">Force-Directed</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="radial" id="radial" />
+                  <Label htmlFor="radial">Radial Hierarchy</Label>
+                </div>
+              </RadioGroup>
             </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="explicit_citation"
-                checked={typeFilters.explicit_citation}
-                onCheckedChange={() => toggleTypeFilter("explicit_citation")}
-              />
-              <Label htmlFor="explicit_citation" className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: TYPE_COLORS.explicit_citation }} />
-                Explicit Citation
-              </Label>
+          </div>
+
+          {/* Color Legend */}
+          <div className="pt-4 border-t">
+            <Label className="text-sm font-medium mb-2 block">Node Colors (by Tag Category)</Label>
+            <div className="flex flex-wrap gap-3">
+              <Badge variant="outline" className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: NODE_CATEGORY_COLORS.period }} />
+                Historical/Period
+              </Badge>
+              <Badge variant="outline" className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: NODE_CATEGORY_COLORS.subject }} />
+                Textual Studies
+              </Badge>
+              <Badge variant="outline" className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: NODE_CATEGORY_COLORS.concept }} />
+                Conceptual
+              </Badge>
+              <Badge variant="outline" className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: NODE_CATEGORY_COLORS.location }} />
+                Geographic
+              </Badge>
+              <Badge variant="outline" className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: NODE_CATEGORY_COLORS.default }} />
+                Other
+              </Badge>
             </div>
           </div>
         </CardContent>
@@ -300,23 +439,67 @@ export default function CrossReferencesBrowser() {
           <CardTitle>Network Visualization</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[600px] border rounded-lg bg-background">
+          <div ref={containerRef} className="relative h-[600px] border rounded-lg bg-background overflow-hidden">
             <ForceGraph2D
+              ref={graphRef}
               graphData={graphData}
-              nodeLabel="name"
-              nodeVal={(node: any) => node.val}
+              width={dimensions.width}
+              height={dimensions.height}
+              nodeLabel={(node: any) => {
+                const article = articlesMap[node.id];
+                const tags = article?.tags?.slice(0, 3).join(", ") || "No tags";
+                return `
+                  <div style="background: rgba(0,0,0,0.9); padding: 12px; border-radius: 8px; color: white; max-width: 300px;">
+                    <strong style="font-size: 14px;">${node.name}</strong><br/>
+                    <span style="color: #aaa; font-size: 11px;">Theme: ${node.group}</span><br/>
+                    <span style="color: #aaa; font-size: 11px;">Connections: ${node.val}</span><br/>
+                    <span style="color: #81C784; font-size: 11px;">Tags: ${tags}</span>
+                  </div>
+                `;
+              }}
+              nodeVal={(node: any) => Math.max(3, Math.min(15, Math.log(node.val + 1) * 5))}
               nodeColor={(node: any) => node.color}
-              linkWidth={(link: any) => link.value * 0.5}
-              linkColor={(link: any) => link.color}
-              linkDirectionalParticles={2}
-              linkDirectionalParticleWidth={2}
+              nodeCanvasObject={(node: any, ctx, globalScale) => {
+                const label = node.name.length > 30 ? node.name.substring(0, 27) + "..." : node.name;
+                const fontSize = 10 / globalScale;
+                ctx.font = `${fontSize}px Sans-Serif`;
+                ctx.textAlign = "center";
+                ctx.textBaseline = "top";
+                ctx.fillStyle = "#333";
+                const nodeRadius = Math.max(3, Math.min(15, Math.log(node.val + 1) * 5));
+                ctx.fillText(label, node.x, node.y + nodeRadius + 3);
+              }}
+              linkWidth={(link: any) => Math.sqrt(link.value) * 0.3}
+              linkColor={(link: any) => link.color + "66"}
+              linkDirectionalArrowLength={3}
+              linkDirectionalArrowRelPos={1}
+              linkCurvature={0.1}
               onNodeClick={handleNodeClick}
               enableNodeDrag={true}
-              cooldownTicks={100}
+              enableZoomInteraction={true}
+              enablePanInteraction={true}
+              minZoom={0.5}
+              maxZoom={8}
+              d3AlphaDecay={0.02}
+              d3VelocityDecay={0.3}
+              d3AlphaMin={0.001}
+              warmupTicks={10}
+              cooldownTicks={150}
               backgroundColor="#ffffff"
-              width={1200}
-              height={600}
             />
+            
+            {/* Zoom Controls */}
+            <div className="absolute top-4 right-4 flex flex-col gap-2">
+              <Button size="sm" variant="secondary" onClick={handleZoomIn}>
+                <ZoomIn className="h-4 w-4" />
+              </Button>
+              <Button size="sm" variant="secondary" onClick={handleZoomOut}>
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+              <Button size="sm" variant="secondary" onClick={handleResetView}>
+                <Maximize2 className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
