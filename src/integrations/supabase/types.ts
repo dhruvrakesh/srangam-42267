@@ -832,6 +832,83 @@ export type Database = {
           },
         ]
       }
+      srangam_purana_references: {
+        Row: {
+          adhyaya: string | null
+          article_id: string
+          claim_made: string | null
+          confidence_score: number | null
+          context_snippet: string | null
+          created_at: string | null
+          extracted_by: string | null
+          extraction_method: string | null
+          id: string
+          is_primary_source: boolean | null
+          kanda: string | null
+          metadata: Json | null
+          purana_category: string | null
+          purana_name: string
+          reference_text: string | null
+          shloka_end: number | null
+          shloka_start: number | null
+          updated_at: string | null
+          validation_notes: string | null
+          validation_status: string | null
+        }
+        Insert: {
+          adhyaya?: string | null
+          article_id: string
+          claim_made?: string | null
+          confidence_score?: number | null
+          context_snippet?: string | null
+          created_at?: string | null
+          extracted_by?: string | null
+          extraction_method?: string | null
+          id?: string
+          is_primary_source?: boolean | null
+          kanda?: string | null
+          metadata?: Json | null
+          purana_category?: string | null
+          purana_name: string
+          reference_text?: string | null
+          shloka_end?: number | null
+          shloka_start?: number | null
+          updated_at?: string | null
+          validation_notes?: string | null
+          validation_status?: string | null
+        }
+        Update: {
+          adhyaya?: string | null
+          article_id?: string
+          claim_made?: string | null
+          confidence_score?: number | null
+          context_snippet?: string | null
+          created_at?: string | null
+          extracted_by?: string | null
+          extraction_method?: string | null
+          id?: string
+          is_primary_source?: boolean | null
+          kanda?: string | null
+          metadata?: Json | null
+          purana_category?: string | null
+          purana_name?: string
+          reference_text?: string | null
+          shloka_end?: number | null
+          shloka_start?: number | null
+          updated_at?: string | null
+          validation_notes?: string | null
+          validation_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_purana_references_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       srangam_tags: {
         Row: {
           category: string | null
