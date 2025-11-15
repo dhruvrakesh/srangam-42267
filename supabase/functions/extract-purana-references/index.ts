@@ -60,13 +60,48 @@ serve(async (req) => {
     for (const article of articles) {
       console.log(`Processing article: ${article.slug}`);
 
-      // Extract text content from JSON structure
+      // Extract text content - handle both HTML and JSON structures
       let textContent = '';
-      if (article.content?.en?.sections) {
+      
+      // Check if content is stored as HTML string (from markdown imports)
+      if (typeof article.content?.en === 'string') {
+        console.log(`📄 Detected HTML content for ${article.slug}`);
+        // Strip HTML tags and decode entities for text analysis
+        textContent = article.content.en
+          .replace(/<script[^>]*>.*?<\/script>/gi, '') // Remove scripts
+          .replace(/<style[^>]*>.*?<\/style>/gi, '') // Remove styles
+          .replace(/<[^>]+>/g, ' ') // Remove all HTML tags
+          .replace(/&nbsp;/g, ' ')
+          .replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/\s+/g, ' ') // Normalize whitespace
+          .trim();
+        console.log(`✓ Extracted ${textContent.length} characters from HTML`);
+      }
+      // Legacy JSON structure support
+      else if (article.content?.en?.sections) {
+        console.log(`📋 Detected JSON sections for ${article.slug}`);
         for (const section of article.content.en.sections) {
           if (section.heading) textContent += section.heading + '\n\n';
           if (section.content) textContent += section.content + '\n\n';
         }
+        console.log(`✓ Extracted ${textContent.length} characters from JSON sections`);
+      }
+      
+      // Validate we have content to process
+      if (!textContent || textContent.length < 100) {
+        console.log(`⚠️ Insufficient text content for ${article.slug} (${textContent.length} chars), skipping`);
+        results.push({
+          article_id: article.id,
+          article_slug: article.slug,
+          extracted_count: 0,
+          high_confidence_count: 0,
+          references: [],
+        });
+        continue;
       }
 
       // Split into paragraphs for context extraction
