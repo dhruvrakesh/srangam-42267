@@ -14,6 +14,7 @@ import {
   User,
   FileText,
   BookOpen,
+  GitBranch,
 } from "lucide-react";
 import {
   Sidebar,
@@ -44,6 +45,11 @@ const adminNavItems = [
     title: "Import Articles",
     url: "/admin/import",
     icon: Upload,
+  },
+  {
+    title: "GitHub Sync",
+    url: "/admin/github-sync",
+    icon: GitBranch,
   },
   {
     title: "Tag Management",
