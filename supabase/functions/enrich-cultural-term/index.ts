@@ -110,24 +110,17 @@ Respond with a JSON object with this exact structure:
     }
 
     const aiData = await aiResponse.json();
-    let parsedContent = JSON.parse(aiData.choices[0].message.content);
-
-    // ✅ HANDLE ARRAY RESPONSES (when AI processes multiple terms together)
-    let enrichedContent = parsedContent;
-    if (Array.isArray(parsedContent)) {
-      console.log(`⚠️ AI returned array of ${parsedContent.length} terms, extracting first one`);
-      enrichedContent = parsedContent[0];
-    }
+    const enrichedContent = JSON.parse(aiData.choices[0].message.content);
 
     // ✅ VALIDATE the AI response structure
-    if (!enrichedContent || !enrichedContent.translations || !enrichedContent.translations.en) {
+    if (!enrichedContent.translations || !enrichedContent.translations.en) {
       console.error(`❌ Invalid AI response structure for term: ${term}`, JSON.stringify(enrichedContent, null, 2));
       return new Response(
         JSON.stringify({ 
           error: "AI returned incomplete data structure", 
           term: term,
           displayTerm: displayTerm,
-          received: parsedContent 
+          received: enrichedContent 
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );

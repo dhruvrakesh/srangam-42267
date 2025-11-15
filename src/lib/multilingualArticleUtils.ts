@@ -1,11 +1,10 @@
 import { MULTILINGUAL_ARTICLES, ARTICLE_METADATA, SLUG_TO_ID_MAP } from '@/data/articles';
 import { LocalizedArticle, SupportedLanguage } from '@/types/multilingual';
-import type { DatabaseArticle } from '@/hooks/usePublishedArticles';
 
-export interface DisplayArticle {
+interface DisplayArticle {
   id: string;
   title: LocalizedArticle['title'];
-  excerpt: LocalizedArticle['dek'];
+  excerpt: LocalizedArticle['dek']; // Using dek as excerpt
   slug: string;
   theme: string;
   tags: LocalizedArticle['tags'];
@@ -128,46 +127,6 @@ export const getFilteredArticles = (
  */
 export const getFeaturedArticles = (language: SupportedLanguage = 'en', limit: number = 3): DisplayArticle[] => {
   return getFilteredArticles(language, { sortBy: 'recent', limit });
-};
-
-/**
- * Convert database article to display format
- */
-export const convertDatabaseArticleToDisplay = (
-  dbArticle: DatabaseArticle,
-  language: SupportedLanguage = 'en'
-): DisplayArticle => {
-  return {
-    id: dbArticle.id,
-    title: dbArticle.title?.[language] || dbArticle.title?.en || 'Untitled',
-    excerpt: dbArticle.dek?.[language] || dbArticle.dek?.en || '',
-    slug: `/${dbArticle.slug}`,
-    theme: dbArticle.theme,
-    tags: (dbArticle.tags || []).map(tag => ({ en: tag })),
-    readTime: dbArticle.read_time_minutes || 10,
-    author: dbArticle.author,
-    date: dbArticle.published_date || new Date().toISOString().split('T')[0]
-  };
-};
-
-/**
- * Merge static and database articles
- */
-export const getMergedDisplayArticles = (
-  staticArticles: DisplayArticle[],
-  databaseArticles: DatabaseArticle[],
-  language: SupportedLanguage = 'en'
-): DisplayArticle[] => {
-  const dbDisplayArticles = databaseArticles.map(dbArticle => 
-    convertDatabaseArticleToDisplay(dbArticle, language)
-  );
-
-  const allArticles = [...staticArticles, ...dbDisplayArticles];
-  const uniqueArticles = allArticles.filter((article, index, self) =>
-    index === self.findIndex(a => a.slug === article.slug)
-  );
-
-  return uniqueArticles;
 };
 
 /**
