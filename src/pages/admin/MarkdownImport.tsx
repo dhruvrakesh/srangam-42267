@@ -450,15 +450,25 @@ slug: "${slug}"
                     </div>
                     <div className="space-y-2">
                       <Label>Author</Label>
-                      <Input value={extractedMetadata.author || 'NF Team'} readOnly />
+                      <Input 
+                        value={extractedMetadata.author || 'NF Team'} 
+                        onChange={(e) => setExtractedMetadata({...extractedMetadata, author: e.target.value})}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label>Date</Label>
-                      <Input type="date" value={extractedMetadata.date || ''} readOnly />
+                      <Input 
+                        type="date" 
+                        value={extractedMetadata.date || ''} 
+                        onChange={(e) => setExtractedMetadata({...extractedMetadata, date: e.target.value})}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label>Theme</Label>
-                      <Select value={extractedMetadata.theme || ''}>
+                      <Select 
+                        value={extractedMetadata.theme || ''} 
+                        onValueChange={(value) => setExtractedMetadata({...extractedMetadata, theme: value})}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select theme" />
                         </SelectTrigger>
