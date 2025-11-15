@@ -1,12 +1,12 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable, createSortableHeader } from "@/components/admin/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
-import { ExternalLink, MoreHorizontal, FileText, BookOpen } from "lucide-react";
+import { ExternalLink, MoreHorizontal, FileText, BookOpen, RefreshCw, Loader2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 type Article = {
   id: string;
@@ -40,6 +41,9 @@ const themeColors: Record<string, string> = {
 
 export default function ArticleManagement() {
   const { isAdmin } = useAuth();
+  const { toast } = useToast();
+  const [retagging, setRetagging] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: articles = [], isLoading } = useQuery({
     queryKey: ["admin-articles"],
@@ -54,11 +58,56 @@ export default function ArticleManagement() {
     },
   });
 
-  const stats = {
-    total: articles.length,
-    published: articles.filter((a) => a.status === "published").length,
-    draft: articles.filter((a) => a.status === "draft").length,
-    archived: articles.filter((a) => a.status === "archived").length,
+  const stats = useMemo(() => {
+    if (!articles) return { total: 0, published: 0, draft: 0, archived: 0, untagged: 0 };
+    
+    return {
+      total: articles.length,
+      published: articles.filter((a) => a.status === "published").length,
+      draft: articles.filter((a) => a.status === "draft").length,
+      archived: articles.filter((a) => a.status === "archived").length,
+      untagged: articles.filter((a) => !a.tags || a.tags.length === 0).length,
+    };
+  }, [articles]);
+
+  const retagUntaggedArticles = async () => {
+    if (!articles) return;
+    
+    const untaggedArticles = articles.filter(a => !a.tags || a.tags.length === 0);
+    
+    if (untaggedArticles.length === 0) {
+      toast({
+        title: "No articles to retag",
+        description: "All articles already have tags.",
+      });
+      return;
+    }
+
+    setRetagging(true);
+
+    const { data, error } = await supabase.functions.invoke('batch-enrich-terms', {
+      body: {
+        articleSlugs: untaggedArticles.map(a => a.slug)
+      }
+    });
+
+    setRetagging(false);
+
+    if (error) {
+      toast({
+        title: "Retagging failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
+
+    toast({
+      title: "Retagging complete",
+      description: `Successfully retagged ${data.summary.successful} articles.`,
+    });
   };
 
   const columns: ColumnDef<Article>[] = [

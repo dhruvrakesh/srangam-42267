@@ -1,5 +1,11 @@
 project_id = "xjaizfjcpkjcqbyobcsh"
 
+[functions.enrich-cultural-term]
+verify_jwt = false
+
+[functions.batch-enrich-terms]
+verify_jwt = false
+
 [functions.tts-stream-google]
 verify_jwt = false
 
