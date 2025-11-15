@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -13,7 +13,9 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { DataTable, createSortableHeader } from "@/components/admin/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
-import { BookText, TrendingUp } from "lucide-react";
+import { BookText, TrendingUp, Sparkles, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 const MODULE_COLORS = {
   'vedic': 'hsl(var(--chart-1))',
@@ -35,6 +37,10 @@ type CulturalTerm = {
 
 export default function CulturalTermsExplorer() {
   const [moduleFilter, setModuleFilter] = useState<string>("all");
+  const [enriching, setEnriching] = useState(false);
+  const [enrichmentProgress, setEnrichmentProgress] = useState({ current: 0, total: 0 });
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: terms, isLoading } = useQuery({
     queryKey: ["cultural-terms"],
@@ -115,6 +121,76 @@ export default function CulturalTermsExplorer() {
     return "No translations";
   };
 
+  const enrichTermsBatch = async () => {
+    if (!terms || terms.length === 0) return;
+
+    const termsToEnrich = terms.filter(term => {
+      const translations = term.translations;
+      if (!translations || typeof translations !== 'object') return true;
+      const hasEnglish = translations.en && typeof translations.en === 'object';
+      return !hasEnglish;
+    });
+
+    if (termsToEnrich.length === 0) {
+      toast({
+        title: "All terms enriched",
+        description: "All cultural terms already have translations.",
+      });
+      return;
+    }
+
+    setEnriching(true);
+    setEnrichmentProgress({ current: 0, total: termsToEnrich.length });
+
+    let successCount = 0;
+    let failCount = 0;
+
+    const batchSize = 5;
+    for (let i = 0; i < termsToEnrich.length; i += batchSize) {
+      const batch = termsToEnrich.slice(i, i + batchSize);
+      
+      const results = await Promise.allSettled(
+        batch.map(async (term) => {
+          const { data, error } = await supabase.functions.invoke('enrich-cultural-term', {
+            body: {
+              termId: term.id,
+              term: term.term,
+              displayTerm: term.display_term
+            }
+          });
+
+          if (error) throw error;
+          return data;
+        })
+      );
+
+      results.forEach((result, idx) => {
+        setEnrichmentProgress(prev => ({ ...prev, current: i + idx + 1 }));
+        
+        if (result.status === 'fulfilled') {
+          successCount++;
+        } else {
+          failCount++;
+          console.error('Enrichment failed:', result.reason);
+        }
+      });
+
+      if (i + batchSize < termsToEnrich.length) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
+
+    setEnriching(false);
+    
+    queryClient.invalidateQueries({ queryKey: ['cultural-terms'] });
+
+    toast({
+      title: "Enrichment Complete",
+      description: `Successfully enriched ${successCount} terms. ${failCount > 0 ? `${failCount} failed.` : ''}`,
+      variant: failCount > 0 ? "destructive" : "default",
+    });
+  };
+
   const columns: ColumnDef<CulturalTerm>[] = [
     {
       accessorKey: "term",
@@ -179,11 +255,30 @@ export default function CulturalTermsExplorer() {
 
   return (
     <div className="space-y-6 p-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Cultural Terms Explorer</h2>
-        <p className="text-muted-foreground">
-          Browse and manage Sanskrit and cultural terminology
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Cultural Terms Explorer</h2>
+          <p className="text-muted-foreground">
+            Browse and manage Sanskrit and cultural terminology
+          </p>
+        </div>
+        <Button 
+          onClick={enrichTermsBatch} 
+          disabled={enriching}
+          className="gap-2"
+        >
+          {enriching ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Enriching {enrichmentProgress.current}/{enrichmentProgress.total}
+            </>
+          ) : (
+            <>
+              <Sparkles className="h-4 w-4" />
+              Enrich Terms with AI
+            </>
+          )}
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
