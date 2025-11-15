@@ -34,9 +34,9 @@ export default function PuranaReferences() {
   
   // Filters
   const [selectedArticle, setSelectedArticle] = useState<string>("");
-  const [selectedPurana, setSelectedPurana] = useState<string>("");
+  const [selectedPurana, setSelectedPurana] = useState<string>("__all__");
   const [minConfidence, setMinConfidence] = useState<number>(0);
-  const [validationFilter, setValidationFilter] = useState<string>("");
+  const [validationFilter, setValidationFilter] = useState<string>("__all__");
 
   // Get published articles for extraction
   const { data: articles } = useQuery({
@@ -55,9 +55,9 @@ export default function PuranaReferences() {
   // Get references with filters
   const { data: references, isLoading: referencesLoading } = usePuranaReferences({
     article_id: selectedArticle || undefined,
-    purana_name: selectedPurana || undefined,
+    purana_name: selectedPurana === "__all__" ? undefined : selectedPurana,
     min_confidence: minConfidence,
-    validation_status: validationFilter || undefined,
+    validation_status: validationFilter === "__all__" ? undefined : validationFilter,
   });
 
   // Get statistics
@@ -264,7 +264,7 @@ export default function PuranaReferences() {
                   <SelectValue placeholder="All Puranas" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Puranas</SelectItem>
+                  <SelectItem value="__all__">All Puranas</SelectItem>
                   {uniquePuranas.map((purana) => (
                     <SelectItem key={purana} value={purana}>
                       {purana}
@@ -294,7 +294,7 @@ export default function PuranaReferences() {
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All statuses</SelectItem>
+                  <SelectItem value="__all__">All statuses</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="verified">Verified</SelectItem>
                   <SelectItem value="rejected">Rejected</SelectItem>
@@ -307,9 +307,9 @@ export default function PuranaReferences() {
                 variant="outline"
                 onClick={() => {
                   setSelectedArticle("");
-                  setSelectedPurana("");
+                  setSelectedPurana("__all__");
                   setMinConfidence(0);
-                  setValidationFilter("");
+                  setValidationFilter("__all__");
                 }}
               >
                 Clear Filters
