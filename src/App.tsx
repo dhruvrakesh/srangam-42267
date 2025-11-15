@@ -79,6 +79,7 @@ const CrossReferencesBrowser = lazy(() => import("./pages/admin/CrossReferencesB
 const CulturalTermsExplorer = lazy(() => import("./pages/admin/CulturalTermsExplorer"));
 const ImportAnalytics = lazy(() => import("./pages/admin/ImportAnalytics"));
 const PuranaReferences = lazy(() => import("./pages/admin/PuranaReferences"));
+const GitHubSync = lazy(() => import("./pages/admin/GitHubSync"));
 const Auth = lazy(() => import("./pages/Auth"));
 import { AdminLayout } from "./components/admin/AdminLayout";
 
@@ -191,6 +192,7 @@ const App = () => (
                     <Route index element={<Dashboard />} />
                     <Route path="articles" element={<ArticleManagement />} />
                     <Route path="import" element={<MarkdownImport />} />
+                    <Route path="github-sync" element={<GitHubSync />} />
                     <Route path="tags" element={<TagManagement />} />
                     <Route path="cross-refs" element={<CrossReferencesBrowser />} />
                     <Route path="cultural-terms" element={<CulturalTermsExplorer />} />

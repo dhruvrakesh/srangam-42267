@@ -32,6 +32,8 @@ interface ImportRequest {
   markdownContent: string;
   overwriteExisting?: boolean;
   assignToChapter?: string;
+  githubFilePath?: string;
+  githubCommitHash?: string;
 }
 
 interface ImportResponse {
@@ -192,7 +194,7 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { markdownContent, overwriteExisting = false, assignToChapter }: ImportRequest = await req.json();
+    const { markdownContent, overwriteExisting = false, assignToChapter, githubFilePath, githubCommitHash }: ImportRequest = await req.json();
 
     if (!markdownContent) {
       return new Response(
@@ -347,7 +349,8 @@ Deno.serve(async (req) => {
       .upsert({
         article_id: articleId,
         markdown_content: markdownContent,
-        file_path: `${slug}.md`,
+        file_path: githubFilePath || `${slug}.md`,
+        git_commit_hash: githubCommitHash || null,
         sync_status: 'synced',
         last_sync_at: new Date().toISOString(),
       }, {
