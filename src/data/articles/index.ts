@@ -236,6 +236,18 @@ export const ARTICLE_METADATA: Record<string, {
     author: 'Nartiang Foundation Research Team',
     date: '2025-10-29',
     theme: 'Sacred Ecology'
+  },
+  'dashanami-ascetics-sacred-geography': {
+    readTime: 45,
+    author: 'NF Research Team',
+    date: '2025-01-15',
+    theme: 'Ancient India'
+  },
+  'continuous-habitation-uttarapatha': {
+    readTime: 55,
+    author: 'NF Research Team',
+    date: '2025-01-15',
+    theme: 'Ancient India'
   }
 };
 
