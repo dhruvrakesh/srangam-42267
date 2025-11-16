@@ -1,6 +1,7 @@
 import { TagChip } from "@/components/ui/TagChip";
 import { useTranslation } from 'react-i18next';
 import { getAllThemes, getArticleCountByTheme } from '@/lib/multilingualArticleUtils';
+import { MULTILINGUAL_ARTICLES } from '@/data/articles';
 
 interface ArticleThemeChipsProps {
   selectedThemes: string[];
@@ -10,6 +11,7 @@ interface ArticleThemeChipsProps {
 export function ArticleThemeChips({ selectedThemes, onThemeToggle }: ArticleThemeChipsProps) {
   const { t } = useTranslation();
   const themes = getAllThemes();
+  const totalArticleCount = MULTILINGUAL_ARTICLES.length;
 
   return (
     <div className="flex flex-wrap gap-3 justify-center mb-8">
@@ -28,7 +30,7 @@ export function ArticleThemeChips({ selectedThemes, onThemeToggle }: ArticleThem
               : "hover:bg-saffron/10 hover:text-saffron hover:border-saffron/30"
           }`}
         >
-          {t('filters.allArticles')} (18)
+          {t('filters.allArticles')} ({totalArticleCount})
         </TagChip>
       </button>
 
