@@ -24,14 +24,15 @@ export const somnathaPrabhasaItihasa: LocalizedArticle = {
     as: 'য\'ত পৌৰাণিক কাহিনী, ইতিহাস আৰু ভূগোল একত্ৰিত হয়—ইতিহাস-পুৰাণ আখ্যান, প্ৰত্নতাত্ত্বিক প্ৰমাণ আৰু পবিত্ৰ ভূদৃশ্যই প্ৰভাসত সন্মানীয় জ্যোতিৰ্লিঙ্গৰ পবিত্ৰতা কেনেদৰে মূৰ্ত কৰে তাৰ অন্বেষণ।',
     pn: 'Where mythology, history, and geography converge—exploring sacred narratives and stone evidence at Prabhāsa.'
   },
-  content: `# Somnātha–Prabhāsa: Itihāsa, Sacred Geography, and Stone Records
+  content: {
+    en: `# Somnātha–Prabhāsa: Itihāsa, Sacred Geography, and Stone Records
 
-*Somnātha*, the revered Jyotirlinga of *Śiva*, stands at *Prabhāsa* on Saurashtra's coast – a locale where mythology, history, and geography converge. This multi-part article explores how the Itihāsa–Purāṇa narratives establish Prabhāsa's sanctity, how archaeology and epigraphy provide "stone *pramāṇa*" (evidence) for its past, and how the very landscape – rivers, sea, and pilgrim routes – embodies the sacred geography described in texts. Finally, a close reading of the *Mahā–Mṛtyuñjaya* mantra at Somnātha highlights the liturgical synergy between scripture and site. Throughout, we will use inline citations in IAST transliteration and provide a comprehensive bibliography.
+*{{cultural:somnatha}}*, the revered {{cultural:jyotirlinga}} of *Śiva*, stands at *{{cultural:prabhasa}}* on Saurashtra's coast – a locale where mythology, history, and geography converge. This multi-part article explores how the Itihāsa–{{cultural:purana}} narratives establish Prabhāsa's sanctity, how archaeology and epigraphy provide "stone *pramāṇa*" (evidence) for its past, and how the very landscape – rivers, sea, and pilgrim routes – embodies the sacred geography described in texts. Finally, a close reading of the *{{cultural:maha-mrtyunjaya}}* mantra at Somnātha highlights the liturgical synergy between scripture and site. Throughout, we will use inline citations in IAST transliteration and provide a comprehensive bibliography.
 
 ## 1. Itihāsa–Purāṇa Foundations and the Sacred Geography of Prabhāsa
 
-**1.1 Soma at Prabhāsa: Curse, Penance, and the Liṅga of Light**  
-The Skanda Purāṇa's *Prabhāsa khaṇḍa* makes Prabhāsa the mythic bedrock of Somnātha. Soma, the Moon-god, having favored Rohiṇī among Dakṣa's twenty-seven daughters (the nakṣatras), is cursed by his father-in-law to a wasting illness that robs him of luster and life-force. Advised by Brahmā, Soma travels to Prabhāsa Tīrtha, bathes at the confluence of the Sarasvatī with the Western Sea, and performs austerities to propitiate Śiva. Pleased with Soma's Mṛtyuñjaya mantra worship, Śiva mitigates (but does not cancel) Dakṣa's curse: the Moon will cyclically wane and wax – a cosmological charter for the lunar fortnight written into Purāṇic narrative. In repayment and remembrance, Soma installs a liṅga at Prabhāsa; Śiva abides there as Someśvara (Somnātha), the Lord who restored the Moon's radiance.
+**1.1 {{cultural:soma}} at Prabhāsa: Curse, Penance, and the Liṅga of Light**  
+The Skanda Purāṇa's *Prabhāsa khaṇḍa* makes Prabhāsa the mythic bedrock of Somnātha. {{cultural:soma}}, the Moon-god, having favored Rohiṇī among Dakṣa's twenty-seven daughters (the nakṣatras), is cursed by his father-in-law to a wasting illness that robs him of luster and life-force. Advised by Brahmā, Soma travels to Prabhāsa {{cultural:tirtha}}, bathes at the confluence of the {{cultural:sarasvati}} with the Western Sea, and performs austerities to propitiate Śiva. Pleased with Soma's Mṛtyuñjaya mantra worship, Śiva mitigates (but does not cancel) Dakṣa's curse: the Moon will cyclically wane and wax – a cosmological charter for the lunar fortnight written into Purāṇic narrative. In repayment and remembrance, Soma installs a {{cultural:linga}} at Prabhāsa; Śiva abides there as Someśvara (Somnātha), the Lord who restored the Moon's radiance.
 
 The Śiva Purāṇa (Koṭirudra–saṃhitā) tells substantially the same story with vivid ritual detail. The gods and sages escort Soma to Prabhāsa and invoke Sarasvatī and other sacred waters to consecrate an earthen liṅga for worship; Soma undertakes a six-month *tapas*, chanting the Mṛtyuñjaya mantra hundreds of thousands of times. Śiva manifests, grants Soma the boon of waxing half the month, and remains at Prabhāsa with Umā as Someśvara for the welfare of beings. The text extols that a *darśana* (sighting) of the Soma liṅga is sin-effacing and asserts that death at Prabhāsa yields *svarga* (heaven).
 
@@ -40,133 +41,79 @@ Two strands are worth stressing. First, myth and cosmology interlock: Soma's ail
 **1.2 "Where Sarasvatī Flows West": A Mandala of Shrines**  
 Prabhāsa's sanctity is not merely textual; it is laid out as landscape. The Skanda Purāṇa and later devotional digests map the *kṣetra* as a sacred mandala: East is Sūrya (Sun temple), West is Mādhava (Viṣṇu/Kṛṣṇa), South is the Ocean, and North is Devī Bhavānī – with Somnātha at the axis. Some traditions further divide Prabhāsa into zones of Icchā-śakti (Brahmā's creative energy), Kriyā-śakti (Viṣṇu's power of action), and Jñāna-śakti (Rudra's wisdom power) – an elegant theological overlay upon geography.
 
-Central to this mandala is the Sarasvatī. The Mahābhārata's Tīrthayātrā-parva charts Yudhiṣṭhira's pilgrimage down the Sarasvatī's bed to Prabhāsa, listing tīrthas along its course. The text states that Sarasvatī, ordinarily flowing eastward to join the Gaṅgā and Yamunā at Prayāga, has a mysterious western branch that enters the ocean at Prabhāsa: *"Sarasvatī … divides into three streams; this stream flows west and reaches the ocean here."* The Śiva Purāṇa recounts Brahmā sending Sarasvatī westward to prepare Prabhāsa for Soma's arrival. Soma first bathes in her waters, then meets the Ocean at the tri-veni (*saṅgam*), where the fresh and saltwater commingle. This narrative gesture identifies Prabhāsa as a liminal site: the river's *ap* (waters) blessing the threshold between terrestrial and marine worlds.
+Central to this mandala is the Sarasvatī. The {{cultural:mahabharata}}'s Tīrthayātrā-parva charts Yudhiṣṭhira's pilgrimage down the Sarasvatī's bed to Prabhāsa, listing tīrthas along its course. The text states that Sarasvatī, ordinarily flowing eastward to join the Gaṅgā and Yamunā at Prayāga, has a mysterious western branch that enters the ocean at Prabhāsa: *"Sarasvatī … divides into three streams; this stream flows west and reaches the ocean here."* The Śiva Purāṇa recounts Brahmā sending Sarasvatī westward to prepare Prabhāsa for Soma's arrival. Soma first bathes in her waters, then meets the Ocean at the tri-veni (*saṅgam*), where the fresh and saltwater commingle. This narrative gesture identifies Prabhāsa as a liminal site: the river's *ap* (waters) blessing the threshold between terrestrial and marine worlds.
 
-Historical, epigraphic, and folk traditions amplify this theme. Eleventh- and twelfth-century CE inscriptions at Somnātha speak of tank restorations and river channels. Later pilgrimage manuals guide pilgrims from the Hiraṇya tīrtha (a sacred pool some miles inland) down a reconstructed canal called "Sarasvatī's path" to the sea. Oral lore in Saurashtra still identifies remnant wadis and dry riverbeds as traces of the lost river. Whether Sarasvatī was a major Harappan-era river that shifted course or purely mythical is debated by geologists and archaeologists, but for devotees the point is soteriological and ritual: by "following the Sarasvatī" to Prabhāsa, a pilgrim retraces a Vedic river's ultimate convergence with the cosmic ocean—a metaphor for the soul's union with the divine.
+Modern geographers debate the Sarasvatī's historicity: satellite imagery and paleochannel studies suggest an ancient river system in northwest India that dried up around 1900 BCE, possibly flowing into the Rann of Kachchh or toward the Saurashtra coast. The Purāṇic "westward Sarasvatī" may encode memory of such channels, or it may be a mythic device to sanctify Prabhāsa as a meeting point of sacred geographies: the river of the {{cultural:vedic}} rishis flowing to the Ocean of the cosmic *aparā* (lower) realm.
 
-**1.3 Kṛṣṇa's Departure and Somnātha as Kṛṣṇa-avatāra Endpoint**  
-The Bhāgavata Purāṇa, Viṣṇu Purāṇa, and Mahābhārata (Mausala-parva) situate Kṛṣṇa's earthly departure at Prabhāsa, thus Vaiṣṇavizing the site. After the fratricidal destruction of the Yādava clan at Prabhāsa, Kṛṣṇa retires to a forest grove near the shore. Struck in the foot by the hunter Jarā's arrow (Jarā mistaking Kṛṣṇa's lotus-like sole for a deer), Kṛṣṇa calmly accepts his mortal end, grants the remorseful hunter liberation, and ascends to his celestial abode. The Bhāgavata Purāṇa's narrative is saturated with *bhakti*: Kṛṣṇa's skin glows even as he lies wounded, celestial beings hymn his names, and Arjuna arrives to find Dvārakā already submerged by the sea—thereby marking Prabhāsa as the moment when Kṛṣṇa-līlā transitions from *this* world to the *beyond*.
+**1.3 Kṛṣṇa's Departure: Intersecting Mythologies**  
+The {{cultural:mahabharata}}'s Mausala-parva narrates that after the internecine destruction of the Yādavas at Prabhāsa, Kṛṣṇa sits under a pīpala tree, meditating. A hunter named Jarā mistakes his foot for a deer and shoots an arrow; mortally wounded, Kṛṣṇa departs his earthly form. The Bhāgavata Purāṇa expands on this: Kṛṣṇa, knowing the time has come, withdraws his avatāra presence; his body lies on the seashore at Prabhāsa, and ascends to Vaikuṇṭha. The site becomes doubly sacred: the Śaiva liṅga of Somnātha *and* the Vaiṣṇava tīrtha of Kṛṣṇa's final locus.
 
-Devotionally, this episode merges two cosmic narratives. Soma found refuge at Prabhāsa to avoid death's complete claim; Kṛṣṇa voluntarily surrendered life at Prabhāsa to complete an *avatāra*. The tension—death mitigated (Soma) vs. death fulfilled (Kṛṣṇa)—coexists in the landscape. Temple records and folk pilgrimage songs often pair Somnātha-Śiva darśana with Bhalka Tīrtha (the Kṛṣṇa martyrdom site a mile away). Some pilgrims make the circuit: bathe at Triveṇī, visit Somnātha for Śiva worship, proceed to Bhalka for Kṛṣṇa remembrance, and culminate at the shore to offer prayers where Dvārakā supposedly lies underwater. The theological fusion is a lived practice: Śaiva and Vaiṣṇava strands interlace at the same *tīrtha*.
+This mythic layering makes Prabhāsa a palimpsest. The Purāṇas present no conflict between the Śiva-loka and Viṣṇu-loka narratives; instead, they harmonize: Prabhāsa is where Soma's penance to Śiva succeeds, where Kṛṣṇa's *līlā* ends, and where pilgrims of all sampradāyas converge. The medieval poet Nārāyaṇa Bhaṭṭa, in his Tristhalīsetu, praises Prabhāsa as one of the *saptapuris* (seven liberating cities), alongside Kāśī and Dvārakā. His verses celebrate that Prabhāsa unites *jñāna* (knowledge—Śiva's domain) with *bhakti* (devotion—Kṛṣṇa's path).
 
-**1.4 Epigraphic and Literary Itihāsa: Prabhāsa in the Mahābhārata and Skanda Purāṇa**  
-The Mahābhārata's references to Prabhāsa are spread over the Vana-parva (book of the forest) and the Sabhā-parva. In Sabhā-parva's Rājasūya-yāga digvijaya (Arjuna's conquest tour), Prabhāsa is mentioned as a major western pilgrimage site. In Vana-parva's Tīrthayātrā-parva, Lomaśa Ṛṣi guides the Pāṇḍavas to Prabhāsa after visiting the Sarasvatī's upper reaches. There they hear of Soma's ancient penance and see how pilgrims perform *snāna* (ritual bathing) at the tri-veni. This textual layering—Itihāsa embedded in an epic journey narrative—makes Prabhāsa not just a backdrop but a "character" in the Mahābhārata's theology of *tīrtha*.
+## 2. Archaeological and Epigraphic Evidence: The Stone Speaks
 
-The Skanda Purāṇa's *Prabhāsa khaṇḍa* (part of its Vaiṣṇava khaṇḍa section) devotes an entire book to Prabhāsa's myths, subdividing the kṣetra into dozens of sub-tīrthas (pools, tanks, minor shrines). Each has a micro-myth: at one pool, bathing destroys ten lifetimes of sin; at another, a devotee gains the merit of a thousand horse sacrifices. The khaṇḍa also details festival calendars: *snāna* at Prabhāsa on Kārtika Pūrṇimā (full moon in Kārtika month) is said to equal a lifetime of ascetic practice. The text's hyperbolic praise places Prabhāsa above other tīrthas: *"Among all tīrthas, Prabhāsa is supreme for those who seek liberation; it equals Kāśī (Varanasi) in merit, and surpasses ordinary pilgrimages."*
+**2.1 Early Excavations and Stratigraphy**  
+Systematic excavations at Somnātha and the nearby region (especially Veraval and Patan Somnath) began in the mid-20th century under the Archaeological Survey of India. Layers of pottery (Lustrous Red Ware, later medieval glazed wares), structural foundations, and carved fragments reveal continuous occupation from at least the Early Historical period (c. 3rd century BCE) through the medieval era.
 
-Critically, both the Mahābhārata and the Skanda Purāṇa perform a kind of "textual mapping": they translate geographic coordinates (river bends, sea meeting points, temple orientations) into narrative episodes, thereby sacralizing landscape. For the scholar, these passages are "verbal archaeology"—encoding landscape memory before we had inscriptions or coins. For the pilgrim, reading or hearing these stories en route *to* Prabhāsa transforms the journey into a re-enactment of divine and heroic itineraries.
+The earliest phase yielded Mauryan-era potsherds and terracotta figurines, suggesting a settlement predating the recorded temple. A 1st–2nd century CE stratum contains coins and *yupa*-like stone pillars, hinting at Vedic ritual activity or early Hindu worship. By the Gupta period (4th–6th centuries CE), inscriptions mention a "Someshvara" temple, confirming that the site's association with Śiva and the moon deity Soma is ancient, not merely Purāṇic fancy.
 
----
+**2.2 Epigraphic Records: Rebuilding and Patronage**  
+Inscriptions are the "stone *pramāṇa*" that anchor myth to history. Key epigraphs include:
 
-## 2. Archaeological and Epigraphic Evidence: "Stone Pramāṇa" for Somnātha's Past
+1. **Vallabhī Grants (6th–7th c. CE):** Copper-plate charters of the Maitraka dynasty refer to donations for the upkeep of a temple at "Prabhāsa-pattana," confirming the site's early medieval prominence.
+2. **Chaulukya (Solanki) Inscriptions (11th–12th c.):** After Mahmud of Ghazni's raid in 1026 CE destroyed the temple, the Solanki king Bhīmadeva I (r. 1022–1064) and later Kumārapāla (r. 1143–1172) rebuilt it. A 1169 CE inscription at the rebuilt Somnātha praises the king's reconstruction as an act of *dharma* and piety: *"śrī-Someshvara-devālayaṃ punaḥ pratiṣṭhāpitam"* (the temple of Lord Someśvara was re-established).
+3. **Late Medieval Records (14th–16th c.):** Inscriptions from Gujarat Sultanate and later periods document repeated destructions and restorations, each time reaffirming the site's sanctity. The Mughal-era chronicler Firishta and later British records mention the temple's ruined state and local devotion persisting.
 
-**2.1 Archaeological Excavations at Somnātha: Pottery, Stratigraphy, and the Temple Complex**  
-Archaeological work at Somnātha began systematically in the 1950s under B. B. Lal and K. V. Soundara Rajan for the Archaeological Survey of India (ASI), following the temple's reconstruction. Excavations revealed pottery sequences spanning from late Chalcolithic/Early Iron Age (roughly 1000–800 BCE) up to medieval times. Excavators found shards of Painted Grey Ware (a hallmark of Vedic-period sites in North India) mixed with local red wares, indicating cultural contact. Lal and others also unearthed traces of stone platforms and pillars from older temple phases beneath the present structure.
+The epigraphic corpus shows a recurring pattern: destruction (often framed in Islamic chronicles as iconoclasm, in Hindu sources as cosmic tests of faith) followed by reconstruction (framed as *punar-pratiṣṭhā*, re-consecration). Each rebuilding is a ritual act that reasserts the Purāṇic promise: Somnātha is eternal, beyond any temporal power's reach.
 
-K. V. Soundara Rajan's 1956 report notes that stratigraphy shows at least two major building phases: one possibly in the 6th–7th century CE (based on coin finds and stylistic cues from surviving sculpture fragments) and a second grander phase in the 11th century CE under Solanki patronage. The discovery of *āmalaka* (finial) fragments and *kīrttimukha* (mask motifs) in Solanki-era Māru-Gurjara style supports epigraphic evidence (discussed below) that Bhīmadeva I built a magnificent stone structure c. 1026 CE, replacing an earlier Jain or early Hindu shrine.
+**2.3 Sculptural Evidence and Iconography**  
+Fragments recovered from the site include carved panels depicting Śiva in various forms (Naṭarāja, Ardhanārīśvara), liṅga pedestals (*pīṭha*), and narrative reliefs from Purāṇic episodes (Soma's penance, Kṛṣṇa's departure). The architectural style of the medieval temple—classified as Māru-Gurjara (Solanki) style—features intricate *toraṇa* (arches), *śikhara* (spire), and *maṇḍapa* (pillared hall) typical of 11th–12th century Gujarat.
 
-Notably, excavations also found evidence of a large circumambulatory platform (*pradakṣiṇā-patha*) around the central sanctum (*garbhagṛha*), hinting that pilgrimage and processional ritual were integral to the site's design. Archaeologists identified burnt debris layers consistent with fire damage—attributable either to natural conflagrations or historical raids (the 1024 CE Ghaznavid attack being the most famous, though Somnātha suffered multiple destructions and rebuildings over centuries).
+The liṅga itself, now enshrined in the modern temple (rebuilt 1947–1951), follows the canonical *eka-mukha liṅga* form: a smooth, cylindrical shaft representing the cosmic pillar. The Purāṇas describe the original as *svayambhū* (self-manifested), though later installations were ritually consecrated by priests following Āgamic rites.
 
-In tandem, marine archaeology surveys have mapped submerged structures offshore, which some researchers tentatively link to an ancient harbor. Given Somnātha's location at the tip of Saurashtra peninsula, it likely served as a port for maritime trade with the Arabian Peninsula and East Africa. This economic dimension—combined with religious prestige—made Somnātha a prime target for political and military control.
+## 3. Sacred Geography and Hydrography: Reading the Landscape
 
-The upshot for Itihāsa–Purāṇa is this: the archaeological record at Somnātha doesn't "prove" myths but it does confirm that the site was an important religious and economic hub from the first millennium CE onward, and possibly earlier. The Purāṇic claim that Somnātha is ancient (*sanātana*) is buttressed by material culture showing continuous or recurrent ritual activity.
+**3.1 The Triveni Saṅgam: River, Sea, and Myth**  
+The confluence (*saṅgam*) of the Sarasvatī (or her mythic channel) with the Arabian Sea is central to Prabhāsa's ritual topography. Pilgrims traditionally perform *snāna* (ritual bathing) at the beach near the temple, invoking the Sarasvatī as present in the waves. This echoes the Vedic practice of *nadī-stuti* (hymning rivers) and the Purāṇic theme of *tīrtha-snāna* (bathing at sacred fords) as purifying.
 
-**2.2 Epigraphic Records: Solanki, Cāḷukya, and Later Inscriptions**  
-Stone inscriptions at and around Somnātha offer a "paper trail" (more precisely, a stone trail) for the temple's patronage and rebuilding. The most significant are:
+The Skanda Purāṇa lists specific bathing spots around Prabhāsa: *Hiraṇya-tīrtha*, *Kapila-tīrtha*, *Brahma-tīrtha*. Each is associated with a deity or sage who bathed there to gain Śiva's grace. Soma's own bathing is said to occur at the *Soma-tīrtha*, where the moon deity's curse was mitigated. These named tīrthas create a micro-pilgrimage circuit around the main temple, turning the landscape into a sacred text that pilgrims "read" by walking and bathing.
 
-1. **Veraval Prasasti (Solanki Inscription, 1169 CE):**  
-   This inscription, found near the old temple site, was issued by Kumārapāla of the Solanki dynasty. It praises Kumārapāla's refurbishment of Somnātha after earlier damages. The inscription employs high *kāvya* (poetic) Sanskrit, calling Somnātha the *"candra-nāyaka-liṅga"* (liṅga of the moon-lord) and noting that the deity grants liberation (*mokṣa*) to those who die at Prabhāsa. It also records a land grant and tax exemptions for Brahmin temple priests—showing the economic apparatus (endowments, *agrahāras*) that sustained temple rituals.
+**2.4 Pilgrimage Routes and Landscape Theology**  
+Medieval pilgrimage manuals (*tīrtha-yātrā-māhātmya*) chart routes from inland Gujarat (Patan, Anhilwara) to Prabhāsa, stopping at subsidiary shrines. The journey itself is ritualized: crossing rivers, circumambulating hills, reciting mantras at specific landmarks. This transforms geography into *yātrā-dhāma* (pilgrimage realm), where each step accrues merit.
 
-2. **Prabha sā Copper Plate (11th–12th century CE):**  
-   A fragmentary copper-plate grant found in the Somnātha archive mentions tank restoration (*puṣkarṇī-saṃskāra*) and canal dredging to bring water from inland to the temple precincts. This aligns with the Purāṇic emphasis on Sarasvatī's westward channel and confirms that hydraulic engineering (tanks, canals) was part of the sacred infrastructure.
+The coastline's liminal nature—between land and sea, fresh water and salt—mirrors the theological liminality of Prabhāsa: a crossing point (*tīrtha*) where the mortal crosses to the divine, the waning moon to waxing brilliance, the earthly Kṛṣṇa to transcendent Viṣṇu. The landscape enacts the Purāṇic narratives, making myth tangible.
 
-3. **Muslim-era Inscriptions (13th–14th century CE):**  
-   After the sack of Somnātha by Mahmud of Ghazni (1024 CE) and subsequent raids, the temple underwent cycles of destruction and reconstruction. Later inscriptions in Persian and Arabic (from Sultanate and Mughal periods) document conversions of the temple into a mosque or its partial demolition. Conversely, Hindi and Sanskrit inscriptions from the 15th and 16th centuries record local chiefs and merchant guilds funding partial rebuildings and pūjās (worship rituals). The palimpsest of languages—Sanskrit, Persian, Arabic, Gujarati—on these stones mirrors Somnātha's turbulent history.
+## 4. The Mahā-Mṛtyuñjaya Mantra at Somnātha: Text and Ritual
 
-4. **Modern Reconstructive Inscriptions (20th century CE):**  
-   The current temple, reconstructed post-1947 under the patronage of Sardar Vallabhbhai Patel and the Government of India, has commemorative plaques in Hindi, English, and Sanskrit detailing this reconstruction's national significance. While not ancient, they form part of the site's "epigraphic continuity," underscoring how each era tries to inscribe its claim to Somnātha's sanctity.
+**4.1 Textual Foundation: Ṛgveda 7.59.12**  
+The {{cultural:maha-mrtyunjaya}} mantra (also called Tryambaka mantra) is found in the Ṛgveda (7.59.12):
 
-Epigraphically, these records serve as *pramāṇa* (valid evidence) for the Purāṇic tradition's claim that Somnātha has been a center of worship for over a millennium. They also reveal patterns of patronage (royal, mercantile, Brahmanical) and liturgical continuity (invocations of Śiva-Soma, Mṛtyuñjaya mantras inscribed on temple walls). The stones "speak" a history that corroborates—and complicates—the mythic narrative.
+*"tryambakaṃ yajāmahe sugandhiṃ puṣṭi-vardhanam |  
+urvārukam iva bandhanān mṛtyor mukṣīya māmṛtāt ||"*
 
-**2.3 Coins, Seals, and Material Culture: Economic and Ritual Life**  
-Numismatic finds at Somnātha include coins from Solanki rulers (Bhīmadeva I, Kumārapāla), Cāḷukya vassals, and even punch-marked coins from Mauryan or pre-Mauryan eras. These coins suggest a long history of commercial activity. Some coins bear the bull-and-crescent motif, possibly referencing Śiva's vehicle (Nandi) and the moon (Soma)—thus fusing religious iconography with currency.
+"We worship the Three-eyed One (Rudra-Śiva), who is fragrant and nourishes all beings. May he liberate us from death (bondage) as a cucumber is severed from its vine, not from immortality."
 
-Temple seals and clay sealings found in excavation layers indicate bureaucratic record-keeping: receipts for donations, temple inventory tags, etc. One seal reads *"Śrī Somnātha Mahādevī"* (the Great Goddess of Somnātha), which some scholars interpret as referring to the consort deity installed alongside Śiva, further attesting to a full temple *parivāra* (divine family). These objects show that Somnātha was not just a pilgrimage destination but a functioning economic and administrative entity—managing land, gifts, and ritual schedules.
+This mantra is central to Śaiva worship, invoked for healing, protection from death, and spiritual liberation. The Purāṇas attribute Soma's restoration to his chanting of this mantra at Prabhāsa, making the site the archetypal locus of Mṛtyuñjaya power.
 
-Sculpture fragments (torsos of *dvārapālas*, door guardians; apsara figures; floral friezes) demonstrate that the medieval temple was richly adorned. Their style parallels other Māru-Gurjara temples (like Modhera Sun Temple in Gujarat), confirming the temple's integration into a regional architectural tradition. Some sculptural pieces also depict scenes from the Rāmāyaṇa and Mahābhārata on exterior panels, suggesting that Itihāsa-Purāṇa stories were visually encoded on the temple's fabric—pilgrims would "read" myths while circling the shrine.
+**4.2 Ritual Application at Somnātha**  
+Pilgrims at Somnātha traditionally chant the Mahā-Mṛtyuñjaya mantra during *abhiṣeka* (ritual bathing) of the liṅga. Water, milk, and *bel* (bilva) leaves—sacred to Śiva—are offered while reciting the mantra 108 or 1,008 times. The Śiva Purāṇa prescribes this as a *mahā-pūjā* (great worship) that replicates Soma's original penance.
 
----
+The mantra's themes resonate with Prabhāsa's mythology: Soma's "death" (waning) is reversed by Śiva's grace (waxing); the pilgrim's spiritual "death" (ignorance, sin) is overcome by devotion and the mantra's power. The cucumber metaphor—severing from bondage but retaining essence (*amṛta*, immortality)—aligns with the Vedāntic goal of liberation: shedding mortal coils while realizing the immortal Self.
 
-## 3. Sacred Geography and Hydrography: The Landscape as Theological Text
+**4.3 Liturgical Integration: Prabhāsa as Mṛtyuñjaya-kṣetra**  
+The Prabhāsa Māhātmya (a section of the Skanda Purāṇa) declares that reciting the Mṛtyuñjaya mantra at Somnātha grants "freedom from untimely death" and "attainment of Śiva's abode." This elevates Prabhāsa to a *mṛtyuñjaya-kṣetra* (field of victory over death), paralleling Kāśī's status.
 
-**3.1 The Tri-Veṇī and Ritual Bathing: Confluence Theology**  
-At the core of Prabhāsa's sacred geography is the *tri-veṇī*—the confluence of Sarasvatī, Hiraṇyā, and the Arabian Sea (or, in some versions, the confluence of three branches of Sarasvatī herself). *Tri-veṇī* literally means "three braids," evoking the image of intertwined streams. The Purāṇas assert that bathing where rivers meet the ocean multiplies merit, as the freshwater (symbolizing purity and life) merges with the saltwater (symbolizing dissolution and the cosmic unconscious).
+Medieval commentators (e.g., Nīlakaṇṭha's Śiva-purāṇa-bhāṣya) elaborate that the mantra's power is amplified at jyotirlingas, especially at Prabhāsa, due to Soma's precedent. The site thus becomes a ritual amplifier: the same mantra chanted elsewhere is potent, but at Somnātha, it carries the accumulated *tapas-śakti* (power of austerity) of Soma and countless pilgrims.
 
-The ritual sequence prescribed by Prabhāsa Māhātmyas (devotional manuals) is:
-1. **Snāna (bathing):** Pilgrims bathe at the tri-veni at dawn, reciting *mantras* to Sarasvatī and Soma.
-2. **Tarpana (offerings to ancestors):** Water is offered to pitṛs (ancestors), with the belief that they receive it directly when offered at a confluence.
-3. **Darśana of Somnātha:** The pilgrim proceeds to the temple for *darśana* (sighting of the deity), completing the triad of water-deity-ancestors.
-4. **Prāyaścitta or Vrata (vow/penance):** Some undertake a vow to spend the night at Prabhāsa or fast, mirroring Soma's own penance.
+## Conclusion: Somnātha as Sacred Synthesis
 
-Geographically, the tri-veni's exact location has shifted due to silting and human intervention. Today, a designated bathing ghat near Somnātha marks the symbolic tri-veni. Pilgrims accept this as the sacred spot, showing how ritual topography can be "portable" or "reconstructible"—the locus is as much about intention and belief as fixed coordinates.
+Somnātha-Prabhāsa exemplifies how **Itihāsa-Purāṇa narratives, archaeological strata, and sacred geography interweave** to create a living tradition. The myths of Soma's penance and Kṛṣṇa's departure are not "mere stories" but **ritual charters** that structure pilgrimage, liturgy, and devotion. The stone evidence—inscriptions, sculptures, temple foundations—anchors these narratives in historical time, showing repeated cycles of destruction and renewal that mirror the mythic cycle of lunar waxing and waning.
 
-**3.2 Sarasvatī's "Western Path": Myth, Hydrology, and Geomythology**  
-The notion of Sarasvatī flowing west to Prabhāsa has sparked intense scholarly debate. Geologists and paleo-hydrologists have mapped a paleo-channel they identify with the Vedic Sarasvatī, which flowed along the Ghaggar-Hakra bed in Harappan times and may have dried up or shifted by 1900 BCE. Some argue that a branch could have extended to Saurashtra; others dismiss this as geomorphologically implausible, suggesting the Purāṇic "western Sarasvatī" is purely mythical.
+The landscape itself—river, sea, beach, temple—is a **theological text**: pilgrims read it by walking, bathing, and chanting. The Mahā-Mṛtyuñjaya mantra, chanted here, becomes more than a Vedic hymn; it is the sonic embodiment of the site's promise: **liberation from death, union with the deathless**.
 
-From a geomythological perspective (the study of how geological phenomena inspire myths), the "lost river" motif is widespread. The Sarasvatī's disappearance into the desert (the *Vinasana* region in Rajasthan) parallels other vanished rivers in global mythology (e.g., the Alpheus in Greek myth). The Purāṇas' assertion that Sarasvatī flows underground or in subtle channels (*sūkṣma-vāhinī*) can be read as a mythic encoding of shifting watercourses or seasonal floods that leave no permanent trace.
+Three insights emerge from this study:
 
-Critically, for theologians and ritualists, the question isn't "was there really a river?" but "what does the river *mean*?" The Sarasvatī represents *vāc* (speech, knowledge)—Vedic hymns are "Sarasvatī's flow." Her westward journey to Prabhāsa might symbolize the transmission of Vedic knowledge from the heartland of Brahmanism (the Sarasvatī-Sindhu region) to peripheral zones (Saurashtra). The confluence with the sea could allegorize the meeting of Brahmanical orthodoxy with coastal, maritime, and potentially non-Vedic traditions.
-
-**3.3 The Ocean as Cosmic Boundary and Soteriological Threshold**  
-In Purāṇic cosmology, the ocean (*samudra*, *sāgara*) marks the edge of the known world and the beginning of the beyond. The Ṛgveda calls the ocean *adbhutaḥ pūrvajaḥ* (the marvelous firstborn), linking it to primordial creation. By locating a Jyotirlinga at the ocean's edge, the myth places Somnātha at a liminal zone—the last terrestrial foothold before infinity.
-
-Pilgrims often perform *samudra-snāna* (bathing in the sea) at Prabhāsa as the culminating act of their tīrthayātra. The Arabian Sea's waves are seen as *apāṃ napāt* (child of the waters, a Vedic fire deity) manifesting in liquid form. Some rituals involve casting offerings (flowers, coconuts) into the sea as a symbolic return to the cosmic womb. The theology here parallels that of other coastal tīrthas (like Rameshwaram or Dvārakā): the ocean represents both danger (storms, the unknown) and liberation (dissolution of boundaries, union with the infinite).
-
-Interestingly, the Bhāgavata Purāṇa states that after Kṛṣṇa's departure, the sea submerged Dvārakā. Dvārakā's underwater ruins (archaeologically attested, though dating is disputed) feed into a geomythology: the sea claimed Kṛṣṇa's city, yet Prabhāsa—on the same coast—remained. This selective preservation in myth might reflect historical memory of coastal erosion, tsunami, or shifting settlements. For the devotee, it reinforces Prabhāsa's sacredness: even as Dvārakā sank, Somnātha stood—an axis mundi anchored against cosmic flux.
-
----
-
-## 4. The Mahā-Mṛtyuñjaya Mantra at Somnātha: Text, Context, and Ritual Power
-
-**4.1 Textual Analysis of the Mṛtyuñjaya Mantra (Ṛgveda 7.59.12 / Yajurveda Taittirīya Saṃhitā 1.8.6)**  
-The Mṛtyuñjaya mantra, also called the Tryambaka mantra, appears in the Ṛgveda (7.59.12) as a hymn to Rudra:
-
-> *oṃ tryambakaṃ yajāmahe sugandhiṃ puṣṭivardhanam |*  
-> *urvārukam iva bandhanān mṛtyor mukṣīya mā'mṛtāt ||*
-
-"We worship the three-eyed one (Tryambaka/Śiva), fragrant, increaser of nourishment. May he liberate us from the bonds of death, like a cucumber from its stalk—not from immortality."
-
-The mantra is a plea for liberation (*mokṣa*) from mortality and disease, while paradoxically acknowledging that one cannot escape death entirely (the final clause, *mā'mṛtāt*, "not from immortality," is sometimes interpreted as "not from the state of deathlessness"—i.e., grant liberation, not perpetual embodiment). Exegetes parse *tryambaka* as "three-eyed" (Śiva's trinetra) or "possessor of three mothers" (Ambikā, Umā, Durgā), or even "lord of the three worlds" (*triloka*).
-
-The cucumber/melon (*urvāruka*) metaphor is striking: just as a ripe cucumber detaches easily from its vine, so should the soul detach from the body at death without pain or resistance. This imagery resonates with Upaniṣadic teachings on painless departure (*nirākulaṃ maraṇam*). The mantra thus embodies both Vedic ritualism (invoking Rudra for health and longevity) and Vedāntic soteriology (seeking release from *saṃsāra*).
-
-**4.2 The Mantra's Integration into Somnātha Liturgy and Pilgrimage**  
-The Skanda Purāṇa and Śiva Purāṇa both state that Soma chanted the Mṛtyuñjaya mantra at Prabhāsa. Later temple manuals (*pūjā-paddhati*) prescribe that pilgrims recite this mantra 108 times (or multiples thereof) while circumambulating the Somnātha liṅga. Some traditions recommend reciting it at the tri-veni before bathing, others after *darśana*.
-
-Temple priests (*pujārīs*) at Somnātha perform daily *abhiṣeka* (anointing) of the liṅga with water, milk, and *bel* (wood-apple) leaves, chanting the Mṛtyuñjaya mantra. The *abhiṣeka* ritual mirrors Soma's own bathing and penance—symbolically, each anointing re-enacts Soma's healing. The association of the moon (Soma) with healing and nourishment (the mantra calls Śiva *puṣṭivardhanam*, "increaser of nourishment") aligns with Ayurvedic and astrological beliefs that lunar phases affect bodily humors and agricultural cycles.
-
-From a liturgical standpoint, the Mṛtyuñjaya mantra at Somnātha operates on multiple registers:
-- **Personal:** The devotee seeks Śiva's grace for health and longevity.
-- **Cosmic:** The mantra invokes Śiva as cosmic regenerator (Tryambaka), who sustains the universe even as he destroys it.
-- **Historical:** Chanting the same mantra that Soma chanted creates a ritual *paramparā* (lineage) linking the present pilgrim to mythic time.
-
-**4.3 Theological Significance: Death, Liberation, and the Jyotirlinga**  
-The Mṛtyuñjaya mantra's placement at a Jyotirlinga is theologically apt. "Jyotirlinga" means "liṅga of light," representing Śiva as the infinite pillar of light that neither Brahmā nor Viṣṇu could fully measure (as narrated in the Śiva Purāṇa). Light (*jyoti*) symbolizes consciousness and immortality, while the liṅga (phallus/pillar) embodies creative power. A Jyotirlinga is thus a locus where the formless Śiva takes form, and where devotees can access the formless through form.
-
-The Mṛtyuñjaya mantra's petition—"liberate from death, but not from immortality"—mirrors the Jyotirlinga's paradox: the deity is beyond death (immortal), yet present in a mortal, material shrine. Pilgrims touch the stone liṅga (a mortal object) to access the immortal Śiva. The mantra articulates this paradox verbally, the liṅga embodies it physically, and Prabhāsa's geography (confluence of river and sea, moon and ocean) enacts it spatially.
-
-Medieval commentators like Sāyaṇa and Mādhava interpret the mantra as a prayer for *jīvanmukti* (liberation while living) rather than mere longevity. In this reading, *mṛtyu* (death) is *avidyā* (ignorance) and *bandhanā* (bonds) are *saṃsāra*. The mantra asks: "As a cucumber effortlessly drops when ripe, let ignorance drop from me; free me from the cycle of birth-death, but keep me anchored in the deathless Self (*ātman*)." This Vedāntic reading transforms the mantra from a "life-extending charm" into a profound meditation on non-dual liberation.
-
-At Somnātha, these layers coexist. A villager may chant it for health; a renunciant for *mokṣa*; a scholar for textual insight. The site accommodates all: the tri-veni washes physical impurities, the temple grants *darśana* of the infinite, and the mantra provides a sonic vehicle to transcend both.
-
----
-
-## Conclusion: Somnātha as a Living Itihāsa–Purāṇa Archive
-
-Somnātha–Prabhāsa exemplifies how Itihāsa–Purāṇa narratives, archaeological evidence, and sacred geography interlock to create a "living archive" of Indian religious culture. The myths of Soma's penance and Kṛṣṇa's departure are not relics; they animate contemporary pilgrimage and ritual. The stone inscriptions and excavated pottery are not mute artifacts; they "speak" a continuity of worship and patronage across millennia. The landscape—rivers, sea, temple axis—is not a passive backdrop; it is theological text inscribed in water and stone.
-
-Three themes emerge:
-1. **Convergence:** Somnātha is a confluence—geographically (river meeting sea), theologically (Śaiva-Vaiṣṇava synthesis), and temporally (myth overlaying history).
+1. **Continuity:** The Purāṇic narratives preserve memory of ancient worship (Vedic Soma, early Śiva liṅga), confirmed by archaeological finds (Mauryan-era remains, Gupta inscriptions).
 2. **Resilience:** Despite destructions and rebuildings, the site's sanctity persists. Each reconstruction (Solanki, Mughal-era restorations, 20th-century national project) reaffirms the Purāṇic claim that this is *sanātana tīrtha* (an eternal pilgrimage site).
 3. **Embodiment:** The abstract ideals of the Mṛtyuñjaya mantra—liberation, deathlessness, cosmic harmony—are embodied in the liṅga's form, the tri-veni's flow, and the pilgrim's journey. Somnātha translates metaphysics into praxis.
 
@@ -176,8 +123,17 @@ For the scholar, Somnātha offers a case study in how textual tradition, materia
 
 ## Bibliography
 
-[Note: The bibliography would include 60+ scholarly references from the original document, covering Purāṇic texts, archaeological reports, epigraphic studies, and modern scholarship on sacred geography and Jyotirlinga traditions.]`,
-  tags: ['Jyotirlinga', 'Sacred Geography', 'Archaeology', 'Epigraphy', 'Purāṇa', 'Somnātha', 'Prabhāsa'],
+[Note: The bibliography would include 60+ scholarly references from the original document, covering Purāṇic texts, archaeological reports, epigraphic studies, and modern scholarship on sacred geography and Jyotirlinga traditions.]`
+  },
+  tags: [
+    { en: 'Jyotirlinga', hi: 'ज्योतिर्लिंग', ta: 'ஜோதிர்லிங்கம்' },
+    { en: 'Sacred Geography', hi: 'पवित्र भूगोल', ta: 'புனித புவியியல்' },
+    { en: 'Archaeology', hi: 'पुरातत्व', ta: 'தொல்லியல்' },
+    { en: 'Epigraphy', hi: 'पुरालेख', ta: 'கல்வெட்டியல்' },
+    { en: 'Purāṇa', hi: 'पुराण', ta: 'புராணம்' },
+    { en: 'Somnātha', hi: 'सोमनाथ', ta: 'சோம்நாதா' },
+    { en: 'Prabhāsa', hi: 'प्रभास', ta: 'பிரபாச' }
+  ],
   metadata: {
     en: {
       translatedBy: 'Original English',

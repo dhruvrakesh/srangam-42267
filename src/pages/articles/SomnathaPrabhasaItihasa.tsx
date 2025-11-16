@@ -1,12 +1,13 @@
 import React from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { ArticleLayout } from '@/components/articles/ArticleLayout';
+import { useLanguage } from '@/components/language/LanguageProvider';
+import { ArticlePage } from '@/components/articles/ArticlePage';
 import { somnathaPrabhasaItihasa } from '@/data/articles/somnatha-prabhasa-itihasa';
 import { ARTICLE_METADATA } from '@/data/articles';
 import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
 import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { JyotirlingaMap } from '@/components/articles/maps/JyotirlingaMap';
+import { IconOm } from '@/components/icons/IconOm';
 
 export const SomnathaPrabhasaItihasa: React.FC = () => {
   const { currentLanguage } = useLanguage();
@@ -17,31 +18,31 @@ export const SomnathaPrabhasaItihasa: React.FC = () => {
     ? ((somnathaPrabhasaItihasa.content as any)[currentLanguage] as string || '')
     : somnathaPrabhasaItihasa.content as string;
 
-  const dataComponents = [
-    {
-      component: (
-        <ErrorBoundary 
-          key="jyotirlinga-map"
-          fallback={
-            <div className="my-12 p-8 border border-border rounded-lg text-center bg-muted/30">
-              <p className="text-muted-foreground">Map temporarily unavailable</p>
-              <p className="text-xs text-muted-foreground mt-2">Please refresh to try again</p>
-            </div>
-          }
-        >
-          <JyotirlingaMap />
-        </ErrorBoundary>
-      ),
-      position: 'after-section-1' as const
-    }
-  ];
-
   return (
-    <ArticleLayout
-      article={somnathaPrabhasaItihasa}
-      metadata={metadata}
-      dataComponents={dataComponents}
-    >
+    <>
+      <ArticlePage
+        title={somnathaPrabhasaItihasa.title}
+        dek={somnathaPrabhasaItihasa.dek}
+        content={somnathaPrabhasaItihasa.content}
+        tags={somnathaPrabhasaItihasa.tags}
+        icon={IconOm}
+        readTime={metadata.readTime}
+        author={metadata.author}
+        date={metadata.date}
+        dataComponents={[
+          <ErrorBoundary 
+            key="jyotirlinga-map"
+            fallback={
+              <div className="my-12 p-8 border border-border rounded-lg text-center bg-muted/30">
+                <p className="text-muted-foreground">Map temporarily unavailable</p>
+                <p className="text-xs text-muted-foreground mt-2">Please refresh to try again</p>
+              </div>
+            }
+          >
+            <JyotirlingaMap />
+          </ErrorBoundary>
+        ]}
+      />
       <NarrationErrorBoundary>
         <UniversalNarrator
           content={contentForNarration}
@@ -51,7 +52,7 @@ export const SomnathaPrabhasaItihasa: React.FC = () => {
           autoAnalyze={true}
         />
       </NarrationErrorBoundary>
-    </ArticleLayout>
+    </>
   );
 };
 

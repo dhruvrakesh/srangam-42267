@@ -7,6 +7,8 @@ import { cosmicIslandCulturalTerms } from './cultural-terms-cosmic-island';
 import { stonePuranaCulturalTerms } from './cultural-terms-stone-purana';
 import { scriptsSailedIICulturalTerms } from './cultural-terms-scripts-sailed-ii';
 import { geomythologyCulturalTerms } from './cultural-terms-geomythology';
+import { somnathaPrabhasaCulturalTerms } from './cultural-terms-somnatha-prabhasa';
+import { ringingRocksCulturalTerms } from './cultural-terms-ringing-rocks';
 
 export const culturalTermsDatabase: Record<string, CulturalTerm> = {
   ...enhancedCulturalTerms,
@@ -15,6 +17,8 @@ export const culturalTermsDatabase: Record<string, CulturalTerm> = {
   ...stonePuranaCulturalTerms,
   ...scriptsSailedIICulturalTerms,
   ...geomythologyCulturalTerms,
+  ...somnathaPrabhasaCulturalTerms,
+  ...ringingRocksCulturalTerms,
   'dharma': {
     term: 'dharma',
     translations: {
