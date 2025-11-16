@@ -1,12 +1,8 @@
-import React, { lazy, Suspense } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
-
-const JyotirlingaMap = lazy(() => 
-  import('./JyotirlingaMap').then(module => ({ 
-    default: module.JyotirlingaMap 
-  }))
-);
+import { JyotirlingaMap } from './JyotirlingaMap';
+import { ClientSideMapWrapper } from './ClientSideMapWrapper';
 
 function MapLoadingFallback() {
   return (
@@ -38,8 +34,8 @@ interface LazyJyotirlingaMapProps {
 
 export function LazyJyotirlingaMap(props: LazyJyotirlingaMapProps) {
   return (
-    <Suspense fallback={<MapLoadingFallback />}>
+    <ClientSideMapWrapper fallback={<MapLoadingFallback />}>
       <JyotirlingaMap {...props} />
-    </Suspense>
+    </ClientSideMapWrapper>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -82,140 +82,93 @@ const DAKSHINAPATHA: [number, number][] = [
 ];
 
 export const AncientTradeRoutesMap = () => {
-  // SSR guard - ensure we're in browser environment
-  if (typeof window === 'undefined') {
-    return (
-      <Card className="w-full my-8">
-        <CardHeader>
-          <CardTitle>Ancient Trade Routes: Uttarāpatha & Dakṣiṇāpatha</CardTitle>
-          <CardDescription>Map requires browser environment...</CardDescription>
-        </CardHeader>
-        <CardContent className="h-[600px] flex items-center justify-center">
-          <p className="text-muted-foreground">Map requires browser environment...</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const [isMounted, setIsMounted] = useState(false);
-  const [hasError, setHasError] = useState(false);
-  const [leafletReady, setLeafletReady] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      setHasError(true);
-      return;
-    }
-    
-    const timer = setTimeout(() => {
-      try {
-        // Verify Leaflet is fully loaded before initializing map
-        if (typeof L !== 'undefined' && L.Icon && L.Icon.Default) {
-          setLeafletReady(true);
-          setIsMounted(true);
-          console.log('AncientTradeRoutesMap: Leaflet initialized successfully');
-        } else {
-          throw new Error('Leaflet not fully initialized');
-        }
-      } catch (e) {
-        console.error('AncientTradeRoutesMap initialization error:', e);
-        setHasError(true);
-      }
-    }, 200);
-    
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (hasError) {
-    return (
-      <Card className="w-full my-8">
-        <CardHeader>
-          <CardTitle>Ancient Trade Routes: Uttarāpatha & Dakṣiṇāpatha</CardTitle>
-          <CardDescription>Map initialization failed</CardDescription>
-        </CardHeader>
-        <CardContent className="h-[600px] flex items-center justify-center">
-          <p className="text-muted-foreground">Map initialization failed. Please refresh the page.</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!isMounted || !leafletReady) {
-    return (
-      <Card className="w-full my-8">
-        <CardHeader>
-          <CardTitle>Ancient Trade Routes: Uttarāpatha & Dakṣiṇāpatha</CardTitle>
-          <CardDescription>Loading map...</CardDescription>
-        </CardHeader>
-        <CardContent className="h-[600px] flex items-center justify-center">
-          <p className="text-muted-foreground">Loading map...</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card className="w-full my-8">
       <CardHeader>
         <CardTitle>Ancient Trade Routes: Uttarāpatha & Dakṣiṇāpatha</CardTitle>
         <CardDescription>
-          Exploring the northern and southern corridors that connected India's ancient cities
+          Major trade arteries connecting northern and southern India in antiquity
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6">
         <div className="relative h-[600px] rounded-lg overflow-hidden border border-border">
           <MapContainer
-            key="ancient-trade-routes-map-container"
             center={[19.0, 79.0]}
             zoom={5}
             style={{ height: '100%', width: '100%' }}
             className="z-0"
-            whenReady={() => console.log('AncientTradeRoutesMap: MapContainer ready')}
           >
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             
+            {/* Uttarāpatha Route (Northern) */}
             <Polyline
               positions={UTTARAPATHA}
-              pathOptions={{ color: '#FF6B35', weight: 4, opacity: 0.7 }}
+              pathOptions={{
+                color: '#3b82f6',
+                weight: 3,
+                opacity: 0.7
+              }}
             />
             
+            {/* Dakṣiṇāpatha Route (Southern) */}
             <Polyline
               positions={DAKSHINAPATHA}
-              pathOptions={{ color: '#004E89', weight: 4, opacity: 0.7 }}
+              pathOptions={{
+                color: '#f97316',
+                weight: 3,
+                opacity: 0.7
+              }}
             />
             
-            {ANCIENT_CITIES.map((city, index) => (
-              <Marker key={index} position={city.coords}>
-                <Popup>
-                  <div className="p-2">
-                    <h3 className="font-bold text-lg mb-2">{city.name}</h3>
+            {/* City Markers */}
+            {ANCIENT_CITIES.map((city) => (
+              <Marker
+                key={city.name}
+                position={city.coords}
+              >
+                <Popup maxWidth={300}>
+                  <div className="space-y-2 p-2">
+                    <h3 className="font-bold text-lg">{city.name}</h3>
                     <div className="space-y-1 text-sm">
-                      <p><span className="font-semibold">Modern:</span> {city.modernName}</p>
-                      <p><span className="font-semibold">Age:</span> {city.age}</p>
-                      <p><span className="font-semibold">Dynasty:</span> {city.dynasty}</p>
-                      <p className="text-xs text-muted-foreground mt-2">{city.significance}</p>
+                      <p><strong>Modern:</strong> {city.modernName}</p>
+                      <p><strong>Age:</strong> {city.age}</p>
+                      <p><strong>Dynasty:</strong> {city.dynasty}</p>
+                      <p className="text-muted-foreground">{city.significance}</p>
+                      <p className="mt-2">
+                        <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                          city.route === 'uttarapatha' ? 'bg-blue-100 text-blue-700' :
+                          city.route === 'dakshinapatha' ? 'bg-orange-100 text-orange-700' :
+                          'bg-purple-100 text-purple-700'
+                        }`}>
+                          {city.route === 'uttarapatha' ? 'Uttarāpatha' :
+                           city.route === 'dakshinapatha' ? 'Dakṣiṇāpatha' :
+                           'Both Routes'}
+                        </span>
+                      </p>
                     </div>
                   </div>
                 </Popup>
               </Marker>
             ))}
           </MapContainer>
-          
-          <div className="absolute bottom-4 right-4 z-[1000] bg-background/95 backdrop-blur-sm p-4 rounded-lg border border-border shadow-lg">
-            <div className="text-sm font-semibold mb-2 text-foreground">Ancient Trade Routes</div>
-            <div className="space-y-2 text-xs">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-0.5 bg-[#FF6B35]"></div>
-                <span className="text-muted-foreground">Uttarāpatha (Northern)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-0.5 bg-[#004E89]"></div>
-                <span className="text-muted-foreground">Dakṣiṇāpatha (Southern)</span>
-              </div>
-            </div>
+        </div>
+        
+        {/* Legend */}
+        <div className="mt-4 flex flex-wrap gap-6 text-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-1 bg-blue-500" />
+            <span>Uttarāpatha (Northern Route)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-1 bg-orange-500" />
+            <span>Dakṣiṇāpatha (Southern Route)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full bg-primary" />
+            <span>Ancient Cities</span>
           </div>
         </div>
       </CardContent>
