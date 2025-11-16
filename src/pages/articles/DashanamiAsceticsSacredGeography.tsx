@@ -4,7 +4,7 @@ import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
 import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 import { IconOm } from '@/components/icons/IconOm';
 import { DataComponentErrorBoundary } from '@/components/articles/DataComponentErrorBoundary';
-import { LazyJyotirlingaMap } from '@/components/articles/maps/LazyJyotirlingaMap';
+import { JyotirlingaMap } from '@/components/articles/maps/JyotirlingaMap';
 import { dashanamiAsceticsSacredGeography } from '@/data/articles/dashanami-ascetics-sacred-geography';
 import { useLanguage } from '@/components/language/LanguageProvider';
 
@@ -28,7 +28,7 @@ export default function DashanamiAsceticsSacredGeography() {
             key="jyotirlinga-map" 
             componentName="Sacred Geography Map"
           >
-            <LazyJyotirlingaMap />
+            <JyotirlingaMap />
           </DataComponentErrorBoundary>
         ]}
       />

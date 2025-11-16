@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -82,6 +83,34 @@ const DAKSHINAPATHA: [number, number][] = [
 ];
 
 export const AncientTradeRoutesMap = () => {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsMounted(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!isMounted) {
+    return (
+      <Card className="w-full my-8">
+        <CardHeader>
+          <CardTitle>Ancient Trade Routes: Uttarāpatha & Dakṣiṇāpatha</CardTitle>
+          <CardDescription>
+            Loading interactive trade routes map...
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[600px] rounded-lg bg-muted/20 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-3">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Initializing ancient trade routes visualization...</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="w-full my-8">
       <CardHeader>
@@ -122,42 +151,33 @@ export const AncientTradeRoutesMap = () => {
                 opacity: 0.7
               }}
             />
-            
+
             {/* City Markers */}
             {ANCIENT_CITIES.map((city) => (
               <Marker
                 key={city.name}
                 position={city.coords}
               >
-                <Popup maxWidth={300}>
-                  <div className="space-y-2 p-2">
-                    <h3 className="font-bold text-lg">{city.name}</h3>
-                    <div className="space-y-1 text-sm">
-                      <p><strong>Modern:</strong> {city.modernName}</p>
-                      <p><strong>Age:</strong> {city.age}</p>
-                      <p><strong>Dynasty:</strong> {city.dynasty}</p>
-                      <p className="text-muted-foreground">{city.significance}</p>
-                      <p className="mt-2">
-                        <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                          city.route === 'uttarapatha' ? 'bg-blue-100 text-blue-700' :
-                          city.route === 'dakshinapatha' ? 'bg-orange-100 text-orange-700' :
-                          'bg-purple-100 text-purple-700'
-                        }`}>
-                          {city.route === 'uttarapatha' ? 'Uttarāpatha' :
-                           city.route === 'dakshinapatha' ? 'Dakṣiṇāpatha' :
-                           'Both Routes'}
-                        </span>
-                      </p>
-                    </div>
+                <Popup>
+                  <div className="p-2 space-y-1">
+                    <h3 className="font-bold text-base">{city.name}</h3>
+                    <p className="text-sm text-muted-foreground">Modern: {city.modernName}</p>
+                    <p className="text-sm"><strong>Age:</strong> {city.age}</p>
+                    <p className="text-sm"><strong>Dynasty:</strong> {city.dynasty}</p>
+                    <p className="text-sm mt-1">{city.significance}</p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Route: {city.route === 'uttarapatha' ? 'Uttarāpatha' : 
+                               city.route === 'dakshinapatha' ? 'Dakṣiṇāpatha' : 
+                               'Both routes'}
+                    </p>
                   </div>
                 </Popup>
               </Marker>
             ))}
           </MapContainer>
         </div>
-        
-        {/* Legend */}
-        <div className="mt-4 flex flex-wrap gap-6 text-sm">
+
+        <div className="mt-6 flex flex-wrap gap-4 text-sm">
           <div className="flex items-center gap-2">
             <div className="w-8 h-1 bg-blue-500" />
             <span>Uttarāpatha (Northern Route)</span>
@@ -165,10 +185,6 @@ export const AncientTradeRoutesMap = () => {
           <div className="flex items-center gap-2">
             <div className="w-8 h-1 bg-orange-500" />
             <span>Dakṣiṇāpatha (Southern Route)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-primary" />
-            <span>Ancient Cities</span>
           </div>
         </div>
       </CardContent>
