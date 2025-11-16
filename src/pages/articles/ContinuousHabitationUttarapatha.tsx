@@ -4,7 +4,7 @@ import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
 import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 import { IconOm } from '@/components/icons/IconOm';
 import { DataComponentErrorBoundary } from '@/components/articles/DataComponentErrorBoundary';
-import { LazyAncientTradeRoutesMap } from '@/components/articles/maps/LazyAncientTradeRoutesMap';
+import { AncientTradeRoutesMap } from '@/components/articles/maps/AncientTradeRoutesMap';
 import { ContinuousHabitationTimeline } from '@/components/articles/enhanced/ContinuousHabitationTimeline';
 import { ArchaeologicalStrataViewer } from '@/components/articles/enhanced/ArchaeologicalStrataViewer';
 import { continuousHabitationUttarapatha } from '@/data/articles/continuous-habitation-uttarapatha';
@@ -30,7 +30,7 @@ export default function ContinuousHabitationUttarapatha() {
             key="trade-routes-map" 
             componentName="Ancient Trade Routes Map"
           >
-            <LazyAncientTradeRoutesMap />
+            <AncientTradeRoutesMap />
           </DataComponentErrorBoundary>,
           <DataComponentErrorBoundary 
             key="habitation-timeline" 
