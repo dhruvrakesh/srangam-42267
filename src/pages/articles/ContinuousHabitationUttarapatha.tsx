@@ -3,7 +3,8 @@ import { ArticlePage } from '@/components/articles/ArticlePage';
 import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
 import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 import { IconOm } from '@/components/icons/IconOm';
-import { AncientTradeRoutesMap } from '@/components/articles/maps/AncientTradeRoutesMap';
+import { DataComponentErrorBoundary } from '@/components/articles/DataComponentErrorBoundary';
+import { LazyAncientTradeRoutesMap } from '@/components/articles/maps/LazyAncientTradeRoutesMap';
 import { ContinuousHabitationTimeline } from '@/components/articles/enhanced/ContinuousHabitationTimeline';
 import { ArchaeologicalStrataViewer } from '@/components/articles/enhanced/ArchaeologicalStrataViewer';
 import { continuousHabitationUttarapatha } from '@/data/articles/continuous-habitation-uttarapatha';
@@ -24,7 +25,26 @@ export default function ContinuousHabitationUttarapatha() {
         readTime={35}
         author="Śrīraṅgam Research Team"
         date="2024-01-16"
-        dataComponents={[]}
+        dataComponents={[
+          <DataComponentErrorBoundary 
+            key="trade-routes-map" 
+            componentName="Ancient Trade Routes Map"
+          >
+            <LazyAncientTradeRoutesMap />
+          </DataComponentErrorBoundary>,
+          <DataComponentErrorBoundary 
+            key="habitation-timeline" 
+            componentName="Continuous Habitation Timeline"
+          >
+            <ContinuousHabitationTimeline />
+          </DataComponentErrorBoundary>,
+          <DataComponentErrorBoundary 
+            key="archaeological-strata" 
+            componentName="Archaeological Strata Viewer"
+          >
+            <ArchaeologicalStrataViewer />
+          </DataComponentErrorBoundary>
+        ]}
       />
       <NarrationErrorBoundary>
         <div className="fixed bottom-4 right-4 z-50">

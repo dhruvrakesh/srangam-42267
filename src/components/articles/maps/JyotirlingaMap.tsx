@@ -30,13 +30,44 @@ interface JyotirlingaMapProps {
 }
 
 export function JyotirlingaMap({ selectedSite }: JyotirlingaMapProps) {
+  // SSR guard - ensure we're in browser environment
+  if (typeof window === 'undefined') {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <span className="text-2xl">🕉️</span>
+            The Twelve Jyotirliṅgas: Sacred Geography of Śiva Worship
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[600px] flex items-center justify-center bg-muted/20 rounded-lg">
+            <p className="text-muted-foreground">Map requires browser environment...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const [isMounted, setIsMounted] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const [activeSite, setActiveSite] = useState<JyotirlingaSite | null>(null);
 
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      setHasError(true);
+      return;
+    }
+    
     const timer = setTimeout(() => {
-      setIsMounted(true);
-    }, 100);
+      try {
+        setIsMounted(true);
+      } catch (e) {
+        console.error('JyotirlingaMap initialization error:', e);
+        setHasError(true);
+      }
+    }, 150);
+    
     return () => clearTimeout(timer);
   }, []);
 
@@ -47,13 +78,64 @@ export function JyotirlingaMap({ selectedSite }: JyotirlingaMapProps) {
     }
   }, [selectedSite]);
 
-  if (!isMounted) {
+  if (hasError) {
     return (
-      <div className="flex items-center justify-center h-[600px] bg-muted/20 rounded-lg">
-        <div className="text-muted-foreground">Initializing sacred geography map...</div>
-      </div>
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <span className="text-2xl">🕉️</span>
+            The Twelve Jyotirliṅgas: Sacred Geography of Śiva Worship
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[600px] flex items-center justify-center bg-muted/20 rounded-lg">
+            <p className="text-muted-foreground">Map initialization failed. Please refresh the page.</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
+
+  if (!isMounted) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <span className="text-2xl">🕉️</span>
+            The Twelve Jyotirliṅgas: Sacred Geography of Śiva Worship
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[600px] flex items-center justify-center bg-muted/20 rounded-lg">
+            <div className="text-muted-foreground">Initializing sacred geography map...</div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  try {
+    return renderMap();
+  } catch (e) {
+    console.error('JyotirlingaMap render error:', e);
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <span className="text-2xl">🕉️</span>
+            The Twelve Jyotirliṅgas: Sacred Geography of Śiva Worship
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[600px] flex items-center justify-center bg-muted/20 rounded-lg">
+            <p className="text-muted-foreground">Map rendering failed. Please try refreshing.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  function renderMap() {
 
   return (
     <Card className="w-full">
@@ -226,4 +308,5 @@ export function JyotirlingaMap({ selectedSite }: JyotirlingaMapProps) {
       </CardContent>
     </Card>
   );
+  }
 }
