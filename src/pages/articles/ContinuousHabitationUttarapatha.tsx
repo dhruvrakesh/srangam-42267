@@ -2,6 +2,7 @@ import React from 'react';
 import { ArticlePage } from '@/components/articles/ArticlePage';
 import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
 import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { IconOm } from '@/components/icons/IconOm';
 import { DataComponentErrorBoundary } from '@/components/articles/DataComponentErrorBoundary';
 import { AncientTradeRoutesMap } from '@/components/articles/maps/AncientTradeRoutesMap';
@@ -12,7 +13,10 @@ import { useLanguage } from '@/components/language/LanguageProvider';
 
 export default function ContinuousHabitationUttarapatha() {
   const { currentLanguage } = useLanguage();
-  const content = continuousHabitationUttarapatha.content[currentLanguage] as string;
+  
+  const contentForNarration = typeof continuousHabitationUttarapatha.content === 'object'
+    ? ((continuousHabitationUttarapatha.content as any)[currentLanguage] as string || '')
+    : continuousHabitationUttarapatha.content as string;
 
   return (
     <>
@@ -26,12 +30,17 @@ export default function ContinuousHabitationUttarapatha() {
         author="Śrīraṅgam Research Team"
         date="2024-01-16"
         dataComponents={[
-          <DataComponentErrorBoundary 
-            key="trade-routes-map" 
-            componentName="Ancient Trade Routes Map"
+          <ErrorBoundary 
+            key="trade-routes-map"
+            fallback={
+              <div className="my-12 p-8 border border-border rounded-lg text-center bg-muted/30">
+                <p className="text-muted-foreground">Map temporarily unavailable</p>
+                <p className="text-xs text-muted-foreground mt-2">Please refresh to try again</p>
+              </div>
+            }
           >
             <AncientTradeRoutesMap />
-          </DataComponentErrorBoundary>,
+          </ErrorBoundary>,
           <DataComponentErrorBoundary 
             key="habitation-timeline" 
             componentName="Continuous Habitation Timeline"
@@ -47,14 +56,13 @@ export default function ContinuousHabitationUttarapatha() {
         ]}
       />
       <NarrationErrorBoundary>
-        <div className="fixed bottom-4 right-4 z-50">
-          <UniversalNarrator
-            content={content}
-            contentType="article"
-            articleSlug="continuous-habitation-uttarapatha"
-            variant="floating"
-          />
-        </div>
+        <UniversalNarrator
+          content={contentForNarration}
+          contentType="article"
+          articleSlug="continuous-habitation-uttarapatha"
+          variant="sticky-bottom"
+          autoAnalyze={true}
+        />
       </NarrationErrorBoundary>
     </>
   );
