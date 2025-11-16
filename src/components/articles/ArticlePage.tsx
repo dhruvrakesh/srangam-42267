@@ -4,10 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { TagChip } from '@/components/ui/TagChip';
 import { EnhancedMultilingualText } from '@/components/language/EnhancedMultilingualText';
 import { ProfessionalTextFormatter } from '@/components/articles/enhanced/ProfessionalTextFormatter';
+import { SimplifiedMarkdownRenderer } from '@/components/articles/enhanced/SimplifiedMarkdownRenderer';
 import { MultilingualContent } from '@/types/multilingual';
 import { cn } from '@/lib/utils';
 import { ArticleProvider, useReadingProgress } from '@/components/context/ArticleContext';
 import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const ReadingProgressBar = () => {
   const progress = useReadingProgress();
@@ -135,12 +137,21 @@ const ArticleContent = React.memo(({
         {/* Professional Article Content */}
         <div className="relative z-10">
           <div className="max-w-4xl mx-auto px-6">
-            <ProfessionalTextFormatter 
-              content={typeof content === 'string' ? { en: content } : content} 
-              enableCulturalTerms={true}
-              enableDropCap={true}
-              className="mb-12"
-            />
+            <ErrorBoundary 
+              fallback={
+                <SimplifiedMarkdownRenderer 
+                  content={typeof content === 'string' ? { en: content } : content}
+                  className="mb-12"
+                />
+              }
+            >
+              <ProfessionalTextFormatter 
+                content={typeof content === 'string' ? { en: content } : content} 
+                enableCulturalTerms={true}
+                enableDropCap={true}
+                className="mb-12"
+              />
+            </ErrorBoundary>
 
             {/* Enhanced Data Components */}
             {dataComponents.length > 0 && (
