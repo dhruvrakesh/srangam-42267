@@ -13,9 +13,12 @@ export { ArchaeologicalChart } from './ArchaeologicalChart';
 export { InteractiveTextualSources } from './InteractiveTextualSources';
 export { StickyTableOfContents, extractTableOfContents } from './StickyTableOfContents';
 export { ImprovedInteractiveChart, archaeologicalSitesData } from './ImprovedInteractiveChart';
+export { ContinuousHabitationTimeline } from './ContinuousHabitationTimeline';
+export { ArchaeologicalStrataViewer } from './ArchaeologicalStrataViewer';
 
 // Maps
 export { JyotirlingaMap } from '../maps/JyotirlingaMap';
+export { AncientTradeRoutesMap } from '../maps/AncientTradeRoutesMap';
 
 // Component composition utilities
 export const createArticleSection = (title: string, content: React.ReactNode, options?: {
