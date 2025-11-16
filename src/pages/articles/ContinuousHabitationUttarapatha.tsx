@@ -14,30 +14,32 @@ export default function ContinuousHabitationUttarapatha() {
   const content = continuousHabitationUttarapatha.content[currentLanguage] as string;
 
   return (
-    <NarrationErrorBoundary>
-      <div className="relative">
-        <UniversalNarrator
-          content={content}
-          contentType="article"
-          articleSlug="continuous-habitation-uttarapatha"
-          variant="sticky-bottom"
-        />
-        <ArticlePage
-          title={continuousHabitationUttarapatha.title}
-          dek={continuousHabitationUttarapatha.dek}
-          content={continuousHabitationUttarapatha.content}
-          tags={continuousHabitationUttarapatha.tags}
-          icon={IconOm}
-          readTime={35}
-          author="Śrīraṅgam Research Team"
-          date="2024-01-16"
-          dataComponents={[
-            <AncientTradeRoutesMap key="trade-routes-map" />,
-            <ContinuousHabitationTimeline key="habitation-timeline" />,
-            <ArchaeologicalStrataViewer key="archaeological-strata" />
-          ]}
-        />
-      </div>
-    </NarrationErrorBoundary>
+    <>
+      <ArticlePage
+        title={continuousHabitationUttarapatha.title}
+        dek={continuousHabitationUttarapatha.dek}
+        content={continuousHabitationUttarapatha.content}
+        tags={continuousHabitationUttarapatha.tags}
+        icon={IconOm}
+        readTime={35}
+        author="Śrīraṅgam Research Team"
+        date="2024-01-16"
+        dataComponents={[
+          <AncientTradeRoutesMap key="trade-routes-map" />,
+          <ContinuousHabitationTimeline key="habitation-timeline" />,
+          <ArchaeologicalStrataViewer key="archaeological-strata" />
+        ]}
+      />
+      <NarrationErrorBoundary>
+        <div className="fixed bottom-4 right-4 z-50">
+          <UniversalNarrator
+            content={content}
+            contentType="article"
+            articleSlug="continuous-habitation-uttarapatha"
+            variant="floating"
+          />
+        </div>
+      </NarrationErrorBoundary>
+    </>
   );
 }

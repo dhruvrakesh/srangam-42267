@@ -12,26 +12,28 @@ export default function DashanamiAsceticsSacredGeography() {
   const content = dashanamiAsceticsSacredGeography.content[currentLanguage] as string;
 
   return (
-    <NarrationErrorBoundary>
-      <div className="relative">
-        <UniversalNarrator
-          content={content}
-          contentType="article"
-          articleSlug="dashanami-ascetics-sacred-geography"
-          variant="sticky-bottom"
-        />
-        <ArticlePage
-          title={dashanamiAsceticsSacredGeography.title}
-          dek={dashanamiAsceticsSacredGeography.dek}
-          content={dashanamiAsceticsSacredGeography.content}
-          tags={dashanamiAsceticsSacredGeography.tags}
-          icon={IconOm}
-          readTime={28}
-          author="Śrīraṅgam Research Team"
-          date="2024-01-15"
-          dataComponents={[<JyotirlingaMap key="jyotirlinga-map" />]}
-        />
-      </div>
-    </NarrationErrorBoundary>
+    <>
+      <ArticlePage
+        title={dashanamiAsceticsSacredGeography.title}
+        dek={dashanamiAsceticsSacredGeography.dek}
+        content={dashanamiAsceticsSacredGeography.content}
+        tags={dashanamiAsceticsSacredGeography.tags}
+        icon={IconOm}
+        readTime={28}
+        author="Śrīraṅgam Research Team"
+        date="2024-01-15"
+        dataComponents={[<JyotirlingaMap key="jyotirlinga-map" />]}
+      />
+      <NarrationErrorBoundary>
+        <div className="fixed bottom-4 right-4 z-50">
+          <UniversalNarrator
+            content={content}
+            contentType="article"
+            articleSlug="dashanami-ascetics-sacred-geography"
+            variant="floating"
+          />
+        </div>
+      </NarrationErrorBoundary>
+    </>
   );
 }
