@@ -137,21 +137,10 @@ const ArticleContent = React.memo(({
         {/* Professional Article Content */}
         <div className="relative z-10">
           <div className="max-w-4xl mx-auto px-6">
-            <ErrorBoundary 
-              fallback={
-                <SimplifiedMarkdownRenderer 
-                  content={typeof content === 'string' ? { en: content } : content}
-                  className="mb-12"
-                />
-              }
-            >
-              <ProfessionalTextFormatter 
-                content={typeof content === 'string' ? { en: content } : content} 
-                enableCulturalTerms={true}
-                enableDropCap={true}
-                className="mb-12"
-              />
-            </ErrorBoundary>
+            <SimplifiedMarkdownRenderer 
+              content={typeof content === 'string' ? { en: content } : content}
+              className="mb-12"
+            />
 
             {/* Enhanced Data Components */}
             {dataComponents.length > 0 && (
