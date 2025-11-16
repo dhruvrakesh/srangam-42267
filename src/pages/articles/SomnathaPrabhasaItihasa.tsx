@@ -6,7 +6,7 @@ import { ARTICLE_METADATA } from '@/data/articles';
 import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
 import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { JyotirlingaMap } from '@/components/articles/maps/JyotirlingaMap';
+import { JyotirlingaComprehensiveMap } from '@/components/articles/maps/JyotirlingaComprehensiveMap';
 import { IconOm } from '@/components/icons/IconOm';
 
 export const SomnathaPrabhasaItihasa: React.FC = () => {
@@ -39,7 +39,7 @@ export const SomnathaPrabhasaItihasa: React.FC = () => {
               </div>
             }
           >
-            <JyotirlingaMap />
+            <JyotirlingaComprehensiveMap />
           </ErrorBoundary>
         ]}
       />
