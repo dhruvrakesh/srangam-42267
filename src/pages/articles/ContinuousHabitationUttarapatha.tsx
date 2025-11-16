@@ -30,7 +30,7 @@ export default function ContinuousHabitationUttarapatha() {
             key="trade-routes-map" 
             componentName="Ancient Trade Routes Map"
           >
-            <AncientTradeRoutesMap />
+            {typeof window !== 'undefined' && <AncientTradeRoutesMap />}
           </DataComponentErrorBoundary>,
           <DataComponentErrorBoundary 
             key="habitation-timeline" 
