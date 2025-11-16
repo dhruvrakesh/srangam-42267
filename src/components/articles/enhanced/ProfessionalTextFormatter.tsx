@@ -49,7 +49,6 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
     if (!enableCulturalTerms || !text) {
       return (
         <ReactMarkdown 
-          rehypePlugins={[rehypeRaw]}
           components={customRenderers}
         >
           {text}
@@ -75,7 +74,6 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
           segments.push(
             <ReactMarkdown
               key={`md-${segmentKey++}`}
-              rehypePlugins={[rehypeRaw]}
               components={customRenderers}
             >
               {currentMarkdown}
@@ -170,7 +168,6 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
       segments.push(
         <ReactMarkdown
           key={`md-${segmentKey++}`}
-          rehypePlugins={[rehypeRaw]}
           components={customRenderers}
         >
           {currentMarkdown}
