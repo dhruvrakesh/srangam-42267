@@ -1,6 +1,7 @@
 import React from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { ArticleLayout } from '@/components/articles/ArticleLayout';
+import { useLanguage } from '@/components/language/LanguageProvider';
+import { ArticlePage } from '@/components/articles/ArticlePage';
+import { IconOm } from '@/components/icons/IconOm';
 import { ringingRocksRhythmicCosmology } from '@/data/articles/ringing-rocks-rhythmic-cosmology';
 import { ARTICLE_METADATA } from '@/data/articles';
 import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
@@ -16,10 +17,17 @@ export const RingingRocksRhythmicCosmology: React.FC = () => {
     : ringingRocksRhythmicCosmology.content as string;
 
   return (
-    <ArticleLayout
-      article={ringingRocksRhythmicCosmology}
-      metadata={metadata}
-    >
+    <>
+      <ArticlePage
+        title={ringingRocksRhythmicCosmology.title}
+        dek={ringingRocksRhythmicCosmology.dek}
+        content={ringingRocksRhythmicCosmology.content}
+        tags={ringingRocksRhythmicCosmology.tags}
+        icon={IconOm}
+        readTime={metadata.readTime}
+        author={metadata.author}
+        date={metadata.date}
+      />
       <NarrationErrorBoundary>
         <UniversalNarrator
           content={contentForNarration}
@@ -29,7 +37,7 @@ export const RingingRocksRhythmicCosmology: React.FC = () => {
           autoAnalyze={true}
         />
       </NarrationErrorBoundary>
-    </ArticleLayout>
+    </>
   );
 };
 
