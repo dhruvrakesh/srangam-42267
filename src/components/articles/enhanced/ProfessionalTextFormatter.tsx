@@ -50,6 +50,7 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
       return (
         <ReactMarkdown 
           components={customRenderers}
+          rehypePlugins={[rehypeRaw]}
         >
           {text}
         </ReactMarkdown>
@@ -75,6 +76,7 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
             <ReactMarkdown
               key={`md-${segmentKey++}`}
               components={customRenderers}
+              rehypePlugins={[rehypeRaw]}
             >
               {currentMarkdown}
             </ReactMarkdown>
@@ -169,6 +171,7 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
         <ReactMarkdown
           key={`md-${segmentKey++}`}
           components={customRenderers}
+          rehypePlugins={[rehypeRaw]}
         >
           {currentMarkdown}
         </ReactMarkdown>
