@@ -63,6 +63,8 @@ const SariraAtmanVedicPreservation = lazy(() => import("./pages/articles/SariraA
 const RishiGenealogiesVedicTradition = lazy(() => import("./pages/articles/RishiGenealogiesVedicTradition"));
 const ReasessingRigvedaAntiquity = lazy(() => import("./pages/articles/ReasessingRigvedaAntiquity"));
 const GeomythologyLandReclamation = lazy(() => import("./pages/GeomythologyLandReclamation"));
+const DashanamiAsceticsSacredGeography = lazy(() => import("./pages/articles/DashanamiAsceticsSacredGeography"));
+const ContinuousHabitationUttarapatha = lazy(() => import("./pages/articles/ContinuousHabitationUttarapatha"));
 const BatchBujangNagapattinamOcean = lazy(() => import("./pages/BatchBujangNagapattinamOcean"));
 const BatchMuzirisKutaiAshoka = lazy(() => import("./pages/BatchMuzirisKutaiAshoka"));
 const Sitemap = lazy(() => import("./pages/Sitemap"));
@@ -172,6 +174,8 @@ const App = () => (
             <Route path="/rishi-genealogies-vedic-tradition" element={<RishiGenealogiesVedicTradition />} />
             <Route path="/reassessing-rigveda-antiquity" element={<ReasessingRigvedaAntiquity />} />
             <Route path="/geomythology-land-reclamation" element={<GeomythologyLandReclamation />} />
+            <Route path="/dashanami-ascetics-sacred-geography" element={<DashanamiAsceticsSacredGeography />} />
+            <Route path="/continuous-habitation-uttarapatha" element={<ContinuousHabitationUttarapatha />} />
                   <Route path="/themes/geology-deep-time/stone-purana" element={<StonePurana />} />
                   <Route path="/themes/ancient-india/pepper-routes" element={<IndianOceanPowerNetworks />} />
                   <Route path="/batch/bujang-nagapattinam-ocean" element={<BatchBujangNagapattinamOcean />} />
