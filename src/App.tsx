@@ -172,6 +172,8 @@ const App = () => (
             <Route path="/rishi-genealogies-vedic-tradition" element={<RishiGenealogiesVedicTradition />} />
             <Route path="/reassessing-rigveda-antiquity" element={<ReasessingRigvedaAntiquity />} />
             <Route path="/geomythology-land-reclamation" element={<GeomythologyLandReclamation />} />
+            <Route path="/dashanami-ascetics-sacred-geography" element={<DashanamiAsceticsSacredGeography />} />
+            <Route path="/continuous-habitation-uttarapatha" element={<ContinuousHabitationUttarapatha />} />
                   <Route path="/themes/geology-deep-time/stone-purana" element={<StonePurana />} />
                   <Route path="/themes/ancient-india/pepper-routes" element={<IndianOceanPowerNetworks />} />
                   <Route path="/batch/bujang-nagapattinam-ocean" element={<BatchBujangNagapattinamOcean />} />
