@@ -93,6 +93,18 @@ export const ARTICLE_METADATA: Record<string, {
   date: string;
   theme: string;
 }> = {
+  'somnatha-prabhasa-itihasa': {
+    readTime: 25,
+    author: 'Srangam Research',
+    date: '2025-01-15',
+    theme: 'sacred-geography'
+  },
+  'ringing-rocks-rhythmic-cosmology': {
+    readTime: 22,
+    author: 'Srangam Research',
+    date: '2025-01-15',
+    theme: 'acoustic-archaeology'
+  },
   'maritime-memories-south-india': {
     readTime: 18,
     author: 'Nartiang Foundation',
