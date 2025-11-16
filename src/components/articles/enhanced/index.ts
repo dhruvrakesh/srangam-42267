@@ -14,6 +14,9 @@ export { InteractiveTextualSources } from './InteractiveTextualSources';
 export { StickyTableOfContents, extractTableOfContents } from './StickyTableOfContents';
 export { ImprovedInteractiveChart, archaeologicalSitesData } from './ImprovedInteractiveChart';
 
+// Maps
+export { JyotirlingaMap } from '../maps/JyotirlingaMap';
+
 // Component composition utilities
 export const createArticleSection = (title: string, content: React.ReactNode, options?: {
   expandable?: boolean;
