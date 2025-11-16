@@ -146,25 +146,6 @@ export const AncientTradeRoutesMap = () => {
     );
   }
 
-  try {
-    return renderMap();
-  } catch (e) {
-    console.error('AncientTradeRoutesMap render error:', e);
-    return (
-      <Card className="w-full my-8">
-        <CardHeader>
-          <CardTitle>Ancient Trade Routes: Uttarāpatha & Dakṣiṇāpatha</CardTitle>
-          <CardDescription>Map rendering failed</CardDescription>
-        </CardHeader>
-        <CardContent className="h-[600px] flex items-center justify-center">
-          <p className="text-muted-foreground">Map rendering failed. Please try refreshing.</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  function renderMap() {
-
   return (
     <Card className="w-full my-8">
       <CardHeader>
@@ -230,5 +211,4 @@ export const AncientTradeRoutesMap = () => {
       </CardContent>
     </Card>
   );
-  }
 };

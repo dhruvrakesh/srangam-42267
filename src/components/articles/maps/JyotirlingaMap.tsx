@@ -114,29 +114,6 @@ export function JyotirlingaMap({ selectedSite }: JyotirlingaMapProps) {
     );
   }
 
-  try {
-    return renderMap();
-  } catch (e) {
-    console.error('JyotirlingaMap render error:', e);
-    return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <span className="text-2xl">🕉️</span>
-            The Twelve Jyotirliṅgas: Sacred Geography of Śiva Worship
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[600px] flex items-center justify-center bg-muted/20 rounded-lg">
-            <p className="text-muted-foreground">Map rendering failed. Please try refreshing.</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  function renderMap() {
-
   return (
     <Card className="w-full">
       <CardHeader>
@@ -308,5 +285,4 @@ export function JyotirlingaMap({ selectedSite }: JyotirlingaMapProps) {
       </CardContent>
     </Card>
   );
-  }
 }
