@@ -28,7 +28,7 @@ export const asuraExilesIndoIranian: LocalizedArticle = {
     en: `
 ## Part I: The Primordial Homeland in Bharatvarsha
 
-<p>To comprehend the profound divergence that cleaved the Indo-Iranian peoples, it is essential to first establish their point of origin. A growing body of evidence from archaeology, linguistics, and textual analysis points not to a foreign intrusion, but to an indigenous development within the geographical bounds of ancient India, or <em>Bharatvarsha</em>. This "Out of India" framework posits that the cultural, linguistic, and religious foundations of both the Vedic and Iranian civilizations were forged in the river valleys of the subcontinent. The subsequent separation was not the result of an invasion, but of a schism that propelled dissident groups outward from their ancestral homeland.</p>
+<p>To comprehend the profound divergence that cleaved the {{cultural:indo-iranian}} peoples, it is essential to first establish their point of origin. A growing body of evidence from archaeology, linguistics, and textual analysis points not to a foreign intrusion, but to an indigenous development within the geographical bounds of ancient India, or <em>Bharatvarsha</em>. This "Out of India" framework posits that the cultural, linguistic, and religious foundations of both the {{cultural:vedic}} and Iranian civilizations were forged in the river valleys of the subcontinent. The subsequent separation was not the result of an invasion, but of a schism that propelled dissident groups outward from their ancestral homeland.</p>
 
 ### The Indigenous Āryas: Archaeological and Textual Continuity
 

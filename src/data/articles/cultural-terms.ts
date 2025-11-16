@@ -9,6 +9,11 @@ import { scriptsSailedIICulturalTerms } from './cultural-terms-scripts-sailed-ii
 import { geomythologyCulturalTerms } from './cultural-terms-geomythology';
 import { somnathaPrabhasaCulturalTerms } from './cultural-terms-somnatha-prabhasa';
 import { ringingRocksCulturalTerms } from './cultural-terms-ringing-rocks';
+import { historicalEpigraphyCulturalTerms } from './cultural-terms-historical-epigraphy';
+import { maritimeTradeCulturalTerms } from './cultural-terms-maritime-trade';
+import { vedicPhilosophyCulturalTerms } from './cultural-terms-vedic-philosophy';
+import { indianGeographyCulturalTerms } from './cultural-terms-indian-geography';
+import { ritualObjectsCulturalTerms } from './cultural-terms-ritual-objects';
 
 export const culturalTermsDatabase: Record<string, CulturalTerm> = {
   ...enhancedCulturalTerms,
@@ -19,6 +24,11 @@ export const culturalTermsDatabase: Record<string, CulturalTerm> = {
   ...geomythologyCulturalTerms,
   ...somnathaPrabhasaCulturalTerms,
   ...ringingRocksCulturalTerms,
+  ...historicalEpigraphyCulturalTerms,
+  ...maritimeTradeCulturalTerms,
+  ...vedicPhilosophyCulturalTerms,
+  ...indianGeographyCulturalTerms,
+  ...ritualObjectsCulturalTerms,
   'dharma': {
     term: 'dharma',
     translations: {
