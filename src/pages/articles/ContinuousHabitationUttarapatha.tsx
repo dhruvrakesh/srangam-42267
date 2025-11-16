@@ -3,6 +3,9 @@ import { ArticlePage } from '@/components/articles/ArticlePage';
 import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
 import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 import { IconOm } from '@/components/icons/IconOm';
+import { AncientTradeRoutesMap } from '@/components/articles/maps/AncientTradeRoutesMap';
+import { ContinuousHabitationTimeline } from '@/components/articles/enhanced/ContinuousHabitationTimeline';
+import { ArchaeologicalStrataViewer } from '@/components/articles/enhanced/ArchaeologicalStrataViewer';
 import { continuousHabitationUttarapatha } from '@/data/articles/continuous-habitation-uttarapatha';
 import { useLanguage } from '@/components/language/LanguageProvider';
 
@@ -28,7 +31,11 @@ export default function ContinuousHabitationUttarapatha() {
           readTime={35}
           author="Śrīraṅgam Research Team"
           date="2024-01-16"
-          dataComponents={[]}
+          dataComponents={[
+            <AncientTradeRoutesMap key="trade-routes-map" />,
+            <ContinuousHabitationTimeline key="habitation-timeline" />,
+            <ArchaeologicalStrataViewer key="archaeological-strata" />
+          ]}
         />
       </div>
     </NarrationErrorBoundary>
