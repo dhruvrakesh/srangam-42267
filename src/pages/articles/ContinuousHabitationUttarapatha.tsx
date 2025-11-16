@@ -27,7 +27,6 @@ export default function ContinuousHabitationUttarapatha() {
         dek={continuousHabitationUttarapatha.dek}
         content={continuousHabitationUttarapatha.content}
         tags={continuousHabitationUttarapatha.tags}
-        articleId="continuous-habitation-uttarapatha"
         metadata={{
           author: 'NF Research Team',
           date: '2025-01-15',
