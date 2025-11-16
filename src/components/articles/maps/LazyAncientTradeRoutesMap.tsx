@@ -1,12 +1,8 @@
-import React, { lazy, Suspense } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
-
-const AncientTradeRoutesMap = lazy(() => 
-  import('./AncientTradeRoutesMap').then(module => ({ 
-    default: module.AncientTradeRoutesMap 
-  }))
-);
+import { AncientTradeRoutesMap } from './AncientTradeRoutesMap';
+import { ClientSideMapWrapper } from './ClientSideMapWrapper';
 
 function MapLoadingFallback() {
   return (
@@ -31,8 +27,8 @@ function MapLoadingFallback() {
 
 export function LazyAncientTradeRoutesMap() {
   return (
-    <Suspense fallback={<MapLoadingFallback />}>
+    <ClientSideMapWrapper fallback={<MapLoadingFallback />}>
       <AncientTradeRoutesMap />
-    </Suspense>
+    </ClientSideMapWrapper>
   );
 }
