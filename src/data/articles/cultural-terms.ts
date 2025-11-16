@@ -17,6 +17,8 @@ import { ritualObjectsCulturalTerms } from './cultural-terms-ritual-objects';
 import { archaeologicalExcavationTerms } from './cultural-terms-archaeological-excavation';
 import { historicalTravelersTerms } from './cultural-terms-historical-travelers';
 import { asceticTraditionsTerms } from './cultural-terms-ascetic-traditions';
+import { vedicMetersCulturalTerms } from './cultural-terms-vedic-meters';
+import { acousticGeologyCulturalTerms } from './cultural-terms-acoustic-geology';
 
 export const culturalTermsDatabase: Record<string, CulturalTerm> = {
   ...enhancedCulturalTerms,
@@ -35,6 +37,8 @@ export const culturalTermsDatabase: Record<string, CulturalTerm> = {
   ...archaeologicalExcavationTerms,
   ...historicalTravelersTerms,
   ...asceticTraditionsTerms,
+  ...vedicMetersCulturalTerms,
+  ...acousticGeologyCulturalTerms,
   'dharma': {
     term: 'dharma',
     translations: {
