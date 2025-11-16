@@ -6,6 +6,9 @@ import { ringingRocksRhythmicCosmology } from '@/data/articles/ringing-rocks-rhy
 import { ARTICLE_METADATA } from '@/data/articles';
 import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
 import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
+import { AcousticSiteMap } from '@/components/articles/maps/AcousticSiteMap';
+import { VedicMeterDiagram } from '@/components/articles/diagrams/VedicMeterDiagram';
+import { DataComponentErrorBoundary } from '@/components/articles/DataComponentErrorBoundary';
 
 export const RingingRocksRhythmicCosmology: React.FC = () => {
   const { currentLanguage } = useLanguage();
@@ -15,6 +18,16 @@ export const RingingRocksRhythmicCosmology: React.FC = () => {
   const contentForNarration = typeof ringingRocksRhythmicCosmology.content === 'object'
     ? ((ringingRocksRhythmicCosmology.content as any)[currentLanguage] as string || '')
     : ringingRocksRhythmicCosmology.content as string;
+
+  // Data visualization components for acoustic archaeology
+  const dataComponents = [
+    <DataComponentErrorBoundary key="acoustic-map" componentName="Acoustic Site Map">
+      <AcousticSiteMap />
+    </DataComponentErrorBoundary>,
+    <DataComponentErrorBoundary key="vedic-meter" componentName="Vedic Meter Diagram">
+      <VedicMeterDiagram />
+    </DataComponentErrorBoundary>
+  ];
 
   return (
     <>
@@ -27,6 +40,7 @@ export const RingingRocksRhythmicCosmology: React.FC = () => {
         readTime={metadata.readTime}
         author={metadata.author}
         date={metadata.date}
+        dataComponents={dataComponents}
       />
       <NarrationErrorBoundary>
         <UniversalNarrator
