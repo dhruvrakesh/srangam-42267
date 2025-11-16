@@ -22,7 +22,7 @@ export default function DashanamiAsceticsSacredGeography() {
         readTime={28}
         author="Śrīraṅgam Research Team"
         date="2024-01-15"
-        dataComponents={[<JyotirlingaMap key="jyotirlinga-map" />]}
+        dataComponents={[]}
       />
       <NarrationErrorBoundary>
         <div className="fixed bottom-4 right-4 z-50">
