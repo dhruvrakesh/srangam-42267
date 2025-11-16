@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArticlePage } from '@/components/articles/ArticlePage';
+import { IconOm } from '@/components/icons/IconOm';
 import { dashanamiAsceticsSacredGeography } from '@/data/articles/dashanami-ascetics-sacred-geography';
 import { Helmet } from 'react-helmet-async';
 
@@ -27,6 +28,7 @@ export default function DashanamiAsceticsSacredGeography() {
         dek={dashanamiAsceticsSacredGeography.dek}
         content={dashanamiAsceticsSacredGeography.content}
         tags={dashanamiAsceticsSacredGeography.tags}
+        icon={IconOm}
         author="NF Research Team"
         date="2025-01-15"
         readTime={45}

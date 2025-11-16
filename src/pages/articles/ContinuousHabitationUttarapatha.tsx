@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArticlePage } from '@/components/articles/ArticlePage';
+import { IconOm } from '@/components/icons/IconOm';
 import { continuousHabitationUttarapatha } from '@/data/articles/continuous-habitation-uttarapatha';
 import { Helmet } from 'react-helmet-async';
 
@@ -27,6 +28,7 @@ export default function ContinuousHabitationUttarapatha() {
         dek={continuousHabitationUttarapatha.dek}
         content={continuousHabitationUttarapatha.content}
         tags={continuousHabitationUttarapatha.tags}
+        icon={IconOm}
         author="NF Research Team"
         date="2025-01-15"
         readTime={55}
