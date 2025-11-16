@@ -28,7 +28,7 @@ export default function DashanamiAsceticsSacredGeography() {
             key="jyotirlinga-map" 
             componentName="Sacred Geography Map"
           >
-            <JyotirlingaMap />
+            {typeof window !== 'undefined' && <JyotirlingaMap />}
           </DataComponentErrorBoundary>
         ]}
       />
