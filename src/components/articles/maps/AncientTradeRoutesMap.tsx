@@ -82,17 +82,61 @@ const DAKSHINAPATHA: [number, number][] = [
 ];
 
 export const AncientTradeRoutesMap = () => {
+  // SSR guard - ensure we're in browser environment
+  if (typeof window === 'undefined') {
+    return (
+      <Card className="w-full my-8">
+        <CardHeader>
+          <CardTitle>Ancient Trade Routes: Uttarāpatha & Dakṣiṇāpatha</CardTitle>
+          <CardDescription>Map requires browser environment...</CardDescription>
+        </CardHeader>
+        <CardContent className="h-[600px] flex items-center justify-center">
+          <p className="text-muted-foreground">Map requires browser environment...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const [isMounted, setIsMounted] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
+    if (typeof window === 'undefined') {
+      setHasError(true);
+      return;
+    }
+    
+    const timer = setTimeout(() => {
+      try {
+        setIsMounted(true);
+      } catch (e) {
+        console.error('AncientTradeRoutesMap initialization error:', e);
+        setHasError(true);
+      }
+    }, 150);
+    
+    return () => clearTimeout(timer);
   }, []);
+
+  if (hasError) {
+    return (
+      <Card className="w-full my-8">
+        <CardHeader>
+          <CardTitle>Ancient Trade Routes: Uttarāpatha & Dakṣiṇāpatha</CardTitle>
+          <CardDescription>Map initialization failed</CardDescription>
+        </CardHeader>
+        <CardContent className="h-[600px] flex items-center justify-center">
+          <p className="text-muted-foreground">Map initialization failed. Please refresh the page.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (!isMounted) {
     return (
-      <Card className="w-full">
+      <Card className="w-full my-8">
         <CardHeader>
-          <CardTitle>Ancient Trade Routes</CardTitle>
+          <CardTitle>Ancient Trade Routes: Uttarāpatha & Dakṣiṇāpatha</CardTitle>
           <CardDescription>Loading map...</CardDescription>
         </CardHeader>
         <CardContent className="h-[600px] flex items-center justify-center">
@@ -101,6 +145,25 @@ export const AncientTradeRoutesMap = () => {
       </Card>
     );
   }
+
+  try {
+    return renderMap();
+  } catch (e) {
+    console.error('AncientTradeRoutesMap render error:', e);
+    return (
+      <Card className="w-full my-8">
+        <CardHeader>
+          <CardTitle>Ancient Trade Routes: Uttarāpatha & Dakṣiṇāpatha</CardTitle>
+          <CardDescription>Map rendering failed</CardDescription>
+        </CardHeader>
+        <CardContent className="h-[600px] flex items-center justify-center">
+          <p className="text-muted-foreground">Map rendering failed. Please try refreshing.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  function renderMap() {
 
   return (
     <Card className="w-full my-8">
@@ -167,4 +230,5 @@ export const AncientTradeRoutesMap = () => {
       </CardContent>
     </Card>
   );
+  }
 };
