@@ -14,6 +14,9 @@ import { maritimeTradeCulturalTerms } from './cultural-terms-maritime-trade';
 import { vedicPhilosophyCulturalTerms } from './cultural-terms-vedic-philosophy';
 import { indianGeographyCulturalTerms } from './cultural-terms-indian-geography';
 import { ritualObjectsCulturalTerms } from './cultural-terms-ritual-objects';
+import { archaeologicalExcavationTerms } from './cultural-terms-archaeological-excavation';
+import { historicalTravelersTerms } from './cultural-terms-historical-travelers';
+import { asceticTraditionsTerms } from './cultural-terms-ascetic-traditions';
 
 export const culturalTermsDatabase: Record<string, CulturalTerm> = {
   ...enhancedCulturalTerms,
@@ -29,6 +32,9 @@ export const culturalTermsDatabase: Record<string, CulturalTerm> = {
   ...vedicPhilosophyCulturalTerms,
   ...indianGeographyCulturalTerms,
   ...ritualObjectsCulturalTerms,
+  ...archaeologicalExcavationTerms,
+  ...historicalTravelersTerms,
+  ...asceticTraditionsTerms,
   'dharma': {
     term: 'dharma',
     translations: {
