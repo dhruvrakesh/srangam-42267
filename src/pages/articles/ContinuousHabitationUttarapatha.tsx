@@ -27,12 +27,9 @@ export default function ContinuousHabitationUttarapatha() {
         dek={continuousHabitationUttarapatha.dek}
         content={continuousHabitationUttarapatha.content}
         tags={continuousHabitationUttarapatha.tags}
-        metadata={{
-          author: 'NF Research Team',
-          date: '2025-01-15',
-          readTime: 55,
-          theme: 'Ancient India'
-        }}
+        author="NF Research Team"
+        date="2025-01-15"
+        readTime={55}
       />
     </>
   );

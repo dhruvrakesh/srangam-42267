@@ -27,12 +27,9 @@ export default function DashanamiAsceticsSacredGeography() {
         dek={dashanamiAsceticsSacredGeography.dek}
         content={dashanamiAsceticsSacredGeography.content}
         tags={dashanamiAsceticsSacredGeography.tags}
-        metadata={{
-          author: 'NF Research Team',
-          date: '2025-01-15',
-          readTime: 45,
-          theme: 'Ancient India'
-        }}
+        author="NF Research Team"
+        date="2025-01-15"
+        readTime={45}
       />
     </>
   );
