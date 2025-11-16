@@ -184,5 +184,28 @@ export const somnathaPrabhasaCulturalTerms: Record<string, CulturalTerm> = {
         culturalContext: 'வேத சந்திர தேவதை, சந்திரன் மற்றும் சோம தாவரத்தின் வடிவம். தக்ஷனால் சாபமிடப்பட்டு தேய்கிறது, பிரபாசத்தில் சிவனால் மீட்கப்பட்டது.'
       }
     }
+  },
+  'shiva': {
+    term: 'shiva',
+    translations: {
+      en: {
+        translation: 'Śiva',
+        transliteration: 'Śiva',
+        etymology: 'Sanskrit: śiva (auspicious, benevolent)',
+        culturalContext: 'The Destroyer and Transformer in the Trimūrti, supreme deity of Śaivism, depicted as yogī and cosmic dancer, patron of arts and meditation.'
+      },
+      hi: {
+        translation: 'शिव',
+        transliteration: 'Śiv',
+        etymology: 'संस्कृत: शिव (शुभ, मंगलकारी)',
+        culturalContext: 'त्रिमूर्ति में संहारक और परिवर्तक, शैव धर्म के सर्वोच्च देवता, योगी और ब्रह्मांडीय नर्तक के रूप में चित्रित।'
+      },
+      ta: {
+        translation: 'சிவன்',
+        transliteration: 'Śivan',
+        etymology: 'சமஸ்கிருதம்: ஷிவ (மங்களகரமானவர்)',
+        culturalContext: 'திரிமூர்த்தியில் அழிவு மற்றும் மாற்றத்தின் தெய்வம், சைவத்தின் உயர்ந்த தெய்வம்.'
+      }
+    }
   }
 };
