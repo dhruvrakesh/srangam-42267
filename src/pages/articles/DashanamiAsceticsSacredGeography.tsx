@@ -3,7 +3,7 @@ import { ArticlePage } from '@/components/articles/ArticlePage';
 import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
 import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 import { IconOm } from '@/components/icons/IconOm';
-import { JyotirlingaMap } from '@/components/articles/enhanced';
+import { JyotirlingaMap } from '@/components/articles/maps/JyotirlingaMap';
 import { dashanamiAsceticsSacredGeography } from '@/data/articles/dashanami-ascetics-sacred-geography';
 import { useLanguage } from '@/components/language/LanguageProvider';
 
