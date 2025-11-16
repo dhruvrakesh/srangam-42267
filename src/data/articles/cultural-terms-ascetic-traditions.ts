@@ -161,5 +161,212 @@ export const asceticTraditionsTerms: Record<string, CulturalTerm> = {
         culturalContext: 'தீட்சையின் போது பெரிய வட்ட காதணிகளை (முத்ரை) செருகுவதற்காக காது குருத்தெலும்பை பிளப்பதால் நாத யோகிகளுக்கான மாற்றுப்பெயர்.'
       }
     }
+  },
+  'adi-shankara': {
+    term: 'adi-shankara',
+    translations: {
+      en: {
+        translation: 'Ādi Śaṅkarācārya',
+        transliteration: 'Ādi Śaṅkarācārya',
+        etymology: 'Ādi (first, primordial) + Śaṅkara (auspicious) + Ācārya (teacher)',
+        culturalContext: '8th century CE philosopher-saint who consolidated Advaita Vedānta philosophy and established four cardinal monasteries (maṭhas) across India. Founded the Daśanāmī Sampradāya (ten-name monastic order). Traveled throughout the subcontinent debating scholars, composing commentaries on Upaniṣads and Brahma Sūtras. Revitalized Vedic traditions while absorbing Buddhist dialectical methods. Revered as incarnation of Śiva in Hindu tradition.'
+      },
+      hi: {
+        translation: 'आदि शंकराचार्य',
+        transliteration: 'Ādi Śaṅkarācārya',
+        etymology: 'आदि (प्रथम, आदिम) + शंकर (शुभ) + आचार्य (शिक्षक)',
+        culturalContext: '8वीं शताब्दी ईस्वी के दार्शनिक-संत जिन्होंने अद्वैत वेदांत दर्शन को सुदृढ़ किया और भारत भर में चार प्रमुख मठों की स्थापना की।'
+      },
+      ta: {
+        translation: 'ஆதி சங்கராச்சாரியார்',
+        transliteration: 'Ādi Śaṅkarācārya',
+        etymology: 'ஆதி (முதல், ஆதிகால) + சங்கரர் (நன்மை) + ஆச்சாரியார் (ஆசிரியர்)',
+        culturalContext: '8ஆம் நூற்றாண்டு தத்துவஞானி-துறவி அத்வைத வேதாந்தத்தை ஒருங்கிணைத்து இந்தியா முழுவதும் நான்கு முக்கிய மடங்களை நிறுவினார்.'
+      }
+    }
+  },
+  'dashanami-sampradaya': {
+    term: 'dashanami-sampradaya',
+    translations: {
+      en: {
+        translation: 'Daśanāmī Sampradāya',
+        transliteration: 'Daśanāmī Sampradāya',
+        etymology: 'Daśan (ten) + Nāman (name) + Sampradāya (tradition)',
+        culturalContext: 'Monastic order of ten divisions established by Ādi Śaṅkara (8th century CE). Each division bears a distinctive surname: Tīrtha, Āśrama, Vana, Araṇya, Giri, Parvata, Sāgara, Sarasvatī, Bhāratī, Purī. Organized under four cardinal monasteries (maṭhas) at Śṛṅgeri, Dvārakā, Purī, and Jyotirmaṭh. Saṃnyāsīs renounce worldly ties, practice Advaita philosophy, and form militant akhāṛās (regiments) that participate in Kumbh Melā processions.'
+      },
+      hi: {
+        translation: 'दशनामी संप्रदाय',
+        transliteration: 'Daśanāmī Sampradāya',
+        etymology: 'दशन (दस) + नामन (नाम) + संप्रदाय (परंपरा)',
+        culturalContext: 'आदि शंकर (8वीं शताब्दी ईस्वी) द्वारा स्थापित दस विभागों का मठवासी संप्रदाय। प्रत्येक विभाग एक विशिष्ट उपनाम रखता है।'
+      },
+      ta: {
+        translation: 'தசநாமி சம்பிரதாயம்',
+        transliteration: 'Daśanāmī Sampradāya',
+        etymology: 'தசன் (பத்து) + நாமன் (பெயர்) + சம்பிரதாயம் (பாரம்பரியம்)',
+        culturalContext: 'ஆதி சங்கரரால் (8ஆம் நூற்றாண்டு) நிறுவப்பட்ட பத்து பிரிவுகளின் துறவற ஒழுங்கு.'
+      }
+    }
+  },
+  'jyotirlinga': {
+    term: 'jyotirlinga',
+    translations: {
+      en: {
+        translation: 'Jyotirliṅga',
+        transliteration: 'Jyotirliṅga',
+        etymology: 'Jyotis (radiance, light) + Liṅga (mark, sign, Śiva symbol)',
+        culturalContext: 'Twelve sacred shrines where Lord Śiva is believed to have manifested as infinite pillars of light (jyotis). Sites: Somnāth, Mallikārjuna, Mahākāleśvar, Oṃkāreśvar, Kedāranāth, Bhīmaśaṅkar, Kāśī Viśvanāth, Tryambakaśvar, Vaidyanāth, Nāgeśvara, Rāmeśvaram, Gṛṣṇeśvar. Form pan-Indian pilgrimage network linking Himalayan peaks to southern seacoast. Purāṇic narratives describe cosmic competitions, divine interventions, and devotee transformations at each site.'
+      },
+      hi: {
+        translation: 'ज्योतिर्लिङ्ग',
+        transliteration: 'Jyotirliṅga',
+        etymology: 'ज्योति (प्रकाश, दीप्ति) + लिङ्ग (चिह्न, शिव प्रतीक)',
+        culturalContext: 'बारह पवित्र मंदिर जहां भगवान शिव अनंत प्रकाश के स्तंभों के रूप में प्रकट हुए माने जाते हैं।'
+      },
+      ta: {
+        translation: 'ஜோதிர்லிங்கம்',
+        transliteration: 'Jyotirliṅga',
+        etymology: 'ஜோதி (ஒளி, பிரகாசம்) + லிங்கம் (அடையாளம், சிவ சின்னம்)',
+        culturalContext: 'சிவபெருமான் எல்லையற்ற ஒளித் தூண்களாக வெளிப்பட்டதாக நம்பப்படும் பன்னிரண்டு புனித கோவில்கள்.'
+      }
+    }
+  },
+  'tirtha': {
+    term: 'tirtha',
+    translations: {
+      en: {
+        translation: 'Tīrtha',
+        transliteration: 'Tīrtha',
+        etymology: 'From Sanskrit tṝ (to cross over)',
+        culturalContext: 'Sacred ford, pilgrimage site, or holy place that enables spiritual "crossing" from mundane to divine realms. Rivers, mountains, temples, and confluences become tīrthas through association with divine presence, legendary events, or ascetic practice. Visiting tīrthas, bathing in sacred waters, and performing rituals purifies karma and advances spiritual progress.'
+      },
+      hi: {
+        translation: 'तीर्थ',
+        transliteration: 'Tīrtha',
+        etymology: 'संस्कृत tṝ (पार करना) से',
+        culturalContext: 'पवित्र घाट, तीर्थस्थल, या पवित्र स्थान जो सांसारिक से दिव्य क्षेत्रों में आध्यात्मिक "पार" करने में सक्षम बनाता है।'
+      },
+      ta: {
+        translation: 'தீர்த்தம்',
+        transliteration: 'Tīrtha',
+        etymology: 'சமஸ்கிருதம் tṝ (கடக்க) இருந்து',
+        culturalContext: 'புனித கடவாய், புனிதத் தலம், அல்லது உலகப் பொருள்களிலிருந்து தெய்வீக உலகங்களுக்கு ஆன்மீகமாக "கடக்க" உதவும் புனித இடம்.'
+      }
+    }
+  },
+  'brahma-sutras': {
+    term: 'brahma-sutras',
+    translations: {
+      en: {
+        translation: 'Brahma Sūtras',
+        transliteration: 'Brahma Sūtras',
+        etymology: 'Brahma (ultimate reality) + Sūtra (aphorism, thread)',
+        culturalContext: 'Foundational text of Vedānta philosophy attributed to Bādarāyaṇa (c. 200 BCE-200 CE). Contains 555 terse aphorisms systematizing Upaniṣadic teachings on Brahman, ātman, and mokṣa. Major commentaries by Śaṅkara (Advaita), Rāmānuja (Viśiṣṭādvaita), and Madhva (Dvaita) established competing schools of Vedānta.'
+      },
+      hi: {
+        translation: 'ब्रह्म सूत्र',
+        transliteration: 'Brahma Sūtras',
+        etymology: 'ब्रह्म (परम सत्य) + सूत्र (सूत्र, धागा)',
+        culturalContext: 'बादरायण को श्रेय दिए गए वेदांत दर्शन का मूल पाठ। उपनिषदों की शिक्षाओं को व्यवस्थित करने वाले 555 संक्षिप्त सूत्र।'
+      },
+      ta: {
+        translation: 'பிரம்ம சூத்திரங்கள்',
+        transliteration: 'Brahma Sūtras',
+        etymology: 'பிரம்மம் (பரம உண்மை) + சூத்திரம் (அபரிசுமம், நூல்)',
+        culturalContext: 'பாதரயாணருக்குக் கூறப்படும் வேதாந்த தத்துவத்தின் அடிப்படை நூல். உபநிடதங்களின் போதனைகளை ஒழுங்குபடுத்தும் 555 சுருக்கமான அபரிசும்கள்.'
+      }
+    }
+  },
+  'bhagavad-gita': {
+    term: 'bhagavad-gita',
+    translations: {
+      en: {
+        translation: 'Bhagavad Gītā',
+        transliteration: 'Bhagavad Gītā',
+        etymology: 'Bhagavat (divine, blessed) + Gītā (song)',
+        culturalContext: '700-verse Hindu scripture that is part of the Mahābhārata epic. Dialogue between Lord Kṛṣṇa and warrior Arjuna on the battlefield of Kurukṣetra. Synthesizes karma yoga (action), jñāna yoga (knowledge), and bhakti yoga (devotion) as paths to liberation. Central to Hindu philosophy and widely commented upon by āchāryas including Śaṅkara.'
+      },
+      hi: {
+        translation: 'भगवद्गीता',
+        transliteration: 'Bhagavad Gītā',
+        etymology: 'भगवत् (दिव्य, धन्य) + गीता (गीत)',
+        culturalContext: 'महाभारत महाकाव्य का 700-श्लोकों का हिंदू शास्त्र। कुरुक्षेत्र के युद्धक्षेत्र में भगवान कृष्ण और योद्धा अर्जुन के बीच संवाद।'
+      },
+      ta: {
+        translation: 'பகவத் கீதை',
+        transliteration: 'Bhagavad Gītā',
+        etymology: 'பகவத் (தெய்வீகம், ஆசீர்வாதம்) + கீதை (பாடல்)',
+        culturalContext: 'மஹாபாரதத்தின் ஒரு பகுதியான 700-வசனங்கள் கொண்ட இந்து வேதநூல். குருக்ஷேத்திர போர்க்களத்தில் கிருஷ்ண பகவானுக்கும் அர்ஜுனனுக்கும் இடையிலான உரையாடல்.'
+      }
+    }
+  },
+  'mathas': {
+    term: 'mathas',
+    translations: {
+      en: {
+        translation: 'Maṭhas',
+        transliteration: 'Maṭhas',
+        etymology: 'From Sanskrit maṭha (monastery, hermitage)',
+        culturalContext: 'Hindu monastic institutions that preserve and transmit philosophical traditions, Vedic learning, and ascetic disciplines. Ādi Śaṅkara established four cardinal maṭhas at Śṛṅgeri, Dvārakā, Purī, and Jyotirmaṭh to propagate Advaita Vedānta. Headed by Śaṅkarācāryas who are spiritual leaders and lineage holders.'
+      },
+      hi: {
+        translation: 'मठ',
+        transliteration: 'Maṭhas',
+        etymology: 'संस्कृत maṭha (मठ, आश्रम) से',
+        culturalContext: 'हिंदू मठवासी संस्थान जो दार्शनिक परंपराओं, वैदिक शिक्षा और तपस्वी अनुशासन को संरक्षित और संचारित करते हैं।'
+      },
+      ta: {
+        translation: 'மடங்கள்',
+        transliteration: 'Maṭhas',
+        etymology: 'சமஸ்கிருதம் maṭha (மடாலயம், துறவறம்) இருந்து',
+        culturalContext: 'தத்துவ பாரம்பரியங்கள், வேத கற்றல் மற்றும் துறவு ஒழுக்கங்களை பாதுகாத்து பரப்பும் இந்து துறவற நிறுவனங்கள்.'
+      }
+    }
+  },
+  'parivrajakas': {
+    term: 'parivrajakas',
+    translations: {
+      en: {
+        translation: 'Parivrājakas',
+        transliteration: 'Parivrājakas',
+        etymology: 'Pari (around) + vrāj (to wander)',
+        culturalContext: 'Wandering ascetics who renounce fixed abodes and travel continuously. Mentioned in Upaniṣads and Buddhist texts as forest-dwelling mendicants. Daśanāmī saṃnyāsīs often adopt this lifestyle, moving between pilgrimage sites and living on alms.'
+      },
+      hi: {
+        translation: 'परिव्राजक',
+        transliteration: 'Parivrājakas',
+        etymology: 'परि (चारों ओर) + व्राज (भटकना)',
+        culturalContext: 'भटकने वाले तपस्वी जो स्थायी निवास का त्याग करते हैं और लगातार यात्रा करते हैं।'
+      },
+      ta: {
+        translation: 'பரிவிராஜகர்கள்',
+        transliteration: 'Parivrājakas',
+        etymology: 'பரி (சுற்றிலும்) + விராஜ் (அலைதல்)',
+        culturalContext: 'நிலையான இருப்பிடங்களைத் துறந்து தொடர்ந்து பயணிக்கும் துறவிகள்.'
+      }
+    }
+  },
+  'ashrams': {
+    term: 'ashrams',
+    translations: {
+      en: {
+        translation: 'Āśramas',
+        transliteration: 'Āśramas',
+        etymology: 'From ā + śrama (exertion, effort)',
+        culturalContext: 'Hermitages or spiritual retreats where ascetics, sages, and disciples reside for study, meditation, and practice. Also refers to the four life stages in Hindu dharma: brahmacarya (student), gṛhastha (householder), vānaprastha (forest-dweller), sannyāsa (renunciate).'
+      },
+      hi: {
+        translation: 'आश्रम',
+        transliteration: 'Āśramas',
+        etymology: 'आ + श्रम (परिश्रम, प्रयास) से',
+        culturalContext: 'तपस्वियों, ऋषियों और शिष्यों के अध्ययन, ध्यान और अभ्यास के लिए निवास करने वाले आश्रम या आध्यात्मिक विश्रामस्थल।'
+      },
+      ta: {
+        translation: 'ஆசிரமங்கள்',
+        transliteration: 'Āśramas',
+        etymology: 'ஆ + ஸ்ரமா (முயற்சி, உழைப்பு) இருந்து',
+        culturalContext: 'துறவிகள், முனிவர்கள் மற்றும் சீடர்கள் படிப்பு, தியானம் மற்றும் பயிற்சிக்காக தங்கும் துறவறங்கள் அல்லது ஆன்மீக இடங்கள்.'
+      }
+    }
   }
 };
