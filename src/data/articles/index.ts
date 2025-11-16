@@ -23,6 +23,8 @@ import { sariraAndAtmanVedicPreservation } from './sarira-and-atman-vedic-preser
 import { rishiGenealogiesVedicTradition } from './rishi-genealogies-vedic-tradition';
 import { reassessingRigvedaAntiquity } from './reassessing-rigveda-antiquity';
 import { geomythologyLandReclamation } from './geomythology-land-reclamation';
+import { dashanamiAsceticsSacredGeography } from './dashanami-ascetics-sacred-geography';
+import { continuousHabitationUttarapatha } from './continuous-habitation-uttarapatha';
 
 // Complete multilingual article registry
 export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
@@ -49,7 +51,9 @@ export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
   sariraAndAtmanVedicPreservation,
   rishiGenealogiesVedicTradition,
   reassessingRigvedaAntiquity,
-  geomythologyLandReclamation
+  geomythologyLandReclamation,
+  dashanamiAsceticsSacredGeography,
+  continuousHabitationUttarapatha
 ];
 
 // Mapping from legacy slugs to multilingual article IDs
@@ -77,7 +81,9 @@ export const SLUG_TO_ID_MAP: Record<string, string> = {
   '/sarira-and-atman-vedic-preservation': 'sarira-and-atman-vedic-preservation',
   '/rishi-genealogies-vedic-tradition': 'rishi-genealogies-vedic-tradition',
   '/reassessing-rigveda-antiquity': 'reassessing-rigveda-antiquity',
-  '/geomythology-land-reclamation': 'geomythology-land-reclamation'
+  '/geomythology-land-reclamation': 'geomythology-land-reclamation',
+  '/dashanami-ascetics-sacred-geography': 'dashanami-ascetics-sacred-geography',
+  '/continuous-habitation-uttarapatha': 'continuous-habitation-uttarapatha'
 };
 
 // Article metadata for display (readTime, author, date)
@@ -230,6 +236,18 @@ export const ARTICLE_METADATA: Record<string, {
     author: 'Nartiang Foundation Research Team',
     date: '2025-10-29',
     theme: 'Sacred Ecology'
+  },
+  'dashanami-ascetics-sacred-geography': {
+    readTime: 28,
+    author: 'Śrīraṅgam Research Team',
+    date: '2024-01-15',
+    theme: 'Ancient India'
+  },
+  'continuous-habitation-uttarapatha': {
+    readTime: 35,
+    author: 'Śrīraṅgam Research Team',
+    date: '2024-01-16',
+    theme: 'Ancient India'
   }
 };
 
