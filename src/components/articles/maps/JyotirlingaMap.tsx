@@ -6,7 +6,15 @@ import { JYOTIRLINGAS, PILGRIMAGE_ROUTES, JyotirlingaSite } from '@/data/jyotirl
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-// Fix Leaflet default icon issue
+// FIX LEAFLET DEFAULT ICON PATHS FOR VITE/REACT
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// Create custom icon for Jyotirlinga markers
 const createCustomIcon = (kumbhMela: boolean) => {
   const color = kumbhMela ? '#f97316' : '#3b82f6';
   const svgIcon = `
@@ -51,6 +59,7 @@ export function JyotirlingaMap({ selectedSite }: JyotirlingaMapProps) {
 
   const [isMounted, setIsMounted] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [leafletReady, setLeafletReady] = useState(false);
   const [activeSite, setActiveSite] = useState<JyotirlingaSite | null>(null);
 
   useEffect(() => {
@@ -61,12 +70,19 @@ export function JyotirlingaMap({ selectedSite }: JyotirlingaMapProps) {
     
     const timer = setTimeout(() => {
       try {
-        setIsMounted(true);
+        // Verify Leaflet is fully loaded before initializing map
+        if (typeof L !== 'undefined' && L.Icon && L.Icon.Default) {
+          setLeafletReady(true);
+          setIsMounted(true);
+          console.log('JyotirlingaMap: Leaflet initialized successfully');
+        } else {
+          throw new Error('Leaflet not fully initialized');
+        }
       } catch (e) {
         console.error('JyotirlingaMap initialization error:', e);
         setHasError(true);
       }
-    }, 150);
+    }, 200);
     
     return () => clearTimeout(timer);
   }, []);
@@ -96,7 +112,7 @@ export function JyotirlingaMap({ selectedSite }: JyotirlingaMapProps) {
     );
   }
 
-  if (!isMounted) {
+  if (!isMounted || !leafletReady) {
     return (
       <Card className="w-full">
         <CardHeader>
@@ -129,10 +145,12 @@ export function JyotirlingaMap({ selectedSite }: JyotirlingaMapProps) {
       <CardContent className="space-y-4">
         <div className="h-[600px] rounded-lg overflow-hidden border border-border">
           <MapContainer
+            key="jyotirlinga-map-container"
             center={[22.5, 78.5]}
             zoom={5}
             style={{ height: '100%', width: '100%' }}
             scrollWheelZoom={false}
+            whenReady={() => console.log('JyotirlingaMap: MapContainer ready')}
           >
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

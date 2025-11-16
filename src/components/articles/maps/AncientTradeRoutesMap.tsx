@@ -99,6 +99,7 @@ export const AncientTradeRoutesMap = () => {
 
   const [isMounted, setIsMounted] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [leafletReady, setLeafletReady] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -108,12 +109,19 @@ export const AncientTradeRoutesMap = () => {
     
     const timer = setTimeout(() => {
       try {
-        setIsMounted(true);
+        // Verify Leaflet is fully loaded before initializing map
+        if (typeof L !== 'undefined' && L.Icon && L.Icon.Default) {
+          setLeafletReady(true);
+          setIsMounted(true);
+          console.log('AncientTradeRoutesMap: Leaflet initialized successfully');
+        } else {
+          throw new Error('Leaflet not fully initialized');
+        }
       } catch (e) {
         console.error('AncientTradeRoutesMap initialization error:', e);
         setHasError(true);
       }
-    }, 150);
+    }, 200);
     
     return () => clearTimeout(timer);
   }, []);
@@ -132,7 +140,7 @@ export const AncientTradeRoutesMap = () => {
     );
   }
 
-  if (!isMounted) {
+  if (!isMounted || !leafletReady) {
     return (
       <Card className="w-full my-8">
         <CardHeader>
@@ -157,10 +165,12 @@ export const AncientTradeRoutesMap = () => {
       <CardContent className="p-6">
         <div className="relative h-[600px] rounded-lg overflow-hidden border border-border">
           <MapContainer
+            key="ancient-trade-routes-map-container"
             center={[19.0, 79.0]}
             zoom={5}
             style={{ height: '100%', width: '100%' }}
             className="z-0"
+            whenReady={() => console.log('AncientTradeRoutesMap: MapContainer ready')}
           >
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
