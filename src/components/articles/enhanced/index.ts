@@ -19,6 +19,12 @@ export { ArchaeologicalStrataViewer } from './ArchaeologicalStrataViewer';
 // Maps
 export { JyotirlingaMap } from '../maps/JyotirlingaMap';
 export { AncientTradeRoutesMap } from '../maps/AncientTradeRoutesMap';
+export { AcousticSiteMap } from '../maps/AcousticSiteMap';
+export { PrabhasaMandalaMap } from '../maps/PrabhasaMandalaMap';
+export { JyotirlingaComprehensiveMap } from '../maps/JyotirlingaComprehensiveMap';
+
+// Diagrams
+export { VedicMeterDiagram } from '../diagrams/VedicMeterDiagram';
 
 // Component composition utilities
 export const createArticleSection = (title: string, content: React.ReactNode, options?: {
