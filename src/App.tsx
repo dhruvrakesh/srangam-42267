@@ -63,6 +63,8 @@ const SariraAtmanVedicPreservation = lazy(() => import("./pages/articles/SariraA
 const RishiGenealogiesVedicTradition = lazy(() => import("./pages/articles/RishiGenealogiesVedicTradition"));
 const ReasessingRigvedaAntiquity = lazy(() => import("./pages/articles/ReasessingRigvedaAntiquity"));
 const GeomythologyLandReclamation = lazy(() => import("./pages/GeomythologyLandReclamation"));
+const DashanamiAsceticsSacredGeography = lazy(() => import("./pages/articles/DashanamiAsceticsSacredGeography"));
+const ContinuousHabitationUttarapatha = lazy(() => import("./pages/articles/ContinuousHabitationUttarapatha"));
 const BatchBujangNagapattinamOcean = lazy(() => import("./pages/BatchBujangNagapattinamOcean"));
 const BatchMuzirisKutaiAshoka = lazy(() => import("./pages/BatchMuzirisKutaiAshoka"));
 const Sitemap = lazy(() => import("./pages/Sitemap"));
