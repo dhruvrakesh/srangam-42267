@@ -65,6 +65,8 @@ const ReasessingRigvedaAntiquity = lazy(() => import("./pages/articles/Reasessin
 const GeomythologyLandReclamation = lazy(() => import("./pages/GeomythologyLandReclamation"));
 const DashanamiAsceticsSacredGeography = lazy(() => import("./pages/articles/DashanamiAsceticsSacredGeography"));
 const ContinuousHabitationUttarapatha = lazy(() => import("./pages/articles/ContinuousHabitationUttarapatha"));
+const SomnathaPrabhasaItihasa = lazy(() => import("./pages/articles/SomnathaPrabhasaItihasa"));
+const RingingRocksRhythmicCosmology = lazy(() => import("./pages/articles/RingingRocksRhythmicCosmology"));
 const BatchBujangNagapattinamOcean = lazy(() => import("./pages/BatchBujangNagapattinamOcean"));
 const BatchMuzirisKutaiAshoka = lazy(() => import("./pages/BatchMuzirisKutaiAshoka"));
 const Sitemap = lazy(() => import("./pages/Sitemap"));
@@ -176,6 +178,10 @@ const App = () => (
             <Route path="/geomythology-land-reclamation" element={<GeomythologyLandReclamation />} />
             <Route path="/dashanami-ascetics-sacred-geography" element={<DashanamiAsceticsSacredGeography />} />
             <Route path="/continuous-habitation-uttarapatha" element={<ContinuousHabitationUttarapatha />} />
+            <Route path="/somnatha-prabhasa-itihasa" element={<SomnathaPrabhasaItihasa />} />
+            <Route path="/ringing-rocks-rhythmic-cosmology" element={<RingingRocksRhythmicCosmology />} />
+            <Route path="/articles/somnatha-prabhasa-itihasa" element={<SomnathaPrabhasaItihasa />} />
+            <Route path="/articles/ringing-rocks-rhythmic-cosmology" element={<RingingRocksRhythmicCosmology />} />
                   <Route path="/themes/geology-deep-time/stone-purana" element={<StonePurana />} />
                   <Route path="/themes/ancient-india/pepper-routes" element={<IndianOceanPowerNetworks />} />
                   <Route path="/batch/bujang-nagapattinam-ocean" element={<BatchBujangNagapattinamOcean />} />

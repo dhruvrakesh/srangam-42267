@@ -25,6 +25,8 @@ import { reassessingRigvedaAntiquity } from './reassessing-rigveda-antiquity';
 import { geomythologyLandReclamation } from './geomythology-land-reclamation';
 import { dashanamiAsceticsSacredGeography } from './dashanami-ascetics-sacred-geography';
 import { continuousHabitationUttarapatha } from './continuous-habitation-uttarapatha';
+import { somnathaPrabhasaItihasa } from './somnatha-prabhasa-itihasa';
+import { ringingRocksRhythmicCosmology } from './ringing-rocks-rhythmic-cosmology';
 
 // Complete multilingual article registry
 export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
@@ -53,7 +55,9 @@ export const MULTILINGUAL_ARTICLES: LocalizedArticle[] = [
   reassessingRigvedaAntiquity,
   geomythologyLandReclamation,
   dashanamiAsceticsSacredGeography,
-  continuousHabitationUttarapatha
+  continuousHabitationUttarapatha,
+  somnathaPrabhasaItihasa,
+  ringingRocksRhythmicCosmology
 ];
 
 // Mapping from legacy slugs to multilingual article IDs
@@ -83,7 +87,9 @@ export const SLUG_TO_ID_MAP: Record<string, string> = {
   '/reassessing-rigveda-antiquity': 'reassessing-rigveda-antiquity',
   '/geomythology-land-reclamation': 'geomythology-land-reclamation',
   '/dashanami-ascetics-sacred-geography': 'dashanami-ascetics-sacred-geography',
-  '/continuous-habitation-uttarapatha': 'continuous-habitation-uttarapatha'
+  '/continuous-habitation-uttarapatha': 'continuous-habitation-uttarapatha',
+  '/somnatha-prabhasa-itihasa': 'somnatha-prabhasa-itihasa',
+  '/ringing-rocks-rhythmic-cosmology': 'ringing-rocks-rhythmic-cosmology'
 };
 
 // Article metadata for display (readTime, author, date)
