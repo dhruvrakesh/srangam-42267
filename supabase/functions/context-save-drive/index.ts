@@ -130,33 +130,84 @@ Generated automatically by context-save-drive edge function.
     // Parse service account credentials
     const serviceAccount = JSON.parse(serviceAccountJson);
     
-    // Create JWT for OAuth2 authentication
-    const jwtHeader = btoa(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+    // Helper: Base64URL encoding (RFC 4648)
+    function base64UrlEncode(data: ArrayBuffer | string): string {
+      const bytes = typeof data === 'string' 
+        ? new TextEncoder().encode(data)
+        : new Uint8Array(data);
+      
+      const base64 = btoa(String.fromCharCode(...bytes));
+      return base64
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+    }
+    
+    // Helper: Import RSA private key from PEM format
+    async function importPrivateKey(pemKey: string): Promise<CryptoKey> {
+      // Remove PEM headers and decode base64
+      const pemContents = pemKey
+        .replace('-----BEGIN PRIVATE KEY-----', '')
+        .replace('-----END PRIVATE KEY-----', '')
+        .replace(/\s/g, '');
+      
+      const binaryKey = Uint8Array.from(atob(pemContents), c => c.charCodeAt(0));
+      
+      return await crypto.subtle.importKey(
+        'pkcs8',
+        binaryKey,
+        { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+        false,
+        ['sign']
+      );
+    }
+    
+    // Create JWT for OAuth2 authentication with proper RS256 signing
     const now = Math.floor(Date.now() / 1000);
-    const jwtPayload = btoa(JSON.stringify({
+    const header = { alg: 'RS256', typ: 'JWT' };
+    const payload = {
       iss: serviceAccount.client_email,
       scope: 'https://www.googleapis.com/auth/drive.file',
       aud: 'https://oauth2.googleapis.com/token',
       exp: now + 3600,
       iat: now,
-    }));
+    };
     
-    // Get access token (simplified - production should use proper JWT signing library)
+    const encodedHeader = base64UrlEncode(JSON.stringify(header));
+    const encodedPayload = base64UrlEncode(JSON.stringify(payload));
+    const signatureInput = `${encodedHeader}.${encodedPayload}`;
+    
+    // Import private key and sign
+    const privateKey = await importPrivateKey(serviceAccount.private_key);
+    const signatureBuffer = await crypto.subtle.sign(
+      'RSASSA-PKCS1-v1_5',
+      privateKey,
+      new TextEncoder().encode(signatureInput)
+    );
+    const encodedSignature = base64UrlEncode(signatureBuffer);
+    
+    const jwt = `${signatureInput}.${encodedSignature}`;
+    
+    console.log('JWT created successfully, requesting access token...');
+    
+    // Get access token with properly signed JWT
     const accessTokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-        assertion: `${jwtHeader}.${jwtPayload}.${serviceAccount.private_key}`,
+        assertion: jwt,
       }),
     });
 
     if (!accessTokenResponse.ok) {
-      console.error('OAuth2 token error:', await accessTokenResponse.text());
+      const errorText = await accessTokenResponse.text();
+      console.error('OAuth2 token error:', errorText);
       throw new Error('Failed to authenticate with Google Drive');
     }
 
     const { access_token } = await accessTokenResponse.json();
+    console.log('Access token obtained successfully');
 
     // Upload context document to Google Drive
     const fileName = `srangam_context_${new Date().toISOString().split('T')[0]}.md`;
