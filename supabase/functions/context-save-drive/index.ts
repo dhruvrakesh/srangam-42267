@@ -214,7 +214,7 @@ Generated automatically by context-save-drive edge function.
     const metadata = {
       name: fileName,
       mimeType: 'text/markdown',
-      parents: ['0AHOa_ecfO3arUk9PVA'], // Srangam Shared Drive
+      parents: ['0AHOa_eCfO3arUk9PVA'], // Srangam Shared Drive
     };
 
     const boundary = '-------314159265358979323846';
