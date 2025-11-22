@@ -71,7 +71,7 @@ serve(async (req) => {
     const metadata = {
       name: `${articleSlug}_${languageCode}.mp3`,
       mimeType: 'audio/mpeg',
-      parents: ['root'], // Upload to root folder
+      parents: ['0AHOa_ecfO3arUk9PVA'], // Srangam Shared Drive
     };
 
     const boundary = '-------314159265358979323846';
@@ -89,7 +89,7 @@ serve(async (req) => {
       closeDelimiter;
 
     const uploadResponse = await fetch(
-      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true',
       {
         method: 'POST',
         headers: {
@@ -109,7 +109,7 @@ serve(async (req) => {
     const fileId = driveFile.id;
 
     // Make file shareable (anyone with link can view)
-    await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions`, {
+    await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions?supportsAllDrives=true`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${access_token}`,
