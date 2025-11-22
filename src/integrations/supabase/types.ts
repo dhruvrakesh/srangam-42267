@@ -575,6 +575,75 @@ export type Database = {
         }
         Relationships: []
       }
+      srangam_context_snapshots: {
+        Row: {
+          articles_count: number
+          changes_from_previous: Json | null
+          context_summary: string | null
+          created_at: string | null
+          cross_refs_count: number
+          document_length: number | null
+          error_message: string | null
+          file_size_bytes: number | null
+          google_drive_file_id: string | null
+          google_drive_share_url: string | null
+          id: string
+          modules_count: number | null
+          snapshot_date: string
+          stats_detail: Json | null
+          status: string | null
+          tags_count: number
+          terms_count: number
+          triggered_by: string | null
+          triggered_by_user: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          articles_count: number
+          changes_from_previous?: Json | null
+          context_summary?: string | null
+          created_at?: string | null
+          cross_refs_count: number
+          document_length?: number | null
+          error_message?: string | null
+          file_size_bytes?: number | null
+          google_drive_file_id?: string | null
+          google_drive_share_url?: string | null
+          id?: string
+          modules_count?: number | null
+          snapshot_date?: string
+          stats_detail?: Json | null
+          status?: string | null
+          tags_count: number
+          terms_count: number
+          triggered_by?: string | null
+          triggered_by_user?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          articles_count?: number
+          changes_from_previous?: Json | null
+          context_summary?: string | null
+          created_at?: string | null
+          cross_refs_count?: number
+          document_length?: number | null
+          error_message?: string | null
+          file_size_bytes?: number | null
+          google_drive_file_id?: string | null
+          google_drive_share_url?: string | null
+          id?: string
+          modules_count?: number | null
+          snapshot_date?: string
+          stats_detail?: Json | null
+          status?: string | null
+          tags_count?: number
+          terms_count?: number
+          triggered_by?: string | null
+          triggered_by_user?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       srangam_correlation_matrix: {
         Row: {
           article_slug: string | null
