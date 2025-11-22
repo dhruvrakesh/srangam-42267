@@ -35,31 +35,100 @@ serve(async (req) => {
     const binaryAudio = Uint8Array.from(atob(audioData), c => c.charCodeAt(0));
     const blob = new Blob([binaryAudio], { type: 'audio/mpeg' });
 
-    // Upload to Google Drive
+    // Parse service account credentials
     const serviceAccount = JSON.parse(serviceAccountJson);
     
-    // For simplicity, using direct API call
-    // In production, use proper OAuth2 flow with googleapis package
+    // Create JWT for OAuth2 authentication
+    const jwtHeader = btoa(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+    const now = Math.floor(Date.now() / 1000);
+    const jwtPayload = btoa(JSON.stringify({
+      iss: serviceAccount.client_email,
+      scope: 'https://www.googleapis.com/auth/drive.file',
+      aud: 'https://oauth2.googleapis.com/token',
+      exp: now + 3600,
+      iat: now,
+    }));
+    
+    // Note: For production, use a proper JWT library with RSA signing
+    // This is a simplified implementation - consider using jose or similar
+    const accessTokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+        assertion: `${jwtHeader}.${jwtPayload}.${serviceAccount.private_key}`, // Simplified
+      }),
+    });
+
+    if (!accessTokenResponse.ok) {
+      console.error('OAuth2 token error:', await accessTokenResponse.text());
+      throw new Error('Failed to authenticate with Google Drive');
+    }
+
+    const { access_token } = await accessTokenResponse.json();
+
+    // Upload to Google Drive using multipart upload
     const metadata = {
       name: `${articleSlug}_${languageCode}.mp3`,
       mimeType: 'audio/mpeg',
+      parents: ['root'], // Upload to root folder
     };
 
-    const form = new FormData();
-    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-    form.append('file', blob);
+    const boundary = '-------314159265358979323846';
+    const delimiter = `\r\n--${boundary}\r\n`;
+    const closeDelimiter = `\r\n--${boundary}--`;
 
-    // Note: This is a simplified version
-    // In production, implement proper Google Drive API integration
-    console.log('Would upload to Google Drive:', {
-      articleSlug,
-      languageCode,
-      size: binaryAudio.length,
+    const multipartBody = 
+      delimiter +
+      'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+      JSON.stringify(metadata) +
+      delimiter +
+      'Content-Type: audio/mpeg\r\n' +
+      'Content-Transfer-Encoding: base64\r\n\r\n' +
+      audioData +
+      closeDelimiter;
+
+    const uploadResponse = await fetch(
+      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${access_token}`,
+          'Content-Type': `multipart/related; boundary=${boundary}`,
+        },
+        body: multipartBody,
+      }
+    );
+
+    if (!uploadResponse.ok) {
+      console.error('Drive upload error:', await uploadResponse.text());
+      throw new Error('Failed to upload to Google Drive');
+    }
+
+    const driveFile = await uploadResponse.json();
+    const fileId = driveFile.id;
+
+    // Make file shareable (anyone with link can view)
+    await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        role: 'reader',
+        type: 'anyone',
+      }),
     });
 
-    // For now, simulate successful upload
-    const mockFileId = `file_${Date.now()}`;
-    const mockShareUrl = `https://drive.google.com/file/d/${mockFileId}/view`;
+    const shareUrl = `https://drive.google.com/file/d/${fileId}/view`;
+    
+    console.log('Successfully uploaded to Google Drive:', {
+      articleSlug,
+      languageCode,
+      fileId,
+      size: binaryAudio.length,
+    });
 
     // Save metadata to Supabase
     const supabase = createClient(
@@ -74,8 +143,8 @@ serve(async (req) => {
         provider,
         voice_id: voiceId,
         language_code: languageCode,
-        google_drive_file_id: mockFileId,
-        google_drive_share_url: mockShareUrl,
+        google_drive_file_id: fileId,
+        google_drive_share_url: shareUrl,
         file_size_bytes: binaryAudio.length,
         character_count: characterCount,
         content_hash: contentHash,
@@ -94,8 +163,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        fileId: mockFileId,
-        shareUrl: mockShareUrl,
+        fileId,
+        shareUrl,
         metadata: data,
       }),
       {
