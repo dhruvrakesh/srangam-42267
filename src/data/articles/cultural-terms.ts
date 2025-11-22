@@ -2207,3 +2207,142 @@ export const enhanceTextWithCulturalTerms = (text: string, language: string = 'e
   
   return enhancedText;
 };
+
+// Add missing Dashanami and Geomythology terms
+export const additionalCulturalTerms: Record<string, CulturalTerm> = {
+  'bhakti': {
+    term: 'bhakti',
+    translations: {
+      en: {
+        translation: 'devotion',
+        transliteration: 'bhakti',
+        etymology: 'From Sanskrit bhaj (to share, to worship)',
+        culturalContext: 'Path of loving devotion to a personal deity, one of the main spiritual practices in Hinduism'
+      }
+    }
+  },
+  'nayanmar': {
+    term: 'nayanmar',
+    translations: {
+      en: {
+        translation: 'Shaiva saint',
+        transliteration: 'nāyanmār',
+        etymology: 'Tamil nāyan (lord, master)',
+        culturalContext: 'Sixty-three Tamil Shaiva saints (6th-9th centuries CE) who composed devotional hymns to Shiva'
+      }
+    }
+  },
+  'alvar': {
+    term: 'alvar',
+    translations: {
+      en: {
+        translation: 'Vaishnava saint',
+        transliteration: 'āḻvār',
+        etymology: 'Tamil āḻvār (one immersed in god)',
+        culturalContext: 'Twelve Tamil Vaishnava poet-saints (6th-9th centuries CE) who composed devotional hymns to Vishnu'
+      }
+    }
+  },
+  'kedarnath': {
+    term: 'kedarnath',
+    translations: {
+      en: {
+        translation: 'Kedarnath',
+        transliteration: 'kedārnātha',
+        etymology: 'Sanskrit kedāra (field) + nātha (lord)',
+        culturalContext: 'Sacred Himalayan shrine, one of the twelve Jyotirlingas and part of the Char Dham pilgrimage circuit'
+      }
+    }
+  },
+  'avadhuta': {
+    term: 'avadhuta',
+    translations: {
+      en: {
+        translation: 'renunciant sage',
+        transliteration: 'avadhūta',
+        etymology: 'Sanskrit ava (away) + dhū (to shake off)',
+        culturalContext: 'Ascetic who has renounced all social conventions and attachments, living in complete spiritual freedom'
+      }
+    }
+  },
+  'virashaiva': {
+    term: 'virashaiva',
+    translations: {
+      en: {
+        translation: 'Lingayat',
+        transliteration: 'vīraśaiva',
+        etymology: 'Sanskrit vīra (heroic) + śaiva (Shiva devotee)',
+        culturalContext: 'South Indian Shaiva tradition emphasizing devotion and social equality, founded by Basavanna in 12th century'
+      }
+    }
+  },
+  'karma': {
+    term: 'karma',
+    translations: {
+      en: {
+        translation: 'action and its consequences',
+        transliteration: 'karma',
+        etymology: 'Sanskrit kṛ (to do, to act)',
+        culturalContext: 'Principle that actions create consequences affecting present and future existences'
+      }
+    }
+  },
+  'purushartha': {
+    term: 'purushartha',
+    translations: {
+      en: {
+        translation: 'life goals',
+        transliteration: 'puruṣārtha',
+        etymology: 'Sanskrit puruṣa (person) + artha (goal, purpose)',
+        culturalContext: 'Four aims of human life: dharma (duty), artha (prosperity), kama (pleasure), moksha (liberation)'
+      }
+    }
+  },
+  'viveka': {
+    term: 'viveka',
+    translations: {
+      en: {
+        translation: 'discrimination',
+        transliteration: 'viveka',
+        etymology: 'Sanskrit vi (apart) + veka (to separate)',
+        culturalContext: 'Spiritual discernment between real and unreal, eternal and temporal'
+      }
+    }
+  },
+  'satisaras': {
+    term: 'satisaras',
+    translations: {
+      en: {
+        translation: "Sati's Lake",
+        transliteration: 'satīsaras',
+        etymology: 'Sanskrit satī (goddess) + saras (lake)',
+        culturalContext: 'Mythical primordial lake that covered Kashmir Valley before sage Kashyapa drained it'
+      }
+    }
+  },
+  'nilamata-purana': {
+    term: 'nilamata-purana',
+    translations: {
+      en: {
+        translation: 'Nilamata Purana',
+        transliteration: 'nīlamata purāṇa',
+        etymology: 'Sanskrit nīla (blue/Nila sage) + mata (opinion) + purāṇa (ancient text)',
+        culturalContext: 'Foundational Kashmiri text (6th-8th c. CE) describing the valley\'s mythical origins and sacred geography'
+      }
+    }
+  },
+  'rajatarangini': {
+    term: 'rajatarangini',
+    translations: {
+      en: {
+        translation: 'River of Kings',
+        transliteration: 'rājataraṅgiṇī',
+        etymology: 'Sanskrit rāja (king) + taraṅga (wave) + iṇī (possessing)',
+        culturalContext: 'Historical chronicle of Kashmir by poet Kalhana (12th c.), blending mythology with dynastic history'
+      }
+    }
+  }
+};
+
+// Merge all terms
+Object.assign(culturalTermsDatabase, additionalCulturalTerms);
