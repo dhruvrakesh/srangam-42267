@@ -71,7 +71,7 @@ serve(async (req) => {
     const metadata = {
       name: `${articleSlug}_${languageCode}.mp3`,
       mimeType: 'audio/mpeg',
-      parents: ['0AHOa_ecfO3arUk9PVA'], // Srangam Shared Drive
+      parents: ['0AHOa_eCfO3arUk9PVA'], // Srangam Shared Drive
     };
 
     const boundary = '-------314159265358979323846';
