@@ -17,16 +17,9 @@ export class NarrationService {
     this.abortController = new AbortController();
 
     try {
-      // Build SSML if needed
-      let processedContent = content;
-      if (config.contextHints?.hasSanskrit || config.contextHints?.hasCitations) {
-        processedContent = ssmlBuilder.buildForArticle(content, {
-          language: config.language,
-          hasCitations: config.contextHints.hasCitations,
-          hasSanskrit: config.contextHints.hasSanskrit,
-          hasPoetry: config.contextHints.hasPoetry,
-        });
-      }
+      // Use plain text for Google Neural voices to avoid SSML validation errors
+      // Google's Neural2 voices require stricter SSML - sending plain text is more reliable
+      const processedContent = content;
 
       // Call appropriate edge function based on provider
       const endpoint = config.provider === 'openai' 
