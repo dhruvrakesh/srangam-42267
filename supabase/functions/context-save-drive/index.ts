@@ -214,7 +214,7 @@ Generated automatically by context-save-drive edge function.
     const metadata = {
       name: fileName,
       mimeType: 'text/markdown',
-      parents: ['root'], // Could be changed to a specific folder ID
+      parents: ['0AHOa_ecfO3arUk9PVA'], // Srangam Shared Drive
     };
 
     const boundary = '-------314159265358979323846';
@@ -231,7 +231,7 @@ Generated automatically by context-save-drive edge function.
       closeDelimiter;
 
     const uploadResponse = await fetch(
-      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true',
       {
         method: 'POST',
         headers: {
@@ -251,7 +251,7 @@ Generated automatically by context-save-drive edge function.
     const fileId = driveFile.id;
 
     // Make file shareable
-    await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions`, {
+    await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions?supportsAllDrives=true`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${access_token}`,

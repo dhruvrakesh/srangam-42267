@@ -226,33 +226,151 @@ async function uploadToGoogleDrive(content: string): Promise<string> {
   }
 
   try {
+    // Parse service account credentials
     const serviceAccount = JSON.parse(serviceAccountJson);
     
-    // Create JWT for OAuth2
+    // Helper: Base64URL encoding (RFC 4648)
+    function base64UrlEncode(data: ArrayBuffer | string): string {
+      const bytes = typeof data === 'string' 
+        ? new TextEncoder().encode(data)
+        : new Uint8Array(data);
+      
+      const base64 = btoa(String.fromCharCode(...bytes));
+      return base64
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+    }
+    
+    // Helper: Import RSA private key from PEM format
+    async function importPrivateKey(pemKey: string): Promise<CryptoKey> {
+      // Remove PEM headers and decode base64
+      const pemContents = pemKey
+        .replace('-----BEGIN PRIVATE KEY-----', '')
+        .replace('-----END PRIVATE KEY-----', '')
+        .replace(/\s/g, '');
+      
+      const binaryKey = Uint8Array.from(atob(pemContents), c => c.charCodeAt(0));
+      
+      return await crypto.subtle.importKey(
+        'pkcs8',
+        binaryKey,
+        { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+        false,
+        ['sign']
+      );
+    }
+    
+    // Create JWT for OAuth2 authentication with proper RS256 signing
     const now = Math.floor(Date.now() / 1000);
-    const jwtHeader = btoa(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
-    const jwtClaim = btoa(JSON.stringify({
+    const header = { alg: 'RS256', typ: 'JWT' };
+    const payload = {
       iss: serviceAccount.client_email,
       scope: 'https://www.googleapis.com/auth/drive.file',
       aud: 'https://oauth2.googleapis.com/token',
       exp: now + 3600,
-      iat: now
-    }));
+      iat: now,
+    };
     
-    // Note: In production, you'd properly sign this with the private key
-    // For now, we'll use the simplified approach from tts-save-drive
+    const encodedHeader = base64UrlEncode(JSON.stringify(header));
+    const encodedPayload = base64UrlEncode(JSON.stringify(payload));
+    const signatureInput = `${encodedHeader}.${encodedPayload}`;
     
+    // Import private key and sign
+    const privateKey = await importPrivateKey(serviceAccount.private_key);
+    const signatureBuffer = await crypto.subtle.sign(
+      'RSASSA-PKCS1-v1_5',
+      privateKey,
+      new TextEncoder().encode(signatureInput)
+    );
+    const encodedSignature = base64UrlEncode(signatureBuffer);
+    
+    const jwt = `${signatureInput}.${encodedSignature}`;
+    
+    console.log('JWT created successfully, requesting access token...');
+    
+    // Get access token with properly signed JWT
+    const accessTokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+        assertion: jwt,
+      }),
+    });
+
+    if (!accessTokenResponse.ok) {
+      const errorText = await accessTokenResponse.text();
+      console.error('OAuth2 token error:', errorText);
+      throw new Error('Failed to authenticate with Google Drive');
+    }
+
+    const { access_token } = await accessTokenResponse.json();
+    console.log('Access token obtained successfully');
+
+    // Upload bundle to Google Drive
     const fileName = `Srangam_Context_Bundle_${new Date().toISOString().split('T')[0]}.md`;
     const metadata = {
       name: fileName,
       mimeType: 'text/markdown',
-      parents: [] // You could specify a folder ID here
+      parents: ['0AHOa_ecfO3arUk9PVA'], // Srangam Shared Drive
     };
 
-    // This is a simplified version - in production use proper OAuth2 flow
-    console.log('Google Drive upload would happen here with filename:', fileName);
+    const boundary = '-------314159265358979323846';
+    const delimiter = `\r\n--${boundary}\r\n`;
+    const closeDelimiter = `\r\n--${boundary}--`;
+
+    const multipartBody = 
+      delimiter +
+      'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+      JSON.stringify(metadata) +
+      delimiter +
+      'Content-Type: text/markdown\r\n\r\n' +
+      content +
+      closeDelimiter;
+
+    const uploadResponse = await fetch(
+      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${access_token}`,
+          'Content-Type': `multipart/related; boundary=${boundary}`,
+        },
+        body: multipartBody,
+      }
+    );
+
+    if (!uploadResponse.ok) {
+      console.error('Drive upload error:', await uploadResponse.text());
+      throw new Error('Failed to upload to Google Drive');
+    }
+
+    const driveFile = await uploadResponse.json();
+    const fileId = driveFile.id;
+
+    // Make file shareable (anyone with link can view)
+    await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions?supportsAllDrives=true`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        role: 'reader',
+        type: 'anyone',
+      }),
+    });
+
+    const shareUrl = `https://drive.google.com/file/d/${fileId}/view`;
     
-    return `https://drive.google.com/file/${fileName}`;
+    console.log('Successfully uploaded bundle to Google Drive:', {
+      fileName,
+      fileId,
+      size: content.length,
+    });
+
+    return shareUrl;
   } catch (error) {
     console.error('Error uploading to Google Drive:', error);
     return '';
