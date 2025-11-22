@@ -231,5 +231,258 @@ export const geomythologyCulturalTerms: Record<string, CulturalTerm> = {
         culturalContext: 'காஷ்மீர் பள்ளத்தாக்கில் பிளீஸ்டோசீன் கால ஏரி படிவுகள்; பண்டைய வடிகட்டப்பட்ட ஏரியின் சதீசரஸ் புராணத்தை உறுதிப்படுத்தும் புவியியல் சான்று'
       }
     }
+  },
+  'vishnu': {
+    term: 'vishnu',
+    translations: {
+      en: {
+        translation: 'Viṣṇu (The Preserver)',
+        transliteration: 'viṣṇu',
+        etymology: 'Sanskrit viṣ (to pervade)',
+        culturalContext: 'One of the principal deities of Hinduism; incarnates as avatāras including Paraśurāma to restore cosmic balance'
+      },
+      hi: {
+        translation: 'विष्णु (पालनकर्ता)',
+        transliteration: 'viṣṇu',
+        etymology: 'संस्कृत विष् (व्याप्त करना)',
+        culturalContext: 'हिंदू धर्म के प्रमुख देवताओं में से एक; ब्रह्मांडीय संतुलन बहाल करने के लिए परशुराम सहित अवतारों के रूप में अवतार लेते हैं'
+      },
+      ta: {
+        translation: 'விஷ்ணு (காப்பாளர்)',
+        transliteration: 'viṣṇu',
+        etymology: 'விஷ் (பரவுதல்)',
+        culturalContext: 'இந்து மதத்தின் முதன்மை தெய்வங்களில் ஒன்று; பிரபஞ்ச சமநிலையை மீட்டெடுக்க பரசுராமர் உட்பட அவதாரங்களாக உருவெடுக்கிறார்'
+      }
+    }
+  },
+  'shiva': {
+    term: 'shiva',
+    translations: {
+      en: {
+        translation: 'Śiva (The Auspicious One)',
+        transliteration: 'śiva',
+        etymology: 'Sanskrit śiva (auspicious, benign)',
+        culturalContext: 'One of the principal deities of Hinduism; Paraśurāma established 108 temples to Śiva across Kerala'
+      },
+      hi: {
+        translation: 'शिव (मंगलमय)',
+        transliteration: 'śiva',
+        etymology: 'संस्कृत शिव (शुभ, कल्याणकारी)',
+        culturalContext: 'हिंदू धर्म के प्रमुख देवताओं में से एक; परशुराम ने केरल में शिव के 108 मंदिर स्थापित किए'
+      },
+      ta: {
+        translation: 'சிவன் (அருளாளர்)',
+        transliteration: 'śiva',
+        etymology: 'சிவம் (மங்களகரமான)',
+        culturalContext: 'இந்து மதத்தின் முதன்மை தெய்வங்களில் ஒன்று; பரசுராமர் கேரளா முழுவதும் சிவனுக்கு 108 கோவில்களை நிறுவினார்'
+      }
+    }
+  },
+  'avatara': {
+    term: 'avatara',
+    translations: {
+      en: {
+        translation: 'Avatāra (Divine Incarnation)',
+        transliteration: 'avatāra',
+        etymology: 'Sanskrit ava (down) + tṛ (to cross)',
+        culturalContext: 'Descent of a deity to earth; Paraśurāma is the sixth avatāra of Viṣṇu who came to restore dharma'
+      },
+      hi: {
+        translation: 'अवतार (दिव्य अवतरण)',
+        transliteration: 'avatāra',
+        etymology: 'संस्कृत अव (नीचे) + तृ (पार करना)',
+        culturalContext: 'पृथ्वी पर देवता का अवतरण; परशुराम विष्णु के छठे अवतार हैं जो धर्म को पुनर्स्थापित करने आए थे'
+      },
+      ta: {
+        translation: 'அவதாரம் (தெய்வீக அவதரிப்பு)',
+        transliteration: 'avatāra',
+        etymology: 'அவ (கீழ்) + த்ர் (கடக்க)',
+        culturalContext: 'பூமிக்கு ஒரு தெய்வத்தின் இறக்கம்; பரசுராமர் விஷ்ணுவின் ஆறாவது அவதாரம் தர்மத்தை மீட்டெடுக்க வந்தார்'
+      }
+    }
+  },
+  'kshatriya': {
+    term: 'kshatriya',
+    translations: {
+      en: {
+        translation: 'Kṣatriya (Warrior Class)',
+        transliteration: 'kṣatriya',
+        etymology: 'Sanskrit kṣatra (rule, authority)',
+        culturalContext: 'Second varṇa in Hindu social hierarchy; Paraśurāma annihilated the kṣatriya class 21 times to avenge his father'
+      },
+      hi: {
+        translation: 'क्षत्रिय (योद्धा वर्ग)',
+        transliteration: 'kṣatriya',
+        etymology: 'संस्कृत क्षत्र (शासन, अधिकार)',
+        culturalContext: 'हिंदू सामाजिक पदानुक्रम में दूसरा वर्ण; परशुराम ने अपने पिता का बदला लेने के लिए क्षत्रिय वर्ग को 21 बार नष्ट किया'
+      },
+      ta: {
+        translation: 'க்ஷத்திரியர் (போர்வீரர் வகுப்பு)',
+        transliteration: 'kṣatriya',
+        etymology: 'க்ஷத்ர (ஆட்சி, அதிகாரம்)',
+        culturalContext: 'இந்து சமூக படிநிலையில் இரண்டாவது வர்ணம்; பரசுராமர் தனது தந்தையின் பழிவாங்க க்ஷத்திரிய வகுப்பை 21 முறை அழித்தார்'
+      }
+    }
+  },
+  'vedic': {
+    term: 'vedic',
+    translations: {
+      en: {
+        translation: 'Vedic (Pertaining to Vedas)',
+        transliteration: 'vaidika',
+        etymology: 'Sanskrit veda (knowledge) + ic (relating to)',
+        culturalContext: 'Relating to the ancient Vedas and associated rituals, culture, and worldview; Vedic age (~1500-500 BCE)'
+      },
+      hi: {
+        translation: 'वैदिक (वेदों से संबंधित)',
+        transliteration: 'vaidika',
+        etymology: 'संस्कृत वेद (ज्ञान) + इक (संबंधित)',
+        culturalContext: 'प्राचीन वेदों और संबंधित अनुष्ठानों, संस्कृति और विश्व दृष्टिकोण से संबंधित; वैदिक युग (~1500-500 ईसा पूर्व)'
+      },
+      ta: {
+        translation: 'வேத (வேதங்கள் தொடர்பான)',
+        transliteration: 'vaidika',
+        etymology: 'வேத (அறிவு) + இக் (தொடர்புடைய)',
+        culturalContext: 'பண்டைய வேதங்கள் மற்றும் தொடர்புடைய சடங்குகள், கலாச்சாரம் மற்றும் உலகக் கண்ணோட்டம் தொடர்பான; வேத காலம் (~1500-500 கிமு)'
+      }
+    }
+  },
+  'mahabharata': {
+    term: 'mahabharata',
+    translations: {
+      en: {
+        translation: 'Mahābhārata (The Great Epic)',
+        transliteration: 'mahābhārata',
+        etymology: 'Sanskrit mahā (great) + bhārata (descendants of Bharata)',
+        culturalContext: 'One of the two major Sanskrit epics; contains Paraśurāma stories in Vana Parva and Drona Parva; composed ~400 BCE-400 CE'
+      },
+      hi: {
+        translation: 'महाभारत (महान महाकाव्य)',
+        transliteration: 'mahābhārata',
+        etymology: 'संस्कृत महा (महान) + भारत (भरत के वंशज)',
+        culturalContext: 'दो प्रमुख संस्कृत महाकाव्यों में से एक; वन पर्व और द्रोण पर्व में परशुराम कथाएँ शामिल हैं; ~400 ईसा पूर्व-400 ईस्वी के बीच रचित'
+      },
+      ta: {
+        translation: 'மகாபாரதம் (மாபெரும் இதிகாசம்)',
+        transliteration: 'mahābhārata',
+        etymology: 'மஹா (பெரிய) + பாரத (பரதரின் சந்ததியினர்)',
+        culturalContext: 'இரண்டு முக்கிய சமஸ்கிருத இதிகாசங்களில் ஒன்று; வன பர்வா மற்றும் துரோண பர்வாவில் பரசுராமர் கதைகள் உள்ளன; ~400 கிமு-400 பொ.ஆ. இடையே இயற்றப்பட்டது'
+      }
+    }
+  },
+  'ananta': {
+    term: 'ananta',
+    translations: {
+      en: {
+        translation: 'Ananta (The Infinite Serpent)',
+        transliteration: 'ananta',
+        etymology: 'Sanskrit an (not) + anta (end)',
+        culturalContext: 'Cosmic serpent Śeṣanāga on whom Viṣṇu reclines; worshipped in Kerala as Anantaśayana; symbolizes endless time and cosmic support'
+      },
+      hi: {
+        translation: 'अनंत (अनंत सर्प)',
+        transliteration: 'ananta',
+        etymology: 'संस्कृत अन (नहीं) + अंत (अंत)',
+        culturalContext: 'ब्रह्मांडीय सर्प शेषनाग जिस पर विष्णु विश्राम करते हैं; केरल में अनंतशयन के रूप में पूजित; अंतहीन समय और ब्रह्मांडीय समर्थन का प्रतीक'
+      },
+      ta: {
+        translation: 'அனந்தன் (முடிவற்ற பாம்பு)',
+        transliteration: 'ananta',
+        etymology: 'அன (இல்லை) + அந்த (முடிவு)',
+        culturalContext: 'விஷ்ணு சாயும் பிரபஞ்ச பாம்பு ஷேஷநாகம்; கேரளாவில் அனந்தசயனமாக வழிபடப்படுகிறது; முடிவற்ற காலம் மற்றும் பிரபஞ்ச ஆதரவைக் குறிக்கிறது'
+      }
+    }
+  },
+  'parvati': {
+    term: 'parvati',
+    translations: {
+      en: {
+        translation: 'Pārvatī (Daughter of the Mountain)',
+        transliteration: 'pārvatī',
+        etymology: 'Sanskrit parvata (mountain) + ī (feminine)',
+        culturalContext: 'Consort of Śiva; in her Śatī form appealed to Kaśyapa to drain Kashmir lake; embodiment of divine feminine energy (śakti)'
+      },
+      hi: {
+        translation: 'पार्वती (पर्वत की पुत्री)',
+        transliteration: 'pārvatī',
+        etymology: 'संस्कृत पर्वत (पहाड़) + ई (स्त्रीलिंग)',
+        culturalContext: 'शिव की पत्नी; अपने सती रूप में कश्यप से कश्मीर झील को निकालने के लिए अपील की; दैवीय स्त्री शक्ति (शक्ति) का अवतार'
+      },
+      ta: {
+        translation: 'பார்வதி (மலையின் மகள்)',
+        transliteration: 'pārvatī',
+        etymology: 'பர்வத (மலை) + ஈ (பெண்பால்)',
+        culturalContext: 'சிவனின் துணைவி; தனது சதீ வடிவத்தில் காஷ்மீர் ஏரியை வடிகட்ட கச்யபரிடம் முறையிட்டார்; தெய்வீக பெண்ணின் ஆற்றலின் (சக்தி) உருவகம்'
+      }
+    }
+  },
+  'tapas': {
+    term: 'tapas',
+    translations: {
+      en: {
+        translation: 'Tapas (Austerity/Penance)',
+        transliteration: 'tapas',
+        etymology: 'Sanskrit tap (to heat, burn)',
+        culturalContext: 'Spiritual discipline through ascetic practices; Kaśyapa performed tapas to gain yogic power to drain Satisaras lake'
+      },
+      hi: {
+        translation: 'तपस् (तपस्या)',
+        transliteration: 'tapas',
+        etymology: 'संस्कृत तप् (गर्म करना, जलाना)',
+        culturalContext: 'तपस्वी प्रथाओं के माध्यम से आध्यात्मिक अनुशासन; कश्यप ने सतीसरस झील को निकालने के लिए योगिक शक्ति प्राप्त करने के लिए तपस्या की'
+      },
+      ta: {
+        translation: 'தபஸ் (தவம்)',
+        transliteration: 'tapas',
+        etymology: 'தப் (வெப்பம், எரிதல்)',
+        culturalContext: 'துறவற நடைமுறைகள் மூலம் ஆன்மீக ஒழுக்கம்; கச்யபர் சதீசரஸ் ஏரியை வடிகட்ட யோக சக்தியைப் பெற தபஸ் செய்தார்'
+      }
+    }
+  },
+  'nilamata-purana': {
+    term: 'nilamata-purana',
+    translations: {
+      en: {
+        translation: 'Nīlamata Purāṇa (Kashmiri Sacred Text)',
+        transliteration: 'nīlamata purāṇa',
+        etymology: 'nīla (blue/name of sage Nīla) + mata (opinion/doctrine) + purāṇa (ancient lore)',
+        culturalContext: 'Foundational Purāṇa of Kashmir (6th-8th century CE); narrates Kaśyapa draining Satisaras lake and establishing Kashmir civilization'
+      },
+      hi: {
+        translation: 'नीलमत पुराण (कश्मीरी पवित्र ग्रंथ)',
+        transliteration: 'nīlamata purāṇa',
+        etymology: 'नील (नीला/ऋषि नील का नाम) + मत (राय/सिद्धांत) + पुराण (प्राचीन कथा)',
+        culturalContext: 'कश्मीर का मूल पुराण (6वीं-8वीं शताब्दी ईस्वी); कश्यप द्वारा सतीसरस झील को निकालने और कश्मीर सभ्यता की स्थापना का वर्णन करता है'
+      },
+      ta: {
+        translation: 'நீலமத புராணம் (காஷ்மீர் புனித நூல்)',
+        transliteration: 'nīlamata purāṇa',
+        etymology: 'நீல (நீலம்/முனிவர் நீலாவின் பெயர்) + மத (கருத்து/கோட்பாடு) + புராணம் (பழைய கதை)',
+        culturalContext: 'காஷ்மீரின் அடிப்படை புராணம் (6-8 ஆம் நூற்றாண்டு பொ.ஆ.); கச்யபர் சதீசரஸ் ஏரியை வடிகட்டி காஷ்மீர் நாகரிகத்தை நிறுவுவதை விவரிக்கிறது'
+      }
+    }
+  },
+  'rajatarangini': {
+    term: 'rajatarangini',
+    translations: {
+      en: {
+        translation: 'Rājataraṅgiṇī (River of Kings)',
+        transliteration: 'rājataraṅgiṇī',
+        etymology: 'Sanskrit rāja (king) + taraṅgiṇī (river/flow)',
+        culturalContext: '12th-century chronicle of Kashmir kings by poet Kalhaṇa; treats Kaśyapa lake-drainage as historical fact predating human dynasties'
+      },
+      hi: {
+        translation: 'राजतरंगिणी (राजाओं की नदी)',
+        transliteration: 'rājataraṅgiṇī',
+        etymology: 'संस्कृत राज (राजा) + तरंगिणी (नदी/प्रवाह)',
+        culturalContext: 'कवि कल्हण द्वारा कश्मीर के राजाओं का 12वीं सदी का इतिहास; कश्यप झील-निकास को मानव राजवंशों से पहले का ऐतिहासिक तथ्य मानता है'
+      },
+      ta: {
+        translation: 'ராஜதரங்கிணி (அரசர்களின் நதி)',
+        transliteration: 'rājataraṅgiṇī',
+        etymology: 'ராஜ (அரசர்) + தரங்கிணி (நதி/ஓட்டம்)',
+        culturalContext: 'கவிஞர் கல்ஹணரால் காஷ்மீர் அரசர்களின் 12 ஆம் நூற்றாண்டு வரலாறு; கச்யபர் ஏரி-வடிகாலை மனித வம்சங்களுக்கு முந்தைய வரலாற்று உண்மையாக கருதுகிறது'
+      }
+    }
   }
 };
