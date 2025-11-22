@@ -84,22 +84,22 @@ The 2022 Kannada blockbuster ***Kantara*** resonated deeply with audiences by dr
 
 ### **2.1 The Myth in the *{{cultural:nilamata-purana}}* and *{{cultural:rajatarangini}}***
 
-The **{{cultural:nilamata-purana}}** (6th–8th century CE), the foundational text of Kashmiri Hinduism, recounts the transformation of Kashmir from a vast lake into habitable land. The valley was originally **{{cultural:satisaras}}** ("Sati's Lake"), a water body inhabited by the demon **Jalodbhava** ("Born-of-Water"). The demon was invincible in water, terrorizing the gods and sages. The goddess **{{cultural:parvati}}** (in her *Śatī* form) appealed to her father, **Dakṣa**, who in turn requested **Sage {{cultural:kasyapa}}** to intervene.
+The **{{cultural:nilamata-purana}}** (6th–8th century CE), the foundational text of Kashmiri Hinduism, recounts the transformation of Kashmir from a vast lake into habitable land. The valley was originally **{{cultural:satisaras}}** ("Sati's Lake"), a water body inhabited by the demon **{{cultural:jalodbhava}}** ("Born-of-Water"). The demon was invincible in water, terrorizing the gods and sages. The goddess **{{cultural:parvati}}** (in her *Śatī* form) appealed to her father, **Dakṣa**, who in turn requested **Sage {{cultural:kasyapa}}** to intervene.
 
-{{cultural:kasyapa}}, revered as a primordial patriarch in {{cultural:vedic}} lore, arrived at the valley's edge and performed {{cultural:tapas}}. Through yogic power and engineering acumen, he cut through the mountain at **Bārāmūla** (modern Baramulla, northwest of Srinagar), draining the lake. The waters rushed out through the gorge, exposing fertile alluvial plains. Jalodbhava, stranded on dry land, was slain. {{cultural:kasyapa}} then populated the valley with Brahmin settlers and named it **Kaśmīra** (some interpret as "{{cultural:kasyapa}}'s Mīra [lake-land]"; others derive it from *Ka* [water] + *Śyāma* [desiccation]).
+{{cultural:kasyapa}}, revered as a primordial patriarch in {{cultural:vedic}} lore, arrived at the valley's edge and performed {{cultural:tapas}}. Through yogic power and engineering acumen, he cut through the mountain at **Bārāmūla** (modern Baramulla, northwest of Srinagar), draining the lake. The waters rushed out through the gorge, exposing fertile alluvial plains. {{cultural:jalodbhava}}, stranded on dry land, was slain. {{cultural:kasyapa}} then populated the valley with Brahmin settlers and named it **Kaśmīra** (some interpret as "{{cultural:kasyapa}}'s Mīra [lake-land]"; others derive it from *Ka* [water] + *Śyāma* [desiccation]).
 
 The **{{cultural:rajatarangini}}** ("River of Kings"), a 12th-century chronicle by the poet **Kalhaṇa**, echoes this account, adding historical dynasties that ruled the valley post-drainage. Kalhaṇa's work, while historiographical, treats the lake-drainage as factual, situating it in a semi-mythical deep past before recorded human rule.
 
 ### **2.2 Geological Evidence: The Karewa Formation and Pleistocene Lake**
 
-Kashmir was indeed a **giant Pleistocene lake** – an undisputed geological fact. The evidence lies in the **Karewa deposits**, sedimentary formations up to **1,400 meters thick** that cover much of the valley floor. These sediments are **lacustrine** (lake-formed), composed of fine clays, silts, and sands with interbedded **volcanic ash** from eruptions in the surrounding Pir Panjal and Karakoram ranges.
+Kashmir was indeed a **giant Pleistocene lake** – an undisputed geological fact. The evidence lies in the **{{cultural:karewa}} deposits**, sedimentary formations up to **1,400 meters thick** that cover much of the valley floor. These sediments are **lacustrine** (lake-formed), composed of fine clays, silts, and sands with interbedded **volcanic ash** from eruptions in the surrounding Pir Panjal and Karakoram ranges.
 
 **Chronology and mechanism:**
 1. **Tectonic damming**: During the Plio-Pleistocene (~5–2 million years ago), tectonic uplift of the **Pir Panjal range** blocked the valley's drainage, creating a massive endorheic basin. Meltwater from glaciers and monsoonal rains filled the basin, forming a lake that persisted intermittently for **hundreds of thousands of years**.
 
-2. **Drainage event**: The final, catastrophic drainage is dated to **~85,000 years ago** (late Pleistocene) based on **Optically Stimulated Luminescence (OSL)** and **Thermoluminescence (TL)** dating of Karewa sediments. The Bārāmūla gorge, a structural weakness in the Pir Panjal, was breached either by tectonic activity, erosion, or a combination thereof, releasing the lake's waters into the Jhelum River system.
+2. **Drainage event**: The final, catastrophic drainage is dated to **~85,000 years ago** (late Pleistocene) based on **Optically Stimulated Luminescence (OSL)** and **Thermoluminescence (TL)** dating of {{cultural:karewa}} sediments. The Bārāmūla gorge, a structural weakness in the Pir Panjal, was breached either by tectonic activity, erosion, or a combination thereof, releasing the lake's waters into the Jhelum River system.
 
-3. **Fossil evidence**: Karewa sediments contain **freshwater mollusks** (*Lymnaea*, *Planorbis*), **plant macrofossils** (willow, birch pollen), and **diatoms** (*Stephanodiscus*, *Fragilaria*), all indicative of lacustrine environments. Vertebrate fossils include **extinct elephants (*Elephas* sp.)** and **Pleistocene megafauna**, confirming the antiquity.
+3. **Fossil evidence**: {{cultural:karewa}} sediments contain **freshwater mollusks** (*Lymnaea*, *Planorbis*), **plant macrofossils** (willow, birch pollen), and **diatoms** (*Stephanodiscus*, *Fragilaria*), all indicative of lacustrine environments. Vertebrate fossils include **extinct elephants (*Elephas* sp.)** and **Pleistocene megafauna**, confirming the antiquity.
 
 4. **Terrace geomorphology**: The valley's slopes exhibit **stepped terraces** – remnants of ancient lake shorelines at different elevations. These terrace levels correspond to successive lake phases as water levels fluctuated with glacial-interglacial cycles.
 
@@ -109,7 +109,7 @@ The geomyth's accuracy poses a tantalizing riddle: **How could a ~6th-century CE
 
 **Possible explanations:**
 
-1. **Landscape legibility**: Unlike submerged coastlines, Kashmir's drained lake left **visible scars** – the Karewa terraces, the Bārāmūla gorge, the flat valley floor surrounded by steep mountains. Any observer could infer a former lake. Early settlers (Indo-Aryans migrating into the valley ~1500–1000 BCE, or even earlier) would have "read" the landscape and constructed an etiological myth.
+1. **Landscape legibility**: Unlike submerged coastlines, Kashmir's drained lake left **visible scars** – the {{cultural:karewa}} terraces, the Bārāmūla gorge, the flat valley floor surrounded by steep mountains. Any observer could infer a former lake. Early settlers (Indo-Aryans migrating into the valley ~1500–1000 BCE, or even earlier) would have "read" the landscape and constructed an etiological myth.
 
 2. **Toponymic persistence**: Place-names may preserve pre-Sanskritic substrates. **Bārāmūla** could derive from a Dardic or Tibeto-Burman term for "breach" or "gate" (Kalhaṇa glosses it as *Varāhamūla*, "Boar's Root," linking it to a Viṣṇu myth, but this may be folk etymology). Indigenous names for the lake (**Satī-sar**, **Kaśī-vān**) might predate Brahmanical layers.
 
@@ -195,9 +195,9 @@ Witnessing a **Theyyam** performance in Kannur is to see myth corporealized. The
 
 ### **5.2 Kashmir's Lake Terraces: Geology as Theology**
 
-Hiking the **Karewa terraces** near Pampore (saffron country), one encounters Buddhist **stupa ruins** on lake-shelf remnants. Local guides narrate Kaśyapa's feat, pointing to the Bārāmūla notch on the horizon. For them, the terraces are **proof** – not metaphor.
+Hiking the **{{cultural:karewa}} terraces** near Pampore (saffron country), one encounters Buddhist **stupa ruins** on lake-shelf remnants. Local guides narrate Kaśyapa's feat, pointing to the Bārāmūla notch on the horizon. For them, the terraces are **proof** – not metaphor.
 
-**Archaeological footnote**: Excavations at **Burzahom** (a Neolithic site near Srinagar) reveal **pit-dwellings** dug into Karewa clays, dated ~3000–1500 BCE. The inhabitants carved **bone tools** and **stone celts** from the very sediments deposited by the ancient lake. They lived atop the lake's memory.
+**Archaeological footnote**: Excavations at **Burzahom** (a Neolithic site near Srinagar) reveal **pit-dwellings** dug into {{cultural:karewa}} clays, dated ~3000–1500 BCE. The inhabitants carved **bone tools** and **stone celts** from the very sediments deposited by the ancient lake. They lived atop the lake's memory.
 
 ---
 
