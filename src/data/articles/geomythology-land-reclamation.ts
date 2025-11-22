@@ -151,9 +151,9 @@ Serpents – liminal, amphibious, regenerative (via skin-shedding) – are apt s
 
 ### **3.3 Fossil Worship: When Stones Remember Deep Time**
 
-India's geomythic consciousness extends beyond narrative to **material veneration**. **Śālagrāma stones** (fossilized ammonites from Nepal's Kali Gandaki River) are worshipped as **Viṣṇu's embodiment**. The spiral patterns are interpreted as Viṣṇu's discus (*cakra*) or serpent (*Ananta*). Devotees do not perceive these as "fossils" (a 19th-century Western concept) but as **time-collapsed avatars** – the deity's presence frozen in stone.
+India's geomythic consciousness extends beyond narrative to **material veneration**. **Śālagrāma stones** (fossilized ammonites from Nepal's Kali Gandaki River) are worshipped as **{{cultural:vishnu}}'s embodiment**. The spiral patterns are interpreted as {{cultural:vishnu}}'s discus (*cakra*) or serpent (*{{cultural:ananta}}*). Devotees do not perceive these as "fossils" (a 19th-century Western concept) but as **time-collapsed {{cultural:avatara}}s** – the deity's presence frozen in stone.
 
-Similarly, **Bāṇaliṅgas** (smooth river stones from the Narmada) are revered as *liṅga* symbols of Śiva. Geologically, they are **quartzite pebbles** rounded by millennia of fluvial abrasion. Culturally, they are **Śiva's solidified essence**, linking the river's ancient flow to cosmic cycles.
+Similarly, **Bāṇaliṅgas** (smooth river stones from the Narmada) are revered as *liṅga* symbols of {{cultural:shiva}}. Geologically, they are **quartzite pebbles** rounded by millennia of fluvial abrasion. Culturally, they are **{{cultural:shiva}}'s solidified essence**, linking the river's ancient flow to cosmic cycles.
 
 **Philosophical implication**: Hindu cosmology posits cyclic time (*kalpa*, *yuga*) spanning billions of years – durations that uncannily approach geological deep time. The veneration of fossils and stones is thus not "primitive animism" but a **non-dualist epistemology** where the sacred and the material, the eternal and the temporal, interpenetrate.
 
@@ -189,13 +189,13 @@ Yet the **core geological claim** persists: **Kerala emerged from the sea; Kashm
 
 ### **5.1 Theyyam in Kerala: Geomyth as Performance**
 
-Witnessing a **Theyyam** performance in Kannur is to see myth corporealized. The *Paraśurāma Thottam* dancer, adorned with crimson garlands and wielding a wooden axe, mimes the cosmic throw. The audience – mostly farmers and fishers – chants invocations to **Varuṇa** and **Nāgarāja**. The ritual is **not representational but re-presentational** – it does not depict the past but **makes it present**.
+Witnessing a **Theyyam** performance in Kannur is to see myth corporealized. The *{{cultural:parasurama}} Thottam* dancer, adorned with crimson garlands and wielding a wooden axe, mimes the cosmic throw. The audience – mostly farmers and fishers – chants invocations to **{{cultural:varuna}}** and **{{cultural:naga}}rāja**. The ritual is **not representational but re-presentational** – it does not depict the past but **makes it present**.
 
-**Ethnographic note** (from fieldwork, December 2022): An elderly *velichappadu* (oracle-dancer) in Payyannur explained that the sea "remembers" Paraśurāma's pact. When asked if he believed the axe-throw literally happened, he replied, *"The axe is in the land itself – we stand on it."* This phenomenological truth – land-as-gift, land-as-relic – supersedes historicist literalism.
+**Ethnographic note** (from fieldwork, December 2022): An elderly *velichappadu* (oracle-dancer) in Payyannur explained that the sea "remembers" {{cultural:parasurama}}'s pact. When asked if he believed the axe-throw literally happened, he replied, *"The axe is in the land itself – we stand on it."* This phenomenological truth – land-as-gift, land-as-relic – supersedes historicist literalism.
 
 ### **5.2 Kashmir's Lake Terraces: Geology as Theology**
 
-Hiking the **{{cultural:karewa}} terraces** near Pampore (saffron country), one encounters Buddhist **stupa ruins** on lake-shelf remnants. Local guides narrate Kaśyapa's feat, pointing to the Bārāmūla notch on the horizon. For them, the terraces are **proof** – not metaphor.
+Hiking the **{{cultural:karewa}} terraces** near Pampore (saffron country), one encounters Buddhist **stupa ruins** on lake-shelf remnants. Local guides narrate {{cultural:kasyapa}}'s feat, pointing to the Bārāmūla notch on the horizon. For them, the terraces are **proof** – not metaphor.
 
 **Archaeological footnote**: Excavations at **Burzahom** (a Neolithic site near Srinagar) reveal **pit-dwellings** dug into {{cultural:karewa}} clays, dated ~3000–1500 BCE. The inhabitants carved **bone tools** and **stone celts** from the very sediments deposited by the ancient lake. They lived atop the lake's memory.
 
@@ -203,13 +203,13 @@ Hiking the **{{cultural:karewa}} terraces** near Pampore (saffron country), one 
 
 ## Conclusion: Geomyths as Bridges Between Worlds
 
-The myths of Paraśurāma and Kaśyapa are not **pre-scientific curiosities** awaiting debunking but **parallel epistemologies** for understanding earth-process. They fulfill functions that modern geology cannot:
+The myths of {{cultural:parasurama}} and {{cultural:kasyapa}} are not **pre-scientific curiosities** awaiting debunking but **parallel epistemologies** for understanding earth-process. They fulfill functions that modern geology cannot:
 
-1. **Moral-cosmological grounding**: Land is not inert matter but **gifted, pacted, sacred**. Kerala belongs to Varuṇa; Kashmir to Nīla Nāga and Kaśyapa's covenant.
+1. **Moral-cosmological grounding**: Land is not inert matter but **gifted, pacted, sacred**. Kerala belongs to {{cultural:varuna}}; Kashmir to {{cultural:naga}} and {{cultural:kasyapa}}'s covenant.
 
-2. **Cultural identity**: These myths underwrite regional selfhood – "We are the people Paraśurāma settled," "We dwell in Kaśyapa's valley."
+2. **Cultural identity**: These myths underwrite regional selfhood – "We are the people {{cultural:parasurama}} settled," "We dwell in {{cultural:kasyapa}}'s valley."
 
-3. **Ecological ethics**: *Kaavu* groves protected by serpent-fear conserve biodiversity. *Kantara*'s deity punishes land-grabbers. Geomyths encode **ecological custodianship**.
+3. **Ecological ethics**: *{{cultural:kaavu}}* groves protected by serpent-fear conserve biodiversity. *Kantara*'s deity punishes land-grabbers. Geomyths encode **ecological custodianship**.
 
 4. **Aesthetic-phenomenological truth**: The "axe in the land" and the "mountain-cut" are **figural truths** – metaphors that illuminate experience in ways stratigraphic sections cannot.
 
