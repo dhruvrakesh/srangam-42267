@@ -8,16 +8,14 @@ import { useLanguage } from '@/components/language/LanguageProvider';
 import { VisualizationErrorBoundary } from '@/components/geology/VisualizationErrorBoundary';
 import { Card, CardContent } from '@/components/ui/card';
 
-// Lazy load visualizations to prevent SSR issues with Leaflet and D3
-const ParashuramaCoastMap = React.lazy(() => 
-  import('@/components/articles/geology/ParashuramaCoastMap').then(m => ({ default: m.ParashuramaCoastMap }))
-);
+// Lazy load visualizations to prevent SSR issues with D3
 const KashmirLakeTimeline = React.lazy(() =>
   import('@/components/articles/geology/KashmirLakeTimeline').then(m => ({ default: m.KashmirLakeTimeline }))
 );
-const FossilWorshipSitesMap = React.lazy(() =>
-  import('@/components/articles/geology/FossilWorshipSitesMap').then(m => ({ default: m.FossilWorshipSitesMap }))
-);
+
+// Import React-only components directly (no Leaflet dependencies)
+import { ParashuramaCoastalTimeline } from '@/components/articles/geology/ParashuramaCoastalTimeline';
+import { FossilWorshipSitesGrid } from '@/components/articles/geology/FossilWorshipSitesGrid';
 
 // Loading fallback component
 const VisualizationLoading = () => (
@@ -64,21 +62,17 @@ export default function GeomythologyLandReclamation() {
         author={metadata.author}
         date={metadata.date}
         dataComponents={[
-          <Suspense key="parashurama-suspense" fallback={<VisualizationLoading />}>
-            <VisualizationErrorBoundary visualizationName="Paraśurāma Coastal Map">
-              {typeof window !== 'undefined' && <ParashuramaCoastMap />}
-            </VisualizationErrorBoundary>
-          </Suspense>,
+          <VisualizationErrorBoundary key="parashurama" visualizationName="Paraśurāma Coastal Timeline">
+            <ParashuramaCoastalTimeline />
+          </VisualizationErrorBoundary>,
           <Suspense key="kashmir-suspense" fallback={<VisualizationLoading />}>
             <VisualizationErrorBoundary visualizationName="Kashmir Lake Timeline">
               {typeof window !== 'undefined' && <KashmirLakeTimeline />}
             </VisualizationErrorBoundary>
           </Suspense>,
-          <Suspense key="fossil-suspense" fallback={<VisualizationLoading />}>
-            <VisualizationErrorBoundary visualizationName="Fossil Worship Sites Map">
-              {typeof window !== 'undefined' && <FossilWorshipSitesMap />}
-            </VisualizationErrorBoundary>
-          </Suspense>
+          <VisualizationErrorBoundary key="fossil" visualizationName="Fossil Worship Sites">
+            <FossilWorshipSitesGrid />
+          </VisualizationErrorBoundary>
         ]}
       />
 
