@@ -21,6 +21,9 @@ verify_jwt = false
 [functions.tts-save-drive]
 verify_jwt = false
 
+[functions.context-save-drive]
+verify_jwt = false
+
 [functions.generate-article-tags]
 verify_jwt = false
 
