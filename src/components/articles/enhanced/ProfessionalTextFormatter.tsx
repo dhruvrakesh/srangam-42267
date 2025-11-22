@@ -363,10 +363,8 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
   };
 
   return (
-    <TooltipProvider delayDuration={200}>
-      <div className={cn('prose prose-xl max-w-none', className)}>
-        {renderWithCulturalTerms(rawText)}
-      </div>
-    </TooltipProvider>
+    <div className={cn('prose prose-xl max-w-none', className)}>
+      {renderWithCulturalTerms(rawText)}
+    </div>
   );
 };
