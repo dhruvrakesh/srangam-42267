@@ -15,6 +15,7 @@ import {
   FileText,
   BookOpen,
   GitBranch,
+  Database,
 } from "lucide-react";
 import {
   Sidebar,
@@ -75,6 +76,11 @@ const adminNavItems = [
     title: "Analytics",
     url: "/admin/analytics",
     icon: BarChart3,
+  },
+  {
+    title: "Context Management",
+    url: "/admin/context",
+    icon: Database,
   },
 ];
 

@@ -229,6 +229,38 @@ Generated automatically by context-save-drive edge function.
       stats: snapshotStats,
     });
 
+    // Save snapshot metadata to database
+    const snapshotStatsDetail = {
+      themes: Array.from(new Set((articles || []).map((a: any) => a.theme))),
+      top_tags: (tags || []).slice(0, 20).map((t: any) => t.tag_name),
+      avg_cross_ref_strength: crossRefs && crossRefs.length > 0
+        ? crossRefs.reduce((acc: number, ref: any) => acc + (ref.strength || 0), 0) / crossRefs.length
+        : 0
+    };
+
+    const { error: snapshotError } = await supabase
+      .from('srangam_context_snapshots')
+      .insert({
+        google_drive_file_id: fileId,
+        google_drive_share_url: shareUrl,
+        file_size_bytes: contextDocument.length,
+        document_length: contextDocument.length,
+        articles_count: articles?.length || 0,
+        terms_count: terms?.length || 0,
+        tags_count: tags?.length || 0,
+        cross_refs_count: crossRefs?.length || 0,
+        modules_count: terms ? new Set(terms.map((t: any) => t.module)).size : 0,
+        stats_detail: snapshotStatsDetail,
+        triggered_by: 'manual',
+        status: 'success'
+      });
+
+    if (snapshotError) {
+      console.error('Error saving snapshot metadata:', snapshotError);
+    } else {
+      console.log('Snapshot metadata saved to database');
+    }
+
     return new Response(
       JSON.stringify({
         success: true,

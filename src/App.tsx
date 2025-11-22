@@ -84,6 +84,7 @@ const CulturalTermsExplorer = lazy(() => import("./pages/admin/CulturalTermsExpl
 const ImportAnalytics = lazy(() => import("./pages/admin/ImportAnalytics"));
 const PuranaReferences = lazy(() => import("./pages/admin/PuranaReferences"));
 const GitHubSync = lazy(() => import("./pages/admin/GitHubSync"));
+const ContextManagement = lazy(() => import("./pages/admin/ContextManagement"));
 const Auth = lazy(() => import("./pages/Auth"));
 import { AdminLayout } from "./components/admin/AdminLayout";
 
@@ -208,6 +209,7 @@ const App = () => (
                     <Route path="cultural-terms" element={<CulturalTermsExplorer />} />
                     <Route path="purana-refs" element={<PuranaReferences />} />
                     <Route path="analytics" element={<ImportAnalytics />} />
+                    <Route path="context" element={<ContextManagement />} />
                   </Route>
                   
                   <Route path="*" element={<NotFound />} />

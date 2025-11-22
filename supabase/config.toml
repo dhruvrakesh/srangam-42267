@@ -24,6 +24,12 @@ verify_jwt = false
 [functions.context-save-drive]
 verify_jwt = false
 
+[functions.context-diff-generator]
+verify_jwt = false
+
+[functions.context-bundle-generator]
+verify_jwt = false
+
 [functions.generate-article-tags]
 verify_jwt = false
 
