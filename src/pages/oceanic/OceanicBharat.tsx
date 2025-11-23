@@ -9,9 +9,6 @@ import { Link } from 'react-router-dom';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EnhancedMultilingualText } from '@/components/language/EnhancedMultilingualText';
-import { Map, BookOpen, Waves } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { Breadcrumb } from '@/components/ui/Breadcrumb';
 
 export default function OceanicBharat() {
   const [articles, setArticles] = useState<ResolvedArticle[]>([]);
@@ -120,7 +117,7 @@ export default function OceanicBharat() {
                   <CardHeader>
                     <CardTitle className="font-serif text-xl leading-tight text-foreground group-hover:text-ocean transition-colors">
                       <Link to={`/oceanic/${article.slug}`}>
-                        {typeof article.title === 'string' ? article.title : (article.title as MultilingualContent).en}
+                        {article.title}
                       </Link>
                     </CardTitle>
                   </CardHeader>
