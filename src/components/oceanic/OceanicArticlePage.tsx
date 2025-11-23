@@ -8,6 +8,10 @@ import { SourcesAndPins } from './SourcesAndPins';
 import { useLanguage } from '@/components/language/LanguageProvider';
 import { getOceanicCards } from '@/lib/oceanicCardsLoader';
 import { resolveOceanicArticle, type ResolvedArticle } from '@/lib/articleResolver';
+import { ProfessionalTextFormatter } from '@/components/articles/enhanced/ProfessionalTextFormatter';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
+import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 
 export const OceanicArticlePage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -109,12 +113,22 @@ export const OceanicArticlePage: React.FC = () => {
         {/* Main Content */}
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
-            {/* Abstract */}
+            {/* Full Article Content */}
             <Card>
               <CardContent className="pt-6">
-                <p className="text-lg leading-relaxed text-foreground/90">
-                  {article.abstract}
-                </p>
+                {article.content ? (
+                  <TooltipProvider>
+                    <ProfessionalTextFormatter
+                      content={article.content}
+                      enableCulturalTerms={true}
+                      enableDropCap={false}
+                    />
+                  </TooltipProvider>
+                ) : (
+                  <p className="text-lg leading-relaxed text-foreground/90">
+                    {article.abstract}
+                  </p>
+                )}
               </CardContent>
             </Card>
 
@@ -228,6 +242,21 @@ export const OceanicArticlePage: React.FC = () => {
             </Card>
           </div>
         </div>
+
+        {/* Audio Narration */}
+        <NarrationErrorBoundary>
+          <UniversalNarrator
+            content={
+              typeof article.content === 'object'
+                ? (article.content.en || '')
+                : (article.content || article.abstract)
+            }
+            contentType="article"
+            articleSlug={article.slug}
+            variant="sticky-bottom"
+            autoAnalyze={true}
+          />
+        </NarrationErrorBoundary>
       </div>
     </div>
   );
