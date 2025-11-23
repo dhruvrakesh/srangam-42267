@@ -7,6 +7,7 @@ export interface ResolvedArticle {
   title: string;
   title_hi?: string;
   abstract: string;
+  content?: any; // Full multilingual content (MultilingualContent or string)
   read_time_min: number;
   tags: string[];
   pins: Array<{
@@ -70,6 +71,7 @@ export async function resolveOceanicArticle(slug: string): Promise<ResolvedArtic
       title,
       title_hi,
       abstract: abstract.substring(0, 500) + '...', // Extract first 500 chars as abstract
+      content: data.content, // Full multilingual content for proper rendering
       read_time_min: data.read_time_minutes || 10,
       tags: data.tags || [],
       pins: [], // Database articles don't have pins by default
