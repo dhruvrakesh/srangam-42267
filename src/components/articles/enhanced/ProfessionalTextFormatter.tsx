@@ -149,7 +149,7 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
             <p 
               key={`p-${segmentKey++}`}
               className={cn(
-                'text-lg leading-relaxed mb-6 text-foreground/90',
+                'text-base leading-relaxed mb-6 text-foreground/90',
                 'break-words',
                 scriptFont,
                 'hyphens-auto'
@@ -214,14 +214,14 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
           
           <h2 
             className={cn(
-              'text-2xl font-serif font-bold text-burgundy pb-3',
+              'text-xl font-serif font-bold text-burgundy pb-3',
               'border-b-2 border-burgundy/30',
               'flex items-center gap-3',
               scriptFont
             )}
             {...props}
           >
-            <span className="text-saffron text-3xl">§</span>
+            <span className="text-saffron text-2xl">§</span>
             {children}
           </h2>
         </div>
@@ -232,13 +232,13 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
       return (
         <h3 
           className={cn(
-            'text-2xl font-serif font-semibold text-burgundy mt-10 mb-6',
+            'text-lg font-serif font-semibold text-burgundy mt-10 mb-6',
             'flex items-center gap-2',
             scriptFont
           )}
           {...props}
         >
-          <span className="text-gold-warm">◆</span>
+          <span className="text-gold-warm text-xl">◆</span>
           {children}
         </h3>
       );
@@ -248,7 +248,7 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
       return (
         <p 
           className={cn(
-            'text-lg leading-relaxed mb-6 text-foreground/90',
+            'text-base leading-relaxed mb-6 text-foreground/90',
             'break-words',
             enableDropCap && 'first-letter:text-6xl first-letter:font-serif first-letter:font-bold',
             enableDropCap && 'first-letter:text-burgundy first-letter:float-left first-letter:mr-3',
@@ -272,11 +272,11 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
     li: ({ children, ...props }: any) => {
       return (
         <li className={cn(
-          'flex items-start gap-4 text-lg leading-relaxed text-foreground/90',
+          'flex items-start gap-4 text-base leading-relaxed text-foreground/90',
           'break-words',
           scriptFont
         )} {...props}>
-          <span className="text-saffron text-2xl font-bold leading-none mt-1">•</span>
+          <span className="text-saffron text-xl font-bold leading-none mt-1">•</span>
           <span className="flex-1">
             {children}
           </span>
