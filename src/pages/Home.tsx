@@ -3,12 +3,14 @@ import { useTranslation } from "react-i18next";
 import { ArticleCard } from "@/components/ui/ArticleCard";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getFilteredArticles } from "@/lib/multilingualArticleUtils";
+import { getDisplayArticles } from "@/lib/multilingualArticleUtils";
+import { mergeArticleSources, filterUnifiedArticles } from "@/lib/unifiedArticleUtils";
+import { useAllArticles } from "@/hooks/useArticles";
 import { useLanguage } from "@/components/language/LanguageProvider";
 import { ArticleThemeChips } from "@/components/articles/ArticleThemeChips";
 import { IconMonsoon, IconScript, IconBasalt, IconPort, IconEdict, IconDharmaChakra, IconSarnathLion, IconLotus, IconConch, IconOm } from "@/components/icons";
 import { Link } from "react-router-dom";
-import { ArrowRight, Waves, Mountain, BookOpen, Map, Users, Network } from "lucide-react";
+import { ArrowRight, Waves, Mountain, BookOpen, Map, Users, Network, Loader2 } from "lucide-react";
 import GeomythologySection from "@/components/home/GeomythologySection";
 
 export default function Home() {
@@ -20,22 +22,31 @@ export default function Home() {
   const [selectedThemes, setSelectedThemes] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'longest' | 'shortest' | 'title'>('recent');
 
+  // Fetch database articles
+  const { data: dbArticles, isLoading } = useAllArticles(currentLanguage);
+
+  // Merge JSON and database articles
+  const allArticles = useMemo(() => {
+    const jsonArticles = getDisplayArticles(currentLanguage);
+    return mergeArticleSources(jsonArticles, dbArticles);
+  }, [currentLanguage, dbArticles]);
+
   // Get filtered articles
   const filteredArticles = useMemo(() => 
-    getFilteredArticles(currentLanguage, {
+    filterUnifiedArticles(allArticles, {
       themes: selectedThemes.length > 0 ? selectedThemes : undefined,
       sortBy,
       limit: showAllArticles ? undefined : 6
     }),
-    [currentLanguage, selectedThemes, sortBy, showAllArticles]
+    [allArticles, selectedThemes, sortBy, showAllArticles]
   );
 
   const totalArticles = useMemo(() => 
-    getFilteredArticles(currentLanguage, {
+    filterUnifiedArticles(allArticles, {
       themes: selectedThemes.length > 0 ? selectedThemes : undefined,
       sortBy
     }).length,
-    [currentLanguage, selectedThemes, sortBy]
+    [allArticles, selectedThemes, sortBy]
   );
 
   const handleThemeToggle = (theme: string) => {
@@ -226,14 +237,24 @@ export default function Home() {
             </Select>
           </div>
 
+          {/* Loading State */}
+          {isLoading && (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="animate-spin text-peacock-blue" size={32} />
+              <span className="ml-3 text-muted-foreground">Loading articles...</span>
+            </div>
+          )}
+
           {/* Articles Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {filteredArticles.map((article, index) => (
-              <div key={article.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                <ArticleCard article={article} />
-              </div>
-            ))}
-          </div>
+          {!isLoading && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+              {filteredArticles.map((article, index) => (
+                <div key={article.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                  <ArticleCard article={article} />
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

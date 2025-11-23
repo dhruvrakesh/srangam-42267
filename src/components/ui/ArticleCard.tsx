@@ -11,14 +11,15 @@ import { SupportedLanguage } from "@/lib/i18n";
 
 interface MultilingualArticle {
   id: string;
-  title: MultilingualContent;
-  excerpt: MultilingualContent;
+  title: MultilingualContent | string;
+  excerpt: MultilingualContent | string;
   slug: string;
   theme: string;
-  tags: MultilingualContent[];
+  tags: Array<MultilingualContent | string>;
   readTime: number;
   author: string;
   date: string;
+  source?: 'json' | 'database';
 }
 
 interface ArticleCardProps {
@@ -28,6 +29,17 @@ interface ArticleCardProps {
 export function ArticleCard({ article }: ArticleCardProps) {
   const { t, i18n } = useTranslation();
   const currentLanguage = normalizeLanguageCode(i18n.language || 'en') as SupportedLanguage;
+
+  // Normalize content to always be MultilingualContent
+  const normalizeContent = (content: MultilingualContent | string): MultilingualContent => {
+    if (typeof content === 'string') {
+      return { en: content };
+    }
+    return content;
+  };
+
+  const normalizedTitle = normalizeContent(article.title);
+  const normalizedExcerpt = normalizeContent(article.excerpt);
 
   return (
     <Card className="group h-full bg-card/95 backdrop-blur-sm border border-border/70 transition-all duration-300 hover:bg-card hover:border-saffron/50 hover:shadow-xl hover:shadow-saffron/30 hover:-translate-y-1 relative overflow-hidden">
@@ -43,7 +55,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
             <CardTitle className="font-serif text-xl leading-tight text-foreground group-hover:text-saffron transition-all duration-300">
               <Link to={article.slug} className="relative">
                 <EnhancedMultilingualText 
-                  content={article.title}
+                  content={normalizedTitle}
                   enableCulturalTerms={true}
                   fallback={`Article ${article.id}`}
                 />
@@ -54,7 +66,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
             {/* Language availability indicator */}
             <div className="mt-2 flex items-center gap-2">
               <LanguageAvailabilityBadge
-                content={article.title}
+                content={normalizedTitle}
                 currentLanguage={currentLanguage}
                 className="text-xs"
               />
@@ -71,7 +83,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
       <CardContent className="relative z-10">
         <div className="text-muted-foreground text-sm mb-4 leading-relaxed group-hover:text-foreground/80 transition-colors duration-200">
           <EnhancedMultilingualText 
-            content={article.excerpt}
+            content={normalizedExcerpt}
             enableCulturalTerms={true}
             fallback="Article excerpt not available"
           />

@@ -5,11 +5,13 @@ import { ArticleCard } from "@/components/ui/ArticleCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getFilteredArticles } from "@/lib/multilingualArticleUtils";
+import { getDisplayArticles } from "@/lib/multilingualArticleUtils";
+import { mergeArticleSources, filterUnifiedArticles } from "@/lib/unifiedArticleUtils";
+import { useAllArticles } from "@/hooks/useArticles";
 import { useLanguage } from "@/components/language/LanguageProvider";
 import { ArticleThemeChips } from "@/components/articles/ArticleThemeChips";
 import { IconConch, IconLotus } from "@/components/icons";
-import { Search, BookOpen, Filter } from "lucide-react";
+import { Search, BookOpen, Filter, Loader2 } from "lucide-react";
 
 export default function Articles() {
   const { t } = useTranslation();
@@ -25,25 +27,24 @@ export default function Articles() {
     (searchParams.get('sort') as any) || 'recent'
   );
 
+  // Fetch database articles
+  const { data: dbArticles, isLoading } = useAllArticles(currentLanguage);
+
+  // Merge JSON and database articles
+  const allArticles = useMemo(() => {
+    const jsonArticles = getDisplayArticles(currentLanguage);
+    return mergeArticleSources(jsonArticles, dbArticles);
+  }, [currentLanguage, dbArticles]);
+
   // Get filtered articles
-  const filteredArticles = useMemo(() => {
-    let articles = getFilteredArticles(currentLanguage, {
+  const filteredArticles = useMemo(() => 
+    filterUnifiedArticles(allArticles, {
       themes: selectedThemes.length > 0 ? selectedThemes : undefined,
-      sortBy
-    });
-
-    // Search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      articles = articles.filter(article => {
-        const title = typeof article.title === 'string' ? article.title : (article.title as any).en || '';
-        const excerpt = typeof article.excerpt === 'string' ? article.excerpt : (article.excerpt as any).en || '';
-        return title.toLowerCase().includes(query) || excerpt.toLowerCase().includes(query);
-      });
-    }
-
-    return articles;
-  }, [currentLanguage, selectedThemes, sortBy, searchQuery]);
+      sortBy,
+      searchQuery
+    }),
+    [allArticles, selectedThemes, sortBy, searchQuery]
+  );
 
   // Update URL params when filters change
   const updateURLParams = (themes: string[], sort: string, query: string) => {
@@ -143,8 +144,16 @@ export default function Articles() {
           </div>
         </div>
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex justify-center items-center py-16">
+            <Loader2 className="animate-spin text-peacock-blue" size={32} />
+            <span className="ml-3 text-muted-foreground">Loading articles...</span>
+          </div>
+        )}
+
         {/* Articles Grid */}
-        {filteredArticles.length > 0 ? (
+        {!isLoading && filteredArticles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredArticles.map((article, index) => (
               <div key={article.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}>
@@ -152,7 +161,7 @@ export default function Articles() {
               </div>
             ))}
           </div>
-        ) : (
+        ) : !isLoading ? (
           <div className="text-center py-16">
             <IconLotus size={48} className="mx-auto text-muted-foreground mb-4" />
             <p className="text-lg text-muted-foreground">{t('search.noResults')}</p>
@@ -168,7 +177,7 @@ export default function Articles() {
               {t('actions.clearFilters')}
             </Button>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
