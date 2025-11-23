@@ -26,6 +26,7 @@ export default function MonsoonTradeClock() {
       readTime={8}
       author="Mrs. Rekha Bansal, MA History"
       date="2024-03-12"
+      articleSlug="monsoon-trade-clock"
       dataComponents={[
         <ResponsiveImage 
           key="monsoon-hero"

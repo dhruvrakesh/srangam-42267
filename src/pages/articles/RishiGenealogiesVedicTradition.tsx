@@ -48,6 +48,7 @@ export default function RishiGenealogiesVedicTradition() {
         readTime={42}
         author="Nartiang Foundation Research Team"
         date="2025-10-13"
+        articleSlug="rishi-genealogies-vedic-tradition"
         dataComponents={[
           <RishiLineageChart key="bhrigu" lineage="bhrigu" />,
           <RishiLineageChart key="angirasa" lineage="angirasa" />,

@@ -29,6 +29,7 @@ export const SomnathaPrabhasaItihasa: React.FC = () => {
         readTime={metadata.readTime}
         author={metadata.author}
         date={metadata.date}
+        articleSlug="somnatha-prabhasa-itihasa"
         dataComponents={[
           <ErrorBoundary 
             key="jyotirlinga-map"

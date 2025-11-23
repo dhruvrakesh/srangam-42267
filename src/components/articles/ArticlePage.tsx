@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { ArticleProvider, useReadingProgress } from '@/components/context/ArticleContext';
 import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ArticleCrossReferences } from '@/components/academic/ArticleCrossReferences';
 
 const ReadingProgressBar = () => {
   const progress = useReadingProgress();
@@ -35,6 +36,7 @@ interface ArticlePageProps {
   author?: string;
   date?: string;
   dataComponents?: React.ReactNode[];
+  articleSlug?: string; // For cross-reference lookup
 }
 
 const ArticleContent = React.memo(({ 
@@ -46,7 +48,8 @@ const ArticleContent = React.memo(({
   readTime, 
   author, 
   date, 
-  dataComponents = []
+  dataComponents = [],
+  articleSlug
 }: ArticlePageProps) => {
   const { t } = useTranslation();
   const { mark, measure } = usePerformanceMonitor({ 
@@ -164,6 +167,16 @@ const ArticleContent = React.memo(({
                       {component}
                     </div>
                   ))}
+              </div>
+            )}
+
+            {/* Cross-References Section */}
+            {articleSlug && (
+              <div className="mt-16 mb-12">
+                <ArticleCrossReferences 
+                  articleSlug={articleSlug}
+                  className="mx-auto max-w-4xl"
+                />
               </div>
             )}
           </div>

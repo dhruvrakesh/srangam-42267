@@ -27,6 +27,7 @@ export default function ScriptsThatSailed() {
       readTime={28}
       author="Kanika Rakesh"
       date="2024-03-08"
+      articleSlug="scripts-that-sailed"
       dataComponents={[
         <ResponsiveImage 
           key="monsoon-hero"

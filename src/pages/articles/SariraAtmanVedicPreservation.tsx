@@ -48,6 +48,7 @@ export default function SariraAtmanVedicPreservation() {
         readTime={38}
         author="Nartiang Foundation Research Team"
         date="2025-10-07"
+        articleSlug="sarira-atman-vedic-preservation"
         dataComponents={[
           <AnukramaniTriadVisualization key="triad" />,
           <VedicPreservationTimeline key="timeline" />,

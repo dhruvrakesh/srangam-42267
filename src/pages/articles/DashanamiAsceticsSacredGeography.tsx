@@ -27,6 +27,7 @@ export default function DashanamiAsceticsSacredGeography() {
         readTime={28}
         author="Śrīraṅgam Research Team"
         date="2024-01-15"
+        articleSlug="dashanami-ascetics-sacred-geography"
         dataComponents={[
           <DataComponentErrorBoundary 
             key="jyotirlinga-comprehensive" 
