@@ -97,7 +97,8 @@ erDiagram
 | Column | Type | Nullable | Default | Description |
 |--------|------|----------|---------|-------------|
 | `id` | uuid | NO | `gen_random_uuid()` | Primary key |
-| `slug` | text | NO | - | URL-safe identifier (unique) |
+| `slug` | text | NO | - | URL-safe identifier (unique, original) |
+| `slug_alias` | text | YES | - | User-friendly short URL (unique, <50 chars) |
 | `title` | jsonb | NO | - | `{en, ta, te, kn, bn, as, pn, hi, pa}` |
 | `dek` | jsonb | YES | - | Short abstract (multilingual) |
 | `content` | jsonb | NO | - | Main article body (multilingual) |
@@ -116,8 +117,42 @@ erDiagram
 
 **Indexes**:
 - `idx_srangam_articles_slug` on `slug`
+- `idx_srangam_articles_slug_alias` on `slug_alias`
 - `idx_srangam_articles_theme` on `theme`
 - `idx_srangam_articles_status_date` on `(status, published_date DESC)`
+
+**Constraints**:
+- `srangam_articles_slug_alias_unique` - Unique constraint on `slug_alias`
+
+**Slug Standardization System**:
+
+The `slug_alias` field provides user-friendly, SEO-optimized URLs while maintaining backward compatibility with original slugs.
+
+**Resolution Priority**:
+1. Check `slug_alias` first (e.g., `/oceanic/sacred-tree-harvest-rhythms`)
+2. Fallback to original `slug` (e.g., `/oceanic/under-the-sacred-tree-harvest-rhythms-groves-and-sky-time-across-bh-ratavar-a`)
+
+**Benefits**:
+- **72% shorter URLs** on average (131 → 27 chars)
+- **Better SEO**: Keyword-rich, clean URLs
+- **Backward compatible**: Original slugs still work
+- **Gradual migration**: Not all articles need aliases
+
+**Current Status** (as of 2025-11-23):
+- 12 articles have `slug_alias` populated
+- 11 articles pending (Phase 2)
+- All 23 database articles accessible via original slug
+
+**Example Mappings**:
+```
+Original: under-the-sacred-tree-harvest-rhythms-groves-and-sky-time-across-bh-ratavar-a (77 chars)
+Alias:    sacred-tree-harvest-rhythms (28 chars)
+
+Original: dashanami-ascetics-n-th-yogis-j-vikas-and-the-sacred-geography-of-jyotirli-gas (78 chars)
+Alias:    dashanami-jyotirlinga-geography (31 chars)
+```
+
+For complete documentation: [docs/SLUG_STANDARDIZATION.md](./SLUG_STANDARDIZATION.md)
 
 **Triggers**:
 - `update_srangam_articles_updated_at` - Auto-update `updated_at` on modification

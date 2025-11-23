@@ -86,7 +86,10 @@ Powered by **Lovable AI Gateway** (no API keys required):
 ### Documentation
 For comprehensive database details:
 - **Schema Reference**: [docs/DATABASE_SCHEMA.md](./docs/DATABASE_SCHEMA.md)
-- **Context Guide**: [docs/DATABASE_CONTEXT.md](./docs/DATABASE_CONTEXT.md)
+- **Slug Standardization**: [docs/SLUG_STANDARDIZATION.md](./docs/SLUG_STANDARDIZATION.md) - User-friendly URL system
+- **Context Management**: [docs/CONTEXT_MANAGEMENT_GUIDE.md](./docs/CONTEXT_MANAGEMENT_GUIDE.md) - Automated platform snapshots
+- **Implementation Log**: [docs/IMPLEMENTATION_LOG_2025-11-23.md](./docs/IMPLEMENTATION_LOG_2025-11-23.md) - Recent changes
+- **Article Status**: [docs/ARTICLE_STATUS.md](./docs/ARTICLE_STATUS.md) - Integration status
 - **Project Overview**: [SRANGAM_PROJECT.md](./SRANGAM_PROJECT.md)
 
 ### Sacred Geometry in Design
