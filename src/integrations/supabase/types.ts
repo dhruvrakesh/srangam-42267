@@ -325,6 +325,7 @@ export type Database = {
           read_time_minutes: number | null
           series_id: string | null
           slug: string
+          slug_alias: string | null
           status: string
           tags: string[] | null
           theme: string
@@ -344,6 +345,7 @@ export type Database = {
           read_time_minutes?: number | null
           series_id?: string | null
           slug: string
+          slug_alias?: string | null
           status?: string
           tags?: string[] | null
           theme: string
@@ -363,6 +365,7 @@ export type Database = {
           read_time_minutes?: number | null
           series_id?: string | null
           slug?: string
+          slug_alias?: string | null
           status?: string
           tags?: string[] | null
           theme?: string

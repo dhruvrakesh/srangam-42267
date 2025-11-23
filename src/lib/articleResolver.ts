@@ -34,12 +34,26 @@ export async function resolveOceanicArticle(slug: string): Promise<ResolvedArtic
 
   // If not in JSON, query the database
   try {
-    const { data, error } = await supabase
+    // First try slug_alias (short slug), then fall back to slug (long slug)
+    let { data, error } = await supabase
       .from('srangam_articles')
       .select('*')
-      .eq('slug', slug)
+      .eq('slug_alias', slug)
       .eq('status', 'published')
-      .single();
+      .maybeSingle();
+
+    // If not found by alias, try the full slug
+    if (!data) {
+      const result = await supabase
+        .from('srangam_articles')
+        .select('*')
+        .eq('slug', slug)
+        .eq('status', 'published')
+        .maybeSingle();
+      
+      data = result.data;
+      error = result.error;
+    }
 
     if (error || !data) {
       return null;
