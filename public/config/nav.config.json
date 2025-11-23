@@ -29,6 +29,7 @@
       "desc": "Interactive maps & data",
       "children": [
         {"label": "Global Map", "href": "/maps-data"},
+        {"label": "Research Network", "href": "/research-network"},
         {"label": "Data Visualizations", "href": "/data-viz"},
         {"label": "Field Notes", "href": "/field-notes"},
         {"label": "Site Map", "href": "/sitemap"}
