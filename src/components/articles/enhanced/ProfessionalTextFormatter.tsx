@@ -363,7 +363,10 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
   };
 
   return (
-    <div className={cn('prose prose-xl max-w-none', className)}>
+    <div 
+      className={cn('prose prose-xl max-w-none article-content', className)}
+      style={{ maxWidth: 'none', width: '100%' }}
+    >
       {renderWithCulturalTerms(rawText)}
     </div>
   );

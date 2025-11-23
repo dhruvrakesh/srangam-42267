@@ -187,9 +187,18 @@ export default function Home() {
             <h2 className="font-serif text-3xl font-bold text-foreground mb-4">
               {t('sections.recentResearch')}
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-2">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-4">
               {t('sections.recentResearchDesc')}
             </p>
+            <div className="flex items-center justify-center gap-6 mb-4">
+              <p className="text-2xl font-semibold text-foreground">
+                <span className="text-saffron">{totalArticles}</span> Published Articles
+              </p>
+              <span className="text-muted-foreground">•</span>
+              <p className="text-sm text-muted-foreground">
+                Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              </p>
+            </div>
             <p className="text-sm text-muted-foreground">
               {filteredArticles.length} {t('filters.articlesShowing')}
             </p>

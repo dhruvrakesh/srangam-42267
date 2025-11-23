@@ -150,6 +150,23 @@ All colors MUST be HSL.
     -ms-hyphens: manual;
   }
 
+  /* Fix for article content width */
+  .article-content .prose,
+  .article-content.prose {
+    max-width: none !important;
+    width: 100% !important;
+  }
+
+  /* Ensure proper word breaking in article content */
+  .article-content p,
+  .article-content li {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    -ms-hyphens: auto;
+  }
+
   /* Ensure proper text flow */
   p, li, blockquote, td, th {
     overflow-wrap: break-word;
