@@ -38,6 +38,7 @@ const ResearchSubmission = lazy(() => import("./pages/ResearchSubmission"));
 const Partnership = lazy(() => import("./pages/Partnership"));
 const SupportResearch = lazy(() => import("./pages/SupportResearch"));
 const DataVisualization = lazy(() => import("./pages/DataVisualization"));
+const ResearchNetwork = lazy(() => import("./pages/ResearchNetwork"));
 
 // Lazy load article pages
 const MonsoonTradeClock = lazy(() => import("./pages/articles/MonsoonTradeClock"));
@@ -143,6 +144,7 @@ const App = () => (
               <Route path="/field-notes" element={<FieldNotes />} />
               <Route path="/maps-data" element={<MapsData />} />
               <Route path="/data-viz" element={<DataVisualization />} />
+              <Route path="/research-network" element={<ResearchNetwork />} />
               <Route path="/reading-room" element={<ReadingRoom />} />
               
               {/* Sources Routes */}

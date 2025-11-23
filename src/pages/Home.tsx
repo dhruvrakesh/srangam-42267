@@ -8,7 +8,7 @@ import { useLanguage } from "@/components/language/LanguageProvider";
 import { ArticleThemeChips } from "@/components/articles/ArticleThemeChips";
 import { IconMonsoon, IconScript, IconBasalt, IconPort, IconEdict, IconDharmaChakra, IconSarnathLion, IconLotus, IconConch, IconOm } from "@/components/icons";
 import { Link } from "react-router-dom";
-import { ArrowRight, Waves, Mountain, BookOpen, Map, Users } from "lucide-react";
+import { ArrowRight, Waves, Mountain, BookOpen, Map, Users, Network } from "lucide-react";
 import GeomythologySection from "@/components/home/GeomythologySection";
 
 export default function Home() {
@@ -331,6 +331,42 @@ export default function Home() {
               </div>
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* Research Network Section */}
+      <section className="py-16 bg-background">
+        <div className="max-w-4xl mx-auto px-4">
+          <Link to="/research-network" className="group block p-10 bg-card rounded-lg border-2 border-peacock-blue/30 hover:border-peacock-blue hover:shadow-2xl transition-all">
+            <div className="flex items-center justify-center mb-6">
+              <Network className="text-peacock-blue" size={56} />
+            </div>
+            <h3 className="font-serif text-3xl font-bold text-center mb-4">
+              Explore the Research Network
+            </h3>
+            <div className="grid md:grid-cols-3 gap-6 mb-6">
+              <div className="text-center">
+                <div className="text-4xl font-bold text-saffron">474</div>
+                <div className="text-sm text-muted-foreground">Connections</div>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl font-bold text-peacock-blue">22</div>
+                <div className="text-sm text-muted-foreground">Articles</div>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl font-bold text-turmeric">6.5</div>
+                <div className="text-sm text-muted-foreground">Avg Strength</div>
+              </div>
+            </div>
+            <p className="text-center text-muted-foreground mb-4">
+              Visualize how our research interconnects through themes, methods, and sources.
+            </p>
+            <div className="flex justify-center">
+              <span className="text-peacock-blue font-medium group-hover:translate-x-2 transition-transform inline-flex items-center gap-2">
+                Explore Interactive Network <ArrowRight size={20} />
+              </span>
+            </div>
+          </Link>
         </div>
       </section>
 
