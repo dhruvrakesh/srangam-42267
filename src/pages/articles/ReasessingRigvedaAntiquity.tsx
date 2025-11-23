@@ -54,6 +54,7 @@ export default function ReasessingRigvedaAntiquity() {
         readTime={28}
         author="Nartiang Foundation Research Team"
         date="2025-10-14"
+        articleSlug="reassessing-rigveda-antiquity"
         dataComponents={[
           <VedicChronologyTimeline key="chronology" />,
           <SarasvatiRiverEvolution key="sarasvati" />,

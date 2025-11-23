@@ -29,6 +29,7 @@ export default function ContinuousHabitationUttarapatha() {
         readTime={35}
         author="Śrīraṅgam Research Team"
         date="2024-01-16"
+        articleSlug="continuous-habitation-uttarapatha"
         dataComponents={[
           <ErrorBoundary 
             key="trade-routes-map"

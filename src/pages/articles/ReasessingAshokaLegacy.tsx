@@ -25,6 +25,7 @@ export default function ReasessingAshokaLegacy() {
       readTime={12}
       author="Nartiang Foundation Research Team"
       date="2025-10-06"
+      articleSlug="reassessing-ashoka-legacy"
       dataComponents={[
         <MagadhaReligiousTimeline key="timeline" />,
         <MagadhaRegionMap key="map" />,

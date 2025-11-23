@@ -54,6 +54,7 @@ export default function JanajatiOralTraditions() {
         readTime={55}
         author="Nartiang Foundation Research Team"
         date="2025-10-05"
+        articleSlug="janajati-oral-traditions"
         dataComponents={[<RelatedReading key="related-reading" />]}
       />
       

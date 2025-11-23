@@ -40,6 +40,7 @@ export const RingingRocksRhythmicCosmology: React.FC = () => {
         readTime={metadata.readTime}
         author={metadata.author}
         date={metadata.date}
+        articleSlug="ringing-rocks-rhythmic-cosmology"
         dataComponents={dataComponents}
       />
       <NarrationErrorBoundary>

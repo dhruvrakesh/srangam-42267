@@ -4,16 +4,22 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Network, ArrowRight, Tag, BookOpen, Quote } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useArticleId } from '@/hooks/useArticleId';
 
 interface ArticleCrossReferencesProps {
-  articleId: string;
+  articleSlug: string;
   className?: string;
 }
 
-export const ArticleCrossReferences = ({ articleId, className }: ArticleCrossReferencesProps) => {
-  const { data: crossRefs, isLoading } = useQuery({
+export const ArticleCrossReferences = ({ articleSlug, className }: ArticleCrossReferencesProps) => {
+  // Resolve slug to article ID
+  const { data: articleId, isLoading: isLoadingId } = useArticleId(articleSlug);
+  
+  const { data: crossRefs, isLoading: isLoadingRefs } = useQuery({
     queryKey: ['cross-references', articleId],
     queryFn: async () => {
+      if (!articleId) return [];
+      
       const { data, error } = await supabase
         .from('srangam_cross_references')
         .select(`
@@ -32,8 +38,11 @@ export const ArticleCrossReferences = ({ articleId, className }: ArticleCrossRef
       
       if (error) throw error;
       return data;
-    }
+    },
+    enabled: !!articleId,
   });
+
+  const isLoading = isLoadingId || isLoadingRefs;
 
   if (isLoading) return <div>Loading cross-references...</div>;
   if (!crossRefs || crossRefs.length === 0) return null;
