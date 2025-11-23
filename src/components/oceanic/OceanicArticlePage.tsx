@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,15 +6,37 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Clock, MapPin, BookOpen, ExternalLink } from 'lucide-react';
 import { SourcesAndPins } from './SourcesAndPins';
 import { useLanguage } from '@/components/language/LanguageProvider';
-import { getOceanicCardBySlug, getOceanicCards } from '@/lib/oceanicCardsLoader';
+import { getOceanicCards } from '@/lib/oceanicCardsLoader';
+import { resolveOceanicArticle, type ResolvedArticle } from '@/lib/articleResolver';
 
 export const OceanicArticlePage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { currentLanguage } = useLanguage();
-
-  const article = getOceanicCardBySlug(slug);
+  const [article, setArticle] = useState<ResolvedArticle | null>(null);
+  const [loading, setLoading] = useState(true);
   const allCards = getOceanicCards();
+
+  useEffect(() => {
+    async function loadArticle() {
+      if (!slug) return;
+      setLoading(true);
+      const resolved = await resolveOceanicArticle(slug);
+      setArticle(resolved);
+      setLoading(false);
+    }
+    loadArticle();
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-pulse text-muted-foreground">Loading article...</div>
+        </div>
+      </div>
+    );
+  }
 
   if (!article) {
     return (
@@ -23,10 +45,10 @@ export const OceanicArticlePage: React.FC = () => {
           <CardContent className="pt-6">
             <h1 className="text-2xl font-bold text-center mb-4">Article Not Found</h1>
             <p className="text-center text-muted-foreground mb-4">
-              The requested article could not be found.
+              The requested article could not be found in either the oceanic collection or the database.
             </p>
-            <Button onClick={() => navigate('/')} className="w-full">
-              Return Home
+            <Button onClick={() => navigate('/oceanic')} className="w-full">
+              Return to Oceanic Bharat
             </Button>
           </CardContent>
         </Card>
