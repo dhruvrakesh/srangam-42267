@@ -5,6 +5,7 @@ import { TagChip } from '@/components/ui/TagChip';
 import { EnhancedMultilingualText } from '@/components/language/EnhancedMultilingualText';
 import { ProfessionalTextFormatter } from '@/components/articles/enhanced/ProfessionalTextFormatter';
 import { SimplifiedMarkdownRenderer } from '@/components/articles/enhanced/SimplifiedMarkdownRenderer';
+import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { MultilingualContent } from '@/types/multilingual';
 import { cn } from '@/lib/utils';
 import { ArticleProvider, useReadingProgress } from '@/components/context/ArticleContext';
@@ -60,6 +61,8 @@ const ArticleContent = React.memo(({
     };
   }, [mark, measure]);
 
+  const titleText = typeof title === 'string' ? title : (title as any).en || 'Article';
+
   return (
     <article className="max-w-4xl mx-auto px-4 py-8 relative">
         {/* Contextual Sacred Geometry Background */}
@@ -69,15 +72,15 @@ const ArticleContent = React.memo(({
           'ocean-waves'
         )} />
         
-        {/* Breadcrumb */}
-        <nav className="mb-8 relative z-10">
-          <Link 
-            to="/" 
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-burgundy transition-all duration-300 hover:translate-x-1"
-          >
-            ← {t('navigation.backToHome', 'Back to Home')}
-          </Link>
-        </nav>
+        {/* Breadcrumb Navigation */}
+        <div className="relative z-10">
+          <Breadcrumb 
+            items={[
+              { label: 'Articles', href: '/articles' },
+              { label: titleText }
+            ]} 
+          />
+        </div>
 
         {/* Enhanced Article Header */}
         <header className="mb-12 text-center relative z-10">

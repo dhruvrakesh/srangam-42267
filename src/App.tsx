@@ -73,6 +73,7 @@ const Sitemap = lazy(() => import("./pages/Sitemap"));
 
 // Lazy load oceanic article system
 const OceanicRouter = lazy(() => import("./pages/oceanic/OceanicRouter"));
+const OceanicBharat = lazy(() => import("./pages/oceanic/OceanicBharat"));
 
 // Admin Pages
 const MarkdownImport = lazy(() => import("./pages/admin/MarkdownImport"));
@@ -191,6 +192,9 @@ const App = () => (
                   <Route path="/partnership" element={<Partnership />} />
                   <Route path="/support-research" element={<SupportResearch />} />
                   <Route path="/sitemap" element={<Sitemap />} />
+                  
+                  {/* Oceanic Bharat Landing Page */}
+                  <Route path="/oceanic" element={<OceanicBharat />} />
                   
                   {/* Oceanic Bharat article system */}
                   <Route path="/oceanic/*" element={<OceanicRouter />} />
