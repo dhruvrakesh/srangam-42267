@@ -37,6 +37,7 @@ const Brand = lazy(() => import("./pages/Brand"));
 const ResearchSubmission = lazy(() => import("./pages/ResearchSubmission"));
 const Partnership = lazy(() => import("./pages/Partnership"));
 const SupportResearch = lazy(() => import("./pages/SupportResearch"));
+const DataVisualization = lazy(() => import("./pages/DataVisualization"));
 
 // Lazy load article pages
 const MonsoonTradeClock = lazy(() => import("./pages/articles/MonsoonTradeClock"));
@@ -141,6 +142,7 @@ const App = () => (
                   <Route path="/themes/empires-exchange" element={<EmpiresExchange />} />
               <Route path="/field-notes" element={<FieldNotes />} />
               <Route path="/maps-data" element={<MapsData />} />
+              <Route path="/data-viz" element={<DataVisualization />} />
               <Route path="/reading-room" element={<ReadingRoom />} />
               
               {/* Sources Routes */}

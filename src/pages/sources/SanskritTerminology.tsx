@@ -1,247 +1,269 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Search, BookOpen, Globe, Tag } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Languages, BookOpen, Info } from 'lucide-react';
-import { culturalTermsDatabase } from '@/data/articles/cultural-terms';
-import { devanagariToIAST, iastToSimple } from '@/lib/sanskritUtils';
-import { SupportedLanguage } from '@/lib/i18n';
 
 export default function SanskritTerminology() {
-  const { i18n } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
-  const [scriptView, setScriptView] = useState<'devanagari' | 'iast' | 'simple'>('iast');
-  const currentLang = i18n.language as SupportedLanguage;
+  const [scriptView, setScriptView] = useState<'iast' | 'devanagari' | 'simple'>('iast');
+  const { i18n } = useTranslation();
+  const currentLanguage = i18n.language || 'en';
 
-  // Convert cultural terms database to array
-  const allTerms = useMemo(() => {
-    return Object.entries(culturalTermsDatabase).map(([key, term]) => ({
-      id: key,
-      ...term
-    }));
-  }, []);
+  // Fetch all cultural terms from Supabase
+  const { data: allTerms = [], isLoading } = useQuery({
+    queryKey: ['cultural-terms-all'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('srangam_cultural_terms')
+        .select('*')
+        .order('usage_count', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
 
-  // Filter terms based on search query
   const filteredTerms = useMemo(() => {
-    if (!searchQuery.trim()) return allTerms;
+    if (!allTerms || !searchQuery.trim()) return allTerms || [];
     
     const query = searchQuery.toLowerCase();
     return allTerms.filter(term => {
-      const termLower = term.term.toLowerCase();
-      const enTranslation = term.translations.en?.translation?.toLowerCase() || '';
-      const currentLangTranslation = term.translations[currentLang]?.translation?.toLowerCase() || '';
+      const translations = typeof term.translations === 'string' 
+        ? JSON.parse(term.translations) 
+        : term.translations;
       
-      return termLower.includes(query) || 
-             enTranslation.includes(query) || 
-             currentLangTranslation.includes(query);
+      const searchableText = [
+        term.display_term?.toLowerCase(),
+        term.term?.toLowerCase(),
+        term.transliteration?.toLowerCase(),
+        translations?.en?.toLowerCase(),
+        translations?.en?.translation?.toLowerCase(),
+        translations?.en?.etymology?.toLowerCase(),
+        term.module?.toLowerCase(),
+        ...(term.synonyms || []).map(s => s.toLowerCase()),
+        ...(term.related_terms || []).map(r => r.toLowerCase())
+      ].filter(Boolean).join(' ');
+      
+      return searchableText.includes(query);
     });
-  }, [allTerms, searchQuery, currentLang]);
+  }, [allTerms, searchQuery]);
 
-  // Format term based on script view
-  const formatTerm = (term: string) => {
+  const formatTerm = (term: any) => {
     switch (scriptView) {
       case 'devanagari':
-        // If already in Devanagari, return as is
-        if (/[\u0900-\u097F]/.test(term)) return term;
-        return term; // Keep as is if not in Devanagari
+        return term.display_term || term.transliteration || term.term;
       case 'simple':
-        return iastToSimple(term);
-      case 'iast':
+        return term.term || term.display_term;
       default:
-        return term;
+        return term.transliteration || term.display_term || term.term;
     }
   };
 
-  // Get term context in current language
-  const getTermContext = (term: typeof allTerms[0]) => {
-    const langData = term.translations[currentLang] || term.translations.en;
-    return {
-      translation: langData?.translation || term.term,
-      transliteration: langData?.transliteration || term.term,
-      etymology: langData?.etymology || '',
-      culturalContext: langData?.culturalContext || ''
-    };
+  const getTermContext = (term: any) => {
+    const lang = currentLanguage === 'en' ? 'en' : currentLanguage;
+    const translations = typeof term.translations === 'string' 
+      ? JSON.parse(term.translations) 
+      : term.translations;
+    
+    return translations?.[lang] || translations?.en || {};
   };
 
   return (
     <>
       <Helmet>
-        <title>Sanskrit & Dharmic Terminology | Srangam</title>
-        <meta name="description" content="Interactive database of Sanskrit and Dharmic terms with IAST transliteration, etymology, and cultural context across 9 Indian languages." />
-        <meta property="og:title" content="Sanskrit & Dharmic Terminology | Srangam" />
+        <title>Sanskrit & Dharmic Terminology - 940+ AI-Enhanced Terms | Srangam</title>
+        <meta name="description" content="Explore 940+ Sanskrit and Dharmic terms with AI-enhanced etymology, translations, and cultural context across multiple languages." />
       </Helmet>
 
       <div className="min-h-screen bg-background">
         {/* Hero Section */}
-        <section className="bg-gradient-subtle py-16 border-b border-border">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <div className="flex items-center justify-center mb-6">
-                <Languages className="text-primary mr-3" size={40} />
-                <h1 className="text-4xl font-bold text-foreground">
-                  Sanskrit & Dharmic Terminology
-                </h1>
-              </div>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-6">
-                Navigate the rich vocabulary of Dharmic civilization. This interactive reference provides 
-                standardized transliterations, etymologies, and cultural context for Sanskrit terms used throughout Srangam.
+        <section className="relative bg-gradient-to-br from-vedic/10 via-background to-ocean/10 border-b border-border">
+          <div className="container mx-auto px-4 py-16">
+            <Breadcrumb 
+              items={[
+                { label: 'Home', href: '/' },
+                { label: 'Research', href: '/sources-method' },
+                { label: 'Sanskrit Terminology' }
+              ]} 
+            />
+            
+            <div className="mt-8 max-w-4xl">
+              <h1 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-4">
+                Sanskrit & Dharmic Terminology
+              </h1>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                Navigate the rich vocabulary of Dharmic civilization. This AI-enhanced database provides standardized transliterations, etymologies, and cultural context for Sanskrit terms used throughout Srangam research.
               </p>
-              <div className="flex items-center justify-center gap-8 text-sm text-muted-foreground">
-                <div>
-                  <span className="font-semibold text-foreground">{allTerms.length}+</span> Terms
-                </div>
-                <div>
-                  <span className="font-semibold text-foreground">9</span> Languages
-                </div>
-                <div>
-                  <span className="font-semibold text-foreground">IAST</span> Standard
-                </div>
+            </div>
+
+            {/* Stats */}
+            <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl">
+              <div className="text-center">
+                <div className="text-5xl font-bold text-ocean mb-2">{isLoading ? '...' : `${allTerms.length}+`}</div>
+                <div className="text-muted-foreground">Terms</div>
+              </div>
+              <div className="text-center">
+                <div className="text-5xl font-bold text-vedic mb-2">8</div>
+                <div className="text-muted-foreground">Languages</div>
+              </div>
+              <div className="text-center">
+                <div className="text-5xl font-bold text-maritime mb-2">AI</div>
+                <div className="text-muted-foreground">Enhanced</div>
+              </div>
+              <div className="text-center">
+                <div className="text-5xl font-bold text-geology mb-2">IAST</div>
+                <div className="text-muted-foreground">Standard</div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* Search and Filters */}
-          <div className="mb-8 space-y-4">
+        {/* Search & Filters */}
+        <section className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto space-y-4">
             <div className="flex flex-col md:flex-row gap-4">
-              {/* Search */}
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
-                  type="text"
-                  placeholder="Search terms (e.g., dharma, yajna, maharaja)..."
+                  placeholder="Search terms (e.g., dharma, mahābhārata, yajña)..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
                 />
               </div>
 
-              {/* Script Toggle */}
               <Tabs value={scriptView} onValueChange={(v) => setScriptView(v as any)} className="w-full md:w-auto">
                 <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="iast" className="text-xs">IAST</TabsTrigger>
-                  <TabsTrigger value="devanagari" className="text-xs">देवनागरी</TabsTrigger>
-                  <TabsTrigger value="simple" className="text-xs">Simple</TabsTrigger>
+                  <TabsTrigger value="iast">IAST</TabsTrigger>
+                  <TabsTrigger value="devanagari">देवनागरी</TabsTrigger>
+                  <TabsTrigger value="simple">Simple</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
 
-            {/* Info Banner */}
-            <div className="bg-card/50 border border-border rounded-lg p-4 flex items-start gap-3">
-              <Info className="text-primary flex-shrink-0 mt-0.5" size={16} />
-              <div className="text-sm text-muted-foreground">
-                <p className="mb-1">
-                  <span className="font-semibold text-foreground">IAST (International Alphabet of Sanskrit Transliteration)</span> 
-                  {' '}is the academic standard for representing Sanskrit in Roman script with diacritical marks.
-                </p>
-                <p className="text-xs">
-                  Example: Sanskrit धर्म becomes <span className="font-mono">dharma</span> in IAST, 
-                  or <span className="font-mono">dharma</span> in simplified form.
-                </p>
-              </div>
+            <div className="text-sm text-muted-foreground">
+              Showing {filteredTerms.length} of {allTerms.length} terms
             </div>
           </div>
+        </section>
 
-          {/* Results Count */}
-          <div className="mb-4 text-sm text-muted-foreground">
-            Showing {filteredTerms.length} of {allTerms.length} terms
-          </div>
-
-          {/* Terms Grid */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredTerms.map((term) => {
+        {/* Terms Grid */}
+        <section className="container mx-auto px-4 pb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {isLoading ? (
+            <div className="col-span-full text-center py-12">
+              <div className="animate-pulse text-muted-foreground">Loading {allTerms.length || 940}+ cultural terms...</div>
+            </div>
+          ) : filteredTerms.length === 0 ? (
+            <div className="col-span-full text-center py-12">
+              <p className="text-muted-foreground">No terms found matching "{searchQuery}"</p>
+            </div>
+          ) : (
+            filteredTerms.map((term) => {
               const context = getTermContext(term);
-              
+              const etymology = typeof term.etymology === 'string' 
+                ? JSON.parse(term.etymology) 
+                : term.etymology;
+              const termContext = typeof term.context === 'string' 
+                ? JSON.parse(term.context) 
+                : term.context;
+
               return (
-                <Card key={term.id} className="hover:shadow-lg transition-shadow">
+                <Card 
+                  key={term.id} 
+                  className="group hover:shadow-lg transition-all duration-300 hover:border-ocean/50 bg-card/95 backdrop-blur-sm"
+                >
                   <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg font-semibold mb-1">
-                          {formatTerm(term.term)}
-                        </CardTitle>
-                        <CardDescription className="text-sm">
-                          {context.translation}
-                        </CardDescription>
-                      </div>
-                      <BookOpen className="text-primary flex-shrink-0 ml-2" size={16} />
-                    </div>
+                    <CardTitle className="font-serif text-2xl text-ocean group-hover:text-ocean/80 transition-colors">
+                      {formatTerm(term)}
+                    </CardTitle>
+                    {term.transliteration && scriptView !== 'iast' && (
+                      <p className="text-sm text-muted-foreground italic">
+                        {term.transliteration}
+                      </p>
+                    )}
+                    {term.module && (
+                      <Badge variant="outline" className="w-fit text-xs">
+                        {term.module}
+                      </Badge>
+                    )}
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    {/* Transliteration */}
-                    {context.transliteration && context.transliteration !== term.term && (
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Transliteration</p>
-                        <p className="text-sm font-mono text-foreground">{context.transliteration}</p>
-                      </div>
-                    )}
-
-                    {/* Etymology */}
-                    {context.etymology && (
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Etymology</p>
-                        <p className="text-sm text-foreground leading-relaxed">{context.etymology}</p>
-                      </div>
-                    )}
-
-                    {/* Cultural Context */}
-                    {context.culturalContext && (
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Cultural Context</p>
-                        <p className="text-sm text-foreground leading-relaxed line-clamp-3">
-                          {context.culturalContext}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Language Availability */}
+                  <CardContent className="space-y-4">
                     <div>
-                      <p className="text-xs text-muted-foreground mb-2">Available in</p>
-                      <div className="flex flex-wrap gap-1">
-                        {Object.keys(term.translations).map((lang) => (
-                          <Badge 
-                            key={lang} 
-                            variant={lang === currentLang ? "default" : "secondary"} 
-                            className="text-xs"
-                          >
-                            {lang.toUpperCase()}
-                          </Badge>
-                        ))}
-                      </div>
+                      <h4 className="font-semibold text-sm text-foreground mb-1">Translation</h4>
+                      <p className="text-muted-foreground">
+                        {context.translation || context || 'Translation unavailable'}
+                      </p>
                     </div>
+
+                    {etymology?.[currentLanguage] && (
+                      <div>
+                        <h4 className="font-semibold text-sm text-foreground mb-1 flex items-center gap-2">
+                          <BookOpen className="h-4 w-4" />
+                          Etymology
+                        </h4>
+                        <p className="text-muted-foreground text-sm">{etymology[currentLanguage]}</p>
+                      </div>
+                    )}
+
+                    {termContext?.[currentLanguage] && (
+                      <div>
+                        <h4 className="font-semibold text-sm text-foreground mb-1 flex items-center gap-2">
+                          <Globe className="h-4 w-4" />
+                          Cultural Context
+                        </h4>
+                        <p className="text-muted-foreground text-sm">{termContext[currentLanguage]}</p>
+                      </div>
+                    )}
+
+                    {term.usage_count > 0 && (
+                      <div className="text-xs text-muted-foreground pt-2 border-t border-border">
+                        Used {term.usage_count} times across articles
+                      </div>
+                    )}
+
+                    {term.related_terms && term.related_terms.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-sm text-foreground mb-2 flex items-center gap-2">
+                          <Tag className="h-4 w-4" />
+                          Related Terms
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {term.related_terms.slice(0, 5).map((relatedTerm: string) => (
+                            <Badge key={relatedTerm} variant="secondary" className="text-xs">
+                              {relatedTerm}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               );
-            })}
-          </div>
-
-          {/* No Results */}
-          {filteredTerms.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">
-                No terms found matching "{searchQuery}". Try a different search term.
-              </p>
-            </div>
+            })
           )}
-        </div>
+          </div>
+        </section>
 
         {/* Usage Guidelines */}
-        <section className="bg-card/30 border-t border-border py-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl">
-              <h2 className="text-2xl font-bold text-foreground mb-6">Using This Reference</h2>
+        <section className="bg-gradient-to-br from-vedic/5 to-ocean/5 border-t border-border py-12">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <h2 className="font-serif text-2xl font-bold text-foreground mb-6">Using This Reference</h2>
               <div className="grid gap-6 md:grid-cols-2">
                 <div className="space-y-3">
                   <h3 className="text-lg font-semibold text-foreground">For Scholars</h3>
                   <ul className="space-y-2 text-sm text-muted-foreground leading-relaxed">
                     <li>• IAST transliterations follow Unicode standards</li>
-                    <li>• Etymology includes root words and derivational morphology</li>
-                    <li>• All diacritics are preserved for academic citation</li>
+                    <li>• AI-enhanced etymology with root derivations</li>
+                    <li>• All diacritics preserved for academic citation</li>
                     <li>• Cross-linguistic equivalents aid comparative studies</li>
                   </ul>
                 </div>
