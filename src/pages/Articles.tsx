@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { ArticleCard } from "@/components/ui/ArticleCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,7 @@ import { useLanguage } from "@/components/language/LanguageProvider";
 import { ArticleThemeChips } from "@/components/articles/ArticleThemeChips";
 import { IconConch, IconLotus } from "@/components/icons";
 import { Search, BookOpen, Filter, Loader2 } from "lucide-react";
+import { useDynamicSEO } from "@/hooks/useDynamicSEO";
 
 export default function Articles() {
   const { t } = useTranslation();
@@ -45,6 +47,13 @@ export default function Articles() {
     }),
     [allArticles, selectedThemes, sortBy, searchQuery]
   );
+
+  // Dynamic SEO generation
+  const { data: seoData } = useDynamicSEO({
+    themes: selectedThemes.length > 0 ? selectedThemes : undefined,
+    searchQuery: searchQuery || undefined,
+    sortBy,
+  });
 
   // Update URL params when filters change
   const updateURLParams = (themes: string[], sort: string, query: string) => {
@@ -80,6 +89,27 @@ export default function Articles() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Dynamic SEO Head */}
+      <Helmet>
+        <title>Research Archive | Srangam - {filteredArticles.length} Articles</title>
+        <meta 
+          name="description" 
+          content={seoData?.metaDescription || `Browse ${filteredArticles.length} scholarly articles on Ancient India, Maritime Trade, Sanskrit Literature, Sacred Ecology, and Cultural Continuity. Peer-reviewed research with cross-references.`} 
+        />
+        <meta 
+          name="keywords" 
+          content="Ancient India, Sanskrit Literature, Maritime Trade, Cultural Continuity, Vedic Period, Epigraphy, Puranic Literature, Sacred Ecology, Geology, Deep Time" 
+        />
+        <link rel="canonical" href="https://srangam.lovable.app/articles" />
+        
+        {/* Schema.org Structured Data */}
+        {seoData?.structuredData && (
+          <script type="application/ld+json">
+            {JSON.stringify(seoData.structuredData)}
+          </script>
+        )}
+      </Helmet>
+
       {/* Background patterns */}
       <div className="fixed inset-0 dharma-scroll opacity-20 pointer-events-none" />
       
