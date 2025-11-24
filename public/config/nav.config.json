@@ -25,6 +25,14 @@
       ]
     },
     {
+      "label": "Tools",
+      "desc": "Sanskrit & Jyotish analysis",
+      "children": [
+        {"label": "Sanskrit Translator", "href": "/sanskrit-translator"},
+        {"label": "Jyotish Horoscope", "href": "/jyotish-horoscope"}
+      ]
+    },
+    {
       "label": "Explore",
       "desc": "Interactive maps & data",
       "children": [

@@ -81,6 +81,9 @@ const OceanicBharat = lazy(() => import("./pages/oceanic/OceanicBharat"));
 // Lazy load articles router
 const ArticlesRouter = lazy(() => import("./pages/articles/ArticlesRouter"));
 
+// Lazy load tools
+const SanskritTranslator = lazy(() => import("./pages/SanskritTranslator"));
+
 // Admin Pages
 const MarkdownImport = lazy(() => import("./pages/admin/MarkdownImport"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
@@ -199,6 +202,9 @@ const App = () => (
                   {/* Oceanic section remains separate */}
                   <Route path="/oceanic/*" element={<OceanicRouter />} />
                   
+                  {/* Tools */}
+                  <Route path="/sanskrit-translator" element={<SanskritTranslator />} />
+
                   <Route path="/themes/geology-deep-time/stone-purana" element={<StonePurana />} />
                   <Route path="/themes/ancient-india/pepper-routes" element={<IndianOceanPowerNetworks />} />
                   <Route path="/batch/bujang-nagapattinam-ocean" element={<BatchBujangNagapattinamOcean />} />
