@@ -51,8 +51,11 @@ export const OceanicArticlePage: React.FC = () => {
             <p className="text-center text-muted-foreground mb-4">
               The requested article could not be found in either the oceanic collection or the database.
             </p>
-            <Button onClick={() => navigate('/oceanic')} className="w-full">
-              Return to Oceanic Bharat
+            <Button 
+              onClick={() => navigate(window.location.pathname.includes('/oceanic/') ? '/oceanic' : '/articles')} 
+              className="w-full"
+            >
+              {window.location.pathname.includes('/oceanic/') ? 'Return to Oceanic Bharat' : 'Return to Articles'}
             </Button>
           </CardContent>
         </Card>
@@ -77,11 +80,14 @@ export const OceanicArticlePage: React.FC = () => {
         <div className="mb-8">
           <Button 
             variant="ghost" 
-            onClick={() => navigate('/')}
+            onClick={() => {
+              const isOceanic = window.location.pathname.includes('/oceanic/');
+              navigate(isOceanic ? '/oceanic' : '/articles');
+            }}
             className="mb-4 gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Themes
+            {window.location.pathname.includes('/oceanic/') ? 'Back to Oceanic' : 'Back to Articles'}
           </Button>
 
           <div className="space-y-4">
