@@ -77,6 +77,9 @@ const Sitemap = lazy(() => import("./pages/Sitemap"));
 const OceanicRouter = lazy(() => import("./pages/oceanic/OceanicRouter"));
 const OceanicBharat = lazy(() => import("./pages/oceanic/OceanicBharat"));
 
+// Lazy load articles router
+const ArticlesRouter = lazy(() => import("./pages/articles/ArticlesRouter"));
+
 // Admin Pages
 const MarkdownImport = lazy(() => import("./pages/admin/MarkdownImport"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
@@ -189,8 +192,11 @@ const App = () => (
             <Route path="/articles/somnatha-prabhasa-itihasa" element={<SomnathaPrabhasaItihasa />} />
             <Route path="/articles/ringing-rocks-rhythmic-cosmology" element={<RingingRocksRhythmicCosmology />} />
                   
-                  {/* Dynamic route for database-backed articles (JSON + DB via OceanicRouter) */}
-                  <Route path="/articles/*" element={<OceanicRouter />} />
+                  {/* Articles browse page + dynamic article routes */}
+                  <Route path="/articles/*" element={<ArticlesRouter />} />
+                  
+                  {/* Oceanic section remains separate */}
+                  <Route path="/oceanic/*" element={<OceanicRouter />} />
                   
                   <Route path="/themes/geology-deep-time/stone-purana" element={<StonePurana />} />
                   <Route path="/themes/ancient-india/pepper-routes" element={<IndianOceanPowerNetworks />} />
