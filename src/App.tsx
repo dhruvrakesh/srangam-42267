@@ -72,6 +72,7 @@ const RingingRocksRhythmicCosmology = lazy(() => import("./pages/articles/Ringin
 const BatchBujangNagapattinamOcean = lazy(() => import("./pages/BatchBujangNagapattinamOcean"));
 const BatchMuzirisKutaiAshoka = lazy(() => import("./pages/BatchMuzirisKutaiAshoka"));
 const Sitemap = lazy(() => import("./pages/Sitemap"));
+const SitemapXML = lazy(() => import("./pages/SitemapXML"));
 
 // Lazy load oceanic article system
 const OceanicRouter = lazy(() => import("./pages/oceanic/OceanicRouter"));
@@ -206,6 +207,7 @@ const App = () => (
                   <Route path="/partnership" element={<Partnership />} />
                   <Route path="/support-research" element={<SupportResearch />} />
                   <Route path="/sitemap" element={<Sitemap />} />
+                  <Route path="/sitemap.xml" element={<SitemapXML />} />
                   
                   {/* Oceanic Bharat Landing Page */}
                   <Route path="/oceanic" element={<OceanicBharat />} />

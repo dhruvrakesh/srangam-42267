@@ -3,6 +3,9 @@ project_id = "xjaizfjcpkjcqbyobcsh"
 [functions.generate-article-seo]
 verify_jwt = false
 
+[functions.generate-sitemap]
+verify_jwt = false
+
 [functions.extract-purana-references]
 verify_jwt = false
 
