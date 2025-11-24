@@ -189,8 +189,8 @@ const App = () => (
             <Route path="/articles/somnatha-prabhasa-itihasa" element={<SomnathaPrabhasaItihasa />} />
             <Route path="/articles/ringing-rocks-rhythmic-cosmology" element={<RingingRocksRhythmicCosmology />} />
                   
-                  {/* Dynamic route for database articles */}
-                  <Route path="/articles/:slug" element={<OceanicRouter />} />
+                  {/* Dynamic route for database-backed articles (JSON + DB via OceanicRouter) */}
+                  <Route path="/articles/*" element={<OceanicRouter />} />
                   
                   <Route path="/themes/geology-deep-time/stone-purana" element={<StonePurana />} />
                   <Route path="/themes/ancient-india/pepper-routes" element={<IndianOceanPowerNetworks />} />
