@@ -143,7 +143,6 @@ const App = () => (
                   <Suspense fallback={<PageLoadingFallback />}>
                     <Routes>
                   <Route path="/" element={<Home />} />
-                  <Route path="/articles" element={<Articles />} />
                   <Route path="/themes/ancient-india" element={<AncientIndia />} />
                   <Route path="/themes/indian-ocean-world" element={<IndianOceanWorld />} />
                   <Route path="/themes/scripts-inscriptions" element={<ScriptsInscriptions />} />
