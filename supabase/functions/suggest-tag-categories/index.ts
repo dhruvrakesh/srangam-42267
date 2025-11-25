@@ -41,14 +41,16 @@ CATEGORIES:
 - Methodology: Research methods, academic approaches (e.g., "Epigraphy", "Archaeological Survey", "Textual Analysis")
 - Subject: Specific topics, religions, traditions (e.g., "Buddhism", "Shaivism", "Sanskrit Literature")
 
-Return a JSON array with this exact structure:
-[
-  {
-    "tagId": "tag-id-here",
-    "category": "Period|Concept|Location|Methodology|Subject",
-    "reasoning": "Brief explanation"
-  }
-]`;
+Return a JSON object with this exact structure:
+{
+  "suggestions": [
+    {
+      "tagId": "tag-id-here",
+      "category": "Period|Concept|Location|Methodology|Subject",
+      "reasoning": "Brief explanation"
+    }
+  ]
+}`;
 
     const userPrompt = `Categorize these tags:\n\n${tags.map((t: any) => 
       `- "${t.tag_name}" (ID: ${t.id}, Usage: ${t.usage_count || 0}${t.description ? `, Description: ${t.description}` : ''})`
@@ -95,11 +97,39 @@ Return a JSON array with this exact structure:
     }
 
     const aiData = await aiResponse.json();
-    let suggestions = JSON.parse(aiData.choices[0].message.content);
+    const parsed = JSON.parse(aiData.choices[0].message.content);
     
-    // Handle if AI returns object with suggestions array or direct array
-    if (suggestions.suggestions) {
-      suggestions = suggestions.suggestions;
+    // Robust parsing to handle various response formats
+    let suggestions = [];
+    if (Array.isArray(parsed)) {
+      suggestions = parsed;
+    } else if (parsed.suggestions && Array.isArray(parsed.suggestions)) {
+      suggestions = parsed.suggestions;
+    } else if (parsed.categories && Array.isArray(parsed.categories)) {
+      suggestions = parsed.categories;
+    } else {
+      console.error('Unexpected AI response format:', parsed);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          suggestions: [],
+          error: 'AI returned unexpected format' 
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate we have suggestions
+    if (!Array.isArray(suggestions) || suggestions.length === 0) {
+      console.warn('No valid suggestions returned from AI');
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          suggestions: [],
+          message: 'No valid suggestions returned from AI' 
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     console.log(`✅ Generated ${suggestions.length} category suggestions`);
