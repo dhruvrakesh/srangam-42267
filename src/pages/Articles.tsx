@@ -91,7 +91,7 @@ export default function Articles() {
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Dynamic SEO Head */}
       <Helmet>
-        <title>Research Archive | Srangam - {filteredArticles?.length ?? 0} Articles</title>
+        <title>{`Research Archive | Srangam - ${filteredArticles?.length ?? 0} Articles`}</title>
         <meta 
           name="description" 
           content={seoData?.metaDescription || `Browse ${filteredArticles?.length ?? 0} scholarly articles on Ancient India, Maritime Trade, Sanskrit Literature, Sacred Ecology, and Cultural Continuity. Peer-reviewed research with cross-references.`} 
@@ -183,7 +183,7 @@ export default function Articles() {
         )}
 
         {/* Articles Grid */}
-        {!isLoading && filteredArticles.length > 0 ? (
+        {!isLoading && filteredArticles && filteredArticles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredArticles.map((article, index) => (
               <div key={article.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}>
