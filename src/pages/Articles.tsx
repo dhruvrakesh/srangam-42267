@@ -40,7 +40,7 @@ export default function Articles() {
 
   // Get filtered articles
   const filteredArticles = useMemo(() => 
-    filterUnifiedArticles(allArticles, {
+    filterUnifiedArticles(allArticles || [], {
       themes: selectedThemes.length > 0 ? selectedThemes : undefined,
       sortBy,
       searchQuery
@@ -94,7 +94,7 @@ export default function Articles() {
         <title>Research Archive | Srangam - {filteredArticles?.length ?? 0} Articles</title>
         <meta 
           name="description" 
-          content={seoData?.metaDescription || `Browse ${filteredArticles.length} scholarly articles on Ancient India, Maritime Trade, Sanskrit Literature, Sacred Ecology, and Cultural Continuity. Peer-reviewed research with cross-references.`} 
+          content={seoData?.metaDescription || `Browse ${filteredArticles?.length ?? 0} scholarly articles on Ancient India, Maritime Trade, Sanskrit Literature, Sacred Ecology, and Cultural Continuity. Peer-reviewed research with cross-references.`} 
         />
         <meta 
           name="keywords" 
@@ -127,7 +127,7 @@ export default function Articles() {
           </p>
           <p className="text-sm text-muted-foreground">
             <BookOpen size={16} className="inline mr-1" />
-            {filteredArticles.length} {t('filters.articlesFound')}
+            {filteredArticles?.length ?? 0} {t('filters.articlesFound')}
           </p>
         </div>
 
