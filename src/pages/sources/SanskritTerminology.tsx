@@ -91,7 +91,7 @@ export default function SanskritTerminology() {
   return (
     <>
       <Helmet>
-        <title>Sanskrit & Dharmic Terminology - {allTerms.length}+ AI-Enhanced Terms | Srangam</title>
+        <title>{`Sanskrit & Dharmic Terminology - ${allTerms.length}+ AI-Enhanced Terms | Srangam`}</title>
         <meta name="description" content={`Explore ${allTerms.length}+ Sanskrit and Dharmic terms with AI-enhanced etymology, translations, and cultural context across multiple languages.`} />
       </Helmet>
 
