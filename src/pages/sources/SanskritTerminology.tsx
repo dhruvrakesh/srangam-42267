@@ -23,7 +23,8 @@ export default function SanskritTerminology() {
       const { data, error } = await supabase
         .from('srangam_cultural_terms')
         .select('*')
-        .order('usage_count', { ascending: false });
+        .order('usage_count', { ascending: false })
+        .limit(5000);
       
       if (error) throw error;
       return data || [];

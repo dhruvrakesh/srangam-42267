@@ -144,8 +144,13 @@ export default function CulturalTermsExplorer() {
     const termsToEnrich = terms.filter(term => {
       const translations = term.translations;
       if (!translations || typeof translations !== 'object') return true;
-      const hasEnglish = translations.en && typeof translations.en === 'object';
-      return !hasEnglish;
+      // Check for NEW enriched format (object with .translation property)
+      const hasEnglish = translations.en && 
+                         typeof translations.en === 'object' &&
+                         translations.en.translation;
+      // Also re-enrich if it's still in OLD string format
+      const isOldFormat = typeof translations.en === 'string';
+      return !hasEnglish || isOldFormat;
     });
 
     if (termsToEnrich.length === 0) {

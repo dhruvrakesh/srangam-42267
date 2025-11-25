@@ -95,7 +95,8 @@ export default function Dashboard() {
       // Get cultural terms stats
       const { data: terms, error: termsError } = await supabase
         .from("srangam_cultural_terms")
-        .select("usage_count");
+        .select("usage_count")
+        .limit(5000);
 
       if (termsError) throw termsError;
 
