@@ -323,7 +323,7 @@ Deno.serve(async (req) => {
     console.log('Frontmatter:', frontmatter);
 
     // Step 2: Convert markdown to HTML
-    const htmlContent = marked.parse(content);
+    const htmlContent = marked.parse(content) as string;
     
     // Step 3: Calculate metadata
     const wordCount = calculateWordCount(content);
