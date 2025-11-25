@@ -98,12 +98,12 @@
   - 0 explicit_citation (pattern not yet used in content)
   - All integrated on article pages via `ArticleCrossReferences` component
   
-- **Cultural terms**: 1,108
-  - 1,049 active terms (used in articles)
+- **Cultural terms**: 1,150
+  - 1,091 active terms (used in articles)
   - 59 terms with zero usage (candidates for review)
   - All terms have etymology and context (AI-enriched)
   - Average usage: 12.8 occurrences per term
-  - Module distribution: vedic (234), maritime (187), geology (156), other (531)
+  - Module distribution: vedic (234), maritime (187), geology (156), other (573)
   - Connected to Sanskrit Translator named-entity recognition showcase
 
 - **Tags**: 127 unique tags
