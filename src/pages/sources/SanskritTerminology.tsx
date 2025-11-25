@@ -16,18 +16,30 @@ export default function SanskritTerminology() {
   const { i18n } = useTranslation();
   const currentLanguage = i18n.language || 'en';
 
-  // Fetch all cultural terms from Supabase
+  // Fetch all cultural terms from Supabase with pagination
   const { data: allTerms = [], isLoading } = useQuery({
     queryKey: ['cultural-terms-all'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('srangam_cultural_terms')
-        .select('*')
-        .order('usage_count', { ascending: false })
-        .limit(5000);
+      const allData = [];
+      let from = 0;
+      const batchSize = 1000;
+
+      while (true) {
+        const { data, error } = await supabase
+          .from('srangam_cultural_terms')
+          .select('*')
+          .order('usage_count', { ascending: false })
+          .range(from, from + batchSize - 1);
+        
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        
+        allData.push(...data);
+        if (data.length < batchSize) break;
+        from += batchSize;
+      }
       
-      if (error) throw error;
-      return data || [];
+      return allData;
     }
   });
 
@@ -79,8 +91,8 @@ export default function SanskritTerminology() {
   return (
     <>
       <Helmet>
-        <title>Sanskrit & Dharmic Terminology - 940+ AI-Enhanced Terms | Srangam</title>
-        <meta name="description" content="Explore 940+ Sanskrit and Dharmic terms with AI-enhanced etymology, translations, and cultural context across multiple languages." />
+        <title>Sanskrit & Dharmic Terminology - {allTerms.length}+ AI-Enhanced Terms | Srangam</title>
+        <meta name="description" content={`Explore ${allTerms.length}+ Sanskrit and Dharmic terms with AI-enhanced etymology, translations, and cultural context across multiple languages.`} />
       </Helmet>
 
       <div className="min-h-screen bg-background">

@@ -45,14 +45,26 @@ export default function CulturalTermsExplorer() {
   const { data: terms, isLoading } = useQuery({
     queryKey: ["cultural-terms"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("srangam_cultural_terms")
-        .select("*")
-        .order("usage_count", { ascending: false })
-        .limit(5000);
+      const allData = [];
+      let from = 0;
+      const batchSize = 1000;
 
-      if (error) throw error;
-      return data as CulturalTerm[];
+      while (true) {
+        const { data, error } = await supabase
+          .from("srangam_cultural_terms")
+          .select("*")
+          .order("usage_count", { ascending: false })
+          .range(from, from + batchSize - 1);
+
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        
+        allData.push(...data);
+        if (data.length < batchSize) break;
+        from += batchSize;
+      }
+      
+      return allData as CulturalTerm[];
     },
   });
 
