@@ -91,10 +91,13 @@ export default function SanskritTranslator() {
                 <Button 
                   size="lg" 
                   className="bg-gradient-to-r from-saffron to-turmeric hover:from-saffron/90 hover:to-turmeric/90 text-white shadow-lg group"
+                  asChild
                 >
-                  <Upload className="w-5 h-5 mr-2 group-hover:animate-bounce" />
-                  Try the Translator
-                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                  <a href="mailto:research@srangam.app?subject=Sanskrit%20Translator%20Access%20Request">
+                    <Upload className="w-5 h-5 mr-2 group-hover:animate-bounce" />
+                    Request Access
+                    <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </a>
                 </Button>
                 
                 <Button 
@@ -103,7 +106,7 @@ export default function SanskritTranslator() {
                   className="border-2 border-indigo-dharma text-indigo-dharma hover:bg-indigo-dharma hover:text-white"
                   asChild
                 >
-                  <Link to="/articles">
+                  <Link to="/articles/sanskrit-translator-methodology">
                     <BookOpen className="w-5 h-5 mr-2" />
                     Read Methodology
                   </Link>
@@ -313,9 +316,12 @@ export default function SanskritTranslator() {
               <Button 
                 size="lg"
                 className="bg-gradient-to-r from-peacock-blue to-ocean-teal hover:from-peacock-blue/90 hover:to-ocean-teal/90 text-white shadow-lg"
+                asChild
               >
-                Try Your Own Text
-                <ArrowRight className="w-5 h-5 ml-2" />
+                <a href="mailto:research@srangam.app?subject=Sanskrit%20Translator%20Demo%20Request&body=Please%20share%20a%20sample%20Sanskrit%20text%20you'd%20like%20analyzed.">
+                  Request Analysis Demo
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </a>
               </Button>
             </div>
           </div>
@@ -343,9 +349,12 @@ export default function SanskritTranslator() {
               <Button 
                 size="lg"
                 className="bg-white text-indigo-dharma hover:bg-cream shadow-lg"
+                asChild
               >
-                <Upload className="w-5 h-5 mr-2" />
-                Start Translating (100 Free Credits)
+                <a href="mailto:research@srangam.app?subject=Sanskrit%20Translator%20Research%20Collaboration">
+                  <Upload className="w-5 h-5 mr-2" />
+                  Request Research Access
+                </a>
               </Button>
               
               <Button 

@@ -83,6 +83,7 @@ const ArticlesRouter = lazy(() => import("./pages/articles/ArticlesRouter"));
 
 // Lazy load tools
 const SanskritTranslator = lazy(() => import("./pages/SanskritTranslator"));
+const JyotishHoroscope = lazy(() => import("./pages/JyotishHoroscope"));
 
 // Admin Pages
 const MarkdownImport = lazy(() => import("./pages/admin/MarkdownImport"));
@@ -204,6 +205,7 @@ const App = () => (
                   
                   {/* Tools */}
                   <Route path="/sanskrit-translator" element={<SanskritTranslator />} />
+                  <Route path="/jyotish-horoscope" element={<JyotishHoroscope />} />
 
                   <Route path="/themes/geology-deep-time/stone-purana" element={<StonePurana />} />
                   <Route path="/themes/ancient-india/pepper-routes" element={<IndianOceanPowerNetworks />} />
