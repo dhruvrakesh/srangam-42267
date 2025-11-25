@@ -14,6 +14,19 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+/**
+ * Generate SHA-256 hash for content - works with Unicode (Hindi, Punjabi, etc.)
+ * @param content - String content to hash
+ * @returns SHA-256 hash as hex string
+ */
+async function generateContentHash(content: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(content);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 interface FrontMatter {
   title: string | Record<string, string>;
   author?: string;
@@ -366,7 +379,7 @@ Deno.serve(async (req) => {
           article_id: existingArticle.id,
           markdown_content: markdownContent,
           file_path: githubFilePath || `${mergeIntoArticle}-${targetLang}.md`,
-          content_hash: btoa(markdownContent),
+          content_hash: await generateContentHash(markdownContent),
           last_sync_at: new Date().toISOString(),
           sync_status: 'synced'
         }, {
