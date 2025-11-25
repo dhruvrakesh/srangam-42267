@@ -16,7 +16,7 @@
 - ✅ Slug alias system for SEO-friendly URLs
 
 ### **2. AI-Powered Tag Generation**
-- ✅ Lovable AI integration (Gemini 2.5 Flash)
+- ✅ OpenAI GPT-4o-mini integration (migrated Nov 2025)
 - ✅ Auto-generates 5-8 contextually relevant tags when frontmatter is empty
 - ✅ Fuzzy matching against existing tag taxonomy
 - ✅ Tag normalization (prevents duplicates like "Mauryan Empire" vs "Mauryans")

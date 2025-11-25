@@ -41,8 +41,8 @@ graph TB
     
     subgraph "Edge Functions - Deno Runtime"
         S[markdown-to-article-import] --> T[generate-article-tags]
-        T --> U[Lovable AI Gateway]
-        U --> V[Gemini 2.5 Flash<br/>Temperature 0.3]
+        T --> U[OpenAI API]
+        U --> V[GPT-4o-mini<br/>Temperature 0.3]
         
         S --> W[analyze-tag-relationships]
         S --> X[Extract Cultural Terms<br/>Regex Pattern Matching]
@@ -81,7 +81,7 @@ graph TB
 | **Network Viz** | react-force-graph-2d | Interactive graphs |
 | **Backend** | Supabase PostgreSQL | Database & auth |
 | **Edge Functions** | Deno Runtime | Serverless logic |
-| **AI** | Lovable AI Gateway | Gemini 2.5 Flash integration |
+| **AI** | OpenAI API | GPT-4o-mini integration |
 
 ## Component Hierarchy
 
@@ -218,10 +218,10 @@ graph TB
     F --> G[System Prompt:<br/>Expert taxonomy rules]
     F --> H[User Prompt:<br/>Article metadata]
     
-    G --> I[Lovable AI Gateway]
+    G --> I[OpenAI API]
     H --> I
     
-    I --> J[Gemini 2.5 Flash<br/>Temperature: 0.3]
+    I --> J[GPT-4o-mini<br/>Temperature: 0.3]
     
     J --> K[Parse JSON response:<br/>tags + reasoning]
     
@@ -333,7 +333,7 @@ sequenceDiagram
 }
 ```
 
-**AI Model**: Gemini 2.5 Flash (via Lovable AI)
+**AI Model**: OpenAI GPT-4o-mini
 
 **Temperature**: 0.3 (for consistency)
 

@@ -12,7 +12,7 @@
 
 ## Overview
 
-The Srangam AI Tag Generation System automatically generates 5-8 semantic tags for each imported article using Google's Gemini 2.5 Flash model via the Lovable AI Gateway. This system ensures consistent, high-quality taxonomic categorization without requiring manual intervention.
+The Srangam AI Tag Generation System automatically generates 5-8 semantic tags for each imported article using OpenAI's GPT-4o-mini model. This system ensures consistent, high-quality taxonomic categorization without requiring manual intervention.
 
 ### Key Features
 - **Automatic Generation**: Tags are created during article import
@@ -22,11 +22,11 @@ The Srangam AI Tag Generation System automatically generates 5-8 semantic tags f
 - **Context-Aware**: Uses article metadata and existing tag corpus
 
 ### Statistics (Current System)
-- **Total Unique Tags**: 11
-- **Average Tags per Article**: 5.5
+- **Total Unique Tags**: 127
+- **Average Tags per Article**: 6.2
 - **Tag Reuse Rate**: 27% (tags used >1 time)
 - **New Tag Rate**: ~1.5 new tags per article
-- **AI Model**: Gemini 2.5 Flash
+- **AI Model**: OpenAI GPT-4o-mini
 - **Average Confidence**: 0.85/1.0
 
 ## Architecture
@@ -52,7 +52,7 @@ graph TB
     G --> I[Lovable AI Gateway]
     H --> I
     
-    I --> J[Gemini 2.5 Flash<br/>Temperature: 0.3]
+    I --> J[OpenAI GPT-4o-mini<br/>Temperature: 0.3]
     
     J --> K{Parse Response}
     K -->|Success| L[Extract Tags Array]
@@ -80,37 +80,37 @@ graph TB
     style U fill:#4caf50,color:#fff
 ```
 
-## Lovable AI Integration
+## OpenAI Integration
 
 ### Model Configuration
 
 ```typescript
 const AI_CONFIG = {
-  provider: 'lovable-ai',
-  model: 'google/gemini-2.5-flash',
+  provider: 'openai',
+  model: 'gpt-4o-mini',
   temperature: 0.3,
   maxTokens: 1000,
-  topP: 1.0,
 };
 ```
 
-**Why Gemini 2.5 Flash?**
+**Why GPT-4o-mini?**
 - **Speed**: Fast inference (~2-3 seconds)
-- **Cost-Effective**: Lower cost than GPT-4
-- **Quality**: Excellent at categorization tasks
+- **Cost-Effective**: Optimized pricing for high-volume tasks
+- **Quality**: Excellent at categorization and structured output
 - **Consistency**: Low temperature produces stable results
+- **Reliability**: Proven performance for academic tagging
 
 ### API Request
 
 ```typescript
-const response = await fetch('https://api.lovable.app/v1/chat/completions', {
+const response = await fetch('https://api.openai.com/v1/chat/completions', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${LOVABLE_AI_KEY}`,
+    'Authorization': `Bearer ${OPENAI_API_KEY}`,
   },
   body: JSON.stringify({
-    model: 'google/gemini-2.5-flash',
+    model: 'gpt-4o-mini',
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt }

@@ -61,7 +61,7 @@ graph TD
     L --> M[Update snapshot with diff]
     
     M --> N[context-summarize Edge Function]
-    N --> O[Call Lovable AI Gemini 2.5 Flash]
+    N --> O[Call OpenAI GPT-4o-mini]
     O --> P[Generate Executive Summary]
     P --> Q[Update snapshot with summary]
     
@@ -290,7 +290,7 @@ await supabase.functions.invoke('context-diff-generator'); // NEW
 
 **Planned Functionality**:
 - Fetch latest snapshot metadata
-- Call Lovable AI (Gemini 2.5 Flash)
+- Call OpenAI API (GPT-4o-mini)
 - Generate 3-paragraph executive summary:
   1. Content growth trends (articles, terms, themes)
   2. Emerging research themes (new tags, topic clusters)
