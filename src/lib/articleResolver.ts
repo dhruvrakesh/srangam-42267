@@ -20,6 +20,20 @@ export interface ResolvedArticle {
 }
 
 /**
+ * Extracts localized title from multilingual title object
+ * Falls back to English, then any available language
+ */
+export function getLocalizedTitle(titleObj: any, lang: string): string {
+  if (typeof titleObj === 'string') {
+    return titleObj;
+  }
+  if (typeof titleObj === 'object' && titleObj !== null) {
+    return titleObj[lang] || titleObj.en || Object.values(titleObj)[0] || '';
+  }
+  return String(titleObj);
+}
+
+/**
  * Resolves an article from either JSON or database sources
  * Tries JSON first (for backwards compatibility), then queries database
  */
