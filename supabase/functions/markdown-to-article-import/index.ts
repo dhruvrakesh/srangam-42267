@@ -34,6 +34,8 @@ interface ImportRequest {
   assignToChapter?: string;
   githubFilePath?: string;
   githubCommitHash?: string;
+  lang?: string; // Language code: 'en', 'hi', 'pa', 'ta', etc.
+  mergeIntoArticle?: string; // Existing article slug to merge translation into
 }
 
 interface ImportResponse {
@@ -235,7 +237,7 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { markdownContent, overwriteExisting = false, assignToChapter, githubFilePath, githubCommitHash }: ImportRequest = await req.json();
+    const { markdownContent, overwriteExisting = false, assignToChapter, githubFilePath, githubCommitHash, lang, mergeIntoArticle }: ImportRequest = await req.json();
 
     if (!markdownContent) {
       return new Response(
@@ -275,11 +277,15 @@ Deno.serve(async (req) => {
     console.log(`Extracted ${culturalTerms.length} cultural terms:`, culturalTerms);
 
     // Step 6: Prepare article data
+    // Determine target language (from parameter, frontmatter, or default to 'en')
+    const targetLang = lang || frontmatter.lang || 'en';
+    console.log('Target language:', targetLang);
+    
     const titleText = typeof frontmatter.title === 'string' 
       ? frontmatter.title 
       : frontmatter.title?.en || 'Untitled';
     
-    const slug = frontmatter.slug || generateSlug(titleText);
+    const slug = frontmatter.slug || (mergeIntoArticle ? mergeIntoArticle : generateSlug(titleText));
     
     // Extract theme
     const theme = frontmatter.theme || 'Ancient India';
@@ -315,15 +321,92 @@ Deno.serve(async (req) => {
       console.log(`📋 Using ${tags.length} tags from frontmatter:`, tags);
     }
 
+    // Check if merging into existing article
+    if (mergeIntoArticle) {
+      console.log('Merge mode: fetching existing article with slug:', mergeIntoArticle);
+      
+      const { data: existingArticle, error: fetchError } = await supabase
+        .from('srangam_articles')
+        .select('id, title, dek, content')
+        .eq('slug', mergeIntoArticle)
+        .single();
+
+      if (fetchError || !existingArticle) {
+        throw new Error(`Article with slug "${mergeIntoArticle}" not found for merging`);
+      }
+
+      console.log('Merging translation into existing article:', existingArticle.id);
+
+      // Merge translations into existing JSONB fields
+      const titleContent = typeof frontmatter.title === 'string' ? frontmatter.title : (frontmatter.title?.[targetLang] || frontmatter.title?.en || titleText);
+      const dekContent = frontmatter.dek ? (typeof frontmatter.dek === 'string' ? frontmatter.dek : (frontmatter.dek?.[targetLang] || frontmatter.dek?.en)) : null;
+
+      const mergedTitle = { ...existingArticle.title, [targetLang]: titleContent };
+      const mergedDek = dekContent ? { ...(existingArticle.dek || {}), [targetLang]: dekContent } : existingArticle.dek;
+      const mergedContent = { ...existingArticle.content, [targetLang]: htmlContent };
+
+      const { error: updateError } = await supabase
+        .from('srangam_articles')
+        .update({
+          title: mergedTitle,
+          dek: mergedDek,
+          content: mergedContent,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingArticle.id);
+
+      if (updateError) {
+        throw new Error(`Failed to merge translation: ${updateError.message}`);
+      }
+
+      // Save markdown source
+      const { error: markdownError } = await supabase
+        .from('srangam_markdown_sources')
+        .upsert({
+          article_id: existingArticle.id,
+          markdown_content: markdownContent,
+          file_path: githubFilePath || `${mergeIntoArticle}-${targetLang}.md`,
+          content_hash: btoa(markdownContent),
+          last_sync_at: new Date().toISOString(),
+          sync_status: 'synced'
+        }, {
+          onConflict: 'article_id'
+        });
+
+      if (markdownError) {
+        console.error('⚠️ Error saving markdown source:', markdownError);
+      }
+
+      return new Response(JSON.stringify({
+        success: true,
+        articleId: existingArticle.id,
+        slug: mergeIntoArticle,
+        language: targetLang,
+        merged: true,
+        message: `Translation merged successfully into article: ${mergeIntoArticle}`,
+        stats: {
+          wordCount,
+          termsExtracted: 0,
+          citationsCreated: 0,
+          readTimeMinutes,
+          markdownSourceSaved: !markdownError
+        }
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200
+      });
+    }
+
+    // Prepare article data for new article
     const articleData = {
       slug,
       title: typeof frontmatter.title === 'string' 
-        ? { en: frontmatter.title }
+        ? { [targetLang]: frontmatter.title }
         : frontmatter.title,
       dek: frontmatter.dek 
-        ? (typeof frontmatter.dek === 'string' ? { en: frontmatter.dek } : frontmatter.dek)
+        ? (typeof frontmatter.dek === 'string' ? { [targetLang]: frontmatter.dek } : frontmatter.dek)
         : null,
-      content: { en: htmlContent },
+      content: { [targetLang]: htmlContent },
       author: frontmatter.author || 'Nartiang Foundation Research Team',
       published_date: frontmatter.date || new Date().toISOString().split('T')[0],
       theme: theme,

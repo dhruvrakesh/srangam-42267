@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Upload, FileText, Loader2, CheckCircle, Circle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -97,7 +98,24 @@ export default function MarkdownImport() {
   const [isImporting, setIsImporting] = useState(false);
   const [importSteps, setImportSteps] = useState<ImportStep[]>([]);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [targetLanguage, setTargetLanguage] = useState('en');
+  const [isMergeMode, setIsMergeMode] = useState(false);
+  const [selectedArticleSlug, setSelectedArticleSlug] = useState('');
   const { toast } = useToast();
+
+  // Fetch existing articles for merge mode
+  const { data: existingArticles = [] } = useQuery({
+    queryKey: ['articles-for-merge'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('srangam_articles')
+        .select('slug, title')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    }
+  });
 
   // Extract frontmatter and metadata from markdown
   const extractMetadata = (markdown: string): ExtractedMetadata => {
@@ -239,6 +257,8 @@ slug: "${slug}"
           overwriteExisting,
           assignToChapter: selectedChapter !== 'none' ? selectedChapter : undefined,
           sequenceNumber: selectedChapter !== 'none' ? sequenceNumber : undefined,
+          lang: targetLanguage,
+          mergeIntoArticle: isMergeMode ? selectedArticleSlug : undefined
         }
       });
 
@@ -500,6 +520,70 @@ slug: "${slug}"
                 </CardContent>
               </Card>
             )}
+
+            {/* Language Selection Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Translation Settings</CardTitle>
+                <CardDescription>
+                  Select language and merge options for multilingual articles
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Target Language</Label>
+                  <Select value={targetLanguage} onValueChange={setTargetLanguage}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="hi">हिन्दी (Hindi)</SelectItem>
+                      <SelectItem value="pa">ਪੰਜਾਬੀ (Punjabi)</SelectItem>
+                      <SelectItem value="ta">தமிழ் (Tamil)</SelectItem>
+                      <SelectItem value="te">తెలుగు (Telugu)</SelectItem>
+                      <SelectItem value="kn">ಕನ್ನಡ (Kannada)</SelectItem>
+                      <SelectItem value="bn">বাংলা (Bengali)</SelectItem>
+                      <SelectItem value="as">অসমীয়া (Assamese)</SelectItem>
+                      <SelectItem value="pn">Pnar</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="mergeMode"
+                      checked={isMergeMode}
+                      onCheckedChange={(checked) => setIsMergeMode(checked as boolean)}
+                    />
+                    <Label htmlFor="mergeMode">Merge translation into existing article</Label>
+                  </div>
+                  {isMergeMode && (
+                    <div className="space-y-2 pl-6">
+                      <Label>Select Article to Merge Into</Label>
+                      <Select value={selectedArticleSlug} onValueChange={setSelectedArticleSlug}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="-- Select an article --" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {existingArticles.map((article) => (
+                            <SelectItem key={article.slug} value={article.slug}>
+                              {typeof article.title === 'object' && article.title !== null
+                                ? (article.title as any).en || JSON.stringify(article.title)
+                                : article.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        Translation will be added to the selected article's {targetLanguage} field
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Chapter Assignment */}
             <Card>
