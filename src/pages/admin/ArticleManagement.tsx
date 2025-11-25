@@ -15,6 +15,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -43,6 +53,8 @@ export default function ArticleManagement() {
   const { isAdmin } = useAuth();
   const { toast } = useToast();
   const [retagging, setRetagging] = useState(false);
+  const [deleteArticle, setDeleteArticle] = useState<Article | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: articles = [], isLoading } = useQuery({
@@ -108,6 +120,65 @@ export default function ArticleManagement() {
       title: "Retagging complete",
       description: `Successfully retagged ${data.summary.successful} articles.`,
     });
+  };
+
+  const handleDeleteArticle = async (article: Article) => {
+    setIsDeleting(true);
+    
+    try {
+      const articleId = article.id;
+      
+      // Delete related records in correct order (foreign key dependencies)
+      // 1. Cross references (as source and target)
+      await supabase.from('srangam_cross_references').delete().eq('source_article_id', articleId);
+      await supabase.from('srangam_cross_references').delete().eq('target_article_id', articleId);
+      
+      // 2. Markdown sources
+      await supabase.from('srangam_markdown_sources').delete().eq('article_id', articleId);
+      
+      // 3. Article metadata
+      await supabase.from('srangam_article_metadata').delete().eq('article_id', articleId);
+      
+      // 4. Article versions
+      await supabase.from('srangam_article_versions').delete().eq('article_id', articleId);
+      
+      // 5. Article chapters
+      await supabase.from('srangam_article_chapters').delete().eq('article_id', articleId);
+      
+      // 6. Article bibliography
+      await supabase.from('srangam_article_bibliography').delete().eq('article_id', articleId);
+      
+      // 7. Article analytics
+      await supabase.from('srangam_article_analytics').delete().eq('article_id', articleId);
+      
+      // 8. Translation queue
+      await supabase.from('srangam_translation_queue').delete().eq('article_id', articleId);
+      
+      // 9. Purana references
+      await supabase.from('srangam_purana_references').delete().eq('article_id', articleId);
+      
+      // 10. Finally, delete the article itself
+      const { error } = await supabase.from('srangam_articles').delete().eq('id', articleId);
+      
+      if (error) throw error;
+      
+      queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
+      
+      toast({
+        title: "Article deleted",
+        description: `Successfully deleted "${article.title?.en}" and all related data.`,
+      });
+    } catch (error: any) {
+      console.error('Delete error:', error);
+      toast({
+        title: "Delete failed",
+        description: error.message || "Failed to delete article",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setDeleteArticle(null);
+    }
   };
 
   const columns: ColumnDef<Article>[] = [
@@ -260,7 +331,10 @@ export default function ArticleManagement() {
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>Edit Metadata</DropdownMenuItem>
-                  <DropdownMenuItem className="text-destructive">
+                  <DropdownMenuItem 
+                    className="text-destructive"
+                    onClick={() => setDeleteArticle(article)}
+                  >
                     Delete Article
                   </DropdownMenuItem>
                 </>
@@ -344,6 +418,44 @@ export default function ArticleManagement() {
           />
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteArticle} onOpenChange={() => setDeleteArticle(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Article?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete <strong>"{deleteArticle?.title?.en}"</strong> and all related data including:
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>Cross-references (source & target)</li>
+                <li>Markdown sources</li>
+                <li>Metadata & analytics</li>
+                <li>Article versions</li>
+                <li>Bibliography & Purana references</li>
+              </ul>
+              <br />
+              <strong className="text-destructive">This action cannot be undone.</strong>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => deleteArticle && handleDeleteArticle(deleteArticle)}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete Permanently'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -91,7 +91,7 @@ export default function Articles() {
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Dynamic SEO Head */}
       <Helmet>
-        <title>Research Archive | Srangam - {filteredArticles.length} Articles</title>
+        <title>Research Archive | Srangam - {filteredArticles?.length ?? 0} Articles</title>
         <meta 
           name="description" 
           content={seoData?.metaDescription || `Browse ${filteredArticles.length} scholarly articles on Ancient India, Maritime Trade, Sanskrit Literature, Sacred Ecology, and Cultural Continuity. Peer-reviewed research with cross-references.`} 
