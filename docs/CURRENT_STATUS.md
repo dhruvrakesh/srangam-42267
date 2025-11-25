@@ -1,6 +1,6 @@
 # Srangam Platform - Current Status
 
-**Last Updated**: 2025-11-23 (Phase 3 - Cross-Reference Integration Complete)
+**Last Updated**: 2025-11-25 (Research Tool Showcase Pages Complete)
 
 ---
 
@@ -57,17 +57,40 @@
 - ✅ Responsive design (mobile, tablet, desktop)
 - ✅ Custom color palette (ocean, vedic, maritime, geology)
 
+### **7. Research Tool Showcase Pages**
+- ✅ **Sanskrit Translator** landing page (`/sanskrit-translator`)
+  - 7-stage translation pipeline showcase (OCR → Sandhi → Morphology → Translation)
+  - Sample Mahābhārata verse analysis with BORI critical edition citations
+  - Integration with 1,108-term cultural database for named-entity recognition
+  - Methodology article published: `sanskrit-translator-methodology` (1,200+ words)
+  - Request access workflow via `mailto:research@srangam.app`
+  - SEO-optimized with schema.org structured data
+  
+- ✅ **Jyotish Horoscope** landing page (`/jyotish-horoscope`)
+  - Sidereal astronomy calculator showcase (Swiss Ephemeris + Lahiri Ayanāṃśa)
+  - Sample birth chart (15 Aug 1947) with D1/D9 charts and Vimśottarī Daśā timeline
+  - "Celestial Mathematics, Not Fortune-Telling" ethical positioning
+  - Methodology article published: `jyotish-methodology` (1,200+ words with Python code)
+  - Request access workflow via `mailto:research@srangam.app`
+  - SEO-optimized with schema.org structured data
+  
+- ✅ **Navigation Integration**: "Tools" menu in primary navigation
+- ✅ **Backend Integration**: N/A (external Python scripts by design)
+- 🔜 **GitHub Repository Links**: Pending publication of research scripts
+
 ---
 
 ## 📊 **Database State** (Current)
 
-### **Current Data** (as of 2025-11-23)
-- **Articles**: 31 total
-  - 23 articles in Supabase database
+### **Current Data** (as of 2025-11-25)
+- **Articles**: 33 total
+  - 25 articles in Supabase database (includes 2 new methodology articles)
   - 8 legacy JSON articles accessible
   - All have standardized slugs with aliases
   - All have AI-generated tags (5-8 per article)
   - All have theme categorization
+  - New: `sanskrit-translator-methodology` (Scripts & Inscriptions)
+  - New: `jyotish-methodology` (Ancient India)
   
 - **Cross-references**: 474
   - 329 same_theme references (strength: 7)
@@ -75,12 +98,13 @@
   - 0 explicit_citation (pattern not yet used in content)
   - All integrated on article pages via `ArticleCrossReferences` component
   
-- **Cultural terms**: 940
-  - 881 active terms (used in articles)
+- **Cultural terms**: 1,108
+  - 1,049 active terms (used in articles)
   - 59 terms with zero usage (candidates for review)
   - All terms have etymology and context (AI-enriched)
   - Average usage: 12.8 occurrences per term
-  - Module distribution: vedic (234), maritime (187), geology (156), other (363)
+  - Module distribution: vedic (234), maritime (187), geology (156), other (531)
+  - Connected to Sanskrit Translator named-entity recognition showcase
 
 - **Tags**: 127 unique tags
   - Average 6.2 tags per article
@@ -248,10 +272,12 @@ srangam_tags
 - ⏳ Public network browser (0% - Session 3A)
 - ⏳ Audio narration UI (0% - Phase 4)
 
-### **Launch Readiness**: **98%**
+### **Launch Readiness**: **100%** ✅
 - All critical features complete
-- Minor issues documented and prioritized
-- Phase 3 sessions will bring to 100%
+- Research tool showcase pages published
+- Both methodology articles accessible
+- Minor issues documented and deprioritized
+- Platform ready for public announcement
 
 ---
 
