@@ -7,7 +7,7 @@ import { ArrowLeft, Clock, MapPin, BookOpen, ExternalLink } from 'lucide-react';
 import { SourcesAndPins } from './SourcesAndPins';
 import { useLanguage } from '@/components/language/LanguageProvider';
 import { getOceanicCards } from '@/lib/oceanicCardsLoader';
-import { resolveOceanicArticle, type ResolvedArticle } from '@/lib/articleResolver';
+import { resolveOceanicArticle, getLocalizedTitle, type ResolvedArticle } from '@/lib/articleResolver';
 import { ProfessionalTextFormatter } from '@/components/articles/enhanced/ProfessionalTextFormatter';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
@@ -100,7 +100,9 @@ export const OceanicArticlePage: React.FC = () => {
             </div>
 
             <h1 className="text-4xl font-bold leading-tight">
-              {currentLanguage === 'hi' && article.title_hi ? article.title_hi : article.title}
+              {typeof article.content === 'object' && (article.content as any)[currentLanguage]
+                ? getLocalizedTitle((article.content as any)[currentLanguage], currentLanguage)
+                : article.title}
             </h1>
 
             <div className="flex items-center gap-4 text-muted-foreground">
@@ -254,7 +256,7 @@ export const OceanicArticlePage: React.FC = () => {
           <UniversalNarrator
             content={
               typeof article.content === 'object'
-                ? (article.content.en || '')
+                ? ((article.content as any)[currentLanguage] || (article.content as any).en || '')
                 : (article.content || article.abstract)
             }
             contentType="article"
