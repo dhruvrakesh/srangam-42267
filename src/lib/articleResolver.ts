@@ -6,6 +6,8 @@ export interface ResolvedArticle {
   slug: string;
   title: string;
   title_hi?: string;
+  title_pa?: string;
+  title_ta?: string;
   abstract: string;
   content?: any; // Full multilingual content (MultilingualContent or string)
   read_time_min: number;
@@ -31,6 +33,17 @@ export function getLocalizedTitle(titleObj: any, lang: string): string {
     return titleObj[lang] || titleObj.en || Object.values(titleObj)[0] || '';
   }
   return String(titleObj);
+}
+
+/**
+ * Gets the appropriate title for the current language
+ * Falls back: currentLang -> English -> first available
+ */
+export function getArticleTitle(article: ResolvedArticle, lang: string): string {
+  if (lang === 'hi' && article.title_hi) return article.title_hi;
+  if (lang === 'pa' && article.title_pa) return article.title_pa;
+  if (lang === 'ta' && article.title_ta) return article.title_ta;
+  return article.title; // English fallback
 }
 
 /**
@@ -77,6 +90,8 @@ export async function resolveOceanicArticle(slug: string): Promise<ResolvedArtic
     // Transform database article to match oceanic format
     const title = typeof data.title === 'object' ? (data.title as any).en : String(data.title);
     const title_hi = typeof data.title === 'object' ? (data.title as any).hi : undefined;
+    const title_pa = typeof data.title === 'object' ? (data.title as any).pa : undefined;
+    const title_ta = typeof data.title === 'object' ? (data.title as any).ta : undefined;
     const abstract = typeof data.content === 'object' ? (data.content as any).en : String(data.content);
 
     return {
@@ -84,6 +99,8 @@ export async function resolveOceanicArticle(slug: string): Promise<ResolvedArtic
       slug: data.slug,
       title,
       title_hi,
+      title_pa,
+      title_ta,
       abstract: abstract.substring(0, 500) + '...', // Extract first 500 chars as abstract
       content: data.content, // Full multilingual content for proper rendering
       read_time_min: data.read_time_minutes || 10,
