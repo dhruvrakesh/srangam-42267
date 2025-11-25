@@ -41,7 +41,8 @@ export default function DataVisualization() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('srangam_cultural_terms')
-        .select('module, usage_count');
+        .select('module, usage_count')
+        .limit(5000);
       
       if (error) throw error;
 
