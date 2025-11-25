@@ -45,8 +45,8 @@ graph TB
     
     subgraph "Edge Functions - Deno Runtime"
         S[markdown-to-article-import] --> T[generate-article-tags]
-        T --> U[Lovable AI Gateway]
-        U --> V[Gemini 2.5 Flash<br/>Temperature 0.3]
+        T --> U[OpenAI API]
+        U --> V[GPT-4o-mini<br/>Temperature 0.3]
         
         S --> W[analyze-tag-relationships]
         S --> X[Extract Cultural Terms<br/>Regex Pattern Matching]
@@ -156,10 +156,10 @@ graph TB
     F --> G[System Prompt<br/>Taxonomy Rules]
     F --> H[User Prompt<br/>Article Data]
     
-    G --> I[Lovable AI Gateway]
+    G --> I[OpenAI API]
     H --> I
     
-    I --> J[Gemini 2.5 Flash<br/>Temperature: 0.3]
+    I --> J[GPT-4o-mini<br/>Temperature: 0.3]
     
     J --> K{Parse Response}
     K -->|Success| L[Extract Tags Array]

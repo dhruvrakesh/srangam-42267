@@ -1,7 +1,7 @@
 # AI-Powered Tag Generation System
 
 **Deployed**: 2025-11-09  
-**Model**: Lovable AI (Google Gemini 2.5 Flash)  
+**Model**: OpenAI GPT-4o-mini  
 **Edge Function**: `supabase/functions/generate-article-tags/index.ts`
 
 ---
@@ -88,15 +88,15 @@ Return ONLY a JSON object:
 #### **AI Model Configuration**
 ```typescript
 {
-  model: 'google/gemini-2.5-flash',
+  model: 'gpt-4o-mini',
   temperature: 0.3,  // Lower = more consistent, focused tagging
 }
 ```
 
-**Why Gemini 2.5 Flash?**
+**Why GPT-4o-mini?**
 - Fast processing (~1-2 seconds per article)
 - Excellent at structured output (JSON)
-- Strong multilingual support (Sanskrit, Pali, Tamil terms)
+- Strong multilingual understanding
 - Cost-effective for high-volume tagging
 
 ---
@@ -252,8 +252,8 @@ WHERE tag = 'Buddhism';
 - **User Edits**: % of AI tags manually changed (target: <20%)
 
 ### **Performance Metrics**
-- **Generation Time**: <3 seconds per article (Gemini 2.5 Flash)
-- **Cost**: ~$0.0001 per tag generation (Lovable AI free tier)
+- **Generation Time**: <3 seconds per article (OpenAI GPT-4o-mini)
+- **Cost**: ~$0.0001 per tag generation
 - **Success Rate**: >95% (valid JSON returned)
 
 ---
