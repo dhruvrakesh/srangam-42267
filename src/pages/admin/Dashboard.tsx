@@ -92,13 +92,26 @@ export default function Dashboard() {
         ? (xrefs.reduce((sum, x) => sum + (x.strength || 0), 0) / xrefs.length).toFixed(1)
         : 0;
 
-      // Get cultural terms stats
-      const { data: terms, error: termsError } = await supabase
-        .from("srangam_cultural_terms")
-        .select("usage_count")
-        .limit(5000);
+      // Get cultural terms stats with pagination
+      const allTerms = [];
+      let from = 0;
+      const batchSize = 1000;
 
-      if (termsError) throw termsError;
+      while (true) {
+        const { data: termsBatch, error: termsError } = await supabase
+          .from("srangam_cultural_terms")
+          .select("usage_count")
+          .range(from, from + batchSize - 1);
+
+        if (termsError) throw termsError;
+        if (!termsBatch || termsBatch.length === 0) break;
+        
+        allTerms.push(...termsBatch);
+        if (termsBatch.length < batchSize) break;
+        from += batchSize;
+      }
+
+      const terms = allTerms;
 
       const totalCulturalTerms = terms?.length || 0;
       const totalTermUsages = terms?.reduce((sum, t) => sum + (t.usage_count || 0), 0) || 0;

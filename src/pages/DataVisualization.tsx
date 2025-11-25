@@ -35,16 +35,29 @@ export default function DataVisualization() {
     }
   });
 
-  // Fetch cultural terms statistics
+  // Fetch cultural terms statistics with pagination
   const { data: termStats } = useQuery({
     queryKey: ['term-stats'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('srangam_cultural_terms')
-        .select('module, usage_count')
-        .limit(5000);
+      const allData = [];
+      let from = 0;
+      const batchSize = 1000;
+
+      while (true) {
+        const { data, error } = await supabase
+          .from('srangam_cultural_terms')
+          .select('module, usage_count')
+          .range(from, from + batchSize - 1);
+        
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        
+        allData.push(...data);
+        if (data.length < batchSize) break;
+        from += batchSize;
+      }
       
-      if (error) throw error;
+      const data = allData;
 
       const moduleCount = data.reduce((acc, term) => {
         acc[term.module] = (acc[term.module] || 0) + 1;
