@@ -8,29 +8,42 @@ import { MultilingualContent } from '@/types/multilingual';
 import { SupportedLanguage } from '@/lib/i18n';
 import { normalizeLanguageCode, getScriptFont } from '@/lib/languageUtils';
 import { cn } from '@/lib/utils';
+import { enhanceTextWithCulturalTerms } from '@/lib/culturalTermEnhancer';
 
 interface ProfessionalTextFormatterProps {
   content: MultilingualContent;
   className?: string;
   enableCulturalTerms?: boolean;
   enableDropCap?: boolean;
+  autoHighlightTerms?: boolean; // Auto-detect and highlight cultural terms
 }
 
 export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps> = ({
   content,
   className,
   enableCulturalTerms = true,
-  enableDropCap = false
+  enableDropCap = false,
+  autoHighlightTerms = true
 }) => {
   const { i18n } = useTranslation();
   const currentLanguage = normalizeLanguageCode(i18n.language || 'en') as SupportedLanguage;
   const scriptFont = getScriptFont(currentLanguage);
 
   const getText = (): string => {
-    const text = content[currentLanguage] || content.en || Object.values(content)[0] || '';
+    let text = content[currentLanguage] || content.en || Object.values(content)[0] || '';
     if (typeof text === 'string') {
       // CRITICAL FIX: Trim leading/trailing whitespace and normalize line breaks
-      return text.trim().replace(/^\s+/gm, '');
+      text = text.trim().replace(/^\s+/gm, '');
+      
+      // AUTO-ENHANCE: Inject cultural term markers if enabled
+      if (enableCulturalTerms && autoHighlightTerms) {
+        text = enhanceTextWithCulturalTerms(text, {
+          maxLength: 15000, // Process up to 15k chars for better coverage
+          preserveExisting: true // Don't re-mark existing markers
+        });
+      }
+      
+      return text;
     }
     console.warn('ProfessionalTextFormatter received non-string content:', text);
     return '';
