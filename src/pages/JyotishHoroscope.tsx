@@ -2,7 +2,7 @@ import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { IconOm, IconLotus } from "@/components/icons";
-import { BookOpen, Calendar, TrendingUp, Info, ArrowRight, MailIcon } from "lucide-react";
+import { BookOpen, Calendar, TrendingUp, Info, ArrowRight, MailIcon, Github, Code2, Terminal, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function JyotishHoroscope() {
@@ -11,8 +11,10 @@ export default function JyotishHoroscope() {
     "@type": "WebApplication",
     "name": "Srangam Jyotiṣa Horoscope Calculator",
     "applicationCategory": "EducationalApplication",
+    "applicationSubCategory": "Research Tool",
     "description": "Sidereal astronomy-based birth chart calculator using Swiss Ephemeris. Generates D1/D9 charts, planetary positions, and Vimśottarī Daśā timelines with mathematical precision.",
     "operatingSystem": "Python 3.x",
+    "codeRepository": "https://github.com/srangam-research/jyotish-calculator",
     "offers": {
       "@type": "Offer",
       "price": "0",
@@ -20,7 +22,7 @@ export default function JyotishHoroscope() {
     },
     "featureList": [
       "Swiss Ephemeris integration (sidereal)",
-      "Lahiri Ayanāṃśa calculation",
+      "Multiple Ayanāṃśa systems (Lahiri, Krishnamurti, Raman)",
       "D1 (Rāśi) and D9 (Navāṃśa) chart generation",
       "Vimśottarī Daśā timeline",
       "Astronomical accuracy (no predictive claims)"
@@ -33,11 +35,11 @@ export default function JyotishHoroscope() {
         <title>Jyotiṣa Horoscope Calculator | Sidereal Astronomy Tool | Srangam</title>
         <meta 
           name="description" 
-          content="Generate precise sidereal birth charts using Swiss Ephemeris. Calculate D1/D9 charts, planetary positions with Lahiri Ayanāṃśa, and Vimśottarī Daśā timelines. Astronomy-focused, no predictions." 
+          content="Generate precise sidereal birth charts using Swiss Ephemeris. Calculate D1/D9 charts, planetary positions with multiple Ayanāṃśa systems, and Vimśottarī Daśā timelines. Astronomy-focused, no predictions." 
         />
         <meta 
           name="keywords" 
-          content="Jyotish, Vedic astrology, sidereal astronomy, Swiss Ephemeris, Lahiri Ayanamsa, birth chart, D1 chart, D9 Navamsa, Vimshottari Dasha, astronomical calculations" 
+          content="Jyotish, Vedic astrology, sidereal astronomy, Swiss Ephemeris, Lahiri Ayanamsa, birth chart, D1 chart, D9 Navamsa, Vimshottari Dasha, astronomical calculations, open source" 
         />
         <link rel="canonical" href="https://srangam.lovable.app/jyotish-horoscope" />
         
@@ -73,17 +75,16 @@ export default function JyotishHoroscope() {
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 tracking-tight">
-                Celestial Mathematics,{" "}
+                Your Vedic Horoscope,{" "}
                 <span className="bg-gradient-to-r from-peacock-blue via-indigo-dharma to-saffron bg-clip-text text-transparent">
-                  Not Fortune-Telling
+                  Calculated Precisely
                 </span>
               </h1>
 
               <p className="text-lg sm:text-xl text-muted-foreground mb-8 leading-relaxed max-w-3xl mx-auto">
-                Srangam's Jyotiṣa Horoscope Calculator generates sidereal birth charts using the Swiss Ephemeris 
-                and Lahiri Ayanāṃśa. This is a <strong>mathematical astronomy tool</strong> for exploring planetary 
-                positions, divisional charts (D1/D9), and Vimśottarī Daśā timelines—not a predictive service. 
-                We present the calculations; interpretation remains with scholars and practitioners.
+                Discover your sidereal horoscope with Srangam's Jyotiṣa Panchang app. Enter your birth details to view accurate 
+                planetary positions, rāśis, houses and Daśā timelines. Our Swiss‑Ephemeris engine honours classical ayanāṃśa 
+                choices while presenting the data in a modern, interactive format.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -102,13 +103,17 @@ export default function JyotishHoroscope() {
                 <Button 
                   size="lg" 
                   variant="outline"
-                  className="border-2 border-peacock-blue text-peacock-blue hover:bg-peacock-blue hover:text-white"
+                  className="border-2 border-saffron text-saffron hover:bg-saffron hover:text-white"
                   asChild
                 >
-                  <Link to="/articles/jyotish-methodology">
-                    <BookOpen className="w-5 h-5 mr-2" />
-                    Read Methodology
-                  </Link>
+                  <a
+                    href="https://github.com/srangam-research/jyotish-calculator"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Github className="w-5 h-5 mr-2" />
+                    View on GitHub
+                  </a>
                 </Button>
               </div>
 
@@ -116,11 +121,11 @@ export default function JyotishHoroscope() {
               <div className="mt-12 flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-5 h-5 text-peacock-blue" />
-                  <span>Swiss Ephemeris</span>
+                  <span>Swiss Ephemeris (0.001″)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 text-saffron" />
-                  <span>Lahiri Ayanāṃśa</span>
+                  <span>Multiple Ayanāṃśas</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Info className="w-5 h-5 text-indigo-dharma" />

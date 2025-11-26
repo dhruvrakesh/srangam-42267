@@ -2,7 +2,7 @@ import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { IconOm, IconScript, IconLotus } from "@/components/icons";
-import { BookOpen, FileText, MapPin, Languages, ArrowRight, Upload } from "lucide-react";
+import { BookOpen, FileText, MapPin, Languages, ArrowRight, Upload, Github, Code2, Terminal, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function SanskritTranslator() {
@@ -11,8 +11,10 @@ export default function SanskritTranslator() {
     "@type": "WebApplication",
     "name": "Srangam Sanskrit Translation & Analysis",
     "applicationCategory": "EducationalApplication",
+    "applicationSubCategory": "Research Tool",
     "description": "Deep linguistic processing tool for Sanskrit texts with sandhi splitting, morphological parsing, named-entity recognition and evidence-based translation.",
     "operatingSystem": "Web browser",
+    "codeRepository": "https://github.com/srangam-research/sanskrit-automaton",
     "offers": {
       "@type": "Offer",
       "price": "0",
@@ -38,7 +40,7 @@ export default function SanskritTranslator() {
         />
         <meta 
           name="keywords" 
-          content="Sanskrit translation, Pāṇinian grammar, sandhi splitting, morphological parsing, Sanskrit OCR, named entity recognition, Devanagari, IAST, critical editions, linguistic analysis" 
+          content="Sanskrit translation, Pāṇinian grammar, sandhi splitting, morphological parsing, Sanskrit OCR, named entity recognition, Devanagari, IAST, critical editions, linguistic analysis, open source" 
         />
         <link rel="canonical" href="https://srangam.lovable.app/sanskrit-translator" />
         
@@ -103,13 +105,17 @@ export default function SanskritTranslator() {
                 <Button 
                   size="lg" 
                   variant="outline"
-                  className="border-2 border-indigo-dharma text-indigo-dharma hover:bg-indigo-dharma hover:text-white"
+                  className="border-2 border-peacock-blue text-peacock-blue hover:bg-peacock-blue hover:text-white"
                   asChild
                 >
-                  <Link to="/articles/sanskrit-translator-methodology">
-                    <BookOpen className="w-5 h-5 mr-2" />
-                    Read Methodology
-                  </Link>
+                  <a
+                    href="https://github.com/srangam-research/sanskrit-automaton"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Github className="w-5 h-5 mr-2" />
+                    View on GitHub
+                  </a>
                 </Button>
               </div>
 
@@ -236,6 +242,227 @@ export default function SanskritTranslator() {
           </div>
         </section>
 
+        {/* How It Works - Pipeline Visualization */}
+        <section className="py-16 bg-sandalwood/10">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="font-serif text-3xl font-bold text-center text-foreground mb-4">
+              How the Pipeline Works
+            </h2>
+            <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+              A five-stage computational pipeline transforms raw Sanskrit into structured, analyzable knowledge
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+              {[
+                { step: '1', title: 'Normalize', desc: 'Clean diacritics & transliterate', icon: '🔤' },
+                { step: '2', title: 'Sandhi Split', desc: 'Break compound words', icon: '✂️' },
+                { step: '3', title: 'Morph Parse', desc: 'Identify roots & cases', icon: '🔬' },
+                { step: '4', title: 'NER Tag', desc: 'Extract tribes & places', icon: '🏛️' },
+                { step: '5', title: 'Translate', desc: 'Evidence-based rendering', icon: '📖' }
+              ].map((stage) => (
+                <div key={stage.step} className="bg-card p-6 rounded-lg border border-border text-center hover:shadow-lg transition-shadow">
+                  <div className="text-4xl mb-2">{stage.icon}</div>
+                  <div className="text-xs font-bold text-saffron mb-1">STEP {stage.step}</div>
+                  <div className="font-semibold text-foreground mb-2">{stage.title}</div>
+                  <div className="text-xs text-muted-foreground">{stage.desc}</div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">
+                Built with <span className="text-peacock-blue font-medium">sanskrit_parser</span> • <span className="text-peacock-blue font-medium">Sanskrit Heritage API</span> • <span className="text-peacock-blue font-medium">IndicTrans2</span>
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Upstream Sources */}
+        <section className="py-16 bg-background">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="font-serif text-3xl font-bold text-center text-foreground mb-4">
+              Standing on the Shoulders of Giants
+            </h2>
+            <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+              Our tool builds upon decades of scholarly work in Sanskrit linguistics, lexicography, and digital humanities
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[
+                {
+                  title: 'Sanskrit Heritage',
+                  author: 'Gérard Huet',
+                  desc: 'Morphological analyzer and reader providing computational Pāṇinian parsing',
+                  link: 'https://sanskrit.inria.fr/'
+                },
+                {
+                  title: 'sanskrit_parser',
+                  author: 'Python Library',
+                  desc: 'Open-source sandhi splitting and sentence analysis with karaka identification',
+                  link: 'https://github.com/kmadathil/sanskrit_parser'
+                },
+                {
+                  title: 'Cologne Sanskrit Lexicon',
+                  author: 'Monier-Williams',
+                  desc: 'Comprehensive digital Sanskrit-English dictionary for semantic lookup',
+                  link: 'https://www.sanskrit-lexicon.uni-koeln.de/'
+                },
+                {
+                  title: 'BORI Critical Edition',
+                  author: 'Mahābhārata',
+                  desc: 'Authoritative text for verse citations and cross-referencing translations',
+                  link: 'https://bombay.indology.info/'
+                },
+                {
+                  title: 'Bibek Debroy Translation',
+                  author: 'Mahābhārata & Purāṇas',
+                  desc: 'Modern English renderings for validation and comparative analysis',
+                  link: null
+                },
+                {
+                  title: 'IndicTrans2',
+                  author: 'AI4Bharat',
+                  desc: 'Neural MT model family with san_Deva support for explainable translation',
+                  link: 'https://github.com/AI4Bharat/IndicTrans2'
+                }
+              ].map((source, idx) => (
+                <div key={idx} className="bg-card p-6 rounded-lg border border-border hover:shadow-lg transition-shadow">
+                  <h3 className="font-semibold text-foreground mb-2">{source.title}</h3>
+                  <p className="text-sm text-saffron mb-2">{source.author}</p>
+                  <p className="text-sm text-muted-foreground mb-3">{source.desc}</p>
+                  {source.link && (
+                    <a 
+                      href={source.link} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-xs text-peacock-blue hover:underline inline-flex items-center gap-1"
+                    >
+                      Visit Resource <ArrowUpRight size={12} />
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Pāṇinian Grounding */}
+        <section className="py-16 bg-turmeric/5">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8">
+              <IconOm size={48} className="text-turmeric mx-auto mb-4 animate-pulse-gentle" />
+              <h2 className="font-serif text-3xl font-bold text-foreground mb-4">
+                Pāṇinian Grounding
+              </h2>
+            </div>
+            
+            <div className="prose prose-lg max-w-none text-muted-foreground">
+              <p className="mb-4">
+                Unlike black-box translation systems, our pipeline respects the <strong className="text-foreground">grammatical well-formedness</strong> principles 
+                established by Pāṇini's Aṣṭādhyāyī. Every sandhi split and morphological parse is explainable, traceable back to 
+                linguistic rules rather than statistical patterns alone.
+              </p>
+              
+              <div className="grid md:grid-cols-2 gap-6 my-8">
+                <div className="bg-card p-6 rounded-lg border-l-4 border-saffron">
+                  <h3 className="font-semibold text-foreground mb-2">Evidence-Based Translation</h3>
+                  <p className="text-sm">
+                    Translations cite parallel verses from BORI critical editions, traditional commentaries, and modern scholarship. 
+                    When multiple interpretations exist, the tool explains its reasoning.
+                  </p>
+                </div>
+                
+                <div className="bg-card p-6 rounded-lg border-l-4 border-peacock-blue">
+                  <h3 className="font-semibold text-foreground mb-2">TEI/XML Compatibility</h3>
+                  <p className="text-sm">
+                    Export structured data compatible with Text Encoding Initiative standards, enabling integration 
+                    with digital humanities workflows and scholarly archives.
+                  </p>
+                </div>
+              </div>
+              
+              <p className="text-center text-sm italic">
+                "A tool that shows its work is a tool scholars can trust"
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* For Developers */}
+        <section className="py-16 bg-background">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <Github size={48} className="text-foreground mx-auto mb-4" />
+              <h2 className="font-serif text-3xl font-bold text-foreground mb-4">
+                For Developers & Researchers
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                The Sanskrit Automaton is fully open-source. Explore the codebase, run your own instance, 
+                or contribute improvements to linguistic models.
+              </p>
+            </div>
+            
+            <div className="bg-card rounded-lg border border-border p-8">
+              <div className="grid md:grid-cols-2 gap-8 mb-8">
+                <div>
+                  <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <Code2 size={20} className="text-saffron" />
+                    Project Structure
+                  </h3>
+                  <div className="font-mono text-xs text-muted-foreground space-y-1 bg-muted p-4 rounded">
+                    <div>sanskrit-automaton/</div>
+                    <div className="pl-4">├── scripts/</div>
+                    <div className="pl-8">├── normalize_text.py</div>
+                    <div className="pl-8">├── sandhi_split.py</div>
+                    <div className="pl-8">├── morph_parse.py</div>
+                    <div className="pl-8">├── ner_tag.py</div>
+                    <div className="pl-8">└── infer_mt.py</div>
+                    <div className="pl-4">├── data/</div>
+                    <div className="pl-4">├── configs/</div>
+                    <div className="pl-4">└── webui/</div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <Terminal size={20} className="text-peacock-blue" />
+                    API Endpoints
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="bg-muted p-3 rounded">
+                      <div className="font-mono text-xs text-peacock-blue mb-1">POST /analyze</div>
+                      <div className="text-xs text-muted-foreground">Full pipeline analysis</div>
+                    </div>
+                    <div className="bg-muted p-3 rounded">
+                      <div className="font-mono text-xs text-peacock-blue mb-1">GET /entities</div>
+                      <div className="text-xs text-muted-foreground">Named entity extraction</div>
+                    </div>
+                    <div className="bg-muted p-3 rounded">
+                      <div className="font-mono text-xs text-peacock-blue mb-1">POST /translate?explain=true</div>
+                      <div className="text-xs text-muted-foreground">Translation with evidence</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="text-center pt-6 border-t border-border">
+                <a
+                  href="https://github.com/srangam-research/sanskrit-automaton"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-saffron hover:bg-saffron-light text-charcoal-om font-medium rounded-lg transition-colors"
+                >
+                  <Github size={20} />
+                  View on GitHub
+                </a>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Python 3.10+ • Label Studio templates included • Human-in-the-loop corrections supported
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Demo/Preview Section */}
         <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-lotus-pink/10 via-background to-indigo-dharma/5">
           <div className="max-w-5xl mx-auto">
@@ -352,54 +579,30 @@ export default function SanskritTranslator() {
                 asChild
               >
                 <a href="mailto:research@srangam.app?subject=Sanskrit%20Translator%20Research%20Collaboration">
-                  <Upload className="w-5 h-5 mr-2" />
-                  Request Research Access
+                  <IconScript size={20} className="mr-2" />
+                  Start Translating
                 </a>
               </Button>
               
               <Button 
                 size="lg"
                 variant="outline"
-                className="border-2 border-white text-white hover:bg-white/10"
+                className="border-2 border-white text-white hover:bg-white hover:text-indigo-dharma"
                 asChild
               >
-                <Link to="/about">
-                  Learn About Srangam
-                </Link>
+                <a
+                  href="https://github.com/srangam-research/sanskrit-automaton"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Github size={20} className="mr-2" />
+                  View on GitHub
+                </a>
               </Button>
             </div>
 
-            {/* Features list */}
-            <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm">
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  ✓
-                </div>
-                <div className="text-left">
-                  <p className="font-semibold">Private & Secure</p>
-                  <p className="opacity-80">Encrypted database storage</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  ✓
-                </div>
-                <div className="text-left">
-                  <p className="font-semibold">Open Source</p>
-                  <p className="opacity-80">Contribute improvements</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  ✓
-                </div>
-                <div className="text-left">
-                  <p className="font-semibold">Export Anywhere</p>
-                  <p className="opacity-80">JSON, HTML, PDF formats</p>
-                </div>
-              </div>
+            <div className="mt-8 text-sm opacity-75">
+              <p>Privacy-respecting • Export JSON/HTML • Open source • Human-in-the-loop corrections</p>
             </div>
           </div>
         </section>

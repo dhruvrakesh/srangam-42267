@@ -12,6 +12,7 @@ import { IconMonsoon, IconScript, IconBasalt, IconPort, IconEdict, IconDharmaCha
 import { Link } from "react-router-dom";
 import { ArrowRight, Waves, Mountain, BookOpen, Map, Users, Network, Loader2 } from "lucide-react";
 import GeomythologySection from "@/components/home/GeomythologySection";
+import ToolsSection from "@/components/home/ToolsSection";
 
 export default function Home() {
   const { t } = useTranslation();
@@ -394,6 +395,9 @@ export default function Home() {
 
       {/* Geomythology & Cultural Continuity Section */}
       <GeomythologySection />
+
+      {/* Research Tools Section */}
+      <ToolsSection />
 
       {/* Themes Grid - Dharmic Mandala Layout */}
       <section className="py-16 bg-background relative">
