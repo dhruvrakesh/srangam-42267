@@ -117,19 +117,19 @@ export default function JyotishHoroscope() {
                 </Button>
               </div>
 
-              {/* Trust badges */}
+              {/* Trust badges - Vedāṅga scholarly framing */}
               <div className="mt-12 flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-peacock-blue" />
-                  <span>Swiss Ephemeris (0.001″)</span>
+                  <BookOpen className="w-5 h-5 text-peacock-blue" />
+                  <span>Vedāṅga Jyotiṣa</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-saffron" />
-                  <span>Multiple Ayanāṃśas</span>
+                  <Calendar className="w-5 h-5 text-saffron" />
+                  <span>Mathematical Astronomy</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Info className="w-5 h-5 text-indigo-dharma" />
-                  <span>Astronomy Only</span>
+                  <Github className="w-5 h-5 text-indigo-dharma" />
+                  <span>Open Source</span>
                 </div>
               </div>
             </div>
@@ -428,6 +428,394 @@ export default function JyotishHoroscope() {
                     by default, aligning with classical Jyotiṣa conventions. Advanced users can toggle to true node for 
                     observational astronomy studies.
                   </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* Panchang: Five Limbs of Time Section */}
+        <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-sandalwood/10 via-background to-turmeric/10">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+                Panchang: The Vedic Calendar System
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                Five astronomical limbs (pañcāṅga) that define the Hindu calendar—not mystical divisions, but precise mathematical calculations
+              </p>
+            </div>
+
+            <Card className="border-2 border-saffron bg-card/50 backdrop-blur mb-8">
+              <CardHeader className="bg-gradient-to-r from-saffron/10 to-turmeric/10 border-b">
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <Calendar className="w-6 h-6 text-saffron" />
+                  The Five Limbs: Timekeeping Science
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-8">
+                <p className="text-muted-foreground mb-6 leading-relaxed">
+                  The <strong className="text-foreground">Panchang</strong> (पञ्चाङ्ग, "five limbs") is the traditional 
+                  Hindu calendar system, calculated from lunar-solar astronomy. These five elements determine the timing 
+                  of festivals, rituals, and auspicious events across the Indian subcontinent.
+                </p>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b-2 border-border">
+                        <th className="text-left py-3 px-4 font-semibold text-foreground">Limb</th>
+                        <th className="text-left py-3 px-4 font-semibold text-foreground">Sanskrit</th>
+                        <th className="text-left py-3 px-4 font-semibold text-foreground">Definition</th>
+                        <th className="text-left py-3 px-4 font-semibold text-foreground">Mathematical Formula</th>
+                        <th className="text-left py-3 px-4 font-semibold text-foreground">Calendar Use</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      <tr className="hover:bg-peacock-blue/5 transition-colors">
+                        <td className="py-3 px-4">
+                          <span className="font-semibold text-peacock-blue">Tithi</span>
+                        </td>
+                        <td className="py-3 px-4 text-muted-foreground">तिथि</td>
+                        <td className="py-3 px-4 text-muted-foreground">
+                          Lunar Day (1/30 of lunar month)
+                        </td>
+                        <td className="py-3 px-4 font-mono text-xs text-peacock-blue">
+                          (λ<sub>Moon</sub> − λ<sub>Sun</sub>) / 12°
+                        </td>
+                        <td className="py-3 px-4 text-muted-foreground">
+                          Determines ritual days (e.g., Ekādaśī, Pūrṇimā)
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-saffron/5 transition-colors">
+                        <td className="py-3 px-4">
+                          <span className="font-semibold text-saffron">Nakṣatra</span>
+                        </td>
+                        <td className="py-3 px-4 text-muted-foreground">नक्षत्र</td>
+                        <td className="py-3 px-4 text-muted-foreground">
+                          Lunar Mansion (1/27 of zodiac)
+                        </td>
+                        <td className="py-3 px-4 font-mono text-xs text-saffron">
+                          λ<sub>Moon</sub> / 13.333°
+                        </td>
+                        <td className="py-3 px-4 text-muted-foreground">
+                          27-fold stellar division for birth charts
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-indigo-dharma/5 transition-colors">
+                        <td className="py-3 px-4">
+                          <span className="font-semibold text-indigo-dharma">Yoga</span>
+                        </td>
+                        <td className="py-3 px-4 text-muted-foreground">योग</td>
+                        <td className="py-3 px-4 text-muted-foreground">
+                          Luni-Solar Sum (27 divisions)
+                        </td>
+                        <td className="py-3 px-4 font-mono text-xs text-indigo-dharma">
+                          (λ<sub>Moon</sub> + λ<sub>Sun</sub>) / 13.333°
+                        </td>
+                        <td className="py-3 px-4 text-muted-foreground">
+                          Astronomical alignment for muhūrta
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-lotus-pink/5 transition-colors">
+                        <td className="py-3 px-4">
+                          <span className="font-semibold text-lotus-pink">Karaṇa</span>
+                        </td>
+                        <td className="py-3 px-4 text-muted-foreground">करण</td>
+                        <td className="py-3 px-4 text-muted-foreground">
+                          Half-Tithi (60 per lunar month)
+                        </td>
+                        <td className="py-3 px-4 font-mono text-xs text-lotus-pink">
+                          (λ<sub>Moon</sub> − λ<sub>Sun</sub>) / 6°
+                        </td>
+                        <td className="py-3 px-4 text-muted-foreground">
+                          60 half-lunar-days cycle
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-ocean-teal/5 transition-colors">
+                        <td className="py-3 px-4">
+                          <span className="font-semibold text-ocean-teal">Vāra</span>
+                        </td>
+                        <td className="py-3 px-4 text-muted-foreground">वार</td>
+                        <td className="py-3 px-4 text-muted-foreground">
+                          Weekday (7-day planetary week)
+                        </td>
+                        <td className="py-3 px-4 font-mono text-xs text-ocean-teal">
+                          Sunrise-based calculation
+                        </td>
+                        <td className="py-3 px-4 text-muted-foreground">
+                          7-day planetary week (Sun–Saturn)
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="mt-6 p-4 bg-peacock-blue/5 rounded-lg border-l-4 border-peacock-blue">
+                  <p className="text-sm font-semibold text-foreground mb-2">
+                    Historical Context: Sūrya Siddhānta Algorithms
+                  </p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    The <span className="font-serif italic">Sūrya Siddhānta</span> (~400-500 CE) provides the mathematical 
+                    foundation for these calculations. By determining the Moon's longitude (λ<sub>Moon</sub>) and the Sun's 
+                    longitude (λ<sub>Sun</sub>) at any moment, the Panchang computes the five limbs algorithmically. This 
+                    enabled communities across the subcontinent to synchronize festivals (e.g., Dīpāvalī, Holī) despite 
+                    geographical separation—a remarkable achievement in pre-modern timekeeping.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* House Systems (Bhāva) Section */}
+        <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-lotus-pink/10 via-background to-sandalwood/10">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+                Bhāva Systems: Mathematical Coordinate Division
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                House (bhāva) systems are geometric methods for dividing the ecliptic into 12 sectors—not mystical divisions
+              </p>
+            </div>
+
+            <Card className="border-2 border-indigo-dharma bg-card/50 backdrop-blur mb-8">
+              <CardHeader className="bg-gradient-to-r from-indigo-dharma/10 to-peacock-blue/10 border-b">
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <Code2 className="w-6 h-6 text-indigo-dharma" />
+                  Three House Systems: Geometric Transformations
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-8">
+                <p className="text-muted-foreground mb-6 leading-relaxed">
+                  House systems are mathematical methods for dividing the sky into 12 sectors. Different traditions 
+                  use different geometric approaches—each valid as a coordinate system, not as an absolute truth.
+                </p>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b-2 border-border">
+                        <th className="text-left py-3 px-4 font-semibold text-foreground">System</th>
+                        <th className="text-left py-3 px-4 font-semibold text-foreground">Sanskrit</th>
+                        <th className="text-left py-3 px-4 font-semibold text-foreground">Method</th>
+                        <th className="text-left py-3 px-4 font-semibold text-foreground">Historical Context</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      <tr className="hover:bg-peacock-blue/5 transition-colors">
+                        <td className="py-3 px-4">
+                          <span className="font-semibold text-peacock-blue">Whole Sign (Parāśarī)</span>
+                        </td>
+                        <td className="py-3 px-4 text-muted-foreground">पराशरी</td>
+                        <td className="py-3 px-4 text-muted-foreground">
+                          1 sign = 1 house (30° sectors)
+                        </td>
+                        <td className="py-3 px-4 text-muted-foreground">
+                          Traditional Jyotiṣa (<span className="font-serif italic">Bṛhat Parāśara Horā Śāstra</span>)
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-saffron/5 transition-colors">
+                        <td className="py-3 px-4">
+                          <span className="font-semibold text-saffron">Placidus</span>
+                        </td>
+                        <td className="py-3 px-4 text-muted-foreground">—</td>
+                        <td className="py-3 px-4 text-muted-foreground">
+                          Time-based quadrant division
+                        </td>
+                        <td className="py-3 px-4 text-muted-foreground">
+                          Western system (17th century CE)
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-indigo-dharma/5 transition-colors">
+                        <td className="py-3 px-4">
+                          <span className="font-semibold text-indigo-dharma">Śrīpati (Porphyry)</span>
+                        </td>
+                        <td className="py-3 px-4 text-muted-foreground">श्रीपति</td>
+                        <td className="py-3 px-4 text-muted-foreground">
+                          Geometric interpolation between cusps
+                        </td>
+                        <td className="py-3 px-4 text-muted-foreground">
+                          Medieval Indian-Western synthesis
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="mt-6 space-y-4">
+                  <div className="p-4 bg-saffron/5 rounded-lg border-l-4 border-saffron">
+                    <p className="text-sm font-semibold text-foreground mb-2">
+                      Post-Calculation Transformation: Tropical → Sidereal
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      All house systems calculate cusps in the <strong>tropical zodiac</strong> first, then convert 
+                      to sidereal by subtracting the ayanāṃśa:
+                    </p>
+                    <div className="bg-background/50 rounded p-3 font-mono text-xs text-foreground">
+                      sidereal_cusp = (tropical_cusp - ayanamsa) % 360.0
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-indigo-dharma/5 rounded-lg border-l-4 border-indigo-dharma">
+                    <p className="text-sm font-semibold text-foreground mb-2">
+                      Scholarly Note: Coordinate Systems, Not Mystical Truth
+                    </p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      House systems are mathematical conventions—different geometric ways to divide space relative to 
+                      the horizon and ecliptic. The choice of system affects house positions but does not represent an 
+                      objective astronomical "truth." Researchers should document which system they use for reproducibility.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* System Architecture & Developer Section */}
+        <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-peacock-blue/10 via-background to-ocean-teal/10">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+                For Researchers & Developers
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                Technical architecture, prerequisites, and research use cases
+              </p>
+            </div>
+
+            {/* System Architecture */}
+            <Card className="border-2 border-peacock-blue bg-card/50 backdrop-blur mb-8">
+              <CardHeader className="bg-gradient-to-r from-peacock-blue/10 to-ocean-teal/10 border-b">
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <Terminal className="w-6 h-6 text-peacock-blue" />
+                  System Architecture
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-8">
+                <div className="bg-background/50 rounded-lg p-6 font-mono text-sm border border-border mb-6">
+                  <div className="text-peacock-blue">app.py</div>
+                  <div className="ml-4 text-muted-foreground">└── <span className="text-saffron">jyotish/</span></div>
+                  <div className="ml-8 text-muted-foreground">
+                    ├── <span className="text-foreground">astro.py</span> (Swiss Ephemeris, Coordinates)
+                  </div>
+                  <div className="ml-8 text-muted-foreground">
+                    ├── <span className="text-foreground">panchang.py</span> (Five Limbs algorithms)
+                  </div>
+                  <div className="ml-8 text-muted-foreground">
+                    ├── <span className="text-foreground">dasha.py</span> (Vimśottarī cycles)
+                  </div>
+                  <div className="ml-8 text-muted-foreground">
+                    └── <span className="text-foreground">utils.py</span> (Geocoding, Timezone)
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="text-sm font-semibold text-peacock-blue mb-3">Prerequisites</h4>
+                    <ul className="space-y-2 text-sm text-muted-foreground">
+                      <li className="flex items-start gap-2">
+                        <span className="text-peacock-blue font-mono">•</span>
+                        <span>Python 3.10+ (with pip)</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-peacock-blue font-mono">•</span>
+                        <span>C/C++ compiler (for <code className="text-xs bg-background px-1 py-0.5 rounded">pyswisseph</code> build)</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-peacock-blue font-mono">•</span>
+                        <span>Swiss Ephemeris data files (~40-60 MB)</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-peacock-blue font-mono">•</span>
+                        <span>Streamlit, pyswisseph, geopy, pandas, pytz</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-semibold text-saffron mb-3">Research Use Cases</h4>
+                    <ul className="space-y-2 text-sm text-muted-foreground">
+                      <li className="flex items-start gap-2">
+                        <span className="text-saffron font-mono">•</span>
+                        <span>Validating astronomical observations in Sanskrit texts</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-saffron font-mono">•</span>
+                        <span>Correlating literary dates with celestial configurations</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-saffron font-mono">•</span>
+                        <span>Studying historical calendar systems</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-saffron font-mono">•</span>
+                        <span>Archaeological chronology research</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* GitHub & API Access */}
+            <Card className="border-2 border-saffron bg-card/50 backdrop-blur">
+              <CardHeader className="bg-gradient-to-r from-saffron/10 to-turmeric/10 border-b">
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <Github className="w-6 h-6 text-saffron" />
+                  Open Source Repository
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-8">
+                <p className="text-muted-foreground mb-6 leading-relaxed">
+                  The full source code, documentation, and installation instructions are available on GitHub. 
+                  Contributions, bug reports, and research collaborations are welcome.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                  <Button
+                    size="lg"
+                    className="bg-gradient-to-r from-peacock-blue to-ocean-teal hover:from-peacock-blue/90 hover:to-ocean-teal/90 text-white shadow-lg"
+                    asChild
+                  >
+                    <a
+                      href="https://github.com/srangam-research/jyotish-calculator"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Github className="w-5 h-5 mr-2" />
+                      View on GitHub
+                      <ArrowUpRight className="w-4 h-4 ml-2" />
+                    </a>
+                  </Button>
+
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-2 border-saffron text-saffron hover:bg-saffron hover:text-white"
+                    asChild
+                  >
+                    <a href="mailto:research@srangam.app?subject=Jyotish%20API%20Documentation%20Request">
+                      <Code2 className="w-5 h-5 mr-2" />
+                      Request API Docs
+                    </a>
+                  </Button>
+                </div>
+
+                <div className="p-4 bg-background/50 rounded-lg border-l-4 border-peacock-blue">
+                  <p className="text-sm font-semibold text-foreground mb-2">
+                    CLI Usage Example
+                  </p>
+                  <div className="bg-background rounded p-3 font-mono text-xs text-muted-foreground">
+                    $ python -m jyotish calculate \<br/>
+                    <span className="ml-4">--date "1947-08-15" \</span><br/>
+                    <span className="ml-4">--time "00:00" \</span><br/>
+                    <span className="ml-4">--location "New Delhi" \</span><br/>
+                    <span className="ml-4">--ayanamsa "Lahiri" \</span><br/>
+                    <span className="ml-4">--charts "D1,D9"</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
