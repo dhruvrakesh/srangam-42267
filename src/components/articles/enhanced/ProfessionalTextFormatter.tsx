@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
+import parse from 'html-react-parser';
 import { useTranslation } from 'react-i18next';
 import { CulturalTermTooltip } from '@/components/language/CulturalTermTooltip';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -104,9 +105,12 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
         let match;
 
         while ((match = culturalPattern.exec(line)) !== null) {
-          // Add text before match
+          // Add text before match - parse HTML to React elements
           if (match.index > lastIndex) {
-            processedLine.push(line.substring(lastIndex, match.index));
+            const htmlFragment = line.substring(lastIndex, match.index);
+            if (htmlFragment.trim()) {
+              processedLine.push(parse(htmlFragment));
+            }
           }
 
           // Add cultural term tooltip
@@ -124,9 +128,12 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
           lastIndex = culturalPattern.lastIndex;
         }
 
-        // Add remaining text
+        // Add remaining text - parse HTML to React elements
         if (lastIndex < line.length) {
-          processedLine.push(line.substring(lastIndex));
+          const htmlFragment = line.substring(lastIndex);
+          if (htmlFragment.trim()) {
+            processedLine.push(parse(htmlFragment));
+          }
         }
 
         // Wrap processed line in appropriate markdown container
