@@ -152,10 +152,11 @@ export default function Articles() {
             <h3 className="font-serif text-lg font-semibold">{t('filters.filterByTheme')}</h3>
           </div>
           
-          <ArticleThemeChips 
-            selectedThemes={selectedThemes}
-            onThemeToggle={handleThemeToggle}
-          />
+      <ArticleThemeChips
+        selectedThemes={selectedThemes}
+        onThemeToggle={handleThemeToggle}
+        articles={allArticles}
+      />
 
           {/* Sort Dropdown */}
           <div className="flex justify-end mt-4">

@@ -1,17 +1,23 @@
 import { TagChip } from "@/components/ui/TagChip";
 import { useTranslation } from 'react-i18next';
-import { getAllThemes, getArticleCountByTheme } from '@/lib/multilingualArticleUtils';
-import { MULTILINGUAL_ARTICLES } from '@/data/articles';
+import type { DisplayArticle } from '@/hooks/useArticles';
 
 interface ArticleThemeChipsProps {
   selectedThemes: string[];
   onThemeToggle: (theme: string) => void;
+  articles: DisplayArticle[];
 }
 
-export function ArticleThemeChips({ selectedThemes, onThemeToggle }: ArticleThemeChipsProps) {
+export function ArticleThemeChips({ selectedThemes, onThemeToggle, articles }: ArticleThemeChipsProps) {
   const { t } = useTranslation();
-  const themes = getAllThemes();
-  const totalArticleCount = MULTILINGUAL_ARTICLES.length;
+  
+  // Calculate themes and counts from unified articles (JSON + DB)
+  const themes = Array.from(new Set(articles.map(a => a.theme))).sort();
+  const totalArticleCount = articles.length;
+  
+  const getArticleCountByTheme = (theme: string): number => {
+    return articles.filter(a => a.theme === theme).length;
+  };
 
   return (
     <div className="flex flex-wrap gap-3 justify-center mb-8">
