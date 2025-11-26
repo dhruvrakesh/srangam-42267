@@ -219,6 +219,7 @@ export default function Home() {
           <ArticleThemeChips 
             selectedThemes={selectedThemes}
             onThemeToggle={handleThemeToggle}
+            articles={allArticles}
           />
 
           {/* Sort Dropdown */}
