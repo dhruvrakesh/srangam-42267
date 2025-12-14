@@ -183,6 +183,18 @@ export default function MarkdownImport() {
     setExtractedMetadata(metadata);
   };
 
+  // Sanitize escaped markdown characters (common in exports from Notion, Obsidian, Google Docs)
+  const sanitizeEscapedMarkdown = (text: string): string => {
+    return text
+      .replace(/\\#/g, '#')
+      .replace(/\\-/g, '-')
+      .replace(/\\\*/g, '*')
+      .replace(/\\_/g, '_')
+      .replace(/\\\[/g, '[')
+      .replace(/\\\]/g, ']')
+      .replace(/\\`/g, '`');
+  };
+
   // Generate frontmatter template
   const generateFrontmatter = () => {
     const hasFrontmatter = rawMarkdown.trim().startsWith('---');
@@ -195,9 +207,10 @@ export default function MarkdownImport() {
       return;
     }
     
-    // Extract title from first heading or first line
+    // Extract title from first heading or first line, sanitize escaped chars
     const firstLine = rawMarkdown.split('\n')[0];
-    const title = firstLine.replace(/^#+\s*/, '').trim() || 'Untitled Article';
+    const sanitizedFirstLine = sanitizeEscapedMarkdown(firstLine);
+    const title = sanitizedFirstLine.replace(/^#+\s*/, '').trim() || 'Untitled Article';
     const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
     
     // Quote all string values for YAML safety (handles special chars like –, :, diacritics)

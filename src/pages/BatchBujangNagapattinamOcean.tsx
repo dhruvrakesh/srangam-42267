@@ -9,7 +9,7 @@ import {
 } from '@/components/ocean-networks';
 import { LazyMapboxBujangNetwork } from '@/components/interactive/LazyMapboxBujangNetwork';
 import {
-  Breadcrumb,
+  BreadcrumbNav,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
@@ -54,7 +54,7 @@ const BatchBujangNagapattinamOcean: React.FC = () => {
       <div className="container mx-auto py-8 px-4">
         {/* Breadcrumb Navigation */}
         <div className="mb-8">
-          <Breadcrumb>
+          <BreadcrumbNav>
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
@@ -72,7 +72,7 @@ const BatchBujangNagapattinamOcean: React.FC = () => {
                 <BreadcrumbPage>सागर जाल | Ocean Networks</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
-          </Breadcrumb>
+          </BreadcrumbNav>
         </div>
 
         {/* Hero Section */}

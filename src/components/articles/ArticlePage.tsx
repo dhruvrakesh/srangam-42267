@@ -5,7 +5,7 @@ import { TagChip } from '@/components/ui/TagChip';
 import { EnhancedMultilingualText } from '@/components/language/EnhancedMultilingualText';
 import { ProfessionalTextFormatter } from '@/components/articles/enhanced/ProfessionalTextFormatter';
 import { SimplifiedMarkdownRenderer } from '@/components/articles/enhanced/SimplifiedMarkdownRenderer';
-import { Breadcrumb } from '@/components/ui/Breadcrumb';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { MultilingualContent } from '@/types/multilingual';
 import { cn } from '@/lib/utils';
 import { ArticleProvider, useReadingProgress } from '@/components/context/ArticleContext';
