@@ -144,14 +144,11 @@ export function HeaderNav() {
             onClick={() => handleNavClick("Home", "/")}
           >
             <Logo variant="symbol" size={32} />
-            <div className="hidden sm:flex items-center gap-2">
-              <span className="font-serif text-xl tracking-wide">Srangam</span>
-              <span className="text-muted-foreground text-sm">Home</span>
-            </div>
+            <span className="hidden sm:block font-serif text-xl tracking-wide">Srangam</span>
           </Link>
 
           {/* Primary navigation */}
-          <nav className="hidden lg:flex items-center gap-1" role="navigation" aria-label="Primary">
+          <nav className="hidden lg:flex items-center gap-2 ml-6" role="navigation" aria-label="Primary">
             {cfg.primary.map((item) => (
               <NavNode key={item.label} item={item} onItemClick={handleNavClick} />
             ))}
