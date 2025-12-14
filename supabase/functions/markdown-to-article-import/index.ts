@@ -28,6 +28,21 @@ async function generateContentHash(content: string): Promise<string> {
 }
 
 /**
+ * Sanitize escaped markdown characters (common in exports from Notion, Obsidian, Google Docs)
+ * These escape sequences cause YAML parsing failures
+ */
+function sanitizeEscapedMarkdown(text: string): string {
+  return text
+    .replace(/\\#/g, '#')
+    .replace(/\\-/g, '-')
+    .replace(/\\\*/g, '*')
+    .replace(/\\_/g, '_')
+    .replace(/\\\[/g, '[')
+    .replace(/\\\]/g, ']')
+    .replace(/\\`/g, '`');
+}
+
+/**
  * Clean markdown formatting from titles (remove bold/italic markers)
  */
 function cleanTitle(title: string): string {
@@ -126,7 +141,9 @@ function extractFrontmatter(markdown: string): { frontmatter: FrontMatter | null
   }
 
   try {
-    const frontmatter = parseYaml(match[1]) as FrontMatter;
+    // Sanitize escaped markdown chars in YAML block before parsing
+    const sanitizedYaml = sanitizeEscapedMarkdown(match[1]);
+    const frontmatter = parseYaml(sanitizedYaml) as FrontMatter;
     const content = match[2];
     return { frontmatter, content };
   } catch (error) {
@@ -134,6 +151,8 @@ function extractFrontmatter(markdown: string): { frontmatter: FrontMatter | null
     const errorMessage = error instanceof Error ? error.message : String(error);
     throw new Error(
       `YAML parsing failed. Make sure titles and other text fields are wrapped in quotes.\n\n` +
+      `If your markdown has escaped characters like \\# or \\*, they may be causing issues.\n` +
+      `Try removing backslashes before markdown symbols.\n\n` +
       `Example:\n` +
       `---\n` +
       `title: "Your Article Title Here"\n` +
@@ -227,9 +246,10 @@ function extractCulturalTerms(markdown: string): string[] {
 function generateFallbackFrontmatter(content: string, filePath?: string): FrontMatter {
   console.log('🔧 Generating fallback frontmatter from content...');
   
-  // Extract title from first H1 heading and clean markdown formatting
-  const h1Match = content.match(/^#\s+(.+)$/m);
-  let title = h1Match ? cleanTitle(h1Match[1].trim()) : '';
+  // Extract title from first H1 heading (match optional backslash before #)
+  // and clean markdown formatting + escaped chars
+  const h1Match = content.match(/^\\?#\s+(.+)$/m);
+  let title = h1Match ? sanitizeEscapedMarkdown(cleanTitle(h1Match[1].trim())) : '';
   
   // If no H1 found, try to extract from filename
   if (!title && filePath) {

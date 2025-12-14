@@ -6,7 +6,7 @@ import { ResolvedArticle } from '@/lib/articleResolver';
 import { MultilingualContent } from '@/types/multilingual';
 import { Map, BookOpen, Waves, Clock, Tag } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Breadcrumb } from '@/components/ui/Breadcrumb';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EnhancedMultilingualText } from '@/components/language/EnhancedMultilingualText';
 

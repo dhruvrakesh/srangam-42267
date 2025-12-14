@@ -1,16 +1,60 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
-import { ChevronRight, MoreHorizontal } from "lucide-react"
+import { ChevronRight, MoreHorizontal, Home } from "lucide-react"
+import { Link } from 'react-router-dom';
 
 import { cn } from "@/lib/utils"
 
-const Breadcrumb = React.forwardRef<
+// Custom simple Breadcrumb component with items prop (for backwards compatibility)
+export interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
+
+export interface SimpleBreadcrumbProps {
+  items: BreadcrumbItem[];
+  className?: string;
+}
+
+export const Breadcrumb: React.FC<SimpleBreadcrumbProps> = ({ items, className }) => {
+  return (
+    <nav className={cn('flex items-center gap-2 text-sm text-muted-foreground mb-6', className)} aria-label="Breadcrumb">
+      <Link 
+        to="/" 
+        className="hover:text-burgundy transition-colors flex items-center gap-1"
+        aria-label="Home"
+      >
+        <Home size={16} />
+      </Link>
+      {items.map((item, index) => (
+        <React.Fragment key={index}>
+          <ChevronRight size={16} className="text-muted-foreground/50" />
+          {item.href ? (
+            <Link 
+              to={item.href} 
+              className="hover:text-burgundy transition-colors"
+            >
+              {item.label}
+            </Link>
+          ) : (
+            <span className="text-foreground font-medium">
+              {item.label}
+            </span>
+          )}
+        </React.Fragment>
+      ))}
+    </nav>
+  );
+};
+
+// Shadcn Breadcrumb components (compositional API)
+const BreadcrumbNav = React.forwardRef<
   HTMLElement,
   React.ComponentPropsWithoutRef<"nav"> & {
     separator?: React.ReactNode
   }
 >(({ ...props }, ref) => <nav ref={ref} aria-label="breadcrumb" {...props} />)
-Breadcrumb.displayName = "Breadcrumb"
+BreadcrumbNav.displayName = "BreadcrumbNav"
 
 const BreadcrumbList = React.forwardRef<
   HTMLOListElement,
@@ -105,7 +149,7 @@ const BreadcrumbEllipsis = ({
 BreadcrumbEllipsis.displayName = "BreadcrumbElipssis"
 
 export {
-  Breadcrumb,
+  BreadcrumbNav,
   BreadcrumbList,
   BreadcrumbItem,
   BreadcrumbLink,

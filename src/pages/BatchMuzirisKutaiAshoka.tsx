@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TagChip } from "@/components/ui/TagChip";
 import {
-  Breadcrumb,
+  BreadcrumbNav,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
@@ -394,7 +394,7 @@ const BatchMuzirisKutaiAshoka: React.FC = () => {
       <div className="container mx-auto py-8 px-4">
         {/* Dharmic Breadcrumb Navigation */}
         <div className="mb-8">
-          <Breadcrumb>
+          <BreadcrumbNav>
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
@@ -412,7 +412,7 @@ const BatchMuzirisKutaiAshoka: React.FC = () => {
                 <BreadcrumbPage>लेख संग्रह | Scripts & Trade Empire</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
-          </Breadcrumb>
+          </BreadcrumbNav>
         </div>
 
         {/* Header */}
