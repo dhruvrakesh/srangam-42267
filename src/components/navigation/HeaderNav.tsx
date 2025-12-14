@@ -114,6 +114,13 @@ export function HeaderNav() {
     }));
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
   if (!cfg) return null;
 
   return (
@@ -142,27 +149,36 @@ export function HeaderNav() {
           <Link 
             to="/" 
             className="flex items-center gap-3 hover:opacity-80 transition-opacity"
-            onClick={() => handleNavClick("Home", "/")}
+            onClick={() => {
+              scrollToTop();
+              handleNavClick("Home", "/");
+            }}
           >
             <Logo variant="symbol" size={32} />
             <span className="hidden sm:block font-serif text-xl tracking-wide">Srangam</span>
           </Link>
 
-          {/* Subtle vertical divider */}
-          <Separator orientation="vertical" className="hidden lg:block h-6 mx-4 bg-border/50" />
+          {/* Navigation area with hover group */}
+          <div className="hidden lg:flex items-center group/nav">
+            {/* Subtle vertical divider - opacity increases on hover */}
+            <Separator 
+              orientation="vertical" 
+              className="h-6 mx-4 bg-border/50 transition-opacity duration-200 group-hover/nav:bg-border/70" 
+            />
 
-          {/* Primary navigation */}
-          <nav className="hidden lg:flex items-center gap-2" role="navigation" aria-label="Primary">
-            {cfg.primary.map((item) => (
-              <NavNode key={item.label} item={item} onItemClick={handleNavClick} />
-            ))}
-            <Button variant="outline" size="sm" asChild className="ml-2">
-              <Link to="/admin" className="gap-2">
-                <LayoutDashboard className="h-4 w-4" />
-                <span className="font-medium">Admin</span>
-              </Link>
-            </Button>
-          </nav>
+            {/* Primary navigation */}
+            <nav className="flex items-center gap-2" role="navigation" aria-label="Primary">
+              {cfg.primary.map((item) => (
+                <NavNode key={item.label} item={item} onItemClick={handleNavClick} />
+              ))}
+              <Button variant="outline" size="sm" asChild className="ml-2">
+                <Link to="/admin" className="gap-2">
+                  <LayoutDashboard className="h-4 w-4" />
+                  <span className="font-medium">Admin</span>
+                </Link>
+              </Button>
+            </nav>
+          </div>
 
           {/* Spacer */}
           <div className="flex-1" />

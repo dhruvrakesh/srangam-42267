@@ -1,3 +1,9 @@
+/**
+ * @deprecated This component is no longer used in production.
+ * The main navigation is now handled by HeaderNav.tsx
+ * This file is kept for reference during migration but can be safely deleted.
+ * Last reviewed: 2025-12-14
+ */
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Search, Menu, X, ChevronDown } from "lucide-react";
