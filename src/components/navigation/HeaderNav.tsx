@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 
 type NavItem = { 
   label: string; 
@@ -147,8 +148,11 @@ export function HeaderNav() {
             <span className="hidden sm:block font-serif text-xl tracking-wide">Srangam</span>
           </Link>
 
+          {/* Subtle vertical divider */}
+          <Separator orientation="vertical" className="hidden lg:block h-6 mx-4 bg-border/50" />
+
           {/* Primary navigation */}
-          <nav className="hidden lg:flex items-center gap-2 ml-6" role="navigation" aria-label="Primary">
+          <nav className="hidden lg:flex items-center gap-2" role="navigation" aria-label="Primary">
             {cfg.primary.map((item) => (
               <NavNode key={item.label} item={item} onItemClick={handleNavClick} />
             ))}
