@@ -57,7 +57,16 @@
 - ✅ Responsive design (mobile, tablet, desktop)
 - ✅ Custom color palette (ocean, vedic, maritime, geology)
 
-### **7. Research Tool Showcase Pages**
+### **7. Navigation System**
+- ✅ Primary navigation via `HeaderNav.tsx` (active)
+- ✅ Mobile bottom tabs for quick access (Home, Themes, Map, Search)
+- ✅ Keyboard shortcuts: `/` (search), `m` (maps), `gs` (sources)
+- ✅ Visual separator between logo and nav items with hover effect
+- ✅ Smooth scroll-to-top on logo click
+- ✅ Language switcher integration
+- ⚠️ `TopNavigation.tsx` deprecated (kept for reference)
+
+### **8. Research Tool Showcase Pages**
 - ✅ **Sanskrit Translator** landing page (`/sanskrit-translator`)
   - 7-stage translation pipeline showcase (OCR → Sandhi → Morphology → Translation)
   - Sample Mahābhārata verse analysis with BORI critical edition citations
@@ -165,6 +174,21 @@ srangam_tags
 ---
 
 ## 🔧 **Recent Fixes & Deployments**
+
+### **2025-12-14 (Navigation UI Enhancements)**
+1. ✅ **Visual Separator Enhancement**:
+   - Added subtle vertical separator between logo and navigation
+   - Implemented hover effect (opacity 50% → 70% on nav hover)
+   - Used Tailwind group hover with named group (`group/nav`)
+
+2. ✅ **Smooth Scroll-to-Top**:
+   - Added `scrollToTop()` function with smooth behavior
+   - Integrated with logo click handler
+   - Works when on home page and scrolled down
+
+3. ✅ **Code Refactoring**:
+   - Added deprecation comment to `TopNavigation.tsx`
+   - Updated documentation with navigation system section
 
 ### **2025-11-23 (Phase 3 - Cross-Reference Integration)**
 1. ✅ **Frontend Cross-Reference Integration**:
