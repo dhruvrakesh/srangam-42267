@@ -1,15 +1,25 @@
-import { Users, Mail, MapPin, BookOpen, Globe, Target, Award } from "lucide-react";
+import { Users, Mail, MapPin, BookOpen, Globe, Target, Award, Network, Database, Mountain, Map, Waves } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { IconMonsoon, IconScript, IconBasalt } from "@/components/icons";
+import { Skeleton } from "@/components/ui/skeleton";
+import { IconMonsoon, IconScript, IconBasalt, IconDharmaChakra, IconSarnathLion } from "@/components/icons";
 import { ResearchCentre } from "@/components/research/ResearchCentre";
 import { useNavigate } from 'react-router-dom';
+import { useResearchStats } from "@/hooks/useResearchStats";
+import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 
 export default function About() {
   const navigate = useNavigate();
+  const { totalArticles, crossReferences, culturalTerms, isLoading } = useResearchStats();
+  
+  // Intersection observers for scroll animations
+  const missionSection = useIntersectionObserver<HTMLDivElement>({ threshold: 0.1 });
+  const researchSection = useIntersectionObserver<HTMLDivElement>({ threshold: 0.1 });
+  const scholarsSection = useIntersectionObserver<HTMLDivElement>({ threshold: 0.1 });
+  const sponsorsSection = useIntersectionObserver<HTMLDivElement>({ threshold: 0.1 });
   
   const handleApplicationGuidelines = () => {
-    // Create a detailed guidelines document
     const guidelines = `
 SRANGAM/NARTIANG FELLOWSHIP APPLICATION GUIDELINES
 
@@ -72,23 +82,13 @@ Phone: +91-11-4567-8901
     window.location.href = "mailto:contact@nartiang.org?subject=General Inquiry - Nartiang Foundation&body=I would like to learn more about Nartiang Foundation's dharmic research initiatives and how I can get involved.";
   };
 
-  const institutionalSponsors = [
-    {
-      name: "DKEGL (D K Enterprises Global Limited)",
-      role: "Primary Institutional Sponsor",
-      expertise: "Sustainable Packaging Solutions, Corporate Social Responsibility, Dharmic Research Patronage",
-      institution: "NSE-Listed SME Manufacturing Corporation (Market Cap: ₹48.8 crores)",
-      culturalRole: "मुख्य संरक्षक | Primary Patron",
-      contributions: ["Research Infrastructure", "Scholar Fellowships", "Digital Archive Development", "Publication Support"]
-    },
-    {
-      name: "Nartiang Foundation",
-      role: "CSR Implementation Partner", 
-      expertise: "Cultural Heritage Preservation, Academic Grant Management, Traditional Knowledge Systems",
-      institution: "DKEGL Corporate Social Responsibility Initiative",
-      culturalRole: "सांस्कृतिक संरक्षण | Cultural Preservation",
-      contributions: ["Manuscript Digitization", "Scholar Grants", "Heritage Documentation", "Academic Conferences"]
-    }
+  // Research themes for the overview section
+  const researchThemes = [
+    { name: "Ancient India", icon: IconSarnathLion, color: "text-saffron" },
+    { name: "Indian Ocean World", icon: IconMonsoon, color: "text-peacock-blue" },
+    { name: "Scripts & Inscriptions", icon: IconScript, color: "text-indigo-dharma" },
+    { name: "Geology & Deep Time", icon: IconBasalt, color: "text-terracotta" },
+    { name: "Empires & Exchange", icon: IconDharmaChakra, color: "text-turmeric" },
   ];
 
   const principalInvestigators = [
@@ -151,6 +151,25 @@ Phone: +91-11-4567-8901
     }
   ];
 
+  const institutionalSponsors = [
+    {
+      name: "DKEGL (D K Enterprises Global Limited)",
+      role: "Primary Institutional Sponsor",
+      expertise: "Sustainable Packaging Solutions, Corporate Social Responsibility, Dharmic Research Patronage",
+      institution: "NSE-Listed SME Manufacturing Corporation (Market Cap: ₹48.8 crores)",
+      culturalRole: "मुख्य संरक्षक | Primary Patron",
+      contributions: ["Research Infrastructure", "Scholar Fellowships", "Digital Archive Development", "Publication Support"]
+    },
+    {
+      name: "Nartiang Foundation",
+      role: "CSR Implementation Partner", 
+      expertise: "Cultural Heritage Preservation, Academic Grant Management, Traditional Knowledge Systems",
+      institution: "DKEGL Corporate Social Responsibility Initiative",
+      culturalRole: "सांस्कृतिक संरक्षण | Cultural Preservation",
+      contributions: ["Manuscript Digitization", "Scholar Grants", "Heritage Documentation", "Academic Conferences"]
+    }
+  ];
+
   const csrInitiatives = [
     {
       name: "Srangam Research Fellowships",
@@ -180,110 +199,190 @@ Phone: +91-11-4567-8901
            }} />
       
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Dharmic Header */}
-        <div className="text-center mb-16">
-          <div className="flex justify-center items-center gap-8 mb-8">
-            <div className="relative">
-              <div className="absolute inset-0 bg-ocean/20 rounded-full blur-2xl transform scale-110"></div>
-              <div className="relative bg-gradient-to-br from-ocean to-peacock-blue p-8 rounded-full shadow-2xl border-2 border-lotus-pink/20">
-                <IconMonsoon size={48} className="text-cream" />
+        {/* ============ SECTION 1: MISSION STATEMENT (NEW - AT TOP) ============ */}
+        <div 
+          ref={missionSection.ref}
+          className={`mb-20 transition-all duration-700 ease-out ${
+            missionSection.isIntersecting ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+        >
+          {/* Dharmic Header */}
+          <div className="text-center mb-12">
+            <div className="flex justify-center items-center gap-8 mb-8">
+              <div className="relative">
+                <div className="absolute inset-0 bg-ocean/20 rounded-full blur-2xl transform scale-110"></div>
+                <div className="relative bg-gradient-to-br from-ocean to-peacock-blue p-8 rounded-full shadow-2xl border-2 border-lotus-pink/20">
+                  <IconMonsoon size={48} className="text-cream" />
+                </div>
+              </div>
+              <div className="relative">
+                <div className="absolute inset-0 bg-saffron/20 rounded-full blur-2xl transform scale-110"></div>
+                <div className="relative bg-gradient-to-br from-saffron to-turmeric p-8 rounded-full shadow-2xl border-2 border-terracotta/20">
+                  <IconScript size={48} className="text-cream" />
+                </div>
+              </div>
+              <div className="relative">
+                <div className="absolute inset-0 bg-laterite/20 rounded-full blur-2xl transform scale-110"></div>
+                <div className="relative bg-gradient-to-br from-laterite to-terracotta p-8 rounded-full shadow-2xl border-2 border-saffron/20">
+                  <IconBasalt size={48} className="text-cream" />
+                </div>
               </div>
             </div>
             <div className="relative">
-              <div className="absolute inset-0 bg-saffron/20 rounded-full blur-2xl transform scale-110"></div>
-              <div className="relative bg-gradient-to-br from-saffron to-turmeric p-8 rounded-full shadow-2xl border-2 border-terracotta/20">
-                <IconScript size={48} className="text-cream" />
-              </div>
-            </div>
-            <div className="relative">
-              <div className="absolute inset-0 bg-laterite/20 rounded-full blur-2xl transform scale-110"></div>
-              <div className="relative bg-gradient-to-br from-laterite to-terracotta p-8 rounded-full shadow-2xl border-2 border-saffron/20">
-                <IconBasalt size={48} className="text-cream" />
-              </div>
+              <h1 className="font-serif text-4xl lg:text-6xl font-bold mb-4">
+                <span className="bg-gradient-to-r from-saffron via-turmeric to-terracotta bg-clip-text text-transparent">
+                  श्रंगम दृष्टि
+                </span>
+              </h1>
+              <h2 className="font-serif text-2xl lg:text-3xl font-semibold text-terracotta mb-8">
+                The Srangam Vision
+              </h2>
             </div>
           </div>
-          <div className="relative">
-            <h1 className="font-serif text-4xl lg:text-6xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-saffron via-turmeric to-terracotta bg-clip-text text-transparent">
-                श्रंगम परिचय
-              </span>
-            </h1>
-            <h2 className="font-serif text-2xl lg:text-3xl font-semibold text-terracotta mb-8">
-              About Our Dharmic Research Community
-            </h2>
-            <p className="text-lg text-charcoal/80 max-w-4xl mx-auto leading-relaxed font-medium">
-              विद्या ददाति विनयं — Knowledge bestows humility. Exploring the interconnected histories 
-              of the Indian Ocean through dharmic scholarly traditions that honor ancient wisdom 
-              while advancing contemporary understanding.
-            </p>
-            <div className="mt-6 h-1 w-32 bg-gradient-to-r from-saffron via-turmeric to-terracotta mx-auto rounded-full"></div>
-            
-            {/* Sanskrit Shloka */}
-            <div className="mt-8 p-6 bg-sandalwood/10 backdrop-blur-sm rounded-2xl border border-saffron/20 max-w-2xl mx-auto">
-              <div className="text-saffron font-serif text-lg mb-2">सर्वे भवन्तु सुखिनः सर्वे सन्तु निरामयाः</div>
-              <div className="text-charcoal/70 text-sm italic">
-                "May all beings be happy, may all beings be healthy" — Brihadaranyaka Upanishad
+
+          {/* Mission Statement Card */}
+          <Card className="bg-gradient-to-br from-saffron/5 via-sandalwood/10 to-lotus-pink/5 border-2 border-saffron/20 shadow-xl mb-12">
+            <CardContent className="p-8 lg:p-12">
+              <div className="max-w-4xl mx-auto">
+                <p className="text-lg lg:text-xl text-foreground/90 leading-relaxed mb-6">
+                  <strong className="text-saffron">Srangam is a civilizational research initiative</strong> dedicated to recovering, 
+                  preserving, and presenting the interconnected histories of the Indian Ocean World through 
+                  indigenous methodological frameworks.
+                </p>
+                <p className="text-lg text-muted-foreground leading-relaxed mb-6">
+                  We don't just <em>translate</em> the past — we <strong>triangulate</strong> it. Our scholarship 
+                  weaves together archaeological evidence, textual traditions, and sacred geography to illuminate 
+                  how civilizations traded, believed, and remembered across millennia.
+                </p>
+                <div className="mt-8 p-6 bg-sandalwood/10 backdrop-blur-sm rounded-2xl border border-saffron/20">
+                  <div className="text-saffron font-serif text-lg mb-2">विद्या ददाति विनयं विनयाद्याति पात्रताम्</div>
+                  <div className="text-muted-foreground text-sm italic">
+                    "Knowledge bestows humility; from humility comes worthiness" — Hitopadesha
+                  </div>
+                </div>
               </div>
-            </div>
+            </CardContent>
+          </Card>
+
+          {/* Three Methodological Pillars */}
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <Card className="bg-card/80 border-terracotta/30 hover:border-terracotta transition-colors">
+              <CardHeader className="text-center pb-2">
+                <Mountain className="w-10 h-10 mx-auto mb-3 text-terracotta" />
+                <CardTitle className="font-serif text-lg text-foreground">Archaeological</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  Epigraphy, numismatics, and material culture — the stone records of civilization
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="bg-card/80 border-burgundy/30 hover:border-burgundy transition-colors">
+              <CardHeader className="text-center pb-2">
+                <BookOpen className="w-10 h-10 mx-auto mb-3 text-burgundy" />
+                <CardTitle className="font-serif text-lg text-foreground">Textual</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  Purāṇas, itihāsa, śāstric literature — the living memory of tradition
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="bg-card/80 border-peacock-blue/30 hover:border-peacock-blue transition-colors">
+              <CardHeader className="text-center pb-2">
+                <Map className="w-10 h-10 mx-auto mb-3 text-peacock-blue" />
+                <CardTitle className="font-serif text-lg text-foreground">Geo-mythological</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  Sacred geography meets geological memory — place as palimpsest
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
-        {/* Institutional Sponsors Section */}
-        <div className="mb-20">
+        {/* ============ SECTION 2: RESEARCH OVERVIEW (NEW) ============ */}
+        <div 
+          ref={researchSection.ref}
+          className={`mb-20 transition-all duration-700 ease-out ${
+            researchSection.isIntersecting ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+        >
           <div className="text-center mb-12">
             <h2 className="font-serif text-4xl font-bold text-foreground mb-4">
-              संस्थागत संरक्षक | Institutional Patrons
+              ज्ञान संग्रह | Knowledge Corpus
             </h2>
             <p className="text-muted-foreground max-w-4xl mx-auto text-lg">
-              विद्यादानं महादानम् — The gift of knowledge is the greatest gift. Corporate social responsibility 
-              meeting dharmic scholarship traditions in support of indigenous knowledge systems.
+              Our growing research corpus represents years of scholarly work, connecting primary sources 
+              across languages, regions, and disciplines.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-8 mb-12">
-            {institutionalSponsors.map((sponsor, index) => (
-              <Card key={index} className="bg-gradient-to-br from-saffron/10 via-sandalwood/20 to-lotus-pink/10 border-2 border-saffron/30 relative overflow-hidden shadow-xl">
-                <div className="absolute inset-0 opacity-5" 
-                     style={{
-                       backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23FF8C00' stroke-width='1'%3E%3Ccircle cx='30' cy='30' r='25'/%3E%3Cpath d='M30 5 L35 25 L30 45 L25 25 Z'/%3E%3C/g%3E%3C/svg%3E")`,
-                     }} />
-                <CardHeader className="relative z-10">
-                  <div className="flex items-start gap-6">
-                    <div className="w-20 h-20 bg-gradient-to-br from-saffron/20 to-turmeric/30 rounded-full flex items-center justify-center border-2 border-saffron/20">
-                      <Target size={32} className="text-saffron" />
-                    </div>
-                    <div className="flex-1">
-                      <CardTitle className="font-serif text-2xl text-foreground mb-2">
-                        {sponsor.name}
-                      </CardTitle>
-                      <p className="text-saffron font-semibold text-lg mb-1">{sponsor.culturalRole}</p>
-                      <p className="text-peacock-blue font-medium">{sponsor.role}</p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="relative z-10">
-                  <p className="text-muted-foreground mb-4 text-lg">{sponsor.expertise}</p>
-                  <p className="text-sm text-muted-foreground mb-4">{sponsor.institution}</p>
-                  
-                  <div>
-                    <h4 className="font-semibold text-foreground mb-3">Key Contributions</h4>
-                    <div className="grid grid-cols-2 gap-2">
-                      {sponsor.contributions.map((contribution, contIndex) => (
-                        <div key={contIndex} className="flex items-center gap-2 text-sm">
-                          <div className="w-2 h-2 bg-saffron rounded-full"></div>
-                          <span className="text-muted-foreground">{contribution}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <Card className="bg-gradient-to-br from-saffron/10 to-transparent border-saffron/30 text-center p-6">
+              <div className="text-4xl lg:text-5xl font-bold text-saffron mb-2">
+                {isLoading ? <Skeleton className="h-12 w-16 mx-auto" /> : `${totalArticles}+`}
+              </div>
+              <div className="font-medium text-foreground">Research Articles</div>
+              <div className="text-xs text-muted-foreground">Long-form scholarship</div>
+            </Card>
+            <Card className="bg-gradient-to-br from-peacock-blue/10 to-transparent border-peacock-blue/30 text-center p-6">
+              <div className="text-4xl lg:text-5xl font-bold text-peacock-blue mb-2">
+                {isLoading ? <Skeleton className="h-12 w-16 mx-auto" /> : crossReferences.toLocaleString()}
+              </div>
+              <div className="font-medium text-foreground">Cross-References</div>
+              <div className="text-xs text-muted-foreground">Interconnected insights</div>
+            </Card>
+            <Card className="bg-gradient-to-br from-terracotta/10 to-transparent border-terracotta/30 text-center p-6">
+              <div className="text-4xl lg:text-5xl font-bold text-terracotta mb-2">
+                {isLoading ? <Skeleton className="h-12 w-16 mx-auto" /> : culturalTerms.toLocaleString()}
+              </div>
+              <div className="font-medium text-foreground">Cultural Terms</div>
+              <div className="text-xs text-muted-foreground">Sanskrit & regional vocabulary</div>
+            </Card>
+            <Card className="bg-gradient-to-br from-turmeric/10 to-transparent border-turmeric/30 text-center p-6">
+              <div className="text-4xl lg:text-5xl font-bold text-turmeric mb-2">5</div>
+              <div className="font-medium text-foreground">Research Themes</div>
+              <div className="text-xs text-muted-foreground">Multidisciplinary pillars</div>
+            </Card>
+          </div>
+
+          {/* Research Themes */}
+          <div className="flex flex-wrap justify-center gap-4 mb-8">
+            {researchThemes.map((theme, index) => {
+              const IconComponent = theme.icon;
+              return (
+                <div 
+                  key={theme.name}
+                  className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-full hover:border-saffron/50 transition-colors"
+                >
+                  <IconComponent size={18} className={theme.color} />
+                  <span className="text-sm font-medium text-foreground">{theme.name}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* CTA to Research Network */}
+          <div className="text-center">
+            <Button asChild variant="outline" className="border-peacock-blue text-peacock-blue hover:bg-peacock-blue hover:text-cream">
+              <Link to="/research-network">
+                <Network className="w-4 h-4 mr-2" />
+                Explore Research Network
+              </Link>
+            </Button>
           </div>
         </div>
 
-        {/* Scholar Assembly Section */}
-        <div className="mb-20">
+        {/* ============ SECTION 3: SCHOLAR ASSEMBLY (MOVED DOWN) ============ */}
+        <div 
+          ref={scholarsSection.ref}
+          className={`mb-20 transition-all duration-700 ease-out ${
+            scholarsSection.isIntersecting ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+        >
           <div className="text-center mb-12">
             <h2 className="font-serif text-4xl font-bold text-foreground mb-4">
               विद्वत् मण्डल | Scholar Assembly
@@ -384,67 +483,119 @@ Phone: +91-11-4567-8901
           </div>
         </div>
 
-        {/* CSR Initiatives Section */}
-        <div className="mb-20">
+        {/* ============ SECTION 4: INSTITUTIONAL SPONSORS (MOVED TO BOTTOM) ============ */}
+        <div 
+          ref={sponsorsSection.ref}
+          className={`mb-20 transition-all duration-700 ease-out ${
+            sponsorsSection.isIntersecting ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+        >
           <div className="text-center mb-12">
             <h2 className="font-serif text-4xl font-bold text-foreground mb-4">
-              भावी छात्रवृत्ति योजना | Future Scholarship Programs  
+              संस्थागत संरक्षक | Institutional Support
             </h2>
             <p className="text-muted-foreground max-w-4xl mx-auto text-lg">
-              Nartiang/Srangam CSR initiatives supporting the next generation of dharmic scholars through 
-              comprehensive fellowship and research grant programs anchored in traditional knowledge systems.
+              विद्यादानं महादानम् — The gift of knowledge is the greatest gift. Corporate social responsibility 
+              meeting dharmic scholarship traditions in support of indigenous knowledge systems.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {csrInitiatives.map((initiative, index) => (
-              <Card key={index} className="bg-gradient-to-br from-sandalwood/20 to-lotus-pink/10 border-2 border-terracotta/20 relative overflow-hidden shadow-lg">
-                <div className="absolute top-0 right-0 w-32 h-32 opacity-10" 
+          <div className="grid grid-cols-1 gap-8 mb-12">
+            {institutionalSponsors.map((sponsor, index) => (
+              <Card key={index} className="bg-gradient-to-br from-saffron/10 via-sandalwood/20 to-lotus-pink/10 border-2 border-saffron/30 relative overflow-hidden shadow-xl">
+                <div className="absolute inset-0 opacity-5" 
                      style={{
-                       backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23FF8C00'%3E%3Ccircle cx='50' cy='50' r='30' opacity='0.3'/%3E%3Cpath d='M50 20 L60 40 L50 60 L40 40 Z' opacity='0.5'/%3E%3C/g%3E%3C/svg%3E")`,
-                       backgroundSize: 'contain',
-                       backgroundRepeat: 'no-repeat'
+                       backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23FF8C00' stroke-width='1'%3E%3Ccircle cx='30' cy='30' r='25'/%3E%3Cpath d='M30 5 L35 25 L30 45 L25 25 Z'/%3E%3C/g%3E%3C/svg%3E")`,
                      }} />
                 <CardHeader className="relative z-10">
-                  <div className="flex items-start gap-4">
-                    <div className="w-14 h-14 bg-gradient-to-br from-saffron/30 to-terracotta/30 rounded-full flex items-center justify-center">
-                      <Award size={20} className="text-saffron" />
+                  <div className="flex items-start gap-6">
+                    <div className="w-20 h-20 bg-gradient-to-br from-saffron/20 to-turmeric/30 rounded-full flex items-center justify-center border-2 border-saffron/20">
+                      <Target size={32} className="text-saffron" />
                     </div>
                     <div className="flex-1">
-                      <CardTitle className="font-serif text-xl text-foreground mb-2">
-                        {initiative.name}
+                      <CardTitle className="font-serif text-2xl text-foreground mb-2">
+                        {sponsor.name}
                       </CardTitle>
-                      <p className="text-saffron font-medium text-sm mb-1">{initiative.culturalFocus}</p>
-                      <p className="text-peacock-blue font-medium text-sm">{initiative.type}</p>
+                      <p className="text-saffron font-semibold text-lg mb-1">{sponsor.culturalRole}</p>
+                      <p className="text-peacock-blue font-medium">{sponsor.role}</p>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent className="relative z-10">
-                  <p className="text-muted-foreground mb-4 leading-relaxed">{initiative.description}</p>
-                  
-                  <div className="mb-4">
-                    <h4 className="font-semibold text-foreground mb-2 text-sm">Funding Support</h4>
-                    <p className="text-saffron font-bold">{initiative.funding}</p>
-                  </div>
+                  <p className="text-muted-foreground mb-4 text-lg">{sponsor.expertise}</p>
+                  <p className="text-sm text-muted-foreground mb-4">{sponsor.institution}</p>
                   
                   <div>
-                    <h4 className="font-semibold text-foreground mb-2 text-sm">Eligibility</h4>
-                    <ul className="space-y-1">
-                      {initiative.eligibility.map((criteria, critIndex) => (
-                        <li key={critIndex} className="flex items-center gap-2 text-sm">
-                          <div className="w-1.5 h-1.5 bg-terracotta rounded-full"></div>
-                          <span className="text-muted-foreground">{criteria}</span>
-                        </li>
+                    <h4 className="font-semibold text-foreground mb-3">Key Contributions</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {sponsor.contributions.map((contribution, contIndex) => (
+                        <div key={contIndex} className="flex items-center gap-2 text-sm">
+                          <div className="w-2 h-2 bg-saffron rounded-full"></div>
+                          <span className="text-muted-foreground">{contribution}</span>
+                        </div>
                       ))}
-                    </ul>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
 
+          {/* CSR Initiatives */}
+          <div className="mb-12">
+            <div className="text-center mb-8">
+              <h3 className="font-serif text-2xl font-bold text-foreground mb-2">
+                भावी छात्रवृत्ति योजना | Future Scholarship Programs  
+              </h3>
+              <p className="text-muted-foreground max-w-3xl mx-auto">
+                Nartiang/Srangam CSR initiatives supporting the next generation of dharmic scholars.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {csrInitiatives.map((initiative, index) => (
+                <Card key={index} className="bg-gradient-to-br from-sandalwood/20 to-lotus-pink/10 border-2 border-terracotta/20 relative overflow-hidden shadow-lg">
+                  <CardHeader className="relative z-10">
+                    <div className="flex items-start gap-4">
+                      <div className="w-14 h-14 bg-gradient-to-br from-saffron/30 to-terracotta/30 rounded-full flex items-center justify-center">
+                        <Award size={20} className="text-saffron" />
+                      </div>
+                      <div className="flex-1">
+                        <CardTitle className="font-serif text-xl text-foreground mb-2">
+                          {initiative.name}
+                        </CardTitle>
+                        <p className="text-saffron font-medium text-sm mb-1">{initiative.culturalFocus}</p>
+                        <p className="text-peacock-blue font-medium text-sm">{initiative.type}</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="relative z-10">
+                    <p className="text-muted-foreground mb-4 leading-relaxed">{initiative.description}</p>
+                    
+                    <div className="mb-4">
+                      <h4 className="font-semibold text-foreground mb-2 text-sm">Funding Support</h4>
+                      <p className="text-saffron font-bold">{initiative.funding}</p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-semibold text-foreground mb-2 text-sm">Eligibility</h4>
+                      <ul className="space-y-1">
+                        {initiative.eligibility.map((criteria, critIndex) => (
+                          <li key={critIndex} className="flex items-center gap-2 text-sm">
+                            <div className="w-1.5 h-1.5 bg-terracotta rounded-full"></div>
+                            <span className="text-muted-foreground">{criteria}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
           {/* Application Process */}
-          <Card className="mt-12 bg-gradient-to-br from-saffron/10 via-sandalwood/20 to-turmeric/10 border-2 border-saffron/30">
+          <Card className="bg-gradient-to-br from-saffron/10 via-sandalwood/20 to-turmeric/10 border-2 border-saffron/30">
             <CardHeader>
               <CardTitle className="font-serif text-2xl text-foreground text-center">
                 आवेदन प्रक्रिया | Application Process  
@@ -454,8 +605,7 @@ Phone: +91-11-4567-8901
               <div className="text-center space-y-6">
                 <p className="text-muted-foreground max-w-3xl mx-auto text-lg">
                   Applications for Srangam/Nartiang fellowships open annually in March. Traditional scholars, 
-                  academic researchers, and heritage institutions are encouraged to apply through our 
-                  comprehensive evaluation process that honors both traditional knowledge and academic rigor.
+                  academic researchers, and heritage institutions are encouraged to apply.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button 

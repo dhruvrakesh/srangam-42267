@@ -87,38 +87,54 @@
 - ✅ **Backend Integration**: N/A (external Python scripts by design)
 - 🔜 **GitHub Repository Links**: Pending publication of research scripts
 
+### **9. Landing Page Redesign** (2025-12-23)
+- ✅ **Begin Journey Page** (`/begin-journey`)
+  - Mission statement hero with Sanskrit invocation
+  - Five research pillars with **live article counts** from database
+  - Research metrics (articles, cross-refs, terms) fetched in real-time
+  - Intersection observer scroll animations for all sections
+  - Cultural database teaser with sample terms
+  - "Choose Your Path" entry points for different reader interests
+  - SEO-optimized with dynamic meta descriptions
+  
+- ✅ **About Page Restructure** (`/about`)
+  - **Mission-first** layout: Srangam Vision at top
+  - Three methodological pillars (Archaeological, Textual, Geo-mythological)
+  - Knowledge Corpus section with live database stats
+  - Scholar Assembly moved below mission
+  - Institutional Support moved to bottom
+  - Scroll animations via intersection observer
+  
+- ✅ **New Hooks Created**:
+  - `useResearchStats`: Fetches live article counts, cross-refs, cultural terms
+  - `useIntersectionObserver`: Reusable scroll animation hook with triggerOnce option
+  - `getThemeArticleCount`: Helper to map theme IDs to article counts
+
 ---
 
 ## 📊 **Database State** (Current)
 
-### **Current Data** (as of 2025-11-25)
-- **Articles**: 33 total
-  - 25 articles in Supabase database (includes 2 new methodology articles)
-  - 8 legacy JSON articles accessible
-  - All have standardized slugs with aliases
+### **Current Data** (as of 2025-12-23)
+- **Articles**: 31 published
+  - All in Supabase database with standardized slugs
+  - Theme distribution: Ancient India (most), Indian Ocean, Scripts & Inscriptions, Geology, Empires
   - All have AI-generated tags (5-8 per article)
   - All have theme categorization
-  - New: `sanskrit-translator-methodology` (Scripts & Inscriptions)
-  - New: `jyotish-methodology` (Ancient India)
   
-- **Cross-references**: 474
-  - 329 same_theme references (strength: 7)
-  - 145 thematic references (strength: 4-10)
-  - 0 explicit_citation (pattern not yet used in content)
+- **Cross-references**: 686+
+  - Same-theme and thematic references
   - All integrated on article pages via `ArticleCrossReferences` component
+  - Visible in Research Network visualization
   
-- **Cultural terms**: 1,150
-  - 1,091 active terms (used in articles)
-  - 59 terms with zero usage (candidates for review)
+- **Cultural terms**: 1,221+
   - All terms have etymology and context (AI-enriched)
-  - Average usage: 12.8 occurrences per term
-  - Module distribution: vedic (234), maritime (187), geology (156), other (573)
+  - Module distribution: vedic, maritime, geology, other
   - Connected to Sanskrit Translator named-entity recognition showcase
 
 - **Tags**: 127 unique tags
   - Average 6.2 tags per article
   - Categories: Historical Period (43), Concept (38), Location (29), Methodology (17)
-  - Top tags: "ancient-india" (22 uses), "epigraphy" (18), "maritime-trade" (15)
+  - Top tags: "ancient-india", "epigraphy", "maritime-trade"
 
 - **Audio Narrations**: 940
   - All stored in Google Drive
