@@ -15,7 +15,7 @@ import {
 import { Helmet } from "react-helmet-async";
 import { useResearchStats, getThemeArticleCount } from "@/hooks/useResearchStats";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
-import { useCountUp } from "@/hooks/useCountUp";
+import { ResearchMetrics, MetricConfig } from "@/components/research/ResearchMetrics";
 
 // Research pillar configuration (without hardcoded article counts)
 const researchPillarsConfig = [
@@ -116,18 +116,12 @@ export default function BeginJourney() {
   const databaseSection = useIntersectionObserver<HTMLElement>({ threshold: 0.1 });
   const ctaSection = useIntersectionObserver<HTMLElement>({ threshold: 0.1 });
 
-  // Animated counters - trigger when hero section is visible
-  const articlesCount = useCountUp(totalArticles, 2000, heroSection.isIntersecting && !isLoading);
-  const crossRefsCount = useCountUp(crossReferences, 2000, heroSection.isIntersecting && !isLoading);
-  const termsCount = useCountUp(culturalTerms, 2000, heroSection.isIntersecting && !isLoading);
-  const themesCount = useCountUp(5, 1500, heroSection.isIntersecting);
-
-  // Build research metrics with animated counts
-  const researchMetrics = [
-    { value: isLoading ? "..." : `${articlesCount}+`, label: "Published Articles", sublabel: "Long-form research" },
-    { value: isLoading ? "..." : crossRefsCount.toLocaleString(), label: "Cross-References", sublabel: "Interconnected scholarship" },
-    { value: isLoading ? "..." : termsCount.toLocaleString(), label: "Cultural Terms", sublabel: "Sanskrit & regional vocabulary" },
-    { value: themesCount.toString(), label: "Research Themes", sublabel: "Multidisciplinary pillars" },
+  // Build research metrics configuration for shared component
+  const researchMetrics: MetricConfig[] = [
+    { value: totalArticles, label: "Published Articles", sublabel: "Long-form research", suffix: "+", color: "saffron" },
+    { value: crossReferences, label: "Cross-References", sublabel: "Interconnected scholarship", color: "peacock-blue" },
+    { value: culturalTerms, label: "Cultural Terms", sublabel: "Sanskrit & regional vocabulary", color: "terracotta" },
+    { value: 5, label: "Research Themes", sublabel: "Multidisciplinary pillars", color: "turmeric" },
   ];
 
   return (
@@ -201,34 +195,15 @@ export default function BeginJourney() {
             </div>
           </div>
 
-          {/* Research Metrics */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
-            {researchMetrics.map((metric, index) => (
-              <div 
-                key={metric.label} 
-                className={`text-center transition-all duration-500 ease-out ${
-                  heroSection.isIntersecting 
-                    ? 'opacity-100 translate-y-0' 
-                    : 'opacity-0 translate-y-4'
-                }`}
-                style={{ transitionDelay: `${index * 100 + 200}ms` }}
-              >
-                {isLoading && metric.value === "..." ? (
-                  <Skeleton className="h-12 w-20 mx-auto mb-1" />
-                ) : (
-                  <div className="text-4xl lg:text-5xl font-bold text-saffron mb-1">
-                    {metric.value}
-                  </div>
-                )}
-                <div className="font-medium text-foreground text-sm">
-                  {metric.label}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {metric.sublabel}
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* Research Metrics with Staggered Animation */}
+          <ResearchMetrics
+            metrics={researchMetrics}
+            isLoading={isLoading}
+            isVisible={heroSection.isIntersecting}
+            variant="minimal"
+            staggerDelay={200}
+            animationDuration={2000}
+          />
         </div>
       </section>
 

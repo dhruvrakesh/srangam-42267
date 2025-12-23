@@ -105,11 +105,12 @@
   - Institutional Support moved to bottom
   - Scroll animations via intersection observer
    
-- ✅ **New Hooks Created**:
+- ✅ **New Hooks & Components Created**:
   - `useResearchStats`: Fetches live article counts, cross-refs, cultural terms
   - `useIntersectionObserver`: Reusable scroll animation hook with triggerOnce option
   - `useCountUp`: Animated number counter with easeOutQuart easing (counts from 0 to target)
   - `getThemeArticleCount`: Helper to map theme IDs to article counts
+  - `ResearchMetrics`: Shared component with staggered animations, supports "minimal" and "cards" variants
 
 ---
 
