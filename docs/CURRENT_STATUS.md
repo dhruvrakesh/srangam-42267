@@ -104,10 +104,11 @@
   - Scholar Assembly moved below mission
   - Institutional Support moved to bottom
   - Scroll animations via intersection observer
-  
+   
 - ✅ **New Hooks Created**:
   - `useResearchStats`: Fetches live article counts, cross-refs, cultural terms
   - `useIntersectionObserver`: Reusable scroll animation hook with triggerOnce option
+  - `useCountUp`: Animated number counter with easeOutQuart easing (counts from 0 to target)
   - `getThemeArticleCount`: Helper to map theme IDs to article counts
 
 ---

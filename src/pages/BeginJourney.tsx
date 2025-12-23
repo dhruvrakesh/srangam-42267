@@ -15,6 +15,7 @@ import {
 import { Helmet } from "react-helmet-async";
 import { useResearchStats, getThemeArticleCount } from "@/hooks/useResearchStats";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
+import { useCountUp } from "@/hooks/useCountUp";
 
 // Research pillar configuration (without hardcoded article counts)
 const researchPillarsConfig = [
@@ -115,12 +116,18 @@ export default function BeginJourney() {
   const databaseSection = useIntersectionObserver<HTMLElement>({ threshold: 0.1 });
   const ctaSection = useIntersectionObserver<HTMLElement>({ threshold: 0.1 });
 
-  // Build research metrics with live data
+  // Animated counters - trigger when hero section is visible
+  const articlesCount = useCountUp(totalArticles, 2000, heroSection.isIntersecting && !isLoading);
+  const crossRefsCount = useCountUp(crossReferences, 2000, heroSection.isIntersecting && !isLoading);
+  const termsCount = useCountUp(culturalTerms, 2000, heroSection.isIntersecting && !isLoading);
+  const themesCount = useCountUp(5, 1500, heroSection.isIntersecting);
+
+  // Build research metrics with animated counts
   const researchMetrics = [
-    { value: isLoading ? "..." : `${totalArticles}+`, label: "Published Articles", sublabel: "Long-form research" },
-    { value: isLoading ? "..." : crossReferences.toLocaleString(), label: "Cross-References", sublabel: "Interconnected scholarship" },
-    { value: isLoading ? "..." : culturalTerms.toLocaleString(), label: "Cultural Terms", sublabel: "Sanskrit & regional vocabulary" },
-    { value: "5", label: "Research Themes", sublabel: "Multidisciplinary pillars" },
+    { value: isLoading ? "..." : `${articlesCount}+`, label: "Published Articles", sublabel: "Long-form research" },
+    { value: isLoading ? "..." : crossRefsCount.toLocaleString(), label: "Cross-References", sublabel: "Interconnected scholarship" },
+    { value: isLoading ? "..." : termsCount.toLocaleString(), label: "Cultural Terms", sublabel: "Sanskrit & regional vocabulary" },
+    { value: themesCount.toString(), label: "Research Themes", sublabel: "Multidisciplinary pillars" },
   ];
 
   return (
