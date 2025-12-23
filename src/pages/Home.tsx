@@ -165,7 +165,7 @@ export default function Home() {
             {/* Optimized Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <Button asChild size="lg" className="bg-saffron hover:bg-saffron-light text-charcoal-om border-0 shadow-lg hover:shadow-saffron/20 transition-all duration-200 hover:scale-[1.02]">
-                <Link to="/themes/ancient-india">
+                <Link to="/begin-journey">
                   <IconSarnathLion size={20} className="mr-2" />
                   {t('hero.beginJourney')}
                 </Link>
