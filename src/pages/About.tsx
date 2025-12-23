@@ -2,13 +2,12 @@ import { Users, Mail, MapPin, BookOpen, Globe, Target, Award, Network, Database,
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { IconMonsoon, IconScript, IconBasalt, IconDharmaChakra, IconSarnathLion } from "@/components/icons";
 import { ResearchCentre } from "@/components/research/ResearchCentre";
 import { useNavigate } from 'react-router-dom';
 import { useResearchStats } from "@/hooks/useResearchStats";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
-import { useCountUp } from "@/hooks/useCountUp";
+import { ResearchMetrics, MetricConfig } from "@/components/research/ResearchMetrics";
 
 export default function About() {
   const navigate = useNavigate();
@@ -19,11 +18,14 @@ export default function About() {
   const researchSection = useIntersectionObserver<HTMLDivElement>({ threshold: 0.1 });
   const scholarsSection = useIntersectionObserver<HTMLDivElement>({ threshold: 0.1 });
   const sponsorsSection = useIntersectionObserver<HTMLDivElement>({ threshold: 0.1 });
-  
-  // Animated counters for Knowledge Corpus section
-  const articlesCount = useCountUp(totalArticles, 2000, researchSection.isIntersecting && !isLoading);
-  const crossRefsCount = useCountUp(crossReferences, 2000, researchSection.isIntersecting && !isLoading);
-  const termsCount = useCountUp(culturalTerms, 2000, researchSection.isIntersecting && !isLoading);
+
+  // Build research metrics configuration for shared component
+  const knowledgeMetrics: MetricConfig[] = [
+    { value: totalArticles, label: "Research Articles", sublabel: "Long-form scholarship", suffix: "+", color: "saffron" },
+    { value: crossReferences, label: "Cross-References", sublabel: "Interconnected insights", color: "peacock-blue" },
+    { value: culturalTerms, label: "Cultural Terms", sublabel: "Sanskrit & regional vocabulary", color: "terracotta" },
+    { value: 5, label: "Research Themes", sublabel: "Multidisciplinary pillars", color: "turmeric" },
+  ];
   
   const handleApplicationGuidelines = () => {
     const guidelines = `
@@ -325,35 +327,16 @@ Phone: +91-11-4567-8901
             </p>
           </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            <Card className="bg-gradient-to-br from-saffron/10 to-transparent border-saffron/30 text-center p-6">
-              <div className="text-4xl lg:text-5xl font-bold text-saffron mb-2">
-                {isLoading ? <Skeleton className="h-12 w-16 mx-auto" /> : `${articlesCount}+`}
-              </div>
-              <div className="font-medium text-foreground">Research Articles</div>
-              <div className="text-xs text-muted-foreground">Long-form scholarship</div>
-            </Card>
-            <Card className="bg-gradient-to-br from-peacock-blue/10 to-transparent border-peacock-blue/30 text-center p-6">
-              <div className="text-4xl lg:text-5xl font-bold text-peacock-blue mb-2">
-                {isLoading ? <Skeleton className="h-12 w-16 mx-auto" /> : crossRefsCount.toLocaleString()}
-              </div>
-              <div className="font-medium text-foreground">Cross-References</div>
-              <div className="text-xs text-muted-foreground">Interconnected insights</div>
-            </Card>
-            <Card className="bg-gradient-to-br from-terracotta/10 to-transparent border-terracotta/30 text-center p-6">
-              <div className="text-4xl lg:text-5xl font-bold text-terracotta mb-2">
-                {isLoading ? <Skeleton className="h-12 w-16 mx-auto" /> : termsCount.toLocaleString()}
-              </div>
-              <div className="font-medium text-foreground">Cultural Terms</div>
-              <div className="text-xs text-muted-foreground">Sanskrit & regional vocabulary</div>
-            </Card>
-            <Card className="bg-gradient-to-br from-turmeric/10 to-transparent border-turmeric/30 text-center p-6">
-              <div className="text-4xl lg:text-5xl font-bold text-turmeric mb-2">5</div>
-              <div className="font-medium text-foreground">Research Themes</div>
-              <div className="text-xs text-muted-foreground">Multidisciplinary pillars</div>
-            </Card>
-          </div>
+          {/* Stats Grid with Staggered Animation */}
+          <ResearchMetrics
+            metrics={knowledgeMetrics}
+            isLoading={isLoading}
+            isVisible={researchSection.isIntersecting}
+            variant="cards"
+            staggerDelay={150}
+            animationDuration={2000}
+            className="mb-12"
+          />
 
           {/* Research Themes */}
           <div className="flex flex-wrap justify-center gap-4 mb-8">
