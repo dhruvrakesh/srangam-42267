@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   IconSarnathLion, IconConch, IconOm, IconBasalt, IconDharmaChakra, 
   IconLotus, IconScript, IconMonsoon 
@@ -12,15 +13,16 @@ import {
   Map, Waves, Mountain, ScrollText, Compass, Users 
 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import { useResearchStats, getThemeArticleCount } from "@/hooks/useResearchStats";
+import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 
-// Research pillar data - reflects the five major themes
-const researchPillars = [
+// Research pillar configuration (without hardcoded article counts)
+const researchPillarsConfig = [
   {
     id: "ancient-india",
     title: "Ancient India",
     titleSanskrit: "प्राचीन भारत",
     description: "Vedic preservation, tribal continuity, and civilizational memory through millennia",
-    articleCount: 29,
     path: "/themes/ancient-india",
     icon: IconSarnathLion,
     color: "text-saffron",
@@ -33,7 +35,6 @@ const researchPillars = [
     title: "Indian Ocean World",
     titleSanskrit: "हिन्द महासागर",
     description: "Maritime networks, monsoon trade routes, and oceanic civilizations",
-    articleCount: 8,
     path: "/themes/indian-ocean-world",
     icon: IconConch,
     color: "text-peacock-blue",
@@ -46,7 +47,6 @@ const researchPillars = [
     title: "Scripts & Inscriptions",
     titleSanskrit: "लिपि एवं शिलालेख",
     description: "Epigraphy from Kandahar to Kutai — stone records across continents",
-    articleCount: 6,
     path: "/themes/scripts-inscriptions",
     icon: IconOm,
     color: "text-indigo-dharma",
@@ -59,7 +59,6 @@ const researchPillars = [
     title: "Geology & Deep Time",
     titleSanskrit: "भूविज्ञान",
     description: "From Gondwana breakup to Himalayan uplift — Earth's memory meets sacred geography",
-    articleCount: 4,
     path: "/themes/geology-deep-time",
     icon: IconBasalt,
     color: "text-terracotta",
@@ -72,7 +71,6 @@ const researchPillars = [
     title: "Empires & Exchange",
     titleSanskrit: "साम्राज्य एवं विनिमय",
     description: "Mauryas to Cholas, Silk Road to Spice Routes — power and commerce",
-    articleCount: 5,
     path: "/themes/empires-exchange",
     icon: IconDharmaChakra,
     color: "text-turmeric",
@@ -80,14 +78,6 @@ const researchPillars = [
     borderColor: "border-turmeric/30",
     hoverBorderColor: "hover:border-turmeric",
   },
-];
-
-// Key metrics to showcase research depth
-const researchMetrics = [
-  { value: "33+", label: "Published Articles", sublabel: "Long-form research" },
-  { value: "474", label: "Cross-References", sublabel: "Interconnected scholarship" },
-  { value: "1,150", label: "Cultural Terms", sublabel: "Sanskrit & regional vocabulary" },
-  { value: "5", label: "Research Themes", sublabel: "Multidisciplinary pillars" },
 ];
 
 // Featured entry points for different reader interests
@@ -117,16 +107,38 @@ const entryPoints = [
 
 export default function BeginJourney() {
   const { t } = useTranslation();
+  const { totalArticles, crossReferences, culturalTerms, themes, isLoading } = useResearchStats();
+  
+  // Intersection observers for scroll animations
+  const heroSection = useIntersectionObserver<HTMLElement>({ threshold: 0.1 });
+  const pillarsSection = useIntersectionObserver<HTMLElement>({ threshold: 0.1 });
+  const databaseSection = useIntersectionObserver<HTMLElement>({ threshold: 0.1 });
+  const ctaSection = useIntersectionObserver<HTMLElement>({ threshold: 0.1 });
+
+  // Build research metrics with live data
+  const researchMetrics = [
+    { value: isLoading ? "..." : `${totalArticles}+`, label: "Published Articles", sublabel: "Long-form research" },
+    { value: isLoading ? "..." : crossReferences.toLocaleString(), label: "Cross-References", sublabel: "Interconnected scholarship" },
+    { value: isLoading ? "..." : culturalTerms.toLocaleString(), label: "Cultural Terms", sublabel: "Sanskrit & regional vocabulary" },
+    { value: "5", label: "Research Themes", sublabel: "Multidisciplinary pillars" },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
         <title>Begin Your Journey | Srangam — Histories of the Indian Ocean World</title>
-        <meta name="description" content="Explore 33+ research articles, 5 thematic pillars, and 1,150 cultural terms. Where sacred waters meet stone records — dharmic scholarship meets archaeological rigor." />
+        <meta name="description" content={`Explore ${totalArticles}+ research articles, 5 thematic pillars, and ${culturalTerms.toLocaleString()} cultural terms. Where sacred waters meet stone records — dharmic scholarship meets archaeological rigor.`} />
       </Helmet>
 
       {/* Mission Statement Hero */}
-      <section className="relative py-20 lg:py-32 overflow-hidden">
+      <section 
+        ref={heroSection.ref}
+        className={`relative py-20 lg:py-32 overflow-hidden transition-all duration-700 ease-out ${
+          heroSection.isIntersecting 
+            ? 'opacity-100 translate-y-0' 
+            : 'opacity-0 translate-y-8'
+        }`}
+      >
         {/* Dharmic Background Pattern */}
         <div className="absolute inset-0 sri-yantra-pattern opacity-30" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background" />
@@ -187,12 +199,20 @@ export default function BeginJourney() {
             {researchMetrics.map((metric, index) => (
               <div 
                 key={metric.label} 
-                className="text-center animate-fade-in"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                className={`text-center transition-all duration-500 ease-out ${
+                  heroSection.isIntersecting 
+                    ? 'opacity-100 translate-y-0' 
+                    : 'opacity-0 translate-y-4'
+                }`}
+                style={{ transitionDelay: `${index * 100 + 200}ms` }}
               >
-                <div className="text-4xl lg:text-5xl font-bold text-saffron mb-1">
-                  {metric.value}
-                </div>
+                {isLoading && metric.value === "..." ? (
+                  <Skeleton className="h-12 w-20 mx-auto mb-1" />
+                ) : (
+                  <div className="text-4xl lg:text-5xl font-bold text-saffron mb-1">
+                    {metric.value}
+                  </div>
+                )}
                 <div className="font-medium text-foreground text-sm">
                   {metric.label}
                 </div>
@@ -206,7 +226,14 @@ export default function BeginJourney() {
       </section>
 
       {/* Five Pillars of Research */}
-      <section className="py-16 bg-muted/30">
+      <section 
+        ref={pillarsSection.ref}
+        className={`py-16 bg-muted/30 transition-all duration-700 ease-out ${
+          pillarsSection.isIntersecting 
+            ? 'opacity-100 translate-y-0' 
+            : 'opacity-0 translate-y-8'
+        }`}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <div className="flex justify-center mb-4">
@@ -222,14 +249,20 @@ export default function BeginJourney() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {researchPillars.map((pillar, index) => {
+            {researchPillarsConfig.map((pillar, index) => {
               const IconComponent = pillar.icon;
+              const articleCount = getThemeArticleCount(themes, pillar.id);
+              
               return (
                 <Link
                   key={pillar.id}
                   to={pillar.path}
-                  className={`group block animate-fade-in`}
-                  style={{ animationDelay: `${index * 0.1}s` }}
+                  className={`group block transition-all duration-500 ease-out ${
+                    pillarsSection.isIntersecting 
+                      ? 'opacity-100 translate-y-0' 
+                      : 'opacity-0 translate-y-4'
+                  }`}
+                  style={{ transitionDelay: `${index * 100}ms` }}
                 >
                   <Card className={`h-full transition-all duration-300 ${pillar.borderColor} ${pillar.hoverBorderColor} hover:shadow-lg`}>
                     <CardHeader className="pb-3">
@@ -241,7 +274,11 @@ export default function BeginJourney() {
                           {pillar.title}
                         </span>
                         <span className="text-sm font-normal text-muted-foreground bg-muted px-2 py-1 rounded">
-                          {pillar.articleCount} articles
+                          {isLoading ? (
+                            <Skeleton className="h-4 w-12" />
+                          ) : (
+                            `${articleCount} articles`
+                          )}
                         </span>
                       </CardTitle>
                       <p className="text-sm text-saffron/70 font-serif">
@@ -262,11 +299,15 @@ export default function BeginJourney() {
               );
             })}
 
-            {/* Research Network Card - spans 2 columns on larger screens */}
+            {/* Research Network Card */}
             <Link 
               to="/research-network" 
-              className="group block md:col-span-2 lg:col-span-1 animate-fade-in"
-              style={{ animationDelay: '0.5s' }}
+              className={`group block md:col-span-2 lg:col-span-1 transition-all duration-500 ease-out ${
+                pillarsSection.isIntersecting 
+                  ? 'opacity-100 translate-y-0' 
+                  : 'opacity-0 translate-y-4'
+              }`}
+              style={{ transitionDelay: '500ms' }}
             >
               <Card className="h-full border-peacock-blue/30 hover:border-peacock-blue transition-all duration-300 hover:shadow-lg bg-gradient-to-br from-peacock-blue/5 to-transparent">
                 <CardHeader className="pb-3">
@@ -282,8 +323,11 @@ export default function BeginJourney() {
                 </CardHeader>
                 <CardContent>
                   <CardDescription className="text-muted-foreground leading-relaxed mb-4">
-                    Visualize how our 474 cross-references connect articles across themes, 
-                    methods, and regions.
+                    {isLoading ? (
+                      <>Visualize how our cross-references connect articles across themes, methods, and regions.</>
+                    ) : (
+                      <>Visualize how our {crossReferences.toLocaleString()} cross-references connect articles across themes, methods, and regions.</>
+                    )}
                   </CardDescription>
                   <div className="flex items-center text-sm font-medium text-muted-foreground group-hover:text-peacock-blue transition-colors">
                     Explore connections
@@ -297,7 +341,14 @@ export default function BeginJourney() {
       </section>
 
       {/* Cultural Database Teaser */}
-      <section className="py-16 bg-background">
+      <section 
+        ref={databaseSection.ref}
+        className={`py-16 bg-background transition-all duration-700 ease-out ${
+          databaseSection.isIntersecting 
+            ? 'opacity-100 translate-y-0' 
+            : 'opacity-0 translate-y-8'
+        }`}
+      >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left: Description */}
@@ -310,7 +361,9 @@ export default function BeginJourney() {
                   <h3 className="font-serif text-2xl font-bold text-foreground">
                     शब्दकोश — Cultural Database
                   </h3>
-                  <p className="text-sm text-muted-foreground">1,150+ Sanskrit & regional terms</p>
+                  <p className="text-sm text-muted-foreground">
+                    {isLoading ? "Loading..." : `${culturalTerms.toLocaleString()}+ Sanskrit & regional terms`}
+                  </p>
                 </div>
               </div>
               
@@ -351,7 +404,12 @@ export default function BeginJourney() {
                   <Link
                     key={entry.title}
                     to={entry.path}
-                    className="group block p-4 rounded-lg border border-border hover:border-saffron/50 hover:shadow-md transition-all bg-card"
+                    className={`group block p-4 rounded-lg border border-border hover:border-saffron/50 hover:shadow-md transition-all bg-card ${
+                      databaseSection.isIntersecting 
+                        ? 'opacity-100 translate-x-0' 
+                        : 'opacity-0 translate-x-4'
+                    }`}
+                    style={{ transitionDelay: `${index * 100 + 200}ms`, transitionDuration: '500ms' }}
                   >
                     <div className="flex items-start gap-4">
                       <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 group-hover:bg-saffron/10 transition-colors">
@@ -383,7 +441,14 @@ export default function BeginJourney() {
       </section>
 
       {/* Call to Action */}
-      <section className="py-16 bg-indigo-dharma/5 border-t border-border">
+      <section 
+        ref={ctaSection.ref}
+        className={`py-16 bg-indigo-dharma/5 border-t border-border transition-all duration-700 ease-out ${
+          ctaSection.isIntersecting 
+            ? 'opacity-100 translate-y-0' 
+            : 'opacity-0 translate-y-8'
+        }`}
+      >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex justify-center mb-6">
             <IconLotus size={48} className="text-lotus-pink animate-pulse-gentle" />
