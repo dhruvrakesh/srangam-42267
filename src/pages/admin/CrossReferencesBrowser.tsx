@@ -529,9 +529,15 @@ export default function CrossReferencesBrowser() {
                   </TableCell>
                 </TableRow>
               ) : (
-                graphData.links.map((link, idx) => {
-                  const sourceArticle = articlesMap[link.source];
-                  const targetArticle = articlesMap[link.target];
+              graphData.links.map((link, idx) => {
+                  // ForceGraph2D mutates link objects, replacing source/target strings with node objects
+                  const getNodeId = (node: string | { id: string } | any): string => 
+                    typeof node === 'string' ? node : node?.id || '';
+                  
+                  const sourceId = getNodeId(link.source);
+                  const targetId = getNodeId(link.target);
+                  const sourceArticle = articlesMap[sourceId];
+                  const targetArticle = articlesMap[targetId];
                   
                   return (
                     <TableRow key={idx}>
