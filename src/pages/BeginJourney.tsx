@@ -16,70 +16,7 @@ import { Helmet } from "react-helmet-async";
 import { useResearchStats, getThemeArticleCount } from "@/hooks/useResearchStats";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { ResearchMetrics, MetricConfig } from "@/components/research/ResearchMetrics";
-
-// Research pillar configuration (without hardcoded article counts)
-const researchPillarsConfig = [
-  {
-    id: "ancient-india",
-    title: "Ancient India",
-    titleSanskrit: "प्राचीन भारत",
-    description: "Vedic preservation, tribal continuity, and civilizational memory through millennia",
-    path: "/themes/ancient-india",
-    icon: IconSarnathLion,
-    color: "text-saffron",
-    bgColor: "bg-saffron/10",
-    borderColor: "border-saffron/30",
-    hoverBorderColor: "hover:border-saffron",
-  },
-  {
-    id: "indian-ocean",
-    title: "Indian Ocean World",
-    titleSanskrit: "हिन्द महासागर",
-    description: "Maritime networks, monsoon trade routes, and oceanic civilizations",
-    path: "/themes/indian-ocean-world",
-    icon: IconConch,
-    color: "text-peacock-blue",
-    bgColor: "bg-peacock-blue/10",
-    borderColor: "border-peacock-blue/30",
-    hoverBorderColor: "hover:border-peacock-blue",
-  },
-  {
-    id: "scripts-inscriptions",
-    title: "Scripts & Inscriptions",
-    titleSanskrit: "लिपि एवं शिलालेख",
-    description: "Epigraphy from Kandahar to Kutai — stone records across continents",
-    path: "/themes/scripts-inscriptions",
-    icon: IconOm,
-    color: "text-indigo-dharma",
-    bgColor: "bg-indigo-dharma/10",
-    borderColor: "border-indigo-dharma/30",
-    hoverBorderColor: "hover:border-indigo-light",
-  },
-  {
-    id: "geology-deep-time",
-    title: "Geology & Deep Time",
-    titleSanskrit: "भूविज्ञान",
-    description: "From Gondwana breakup to Himalayan uplift — Earth's memory meets sacred geography",
-    path: "/themes/geology-deep-time",
-    icon: IconBasalt,
-    color: "text-terracotta",
-    bgColor: "bg-terracotta/10",
-    borderColor: "border-terracotta/30",
-    hoverBorderColor: "hover:border-terracotta",
-  },
-  {
-    id: "empires-exchange",
-    title: "Empires & Exchange",
-    titleSanskrit: "साम्राज्य एवं विनिमय",
-    description: "Mauryas to Cholas, Silk Road to Spice Routes — power and commerce",
-    path: "/themes/empires-exchange",
-    icon: IconDharmaChakra,
-    color: "text-turmeric",
-    bgColor: "bg-turmeric/10",
-    borderColor: "border-turmeric/30",
-    hoverBorderColor: "hover:border-turmeric",
-  },
-];
+import { researchThemes } from "@/data/researchThemes";
 
 // Featured entry points for different reader interests
 const entryPoints = [
@@ -231,14 +168,14 @@ export default function BeginJourney() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {researchPillarsConfig.map((pillar, index) => {
-              const IconComponent = pillar.icon;
-              const articleCount = getThemeArticleCount(themes, pillar.id);
+            {researchThemes.map((theme, index) => {
+              const IconComponent = theme.icon;
+              const articleCount = getThemeArticleCount(themes, theme.id);
               
               return (
                 <Link
-                  key={pillar.id}
-                  to={pillar.path}
+                  key={theme.id}
+                  to={theme.path}
                   className={`group block transition-all duration-500 ease-out ${
                     pillarsSection.isIntersecting 
                       ? 'opacity-100 translate-y-0' 
@@ -246,14 +183,14 @@ export default function BeginJourney() {
                   }`}
                   style={{ transitionDelay: `${index * 100}ms` }}
                 >
-                  <Card className={`h-full transition-all duration-300 ${pillar.borderColor} ${pillar.hoverBorderColor} hover:shadow-lg`}>
+                  <Card className={`h-full transition-all duration-300 ${theme.borderColor} ${theme.hoverBorderColor} hover:shadow-lg`}>
                     <CardHeader className="pb-3">
-                      <div className={`w-12 h-12 rounded-full ${pillar.bgColor} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
-                        <IconComponent size={24} className={pillar.color} />
+                      <div className={`w-12 h-12 rounded-full ${theme.bgColor} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
+                        <IconComponent size={24} className={theme.color} />
                       </div>
                       <CardTitle className="flex items-center justify-between">
                         <span className="text-foreground group-hover:text-saffron transition-colors">
-                          {pillar.title}
+                          {theme.name}
                         </span>
                         <span className="text-sm font-normal text-muted-foreground bg-muted px-2 py-1 rounded">
                           {isLoading ? (
@@ -264,12 +201,12 @@ export default function BeginJourney() {
                         </span>
                       </CardTitle>
                       <p className="text-sm text-saffron/70 font-serif">
-                        {pillar.titleSanskrit}
+                        {theme.nameSanskrit}
                       </p>
                     </CardHeader>
                     <CardContent>
                       <CardDescription className="text-muted-foreground leading-relaxed">
-                        {pillar.description}
+                        {theme.description}
                       </CardDescription>
                       <div className="flex items-center mt-4 text-sm font-medium text-muted-foreground group-hover:text-saffron transition-colors">
                         Explore theme
