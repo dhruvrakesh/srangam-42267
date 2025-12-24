@@ -108,18 +108,21 @@
 - ✅ **New Hooks & Components Created**:
   - `useResearchStats`: Fetches live article counts, cross-refs, cultural terms
   - `useIntersectionObserver`: Reusable scroll animation hook with triggerOnce option
-  - `useCountUp`: Animated number counter with easeOutQuart easing (counts from 0 to target)
+  - `useCountUp`: Animated number counter with easeOutQuart easing, returns `{ count, isComplete }`
   - `getThemeArticleCount`: Helper to map theme IDs to article counts
-  - `ResearchMetrics`: Shared component with staggered animations, supports "minimal" and "cards" variants
+  - `ResearchMetrics`: Shared component with staggered animations, pulse effect on complete, supports "minimal" and "cards" variants
+  - `ResearchThemes`: Shared component for theme display with "pills" and "cards" variants (2025-12-24)
+  - `researchThemes.ts`: Centralized theme configuration data (2025-12-24)
 
 ---
 
 ## 📊 **Database State** (Current)
 
-### **Current Data** (as of 2025-12-23)
+### **Current Data** (as of 2025-12-24)
 - **Articles**: 31 published
   - All in Supabase database with standardized slugs
-  - Theme distribution: Ancient India (most), Indian Ocean, Scripts & Inscriptions, Geology, Empires
+  - Theme distribution: Ancient India (27), Scripts & Inscriptions (2), Sacred Ecology (2), Geology & Deep Time (1)
+  - Theme corrections applied 2025-12-24: scripts-sailed-epigraphic-atlas, geomythology-cultural-continuity, ringing-rocks-rhythmic-cosmology
   - All have AI-generated tags (5-8 per article)
   - All have theme categorization
   
@@ -192,6 +195,27 @@ srangam_tags
 ---
 
 ## 🔧 **Recent Fixes & Deployments**
+
+### **2025-12-24 (Theme System & Shared Components)**
+1. ✅ **Database Theme Corrections**:
+   - Fixed `scripts-sailed-epigraphic-atlas` → `Scripts & Inscriptions`
+   - Fixed `geomythology-cultural-continuity` → `Sacred Ecology`
+   - Fixed `ringing-rocks-rhythmic-cosmology` → `Geology & Deep Time`
+
+2. ✅ **Shared ResearchThemes Component**:
+   - Created `src/data/researchThemes.ts` - centralized theme configuration
+   - Created `src/components/research/ResearchThemes.tsx` - shared component with "pills" and "cards" variants
+   - Updated `BeginJourney.tsx` and `About.tsx` to use shared component
+   - Reduced code duplication (~80 lines removed)
+
+3. ✅ **Enhanced useCountUp Hook**:
+   - Now returns `{ count, isComplete }` instead of just count
+   - Enables triggering effects when animation completes
+
+4. ✅ **Pulse Animation on Count Complete**:
+   - Added `pulse-complete` keyframe to tailwind.config.ts
+   - Updated `ResearchMetrics` to apply pulse when count finishes
+   - Creates visual feedback when numbers finish animating
 
 ### **2025-12-14 (Navigation UI Enhancements)**
 1. ✅ **Visual Separator Enhancement**:

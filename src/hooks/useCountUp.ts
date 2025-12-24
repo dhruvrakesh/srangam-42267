@@ -5,12 +5,18 @@ function easeOutQuart(t: number): number {
   return 1 - Math.pow(1 - t, 4);
 }
 
+export interface CountUpResult {
+  count: number;
+  isComplete: boolean;
+}
+
 export function useCountUp(
   target: number,
   duration: number = 2000,
   start: boolean = false
-): number {
+): CountUpResult {
   const [count, setCount] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
   const animationRef = useRef<number | null>(null);
   const startTimeRef = useRef<number | null>(null);
   const hasAnimatedRef = useRef(false);
@@ -23,6 +29,7 @@ export function useCountUp(
 
     hasAnimatedRef.current = true;
     startTimeRef.current = null;
+    setIsComplete(false);
 
     const animate = (timestamp: number) => {
       if (startTimeRef.current === null) {
@@ -40,6 +47,7 @@ export function useCountUp(
         animationRef.current = requestAnimationFrame(animate);
       } else {
         setCount(target); // Ensure we end exactly on target
+        setIsComplete(true);
       }
     };
 
@@ -56,11 +64,12 @@ export function useCountUp(
   useEffect(() => {
     if (!start) {
       setCount(0);
+      setIsComplete(false);
       hasAnimatedRef.current = false;
     }
   }, [target, start]);
 
-  return count;
+  return { count, isComplete };
 }
 
 // Helper to format numbers with locale separators

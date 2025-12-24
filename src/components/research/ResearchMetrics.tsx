@@ -50,7 +50,7 @@ const colorClasses: Record<MetricConfig["color"], { text: string; gradient: stri
   },
 };
 
-// Individual metric with staggered animation
+// Individual metric with staggered animation and pulse on complete
 function MetricItem({
   metric,
   index,
@@ -80,17 +80,20 @@ function MetricItem({
     }
   }, [isVisible, isLoading, index, staggerDelay]);
 
-  const count = useCountUp(metric.value, animationDuration, startAnimation);
+  const { count, isComplete } = useCountUp(metric.value, animationDuration, startAnimation);
   const colors = colorClasses[metric.color];
   
   const displayValue = isLoading 
     ? null 
     : `${formatCountUp(count)}${metric.suffix || ""}`;
 
+  // Pulse animation class when count completes
+  const pulseClass = isComplete ? "animate-pulse-complete" : "";
+
   if (variant === "cards") {
     return (
       <Card 
-        className={`${colors.gradient} ${colors.border} text-center p-6 transition-all duration-500 ease-out ${
+        className={`${colors.gradient} ${colors.border} text-center p-6 transition-all duration-500 ease-out ${pulseClass} ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}
         style={{ transitionDelay: `${index * 100}ms` }}
@@ -107,7 +110,7 @@ function MetricItem({
   // Minimal variant
   return (
     <div 
-      className={`text-center transition-all duration-500 ease-out ${
+      className={`text-center transition-all duration-500 ease-out ${pulseClass} ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
       }`}
       style={{ transitionDelay: `${index * 100 + 200}ms` }}

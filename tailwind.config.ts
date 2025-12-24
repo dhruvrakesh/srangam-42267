@@ -202,6 +202,11 @@ export default {
 				'shimmer': {
 					'0%': { backgroundPosition: '-200% 0' },
 					'100%': { backgroundPosition: '200% 0' }
+				},
+				'pulse-complete': {
+					'0%': { transform: 'scale(1)', boxShadow: '0 0 0 transparent' },
+					'50%': { transform: 'scale(1.02)', boxShadow: '0 0 12px hsl(var(--saffron) / 0.25)' },
+					'100%': { transform: 'scale(1)', boxShadow: '0 0 0 transparent' }
 				}
 			},
 			animation: {
@@ -217,7 +222,8 @@ export default {
             "sanskrit-glow": "sanskrit-glow 3s ease-in-out infinite alternate",
             "sacred-float": "sacred-float 6s ease-in-out infinite",
             "mandala-rotation": "mandala-rotation 30s linear infinite",
-            "gentle-bounce": "gentle-bounce 3s ease-in-out infinite"
+            "gentle-bounce": "gentle-bounce 3s ease-in-out infinite",
+            "pulse-complete": "pulse-complete 0.4s ease-out forwards"
 			},
 			textWrap: {
 				'balance': 'balance',

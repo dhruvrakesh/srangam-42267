@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useResearchStats } from "@/hooks/useResearchStats";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { ResearchMetrics, MetricConfig } from "@/components/research/ResearchMetrics";
+import { ResearchThemes } from "@/components/research/ResearchThemes";
 
 export default function About() {
   const navigate = useNavigate();
@@ -90,14 +91,7 @@ Phone: +91-11-4567-8901
     window.location.href = "mailto:contact@nartiang.org?subject=General Inquiry - Nartiang Foundation&body=I would like to learn more about Nartiang Foundation's dharmic research initiatives and how I can get involved.";
   };
 
-  // Research themes for the overview section
-  const researchThemes = [
-    { name: "Ancient India", icon: IconSarnathLion, color: "text-saffron" },
-    { name: "Indian Ocean World", icon: IconMonsoon, color: "text-peacock-blue" },
-    { name: "Scripts & Inscriptions", icon: IconScript, color: "text-indigo-dharma" },
-    { name: "Geology & Deep Time", icon: IconBasalt, color: "text-terracotta" },
-    { name: "Empires & Exchange", icon: IconDharmaChakra, color: "text-turmeric" },
-  ];
+  // Research themes now use the shared component - no local definition needed
 
   const principalInvestigators = [
     {
@@ -338,21 +332,13 @@ Phone: +91-11-4567-8901
             className="mb-12"
           />
 
-          {/* Research Themes */}
-          <div className="flex flex-wrap justify-center gap-4 mb-8">
-            {researchThemes.map((theme, index) => {
-              const IconComponent = theme.icon;
-              return (
-                <div 
-                  key={theme.name}
-                  className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-full hover:border-saffron/50 transition-colors"
-                >
-                  <IconComponent size={18} className={theme.color} />
-                  <span className="text-sm font-medium text-foreground">{theme.name}</span>
-                </div>
-              );
-            })}
-          </div>
+          {/* Research Themes - Using shared component */}
+          <ResearchThemes 
+            variant="pills" 
+            showArticleCounts={false}
+            isVisible={researchSection.isIntersecting}
+            className="mb-8"
+          />
 
           {/* CTA to Research Network */}
           <div className="text-center">
