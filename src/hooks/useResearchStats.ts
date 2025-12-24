@@ -80,18 +80,27 @@ export function useResearchStats(): ResearchStats {
 }
 
 // Helper to get article count for a specific theme
+// Includes legacy theme mappings (sacred-geography, acoustic-archaeology, etc.)
 export function getThemeArticleCount(themes: ThemeStats[], themeId: string): number {
   const themeMapping: Record<string, string[]> = {
-    'ancient-india': ['ancient-india', 'Ancient India'],
-    'indian-ocean': ['indian-ocean-world', 'Indian Ocean World'],
-    'scripts-inscriptions': ['scripts-inscriptions', 'Scripts & Inscriptions'],
-    'geology-deep-time': ['geology-deep-time', 'Geology & Deep Time'],
-    'empires-exchange': ['empires-exchange', 'Empires & Exchange'],
+    'ancient-india': [
+      'ancient-india', 
+      'Ancient India', 
+      'sacred-geography',  // Legacy theme
+      'acoustic-archaeology'  // Legacy theme
+    ],
+    'indian-ocean': ['indian-ocean-world', 'Indian Ocean World', 'indian-ocean'],
+    'scripts-inscriptions': ['scripts-inscriptions', 'Scripts & Inscriptions', 'scripts-and-inscriptions'],
+    'geology-deep-time': ['geology-deep-time', 'Geology & Deep Time', 'geology'],
+    'empires-exchange': ['empires-exchange', 'Empires & Exchange', 'empires-and-exchange'],
     'sacred-ecology': ['sacred-ecology', 'Sacred Ecology']
   };
 
   const matchingThemes = themeMapping[themeId] || [themeId];
   return themes
-    .filter(t => matchingThemes.some(m => t.theme.toLowerCase().includes(m.toLowerCase())))
+    .filter(t => matchingThemes.some(m => 
+      t.theme.toLowerCase() === m.toLowerCase() || 
+      t.theme.toLowerCase().includes(m.toLowerCase())
+    ))
     .reduce((sum, t) => sum + t.count, 0);
 }
