@@ -118,18 +118,25 @@
 
 ## 📊 **Database State** (Current)
 
-### **Current Data** (as of 2025-12-24)
-- **Articles**: 31 published
+### **Current Data** (as of 2025-12-27)
+- **Articles**: 39 published
   - All in Supabase database with standardized slugs
-  - Theme distribution: Ancient India (27), Scripts & Inscriptions (2), Sacred Ecology (2), Geology & Deep Time (1)
-  - Theme corrections applied 2025-12-24: scripts-sailed-epigraphic-atlas, geomythology-cultural-continuity, ringing-rocks-rhythmic-cosmology
+  - Theme distribution:
+    - Ancient India: 26 articles
+    - Indian Ocean World: 3 articles
+    - Geology & Deep Time: 3 articles
+    - Scripts & Inscriptions: 3 articles
+    - Empires & Exchange: 2 articles
+    - Sacred Ecology: 2 articles
+  - All 6 research themes now have articles (fixed 2025-12-27)
   - All have AI-generated tags (5-8 per article)
   - All have theme categorization
   
-- **Cross-references**: 686+
+- **Cross-references**: 700+
   - Same-theme and thematic references
   - All integrated on article pages via `ArticleCrossReferences` component
   - Visible in Research Network visualization
+  - Cross References Browser "Unknown" bug fixed (2025-12-27)
   
 - **Cultural terms**: 1,221+
   - All terms have etymology and context (AI-enriched)
@@ -195,6 +202,33 @@ srangam_tags
 ---
 
 ## 🔧 **Recent Fixes & Deployments**
+
+### **2025-12-27 (Security Fixes & Cross References Browser)**
+1. ✅ **Cross References Browser Bug Fix**:
+   - Fixed "Unknown → Unknown" display in Reference List table
+   - Added `getNodeId` helper to handle `react-force-graph-2d` link mutation
+   - The library mutates link objects, replacing UUID strings with node objects
+   - Now correctly extracts IDs via `typeof node === 'string' ? node : node?.id`
+
+2. ✅ **Missing Articles Imported**:
+   - Added 8 articles to populate all 6 research themes:
+     - `scripts-that-sailed`, `riders-on-monsoon`, `monsoon-trade-clock` (Indian Ocean World)
+     - `gondwana-to-himalaya`, `earth-sea-sangam`, `stone-purana` (Geology & Deep Time)
+     - `indian-ocean-power-networks`, `chola-naval-raid` (Empires & Exchange)
+
+3. ✅ **Security Function Fixes**:
+   - Added `SET search_path = 'public'` to 5 SECURITY DEFINER functions:
+     - `analyze_tag_cooccurrence`
+     - `get_purana_statistics`
+     - `srangam_increment_bibliography_usage`
+     - `srangam_increment_term_usage`
+     - `update_tag_stats`
+   - Prevents search path injection attacks
+
+4. ✅ **Security Warnings Resolved**:
+   - Marked PostGIS system table warnings as acceptable (spatial_ref_sys is not user data)
+   - Marked extension-in-public warnings as acceptable (required for PostGIS/pgvector)
+   - Remaining function warnings are PostGIS system functions (st_estimatedextent)
 
 ### **2025-12-24 (Theme System & Shared Components)**
 1. ✅ **Database Theme Corrections**:
