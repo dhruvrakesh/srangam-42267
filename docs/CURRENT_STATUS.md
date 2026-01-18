@@ -213,19 +213,28 @@ srangam_tags
 
 ## 🔧 **Recent Fixes & Deployments**
 
+### **2025-01-18 (Phase 4-5: Evidence Tables & Auto Slug Alias)**
+1. 📊 **Dynamic Table Rendering (Phase 4A)**:
+   - Removed hard-coded 6-column `<colgroup>` that was breaking tables
+   - Tables now auto-size columns based on content
+   - Added `min-w-[80px]` and `max-w-[280px]` for balanced cell widths
+   - Headers use `whitespace-normal` for natural wrapping
+   - First column emphasis preserved with `first:bg-sandalwood/20`
+
+2. 🎯 **EvidenceTable Component (Phase 4B)**:
+   - Created dedicated `EvidenceTable.tsx` for 6-column scholarly tables
+   - Source quality badges: Primary (emerald), Secondary (amber), Tradition (slate)
+   - Mobile card-based layout with collapsible rows
+   - Desktop table with optimized column distribution
+
+3. 🔗 **Auto slug_alias Generation (Phase 5)**:
+   - Added `generateShortSlug()` function to edge function
+   - Automatically generates SEO-friendly short slugs (max 40 chars)
+   - Removes dates, stop words, and normalizes diacritics
+   - Future imports will never have missing slug_alias values
+
 ### **2025-01-18 (Phase 3: Evidence Table Deep Fix)**
 1. 📊 **Evidence Table Rendering Overhaul**:
-   - Removed `whitespace-nowrap` from headers (allows natural wrapping)
-   - Added `table-fixed` layout with explicit column widths via `<colgroup>`
-   - Column distribution: Date(10%), Place(12%), Actors(15%), Event(20%), Meaning(23%), Evidence(20%)
-   - Added `hyphens-auto` for intelligent word breaks
-   - Headers now use `text-xs uppercase tracking-wide` for compact display
-   - Added `leading-relaxed` to cells for better line spacing
-   - Minimum table width increased to 900px for 6-column evidence tables
-   - Tables now visually match original DOCX document quality
-
-### **2025-12-28 (Phase 0-2: Documentation, Slugs & Table Rendering)**
-1. 📄 **Documentation Update (Phase 0)**:
    - Updated CURRENT_STATUS.md with 40 article count
    - Documented 12 articles missing slug_alias
    - Created ARTICLE_DISPLAY_GUIDE.md for markdown best practices

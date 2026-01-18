@@ -344,20 +344,12 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
       </em>
     ),
 
+    // Table elements - dynamic column sizing (no hard-coded colgroup)
     table: ({ children, ...props }: any) => (
       <div className="relative overflow-x-auto my-8 rounded-lg border border-burgundy/20 shadow-sm">
         {/* Mobile scroll indicator */}
         <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/80 to-transparent pointer-events-none lg:hidden z-20" />
-        <table className="w-full border-collapse table-fixed min-w-[900px]" {...props}>
-          <colgroup>
-            {/* Evidence table column widths: Date(10%) Place(12%) Actors(15%) Event(20%) Meaning(23%) Evidence(20%) */}
-            <col className="w-[10%]" />
-            <col className="w-[12%]" />
-            <col className="w-[15%]" />
-            <col className="w-[20%]" />
-            <col className="w-[23%]" />
-            <col className="w-[20%]" />
-          </colgroup>
+        <table className="w-full border-collapse" {...props}>
           {children}
         </table>
       </div>
@@ -386,8 +378,8 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
         <td 
           className={cn(
             "border border-burgundy/15 px-3 py-2.5 text-sm leading-relaxed",
-            "break-words hyphens-auto align-top",
-            "first:font-medium first:bg-sandalwood/20",
+            "min-w-[80px] max-w-[280px] break-words align-top",
+            "first:font-medium first:bg-sandalwood/20 first:min-w-[70px]",
             scriptFont
           )}
           {...props}
@@ -403,7 +395,7 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
           className={cn(
             "border border-burgundy/20 bg-burgundy/10 px-3 py-2.5",
             "text-left font-semibold text-burgundy text-xs uppercase tracking-wide",
-            "break-words hyphens-auto",
+            "min-w-[80px] max-w-[200px] whitespace-normal",
             scriptFont
           )}
           {...props}
