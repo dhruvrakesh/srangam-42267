@@ -186,6 +186,53 @@ flowchart TD
 - **Lazy Loading**: Markdown source saved with `upsert` (non-blocking)
 - **Indexing**: Ensure indexes on `slug`, `tags`, `theme` for fast cross-reference queries
 
+## Step 12: Bibliography Extraction & Storage (NEW - Phase 7)
+
+```mermaid
+flowchart TD
+    A[Markdown Content] --> B{Has Bibliography Section?}
+    B -->|Yes| C[Parse MLA9 Citations]
+    B -->|No| D[Skip Bibliography]
+    C --> E[Extract Author/Title/Year/Publisher]
+    E --> F[Generate citation_key]
+    F --> G[UPSERT srangam_bibliography_entries]
+    G --> H[INSERT srangam_article_bibliography]
+    
+    style A fill:#e1f5ff
+    style G fill:#d4edda
+    style H fill:#d4edda
+```
+
+**MLA9 Parsing Rules**:
+- Pattern: `Author Last, First. *Title*. Publisher, Year.`
+- Citation key: `lastname_year` (e.g., `olivelle_2013`)
+- Deduplicate by `citation_key` (increment `citation_count` if exists)
+
+**Source Quality Detection**:
+- Primary: Inscriptions, manuscripts, Akhbarat
+- Secondary: Modern scholarship, historical analysis
+- Tradition: Oral history, folklore
+
+## Step 13: Evidence Table Data Extraction (NEW - Phase 7)
+
+```mermaid
+flowchart TD
+    A[HTML Content] --> B{Has 6-Column Table?}
+    B -->|Yes| C[Detect Scholarly Headers]
+    C --> D{Headers Match Pattern?}
+    D -->|Yes| E[Parse Table Rows]
+    D -->|No| F[Skip Table]
+    E --> G[Extract Date/Place/Actors/Event/Meaning/Evidence]
+    G --> H[INSERT srangam_article_evidence]
+    
+    style A fill:#e1f5ff
+    style H fill:#d4edda
+```
+
+**Scholarly Table Headers**:
+- English: Date | Place | Actors | Event | Meaning | Evidence
+- Hindi: तिथि | स्थान | मुख्य पात्र | घटना | महत्व | साक्ष्य-स्थिति
+
 ## Future Enhancements
 
 1. **AI Embeddings**: Semantic similarity using Lovable AI (gemini-2.5-flash)
@@ -193,3 +240,5 @@ flowchart TD
 3. **Citation Extraction**: NLP for complex bibliography formats
 4. **Version Control**: Track markdown source changes with git-like commits
 5. **Conflict Resolution**: UI for resolving duplicate slug conflicts
+6. **Geocoding**: Auto-geocode place names from evidence tables
+7. **Bibliography Export**: BibTeX/RIS export for citation managers
