@@ -10,6 +10,7 @@ import { SupportedLanguage } from '@/lib/i18n';
 import { normalizeLanguageCode, getScriptFont } from '@/lib/languageUtils';
 import { cn } from '@/lib/utils';
 import { enhanceTextWithCulturalTerms } from '@/lib/culturalTermEnhancer';
+import { EvidenceTable, isEvidenceTable } from './EvidenceTable';
 
 interface ProfessionalTextFormatterProps {
   content: MultilingualContent;
@@ -344,16 +345,33 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
       </em>
     ),
 
-    // Table elements - dynamic column sizing (no hard-coded colgroup)
-    table: ({ children, ...props }: any) => (
-      <div className="relative overflow-x-auto my-8 rounded-lg border border-burgundy/20 shadow-sm">
-        {/* Mobile scroll indicator */}
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/80 to-transparent pointer-events-none lg:hidden z-20" />
-        <table className="w-full border-collapse" {...props}>
-          {children}
-        </table>
-      </div>
-    ),
+    // Table elements - detect evidence tables and render with specialized component
+    table: ({ children, ...props }: any) => {
+      // Extract table data from children to detect evidence tables
+      const tableData = extractTableData(children);
+      
+      // Use EvidenceTable for 6-column scholarly tables
+      if (tableData && isEvidenceTable(tableData.headers)) {
+        return (
+          <EvidenceTable 
+            headers={tableData.headers} 
+            rows={tableData.rows} 
+            className="my-8"
+          />
+        );
+      }
+      
+      // Default generic table rendering
+      return (
+        <div className="relative overflow-x-auto my-8 rounded-lg border border-burgundy/20 shadow-sm">
+          {/* Mobile scroll indicator */}
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/80 to-transparent pointer-events-none lg:hidden z-20" />
+          <table className="w-full border-collapse" {...props}>
+            {children}
+          </table>
+        </div>
+      );
+    },
 
     thead: ({ children, ...props }: any) => (
       <thead 
@@ -411,6 +429,57 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
         {...props}
       />
     )
+  };
+
+  // Helper to extract table data from React children for evidence table detection
+  const extractTableData = (children: React.ReactNode): { headers: string[]; rows: string[][] } | null => {
+    try {
+      const headers: string[] = [];
+      const rows: string[][] = [];
+      
+      React.Children.forEach(children, (child: any) => {
+        if (child?.type === 'thead' || child?.props?.className?.includes?.('thead')) {
+          // Extract headers from thead
+          const theadChildren = child.props?.children;
+          React.Children.forEach(theadChildren, (tr: any) => {
+            React.Children.forEach(tr?.props?.children, (th: any) => {
+              const text = extractTextFromNode(th);
+              if (text) headers.push(text);
+            });
+          });
+        }
+        if (child?.type === 'tbody' || child?.props?.className?.includes?.('tbody')) {
+          // Extract rows from tbody
+          React.Children.forEach(child?.props?.children, (tr: any) => {
+            const row: string[] = [];
+            React.Children.forEach(tr?.props?.children, (td: any) => {
+              const text = extractTextFromNode(td);
+              row.push(text || '');
+            });
+            if (row.length > 0) rows.push(row);
+          });
+        }
+      });
+      
+      return headers.length > 0 ? { headers, rows } : null;
+    } catch (e) {
+      console.warn('Failed to extract table data:', e);
+      return null;
+    }
+  };
+
+  const extractTextFromNode = (node: any): string => {
+    if (!node) return '';
+    if (typeof node === 'string') return node;
+    if (typeof node === 'number') return String(node);
+    if (node.props?.children) {
+      if (typeof node.props.children === 'string') return node.props.children;
+      if (Array.isArray(node.props.children)) {
+        return node.props.children.map(extractTextFromNode).join(' ');
+      }
+      return extractTextFromNode(node.props.children);
+    }
+    return '';
   };
 
   return (
