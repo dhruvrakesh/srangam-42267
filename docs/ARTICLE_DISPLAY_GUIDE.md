@@ -82,10 +82,12 @@ For chronological evidence or historical events, use this format:
 | 1748 | Sirhind | Ahmad Shah Abdali, Ala Singh | Alliance formed | Political pragmatism | *Twarikh-i-Punjab* |
 ```
 
-### Table Rendering Features (Phase 4 - Dynamic)
+### Table Rendering Features (Phase 5 - Robust Extraction)
 
 | Feature | Description |
 |---------|-------------|
+| **Robust Extraction** | `extractTableData()` handles all ReactMarkdown output variations |
+| **Hindi Support** | `isEvidenceTable()` detects Hindi headers (तिथि, स्थान, साक्ष्य) |
 | **Dynamic Column Sizing** | Columns auto-size based on content (no fixed widths) |
 | **Sticky Headers** | Header row stays visible when scrolling |
 | **Zebra Striping** | Alternating row colors for readability |
@@ -94,6 +96,16 @@ For chronological evidence or historical events, use this format:
 | **First Column Emphasis** | Date column has subtle background |
 | **Mobile Scroll** | Horizontal scroll with gradient indicator |
 | **Script Fonts** | Devanagari, Gurmukhi auto-applied in cells |
+| **Table Protection** | Cultural term enhancement skips table content |
+
+### EvidenceTable Detection Rules
+
+The `isEvidenceTable()` function detects tables using:
+
+1. **Minimum columns**: 5+ columns required
+2. **English patterns**: Date/Year + Place/Location + Evidence/Source
+3. **Hindi patterns**: तिथि/वर्ष + स्थान/जगह + साक्ष्य/प्रमाण
+4. **Scholarly fallback**: 6+ columns with Sl#/Event headers
 
 ### EvidenceTable Component (Specialized)
 

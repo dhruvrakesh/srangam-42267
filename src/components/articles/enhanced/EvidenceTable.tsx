@@ -214,14 +214,31 @@ export const EvidenceTable: React.FC<EvidenceTableProps> = ({
 
 /**
  * Utility to detect if a table is an evidence table based on headers
+ * Supports English AND Hindi patterns
  */
 export const isEvidenceTable = (headers: string[]): boolean => {
+  if (headers.length < 5) return false; // Evidence tables have at least 5-6 columns
+  
   const headerText = headers.join(' ').toLowerCase();
-  return (
-    (headerText.includes('date') || headerText.includes('year')) &&
-    (headerText.includes('place') || headerText.includes('location')) &&
-    (headerText.includes('evidence') || headerText.includes('source'))
-  );
+  
+  // English patterns
+  const hasEnglishDate = headerText.includes('date') || headerText.includes('year') || headerText.includes('period');
+  const hasEnglishPlace = headerText.includes('place') || headerText.includes('location');
+  const hasEnglishEvidence = headerText.includes('evidence') || headerText.includes('source') || headerText.includes('type');
+  const hasEnglishPattern = hasEnglishDate && hasEnglishPlace && hasEnglishEvidence;
+  
+  // Hindi patterns (तिथि = date, स्थान = place, साक्ष्य = evidence)
+  const hasHindiDate = headerText.includes('तिथि') || headerText.includes('वर्ष') || headerText.includes('काल');
+  const hasHindiPlace = headerText.includes('स्थान') || headerText.includes('जगह');
+  const hasHindiEvidence = headerText.includes('साक्ष्य') || headerText.includes('प्रमाण') || headerText.includes('स्रोत');
+  const hasHindiPattern = hasHindiDate && hasHindiPlace && hasHindiEvidence;
+  
+  // Fallback: If we have 6+ columns with typical scholarly headers
+  const hasSlNumber = headerText.includes('sl') || headerText.includes('#') || headerText.includes('क्र');
+  const hasEvent = headerText.includes('event') || headerText.includes('घटना');
+  const hasScholarlyFallback = headers.length >= 6 && (hasSlNumber || hasEvent);
+  
+  return hasEnglishPattern || hasHindiPattern || hasScholarlyFallback;
 };
 
 export default EvidenceTable;

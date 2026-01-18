@@ -213,6 +213,30 @@ srangam_tags
 
 ## 🔧 **Recent Fixes & Deployments**
 
+### **2025-01-18 (Phase 5: Robust English Table Rendering Fix)**
+1. 🔧 **Robust Table Data Extraction**:
+   - Rewrote `extractTableData()` in `ProfessionalTextFormatter.tsx`
+   - Now handles all ReactMarkdown output variations (strings, functions, components)
+   - Added `isTheadElement()` and `isTbodyElement()` helper functions
+   - Recursive node processing for nested structures
+   - Console logging for debugging: `[TableExtraction] { headerCount, rowCount, headers }`
+
+2. 🎯 **Improved isEvidenceTable Detection**:
+   - Updated `EvidenceTable.tsx` to support Hindi patterns (तिथि, स्थान, साक्ष्य)
+   - Added scholarly fallback for 6+ column tables with Sl# or Event headers
+   - Detection now works for both English AND Hindi content
+
+3. 🛡️ **Cultural Term Enhancement Protection**:
+   - Updated `culturalTermEnhancer.ts` to skip tables during enhancement
+   - Protects HTML tables (`<table>...</table>`) with placeholder extraction
+   - Protects markdown tables (lines starting with `|`) separately
+   - Restores tables after enhancement to prevent HTML corruption
+
+4. 📊 **Generic Table CSS Improvements**:
+   - Increased `min-w` from 800px to 900px for 6-column tables
+   - Better cell constraints with `min-w-[80px]` and `max-w-[280px]`
+   - Enhanced first column emphasis for chronological data
+
 ### **2025-01-18 (Phase 4-5: Evidence Tables & Auto Slug Alias)**
 1. 📊 **Dynamic Table Rendering (Phase 4A)**:
    - Removed hard-coded 6-column `<colgroup>` that was breaking tables
@@ -232,28 +256,6 @@ srangam_tags
    - Automatically generates SEO-friendly short slugs (max 40 chars)
    - Removes dates, stop words, and normalizes diacritics
    - Future imports will never have missing slug_alias values
-
-### **2025-01-18 (Phase 3: Evidence Table Deep Fix)**
-1. 📊 **Evidence Table Rendering Overhaul**:
-   - Updated CURRENT_STATUS.md with 40 article count
-   - Documented 12 articles missing slug_alias
-   - Created ARTICLE_DISPLAY_GUIDE.md for markdown best practices
-   - Updated ARTICLE_STATUS.md with integration status
-
-2. 🔗 **Slug Alias Generation (Phase 1)**:
-   - Added slug_alias for 12 articles via database migration
-   - All articles now have SEO-friendly short URLs
-   - Enables proper URL routing for all articles
-
-3. 📊 **Enhanced Table Rendering (Phase 2)**:
-   - Upgraded ProfessionalTextFormatter.tsx with:
-     - Sticky table headers on scroll
-     - Zebra striping (alternating row colors)
-     - Hover highlights for active rows
-     - Max-width with text wrapping
-     - Mobile scroll indicator gradient
-     - First column emphasis for dates
-     - Script-aware font classes in cells
 
 ### **2025-12-27 (Security Fixes & Cross References Browser)**
 1. ✅ **Cross References Browser Bug Fix**:
