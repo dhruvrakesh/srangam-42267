@@ -345,17 +345,42 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
     ),
 
     table: ({ children, ...props }: any) => (
-      <div className="overflow-x-auto my-8">
-        <table className="w-full border-collapse" {...props}>
+      <div className="relative overflow-x-auto my-8 rounded-lg border border-burgundy/20 shadow-sm">
+        {/* Mobile scroll indicator */}
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/80 to-transparent pointer-events-none lg:hidden z-20" />
+        <table className="w-full border-collapse min-w-[800px]" {...props}>
           {children}
         </table>
       </div>
     ),
 
+    thead: ({ children, ...props }: any) => (
+      <thead 
+        className="sticky top-0 z-10 bg-sandalwood/95 backdrop-blur-sm border-b-2 border-burgundy/30"
+        {...props}
+      >
+        {children}
+      </thead>
+    ),
+
+    tbody: ({ children, ...props }: any) => (
+      <tbody 
+        className="divide-y divide-burgundy/10 [&>tr:nth-child(even)]:bg-cream/30 [&>tr:hover]:bg-saffron/5 transition-colors"
+        {...props}
+      >
+        {children}
+      </tbody>
+    ),
+
     td: ({ children, ...props }: any) => {
       return (
         <td 
-          className="border border-burgundy/20 px-4 py-3 text-base break-words" 
+          className={cn(
+            "border border-burgundy/15 px-4 py-3 text-sm",
+            "max-w-[300px] break-words align-top",
+            "first:font-medium first:bg-sandalwood/20",
+            scriptFont
+          )}
           {...props}
         >
           {children}
@@ -366,7 +391,12 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
     th: ({ children, ...props }: any) => {
       return (
         <th 
-          className="border border-burgundy/30 bg-burgundy/5 px-4 py-3 text-left font-semibold text-burgundy break-words" 
+          className={cn(
+            "border border-burgundy/20 bg-burgundy/10 px-4 py-3",
+            "text-left font-semibold text-burgundy text-sm",
+            "whitespace-nowrap",
+            scriptFont
+          )}
           {...props}
         >
           {children}
