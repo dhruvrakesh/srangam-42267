@@ -215,22 +215,15 @@ serve(async (req) => {
 
             const result = await response.json();
             
-            // Send audio chunk as SSE
-            const event = {
-              type: 'audio.delta',
-              delta: result.audioContent,
-              index: i,
-              total: chunks.length,
-            };
-            
+            // Send audio chunk as NDJSON (matches client expectations)
             controller.enqueue(
-              new TextEncoder().encode(`data: ${JSON.stringify(event)}\n\n`)
+              new TextEncoder().encode(JSON.stringify({ audio: result.audioContent }) + '\n')
             );
           }
 
           // Send completion event
           controller.enqueue(
-            new TextEncoder().encode(`data: ${JSON.stringify({ type: 'audio.done' })}\n\n`)
+            new TextEncoder().encode(JSON.stringify({ done: true }) + '\n')
           );
           controller.close();
         } catch (error) {
@@ -243,9 +236,8 @@ serve(async (req) => {
     return new Response(stream, {
       headers: {
         ...corsHeaders,
-        'Content-Type': 'text/event-stream',
+        'Content-Type': 'application/x-ndjson',
         'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
       },
     });
   } catch (error) {
