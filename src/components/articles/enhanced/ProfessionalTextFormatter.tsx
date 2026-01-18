@@ -348,7 +348,16 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
       <div className="relative overflow-x-auto my-8 rounded-lg border border-burgundy/20 shadow-sm">
         {/* Mobile scroll indicator */}
         <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/80 to-transparent pointer-events-none lg:hidden z-20" />
-        <table className="w-full border-collapse min-w-[800px]" {...props}>
+        <table className="w-full border-collapse table-fixed min-w-[900px]" {...props}>
+          <colgroup>
+            {/* Evidence table column widths: Date(10%) Place(12%) Actors(15%) Event(20%) Meaning(23%) Evidence(20%) */}
+            <col className="w-[10%]" />
+            <col className="w-[12%]" />
+            <col className="w-[15%]" />
+            <col className="w-[20%]" />
+            <col className="w-[23%]" />
+            <col className="w-[20%]" />
+          </colgroup>
           {children}
         </table>
       </div>
@@ -376,8 +385,8 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
       return (
         <td 
           className={cn(
-            "border border-burgundy/15 px-4 py-3 text-sm",
-            "max-w-[300px] break-words align-top",
+            "border border-burgundy/15 px-3 py-2.5 text-sm leading-relaxed",
+            "break-words hyphens-auto align-top",
             "first:font-medium first:bg-sandalwood/20",
             scriptFont
           )}
@@ -392,9 +401,9 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
       return (
         <th 
           className={cn(
-            "border border-burgundy/20 bg-burgundy/10 px-4 py-3",
-            "text-left font-semibold text-burgundy text-sm",
-            "whitespace-nowrap",
+            "border border-burgundy/20 bg-burgundy/10 px-3 py-2.5",
+            "text-left font-semibold text-burgundy text-xs uppercase tracking-wide",
+            "break-words hyphens-auto",
             scriptFont
           )}
           {...props}

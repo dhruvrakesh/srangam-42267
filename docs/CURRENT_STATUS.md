@@ -213,6 +213,17 @@ srangam_tags
 
 ## 🔧 **Recent Fixes & Deployments**
 
+### **2025-01-18 (Phase 3: Evidence Table Deep Fix)**
+1. 📊 **Evidence Table Rendering Overhaul**:
+   - Removed `whitespace-nowrap` from headers (allows natural wrapping)
+   - Added `table-fixed` layout with explicit column widths via `<colgroup>`
+   - Column distribution: Date(10%), Place(12%), Actors(15%), Event(20%), Meaning(23%), Evidence(20%)
+   - Added `hyphens-auto` for intelligent word breaks
+   - Headers now use `text-xs uppercase tracking-wide` for compact display
+   - Added `leading-relaxed` to cells for better line spacing
+   - Minimum table width increased to 900px for 6-column evidence tables
+   - Tables now visually match original DOCX document quality
+
 ### **2025-12-28 (Phase 0-2: Documentation, Slugs & Table Rendering)**
 1. 📄 **Documentation Update (Phase 0)**:
    - Updated CURRENT_STATUS.md with 40 article count

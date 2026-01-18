@@ -82,17 +82,22 @@ For chronological evidence or historical events, use this format:
 | 1748 | Sirhind | Ahmad Shah Abdali, Ala Singh | Alliance formed | Political pragmatism | *Twarikh-i-Punjab* |
 ```
 
-### Table Rendering Features (Phase 2)
+### Table Rendering Features (Phase 3 - Enhanced)
 
 | Feature | Description |
 |---------|-------------|
 | **Sticky Headers** | Header row stays visible when scrolling |
 | **Zebra Striping** | Alternating row colors for readability |
 | **Hover Highlights** | Active row highlights on mouseover |
-| **Max-Width** | Cells wrap at 300px to prevent overflow |
-| **First Column Emphasis** | Date/Place column has subtle background |
+| **Fixed Column Widths** | `table-fixed` with explicit `<colgroup>` percentages |
+| **Column Distribution** | Date(10%), Place(12%), Actors(15%), Event(20%), Meaning(23%), Evidence(20%) |
+| **Header Wrapping** | Headers wrap naturally (no `whitespace-nowrap`) |
+| **Hyphenation** | `hyphens-auto` for intelligent word breaks |
+| **Compact Headers** | `text-xs uppercase tracking-wide` styling |
+| **First Column Emphasis** | Date column has subtle background |
 | **Mobile Scroll** | Horizontal scroll with gradient indicator |
-| **Script Fonts** | Devanagari, Gurmukhi auto-applied |
+| **Script Fonts** | Devanagari, Gurmukhi auto-applied in cells |
+| **Min Width** | 900px ensures proper 6-column layout |
 
 ### Complex Evidence Tables
 
