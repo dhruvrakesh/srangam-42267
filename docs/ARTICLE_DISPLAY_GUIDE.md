@@ -82,24 +82,29 @@ For chronological evidence or historical events, use this format:
 | 1748 | Sirhind | Ahmad Shah Abdali, Ala Singh | Alliance formed | Political pragmatism | *Twarikh-i-Punjab* |
 ```
 
-### Table Rendering Features (Phase 3 - Enhanced)
+### Table Rendering Features (Phase 4 - Dynamic)
 
 | Feature | Description |
 |---------|-------------|
+| **Dynamic Column Sizing** | Columns auto-size based on content (no fixed widths) |
 | **Sticky Headers** | Header row stays visible when scrolling |
 | **Zebra Striping** | Alternating row colors for readability |
 | **Hover Highlights** | Active row highlights on mouseover |
-| **Fixed Column Widths** | `table-fixed` with explicit `<colgroup>` percentages |
-| **Column Distribution** | Date(10%), Place(12%), Actors(15%), Event(20%), Meaning(23%), Evidence(20%) |
-| **Header Wrapping** | Headers wrap naturally (no `whitespace-nowrap`) |
-| **Hyphenation** | `hyphens-auto` for intelligent word breaks |
-| **Compact Headers** | `text-xs uppercase tracking-wide` styling |
+| **Min/Max Cell Width** | Cells have `min-w-[80px]` and `max-w-[280px]` |
 | **First Column Emphasis** | Date column has subtle background |
 | **Mobile Scroll** | Horizontal scroll with gradient indicator |
 | **Script Fonts** | Devanagari, Gurmukhi auto-applied in cells |
-| **Min Width** | 900px ensures proper 6-column layout |
 
-### Complex Evidence Tables
+### EvidenceTable Component (Specialized)
+
+For 6-column scholarly evidence tables, use the dedicated `EvidenceTable` component:
+
+| Feature | Description |
+|---------|-------------|
+| **Source Quality Badges** | Primary (emerald), Secondary (amber), Tradition (slate) |
+| **Mobile Card Layout** | Collapsible cards on screens < 768px |
+| **Optimized Columns** | Date(10%), Place(12%), Actors(15%), Event(20%), Meaning(23%), Evidence(20%) |
+| **Detection** | Auto-detects tables with Date + Place + Evidence headers |
 
 For detailed evidence with sources:
 

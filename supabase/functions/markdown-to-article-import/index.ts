@@ -307,6 +307,35 @@ function generateSlug(title: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
+/**
+ * Generate short SEO-friendly slug alias (3-4 meaningful words, max 40 chars)
+ * Example: "Baba Ala Singh (1691–1765): Founder of Patiala and Alliances with Abdali"
+ *       -> "baba-ala-singh-patiala"
+ */
+function generateShortSlug(title: string): string {
+  const stopWords = ['the', 'and', 'from', 'with', 'for', 'into', 'upon', 'across', 'about', 'between', 'founder', 'alliances'];
+  
+  const words = title
+    .toLowerCase()
+    // Normalize Sanskrit diacritics to ASCII
+    .replace(/[āĀ]/g, 'a').replace(/[īĪ]/g, 'i').replace(/[ūŪ]/g, 'u')
+    .replace(/[ṛṚṝṜ]/g, 'r').replace(/[ṇṆ]/g, 'n').replace(/[ṭṬ]/g, 't')
+    .replace(/[ḍḌ]/g, 'd').replace(/[śŚṣṢ]/g, 's').replace(/[ḥḤ]/g, 'h')
+    .replace(/[ṁṀ]/g, 'm').replace(/[ḷḶḹḸ]/g, 'l').replace(/[ñÑ]/g, 'n')
+    // Remove dates in parentheses like (1691–1765)
+    .replace(/\([^)]*\d+[^)]*\)/g, '')
+    // Remove colons and following text patterns like ": Founder of"
+    .replace(/:\s*[^,]+/g, '')
+    // Remove all non-alphanumeric except spaces
+    .replace(/[^a-z0-9\s]/g, '')
+    // Split and filter
+    .split(/\s+/)
+    .filter(w => w.length > 2 && !stopWords.includes(w))
+    .slice(0, 4);
+  
+  return words.join('-').substring(0, 40);
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -484,8 +513,12 @@ Deno.serve(async (req) => {
       ? generateExcerptFromContent(htmlContent)
       : null;
 
+    // Auto-generate slug_alias if not provided in frontmatter (reuse titleText from above)
+    const autoSlugAlias = generateShortSlug(titleText);
+
     const articleData = {
       slug,
+      slug_alias: frontmatter.slug_alias || autoSlugAlias,  // Auto-generate if missing
       title: typeof frontmatter.title === 'string' 
         ? { [targetLang]: cleanTitle(frontmatter.title) }
         : frontmatter.title,
@@ -503,6 +536,8 @@ Deno.serve(async (req) => {
       status: 'published',
       featured: false,
     };
+    
+    console.log('Generated slug_alias:', articleData.slug_alias);
 
     console.log('Article data prepared:', { slug, title: articleData.title });
 
