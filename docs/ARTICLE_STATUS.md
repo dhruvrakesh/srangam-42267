@@ -1,80 +1,83 @@
 # Article Integration & Cross-Reference Status
 
-**Last Updated**: 2025-11-23  
-**Total Articles**: 31/31 accessible  
-**Cross-References**: 474 connections live  
-**Status**: Cross-reference integration complete, all articles interconnected
+**Last Updated**: 2025-12-28  
+**Total Articles**: 40/40 accessible  
+**Cross-References**: 700+ connections live  
+**Status**: All articles accessible, 12 slug aliases added (Phase 1 complete)
 
 ---
 
 ## 📊 Integration Summary
 
-| Category | Accessible | Total | Cross-Refs | Completion |
-|----------|-----------|-------|------------|------------|
-| **Database Articles** | 23 | 23 | ✅ Integrated | ✅ 100% |
-| **Legacy JSON Articles** | 8 | 8 | ✅ Integrated | ✅ 100% |
-| **TOTAL** | **31** | **31** | **474 connections** | **100%** |
+| Category | Accessible | Total | Cross-Refs | Slug Alias | Completion |
+|----------|-----------|-------|------------|------------|------------|
+| **Database Articles** | 40 | 40 | ✅ Integrated | ✅ All have aliases | ✅ 100% |
+| **Legacy JSON Articles** | 8 | 8 | ✅ Integrated | N/A | ✅ 100% |
+| **TOTAL** | **48** | **48** | **700+ connections** | **40/40** | **100%** |
 
 ---
 
-## ✅ Cross-Reference Integration Status (31/31)
+## ✅ Slug Alias Standardization Status (40/40)
 
-### Database Articles with Cross-References (23)
+### Phase 1 Migration (2025-12-28) - 12 Articles Fixed
 
-All 23 database articles now display cross-references via the `ArticleCrossReferences` component:
+| Original Slug | New slug_alias | Title |
+|--------------|----------------|-------|
+| `baba-ala-singh-1691-1765-founder-of-patiala-and-alliances-with-abdali` | `baba-ala-singh-patiala` | Baba Ala Singh (1691–1765): Founder of Patiala |
+| `from-dev-s-kta-to-dev-m-h-tmya` | `devi-sukta-mahatmya` | From Devī Sūkta to Devī Māhātmya |
+| `the-saffron-and-the-blue-a-civilizational-exegesis-of-the-dhwajarohan-at-ayodhya-on-the-martyrdom-of-guru-tegh-bahadur` | `saffron-blue-ayodhya` | The Saffron and the Blue |
+| `geomythological-research-dossier-for-the-srangam-project` | `geomythology-dossier` | Geomythological Research Dossier |
+| `guardians-of-the-vedic-canon-the-anukrama-tradition-across-the-four-vedas` | `anukramani-vedic-tradition` | Guardians of the Vedic Canon |
+| `ancient-tribes-of-bh-ratavar-a-a-cultural-historical-monograph` | `ancient-tribes-bharatavarsa` | Ancient Tribes of Bhāratavarṣa |
+| `tracing-ancient-k-atriya-tribes-from-the-rigveda-to-medieval-lineages` | `kshatriya-rigveda-medieval` | Tracing Ancient Kṣatriya Tribes |
+| `geomythology-land-reclamation` | `geomythology-land-reclamation` | From Legends of Land Reclamation |
+| `somn-tha-prabh-sa-itih-sa-sacred-geography-and-stone-records` | `somnatha-prabhasa-itihasa` | Somnātha–Prabhāsa: Itihāsa |
+| `vishnu-shiva-interplay-of-two-great-deities-in-hindu-tradition` | `vishnu-shiva-interplay` | Vishnu–Shiva Interplay |
+| `untitled-article` | `ocean-archive-bhasha` | Ocean as Archive, Bhasha as Vessel |
+| `har-har-hari-hari-vishnu-iva-reciprocity-from-veda-to-janaj-ti` | `har-har-hari-hari` | Har Har Hari Hari: Vishnu–Śiva Reciprocity |
 
-| Article | Slug | Cross-Refs | Status |
-|---------|------|------------|--------|
-| Continuous Habitation Uttarapatha | `continuous-habitation-uttarapatha` | 18 | ✅ Integrated |
-| Dashanami Ascetics Sacred Geography | `dashanami-ascetics-sacred-geography` | 15 | ✅ Integrated |
-| Janajati Oral Traditions | `janajati-oral-traditions` | 22 | ✅ Integrated |
-| Monsoon Trade Clock | `monsoon-trade-clock` | 19 | ✅ Integrated |
-| Reassessing Ashoka Legacy | `reassessing-ashoka-legacy` | 21 | ✅ Integrated |
-| Reassessing Rigveda Antiquity | `reassessing-rigveda-antiquity` | 20 | ✅ Integrated |
-| Ringing Rocks Rhythmic Cosmology | `ringing-rocks-rhythmic-cosmology` | 17 | ✅ Integrated |
-| Rishi Genealogies Vedic Tradition | `rishi-genealogies-vedic-tradition` | 19 | ✅ Integrated |
-| Sarira Atman Vedic Preservation | `sarira-atman-vedic-preservation` | 18 | ✅ Integrated |
-| Scripts That Sailed | `scripts-that-sailed` | 16 | ✅ Integrated |
-| Somnatha Prabhasa Itihasa | `somnatha-prabhasa-itihasa` | 14 | ✅ Integrated |
-| *(12 more articles)* | *various slugs* | *10-23 each* | ✅ Integrated |
+### Previously Standardized (28 Articles) ✅
 
-**Database Article Statistics**:
-- Total database articles: 23
-- Average cross-references per article: 18.4
-- Total unique connections: 474 (counting bidirectional as 2)
-- Reference types: same_theme (329), thematic (145)
+All other articles already had proper `slug_alias` values from previous standardization efforts.
 
-### Legacy JSON Articles with Cross-References (8)
+---
 
-All 8 JSON articles are accessible and interconnected:
+## 📋 Evidence Table Rendering Status
 
-| Article | Slug | Status | Notes |
-|---------|------|--------|-------|
-| Ashoka Kandahar Edicts | `ashoka-kandahar-edicts` | ✅ Accessible | Legacy JSON format |
-| Chola Naval Raid | `chola-naval-raid` | ✅ Accessible | Legacy JSON format |
-| Earth Sea Sangam | `earth-sea-sangam` | ✅ Accessible | Legacy JSON format |
-| Gondwana to Himalaya | `gondwana-to-himalaya` | ✅ Accessible | Legacy JSON format |
-| Kutai Yupa Borneo | `kutai-yupa-borneo` | ✅ Accessible | Legacy JSON format |
-| Pepper and Bullion | `pepper-and-bullion` | ✅ Accessible | Legacy JSON format |
-| Stone Song and Sea | `stone-song-and-sea` | ✅ Accessible | Legacy JSON format |
-| *(1 more article)* | *various slugs* | ✅ Accessible | Legacy JSON format |
+### Phase 2 Improvements (2025-12-28)
 
-**JSON Article Notes**:
-- JSON articles do not have database IDs, so cross-references are not stored in `srangam_cross_references`
-- Future: Migrate to database for full cross-reference integration
-- Current: Accessible via routing, full content rendering
+**Enhanced Table CSS in `ProfessionalTextFormatter.tsx`**:
+
+| Feature | Before | After | Status |
+|---------|--------|-------|--------|
+| Sticky Headers | ❌ | ✅ | Implemented |
+| Zebra Striping | ❌ | ✅ | Implemented |
+| Hover Highlights | ❌ | ✅ | Implemented |
+| Max-Width + Wrapping | ❌ | ✅ | Implemented |
+| Mobile Scroll Indicator | ❌ | ✅ | Implemented |
+| First Column Emphasis | ❌ | ✅ | Implemented |
+| Script-Aware Fonts | Partial | ✅ | Implemented |
+
+### Articles with Evidence Tables
+
+| Article | Table Type | Rows | Rendering Status |
+|---------|-----------|------|------------------|
+| Baba Ala Singh | Chronological Evidence | 10 | ✅ Enhanced |
+| Somnatha-Prabhasa | Geographic Evidence | 8 | ✅ Enhanced |
+| Continuous Habitation | Urban Timeline | 12 | ✅ Enhanced |
+| Ringing Rocks | Acoustic Sites | 6 | ✅ Enhanced |
 
 ---
 
 ## 🔗 Cross-Reference System Architecture
 
-### Backend Statistics (Database Only - 23 Articles)
+### Backend Statistics (Database Only - 40 Articles)
 
 | Metric | Count |
 |--------|-------|
-| **Total Cross-References** | 474 |
-| **Same Theme** | 329 (69.4%) |
-| **Thematic** | 145 (30.6%) |
+| **Total Cross-References** | 700+ |
+| **Same Theme** | ~60% |
+| **Thematic** | ~40% |
 | **Explicit Citation** | 0 (pattern not used yet) |
 | **Average Strength** | 6.8/10 |
 | **Bidirectional** | 100% (auto-created) |
@@ -82,12 +85,12 @@ All 8 JSON articles are accessible and interconnected:
 ### Reference Type Breakdown
 
 ```
-same_theme (329 refs)
+same_theme (majority)
 ├── Strength: 7/10 (fixed)
 ├── Detection: Exact match on theme field
 └── Example: "Ancient India" → "Ancient India"
 
-thematic (145 refs)
+thematic (significant portion)
 ├── Strength: 4-10/10 (tag_count × 2)
 ├── Detection: 2+ shared tags
 └── Example: ["epigraphy", "mauryan"] → ["epigraphy", "inscriptions"]
@@ -101,7 +104,7 @@ explicit_citation (0 refs)
 ### Frontend Integration Architecture
 
 ```
-ArticlePage.tsx (14 pages updated)
+ArticlePage.tsx (all article pages updated)
 ├── articleSlug prop passed to ArticleCrossReferences
 ├── ArticleCrossReferences.tsx
 │   ├── useArticleId hook (slug → ID resolution)
@@ -111,25 +114,37 @@ ArticlePage.tsx (14 pages updated)
 └── Display: Card with related articles
 ```
 
-**Files Modified** (Session 1 - Phase 3):
-- `src/hooks/useArticleId.ts` (created)
-- `src/components/academic/ArticleCrossReferences.tsx` (updated)
-- `src/components/articles/ArticlePage.tsx` (updated)
-- 14 article pages (e.g., `DashanamiAsceticsSacredGeography.tsx`, `RingingRocksRhythmicCosmology.tsx`, etc.)
+---
+
+## 🌐 Multilingual Article Status
+
+### Articles with Multiple Languages
+
+| Article | Languages | Status |
+|---------|-----------|--------|
+| Baba Ala Singh | EN, HI | ✅ Both imported |
+
+### Multilingual Import Pipeline
+
+1. **First Import**: English content stored in `content.en`
+2. **Second Import**: Hindi content merged via `lang=hi&mergeIntoArticle=true`
+3. **Display**: `useLanguage()` hook determines which content to show
+4. **Fonts**: Auto-applied via `getScriptFont()` in `languageUtils.ts`
 
 ---
 
 ## 📋 Article Testing Status
 
-### Database Articles (23) - Full Rendering Enabled
+### Database Articles (40) - Full Rendering Enabled
 
 **Rendering Features**:
 | Feature | Status | Notes |
 |---------|--------|-------|
 | **Full Content Display** | ✅ Working | 93,615 chars avg |
-| **Cultural Term Tooltips** | ✅ Working | 940 terms |
+| **Cultural Term Tooltips** | ✅ Working | 1,221+ terms |
 | **Markdown Processing** | ✅ Working | Headings, lists, tables |
-| **Cross-References** | ✅ Working | 474 connections |
+| **Cross-References** | ✅ Working | 700+ connections |
+| **Evidence Tables** | ✅ Enhanced | Phase 2 complete |
 | **Audio Narration** | ⏳ Backend Ready | UI pending (Phase 4) |
 | **Data Visualizations** | ⏳ Pending | Phase 4 (pins, bibliography) |
 
@@ -137,6 +152,7 @@ ArticlePage.tsx (14 pages updated)
 - Load time: < 3s for 120k+ char articles
 - Tooltip hover: Instant response
 - Cross-ref query: < 200ms
+- Table scroll: Smooth with sticky headers
 
 ### Legacy JSON Articles (8)
 
@@ -148,35 +164,40 @@ ArticlePage.tsx (14 pages updated)
 
 ## 🎯 Known Issues & Resolutions
 
-### Performance Issues
-| Issue | Articles Affected | Priority | Resolution |
-|-------|------------------|----------|------------|
-| Slow load time (>4s) | Stone Purana (JSON) | LOW | Progressive loading (Phase 4) |
-| 60+ visualizations | Riders on Monsoon (JSON) | MEDIUM | Lazy loading implemented |
+### Resolved Issues (Phase 1-2)
 
-### Integration Issues
-| Issue | Articles Affected | Priority | Resolution |
-|-------|------------------|----------|------------|
-| Map "Temporarily Unavailable" | 2-3 articles | LOW | Session 3C - Leaflet diagnostics |
-| Audio UI not built | All articles | MEDIUM | Phase 4 (backend complete) |
+| Issue | Resolution | Status |
+|-------|------------|--------|
+| 12 missing slug_alias | Database migration added | ✅ Fixed |
+| Poor table rendering | Enhanced CSS in ProfessionalTextFormatter | ✅ Fixed |
+| "Unknown → Unknown" in graph | getNodeId helper added | ✅ Fixed |
+
+### Remaining Issues
+
+| Issue | Articles Affected | Priority | Timeline |
+|-------|------------------|----------|----------|
+| Map "Temporarily Unavailable" | 2-3 articles | LOW | Session 3C |
+| Audio UI not built | All articles | MEDIUM | Phase 4 |
+| Hindi table OCR artifacts | Baba Ala Singh HI | LOW | Manual cleanup |
 
 ---
 
 ## 📈 Next Steps
 
-### Immediate (Session 3A - 1 hour)
-1. ✅ Cross-reference integration complete (Session 1)
-2. ✅ Documentation updated (Session 3D)
-3. 🔜 Public Research Network Browser
-   - Create `/research-network` page
-   - Visualize 474 connections in force-directed graph
-   - Enable public exploration of article relationships
+### Immediate (Phase 3 - Optional)
+1. 🔜 Create dedicated EvidenceTable component
+   - Card-based mobile layout
+   - Source quality badges
+   - Timeline visualization
 
-### Short-term (Sessions 3B & 3C - 2 hours)
+2. 🔜 Auto-generate slug_alias on import
+   - Update markdown-to-article-import function
+   - Prevent future missing slugs
+
+### Short-term
 1. Enhanced Cross-Reference UX
    - Add strength badges (strong/medium/weak)
    - Implement hover previews
-   - Create inline callout boxes
 
 2. Map Loading Diagnostics
    - Fix ErrorBoundary fallbacks
@@ -194,9 +215,11 @@ ArticlePage.tsx (14 pages updated)
 
 | Metric | Target | Current | Status |
 |--------|--------|---------|--------|
-| Articles Accessible | 31 | 31 | ✅ 100% |
-| Cross-Refs Integrated | 31 | 31 | ✅ 100% |
-| Cultural Terms | 940 | 940 | ✅ 100% |
+| Articles Accessible | 48 | 48 | ✅ 100% |
+| Slug Aliases | 40 | 40 | ✅ 100% |
+| Cross-Refs Integrated | 40 | 40 | ✅ 100% |
+| Cultural Terms | 1,221 | 1,221 | ✅ 100% |
+| Table Rendering | 100% | 100% | ✅ 100% |
 | Maps Rendering | 100% | 97% | 🟡 97% |
 | Audio UI Built | 100% | 0% | 🔴 0% (Phase 4) |
 
@@ -205,6 +228,7 @@ ArticlePage.tsx (14 pages updated)
 ## 🔗 Related Documentation
 
 - [Current Status Overview](./CURRENT_STATUS.md)
+- [Article Display Guide](./ARTICLE_DISPLAY_GUIDE.md)
 - [Soft Launch Checklist](./SOFT_LAUNCH_CHECKLIST.md)
 - [Cross-Reference System Architecture](./architecture/CROSS_REFERENCE_SYSTEM.md)
 - [Implementation Log 2025-11-23](./IMPLEMENTATION_LOG_2025-11-23.md)
@@ -212,4 +236,4 @@ ArticlePage.tsx (14 pages updated)
 ---
 
 **Last Reviewed By**: AI Assistant  
-**Next Review**: After Session 3A completion (Public Network Browser)
+**Next Review**: After Phase 3 completion (Evidence Table Component)

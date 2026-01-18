@@ -1,0 +1,275 @@
+# Article Display Guide
+
+**Last Updated**: 2025-12-28  
+**Purpose**: Best practices for markdown authoring, evidence tables, and multilingual content in Srangam
+
+---
+
+## 📝 Markdown Authoring Best Practices
+
+### Frontmatter Requirements
+
+Every article markdown file should include YAML frontmatter:
+
+```yaml
+---
+title: "Article Title Here"
+slug: "short-seo-friendly-slug"
+slug_alias: "even-shorter-alias"  # Optional, auto-generated if omitted
+author: "Author Name"
+theme: "Ancient India"  # One of 6 themes
+tags:
+  - primary-tag
+  - secondary-tag
+dek: "A one-sentence summary for article cards and SEO."
+published_date: "2025-12-28"
+---
+```
+
+### Supported Themes
+
+| Theme ID | Display Name |
+|----------|--------------|
+| `ancient-india` | Ancient India |
+| `indian-ocean` | Indian Ocean World |
+| `geology` | Geology & Deep Time |
+| `scripts` | Scripts & Inscriptions |
+| `empires` | Empires & Exchange |
+| `sacred-ecology` | Sacred Ecology |
+
+### Heading Hierarchy
+
+```markdown
+# H1 - Reserved for article title (auto-generated)
+
+## H2 - Major sections
+Use § symbol prefix (auto-rendered)
+
+### H3 - Subsections
+Use ◆ symbol prefix (auto-rendered)
+
+#### H4 - Sub-subsections (sparingly)
+```
+
+### Cultural Terms
+
+Mark cultural terms for tooltip highlighting:
+
+```markdown
+The {{cultural:dharma}} concept is central to understanding...
+```
+
+Or let the system auto-detect them (enabled by default via `autoHighlightTerms`).
+
+**Database of 1,221+ terms** includes:
+- Sanskrit philosophical terms (dharma, karma, moksha)
+- Historical terms (Maurya, Gupta, Chola)
+- Geographic terms (Uttarapatha, Daksinapatha)
+- Technical terms (shilpa, yantra, sutra)
+
+---
+
+## 📊 Evidence Table Format
+
+### Standard 6-Column Scholarly Table
+
+For chronological evidence or historical events, use this format:
+
+```markdown
+| Date | Place | Actors | Event | Meaning | Evidence |
+|------|-------|--------|-------|---------|----------|
+| c. 1700 CE | Barnala, Punjab | Baba Ala Singh | Fortification begins | Strategic consolidation | Regional chronicles |
+| 1748 | Sirhind | Ahmad Shah Abdali, Ala Singh | Alliance formed | Political pragmatism | *Twarikh-i-Punjab* |
+```
+
+### Table Rendering Features (Phase 2)
+
+| Feature | Description |
+|---------|-------------|
+| **Sticky Headers** | Header row stays visible when scrolling |
+| **Zebra Striping** | Alternating row colors for readability |
+| **Hover Highlights** | Active row highlights on mouseover |
+| **Max-Width** | Cells wrap at 300px to prevent overflow |
+| **First Column Emphasis** | Date/Place column has subtle background |
+| **Mobile Scroll** | Horizontal scroll with gradient indicator |
+| **Script Fonts** | Devanagari, Gurmukhi auto-applied |
+
+### Complex Evidence Tables
+
+For detailed evidence with sources:
+
+```markdown
+| Sl. | Date | Place | Actor(s) | Event | Significance | Evidence Type |
+|-----|------|-------|----------|-------|--------------|---------------|
+| 1 | c. 1700 CE | Barnala | Baba Ala Singh | Fortification | Strategic base | Archaeological |
+| 2 | 1748 | Sirhind | Ala Singh, Abdali | Alliance | Legitimacy | Textual (Primary) |
+| 3 | 1761 | Panipat | Ala Singh | Observed battle | Non-participation | Oral tradition |
+```
+
+**Source Quality Badges** (future Phase 3 enhancement):
+- `Archaeological` - Physical evidence
+- `Textual (Primary)` - Contemporary sources
+- `Textual (Secondary)` - Later compilations
+- `Oral tradition` - Traditional accounts
+- `Epigraphic` - Inscriptions
+
+---
+
+## 🌐 Multilingual Content Guidelines
+
+### Language Codes
+
+| Code | Language | Script | Font Class |
+|------|----------|--------|------------|
+| `en` | English | Latin | Default |
+| `hi` | Hindi | Devanagari | `font-noto-devanagari` |
+| `pa` | Punjabi | Gurmukhi | `font-noto-gurmukhi` |
+| `ta` | Tamil | Tamil | `font-noto-tamil` |
+| `sa` | Sanskrit | Devanagari | `font-noto-devanagari` |
+
+### Importing Multilingual Content
+
+**Step 1**: Import English version first
+```
+POST /functions/v1/markdown-to-article-import
+Body: { markdown content }
+```
+
+**Step 2**: Import Hindi/other translation with merge flag
+```
+POST /functions/v1/markdown-to-article-import?lang=hi&mergeIntoArticle=true
+Body: { Hindi markdown content }
+```
+
+**Step 3**: Verify in database
+```sql
+SELECT slug, content->>'en' IS NOT NULL as has_en, 
+       content->>'hi' IS NOT NULL as has_hi
+FROM srangam_articles 
+WHERE slug = 'baba-ala-singh-patiala';
+```
+
+### Hindi/Devanagari Best Practices
+
+1. **Diacritics**: Use IAST for romanization (ā, ī, ū, ṛ, ś, ṣ, ṇ)
+2. **Script**: Native Devanagari preferred for Hindi content
+3. **Tables**: Hindi content in tables renders with proper fonts
+4. **OCR Cleanup**: Check for common OCR errors:
+   - `।` (danda) vs `|` (pipe)
+   - `॥` (double danda) for verse endings
+   - Conjunct consonants (क्ष, ज्ञ, त्र)
+
+---
+
+## 🔧 Technical Implementation
+
+### File: `ProfessionalTextFormatter.tsx`
+
+The main article renderer with these features:
+
+```tsx
+// Auto-enhance cultural terms
+if (enableCulturalTerms && autoHighlightTerms) {
+  text = enhanceTextWithCulturalTerms(text, {
+    maxLength: 15000,
+    preserveExisting: true
+  });
+}
+```
+
+### Custom Renderers
+
+```tsx
+table: ({ children }) => (
+  <div className="relative overflow-x-auto my-8 rounded-lg border border-burgundy/20 shadow-sm">
+    <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/80 to-transparent pointer-events-none lg:hidden" />
+    <table className="w-full border-collapse min-w-[800px]">
+      {children}
+    </table>
+  </div>
+),
+
+thead: ({ children }) => (
+  <thead className="sticky top-0 z-10 bg-sandalwood/90 backdrop-blur-sm border-b-2 border-burgundy/30">
+    {children}
+  </thead>
+),
+
+tbody: ({ children }) => (
+  <tbody className="divide-y divide-burgundy/10 [&>tr:nth-child(even)]:bg-cream/30 [&>tr:hover]:bg-saffron/5">
+    {children}
+  </tbody>
+),
+```
+
+### CSS Classes Used
+
+| Class | Purpose |
+|-------|---------|
+| `bg-sandalwood/90` | Header background |
+| `bg-cream/30` | Zebra stripe color |
+| `bg-saffron/5` | Hover highlight |
+| `border-burgundy/20` | Table borders |
+| `text-burgundy` | Header text |
+| `backdrop-blur-sm` | Frosted glass effect |
+
+---
+
+## 📱 Responsive Design
+
+### Mobile Table Behavior
+
+- Tables scroll horizontally on mobile
+- Gradient indicator shows more content to right
+- Minimum width of 800px ensures proper layout
+- First column sticky (future enhancement)
+
+### Breakpoints
+
+| Breakpoint | Table Behavior |
+|------------|----------------|
+| `< 640px` (mobile) | Horizontal scroll, gradient indicator visible |
+| `640-1024px` (tablet) | Horizontal scroll if needed |
+| `> 1024px` (desktop) | Full table visible |
+
+---
+
+## 🔍 Debugging Article Display
+
+### Common Issues
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| "Loading article..." | Missing slug_alias | Add slug_alias in database |
+| Raw HTML in content | Markdown not processed | Check ReactMarkdown component |
+| Missing cultural tooltips | Term not in database | Add term to srangam_cultural_terms |
+| Table not styling | Wrong HTML structure | Ensure proper markdown table syntax |
+| Hindi font wrong | Script font not applied | Check `getScriptFont()` in cells |
+
+### Console Debugging
+
+```javascript
+// Check article content structure
+const article = await supabase
+  .from('srangam_articles')
+  .select('*')
+  .eq('slug_alias', 'baba-ala-singh-patiala')
+  .single();
+
+console.log('Content keys:', Object.keys(article.data.content));
+console.log('Has Hindi:', 'hi' in article.data.content);
+```
+
+---
+
+## 📚 Related Documentation
+
+- [Current Status](./CURRENT_STATUS.md) - Overall platform status
+- [Article Status](./ARTICLE_STATUS.md) - Individual article tracking
+- [Import Workflow](./IMPORT_WORKFLOW.md) - Markdown import process
+- [Cross-Reference System](./architecture/CROSS_REFERENCE_SYSTEM.md) - How articles connect
+
+---
+
+**Maintained By**: Srangam Development Team  
+**Last Reviewed**: 2025-12-28

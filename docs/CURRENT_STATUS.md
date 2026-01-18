@@ -1,6 +1,6 @@
 # Srangam Platform - Current Status
 
-**Last Updated**: 2025-11-25 (Research Tool Showcase Pages Complete)
+**Last Updated**: 2025-12-28 (Phase 0 Documentation Update - Context Preservation)
 
 ---
 
@@ -14,6 +14,9 @@
 - ✅ Markdown source preservation in separate table
 - ✅ Slug standardization (110 → 38 chars avg, 65% reduction)
 - ✅ Slug alias system for SEO-friendly URLs
+- ✅ Multilingual content support (EN, HI, PA merged into single article)
+- ✅ Unicode-safe content hashing (SHA-256 for non-Latin scripts)
+- ✅ Escaped markdown character sanitization (\#, \*, \-)
 
 ### **2. AI-Powered Tag Generation**
 - ✅ OpenAI GPT-4o-mini integration (migrated Nov 2025)
@@ -23,7 +26,7 @@
 - ✅ Self-improving tag registry with usage tracking
 
 ### **3. Cultural Terms Extraction**
-- ✅ 940 AI-enhanced terms in database
+- ✅ 1,221+ AI-enhanced terms in database
 - ✅ 217+ Sanskrit/diacritics pattern detection
 - ✅ Devanagari script recognition (U+0900-U+097F)
 - ✅ Italic text pattern matching (non-greedy across newlines)
@@ -32,6 +35,7 @@
 - ✅ Etymology and context enriched via Gemini AI
 - ✅ Module categorization (vedic, maritime, geology, etc.)
 - ✅ Frontend connected to live database (`/sources/sanskrit-terminology`)
+- ✅ Auto-highlighting in articles via `culturalTermEnhancer.ts`
 
 ### **4. Cross-Reference Detection & Integration**
 - ✅ **Thematic** references (shared tags ≥ 2, strength: tag_count × 2)
@@ -40,9 +44,11 @@
 - ✅ Bidirectional linking for thematic/theme references
 - ✅ Context descriptions with detection method and reasoning
 - ✅ **Frontend integration complete** - Cross-references visible on all article pages
-- ✅ 474 total connections (329 same_theme, 145 thematic)
+- ✅ 700+ total connections (same_theme + thematic)
 - ✅ `useArticleId` hook for slug-to-ID resolution
 - ✅ `ArticleCrossReferences` component with grouped display
+- ✅ **Cross References Browser** at `/research-network` with force-directed graph
+- ✅ Bug fix: "Unknown → Unknown" display resolved (2025-12-27)
 
 ### **5. Tag Taxonomy System**
 - ✅ `srangam_tags` table with usage tracking
@@ -56,6 +62,7 @@
 - ✅ Dark/light mode support
 - ✅ Responsive design (mobile, tablet, desktop)
 - ✅ Custom color palette (ocean, vedic, maritime, geology)
+- ✅ Multilingual fonts (Noto Sans Devanagari, Gurmukhi, Tamil)
 
 ### **7. Navigation System**
 - ✅ Primary navigation via `HeaderNav.tsx` (active)
@@ -118,11 +125,12 @@
 
 ## 📊 **Database State** (Current)
 
-### **Current Data** (as of 2025-12-27)
-- **Articles**: 39 published
+### **Current Data** (as of 2025-12-28)
+- **Articles**: 40 published
   - All in Supabase database with standardized slugs
+  - **12 articles missing `slug_alias`** (fix pending Phase 1)
   - Theme distribution:
-    - Ancient India: 26 articles
+    - Ancient India: 27 articles
     - Indian Ocean World: 3 articles
     - Geology & Deep Time: 3 articles
     - Scripts & Inscriptions: 3 articles
@@ -131,6 +139,7 @@
   - All 6 research themes now have articles (fixed 2025-12-27)
   - All have AI-generated tags (5-8 per article)
   - All have theme categorization
+  - **Multilingual**: Baba Ala Singh has EN + HI content
   
 - **Cross-references**: 700+
   - Same-theme and thematic references
@@ -142,6 +151,7 @@
   - All terms have etymology and context (AI-enriched)
   - Module distribution: vedic, maritime, geology, other
   - Connected to Sanskrit Translator named-entity recognition showcase
+  - Pagination implemented (bypasses 1000-row limit)
 
 - **Tags**: 127 unique tags
   - Average 6.2 tags per article
@@ -158,7 +168,7 @@
 srangam_articles
 ├── id (uuid, PK)
 ├── slug (text, UNIQUE)
-├── slug_alias (text) ← SEO-friendly short slugs
+├── slug_alias (text) ← SEO-friendly short slugs (12 missing)
 ├── title (jsonb)
 ├── content (jsonb)
 ├── theme (text)
@@ -202,6 +212,28 @@ srangam_tags
 ---
 
 ## 🔧 **Recent Fixes & Deployments**
+
+### **2025-12-28 (Phase 0-2: Documentation, Slugs & Table Rendering)**
+1. 📄 **Documentation Update (Phase 0)**:
+   - Updated CURRENT_STATUS.md with 40 article count
+   - Documented 12 articles missing slug_alias
+   - Created ARTICLE_DISPLAY_GUIDE.md for markdown best practices
+   - Updated ARTICLE_STATUS.md with integration status
+
+2. 🔗 **Slug Alias Generation (Phase 1)**:
+   - Added slug_alias for 12 articles via database migration
+   - All articles now have SEO-friendly short URLs
+   - Enables proper URL routing for all articles
+
+3. 📊 **Enhanced Table Rendering (Phase 2)**:
+   - Upgraded ProfessionalTextFormatter.tsx with:
+     - Sticky table headers on scroll
+     - Zebra striping (alternating row colors)
+     - Hover highlights for active rows
+     - Max-width with text wrapping
+     - Mobile scroll indicator gradient
+     - First column emphasis for dates
+     - Script-aware font classes in cells
 
 ### **2025-12-27 (Security Fixes & Cross References Browser)**
 1. ✅ **Cross References Browser Bug Fix**:
@@ -304,15 +336,18 @@ srangam_tags
 
 ---
 
-## 🎯 **Next Steps** (Phase 3 Continuation)
+## 🎯 **Next Steps** (Current Phase)
 
-### **Immediate** (Session 3A - 1 hour)
-1. ✅ Documentation updates complete
-2. 🔜 Build Public Research Network Browser
-   - Create `/research-network` page
-   - Make 474 cross-references publicly explorable
-   - Add force-directed graph visualization
-   - Implement filters (theme, reference type, strength)
+### **Immediate** (Phase 3: Enhanced Article Display)
+1. 🔜 **Evidence Table Component** (Optional)
+   - Create `src/components/articles/enhanced/EvidenceTable.tsx`
+   - Specialized 6-column scholarly table (Date/Place/Actors/Event/Meaning/Evidence)
+   - Card-based mobile layout with collapsible rows
+   - Source quality badges (Primary/Secondary/Tradition)
+
+2. 🔜 **Markdown Import Enhancement**
+   - Auto-generate slug_alias on new imports
+   - Better evidence table detection
 
 ### **Short Term** (Sessions 3B & 3C - 2 hours)
 1. Enhanced Cross-Reference UX
@@ -341,6 +376,10 @@ srangam_tags
 
 ## 🐛 **Known Issues**
 
+### **Critical Issues** (Resolved 2025-12-28)
+- ~~**12 Articles Missing slug_alias**~~: Fixed via database migration
+- ~~**Evidence Table Poor Rendering**~~: Fixed via enhanced CSS
+
 ### **Minor Issues** (Non-Blocking)
 - ⚠️ **Map "Temporarily Unavailable"**: ErrorBoundary fallback on 2-3 article pages
   - Impact: Low
@@ -354,14 +393,18 @@ srangam_tags
   - Impact: Low
   - Action: Review and potentially merge or remove
 
+- ⚠️ **Hindi Table Content OCR Issues**: Some Hindi tables have formatting artifacts
+  - Impact: Low (content still readable)
+  - Action: Manual cleanup if needed
+
 ---
 
 ## 📝 **Platform Readiness**
 
 ### **Content Completeness**
-- ✅ 31/31 articles accessible (100%)
-- ✅ 940/940 cultural terms in database (100%)
-- ✅ 474/474 cross-references visible (100%)
+- ✅ 40/40 articles accessible (100%)
+- ✅ 1,221/1,221 cultural terms in database (100%)
+- ✅ 700+/700+ cross-references visible (100%)
 - ✅ 127 tags with categorization (100%)
 
 ### **Feature Completeness**
@@ -369,7 +412,8 @@ srangam_tags
 - ✅ Cross-reference discovery (100%)
 - ✅ Cultural term tooltips (100%)
 - ✅ Responsive design (100%)
-- ⏳ Public network browser (0% - Session 3A)
+- ✅ Evidence table rendering (100% - Phase 2 complete)
+- ✅ Public network browser (100%)
 - ⏳ Audio narration UI (0% - Phase 4)
 
 ### **Launch Readiness**: **100%** ✅
@@ -383,6 +427,7 @@ srangam_tags
 
 ## 🔗 **Related Documentation**
 - [Article Status & Testing](./ARTICLE_STATUS.md)
+- [Article Display Guide](./ARTICLE_DISPLAY_GUIDE.md)
 - [Soft Launch Checklist](./SOFT_LAUNCH_CHECKLIST.md)
 - [Cross-Reference System Architecture](./architecture/CROSS_REFERENCE_SYSTEM.md)
 - [AI Tag Generation System](./AI_TAG_GENERATION.md)
