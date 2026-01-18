@@ -16,6 +16,7 @@ import {
   BookOpen,
   GitBranch,
   Database,
+  HeartPulse,
 } from "lucide-react";
 import {
   Sidebar,
@@ -81,6 +82,11 @@ const adminNavItems = [
     title: "Context Management",
     url: "/admin/context",
     icon: Database,
+  },
+  {
+    title: "Data Health",
+    url: "/admin/data-health",
+    icon: HeartPulse,
   },
 ];
 
