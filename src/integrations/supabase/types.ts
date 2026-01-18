@@ -226,6 +226,56 @@ export type Database = {
           },
         ]
       }
+      srangam_article_evidence: {
+        Row: {
+          actors: string[] | null
+          article_id: string
+          created_at: string
+          date_approx: string | null
+          event_description: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          place: string | null
+          significance: string | null
+          source_quality: string | null
+        }
+        Insert: {
+          actors?: string[] | null
+          article_id: string
+          created_at?: string
+          date_approx?: string | null
+          event_description?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          place?: string | null
+          significance?: string | null
+          source_quality?: string | null
+        }
+        Update: {
+          actors?: string[] | null
+          article_id?: string
+          created_at?: string
+          date_approx?: string | null
+          event_description?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          place?: string | null
+          significance?: string | null
+          source_quality?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_article_evidence_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       srangam_article_metadata: {
         Row: {
           ai_keywords: string[] | null

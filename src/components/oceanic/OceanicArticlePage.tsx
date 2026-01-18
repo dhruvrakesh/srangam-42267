@@ -233,8 +233,8 @@ export const OceanicArticlePage: React.FC = () => {
             "space-y-6 transition-all duration-300",
             sidebarCollapsed && "lg:hidden"
           )}>
-            {/* Sources & Pins Integration */}
-            <SourcesAndPins pageOrCard={article.title} />
+            {/* Sources & Pins Integration - Now with database support */}
+            <SourcesAndPins pageOrCard={article.title} articleSlug={slug} />
 
             {/* Methods Modal Link */}
             <Card>
