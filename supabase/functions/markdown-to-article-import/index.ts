@@ -56,13 +56,20 @@ function cleanTitle(title: string): string {
 
 /**
  * Generate excerpt from HTML content (first meaningful sentence)
+ * IMPORTANT: Excludes tables, figures, and other structural elements
  */
 function generateExcerptFromContent(htmlContent: string, maxLength: number = 200): string {
-  // Remove HTML tags
+  // Remove structural elements FIRST (tables, figures, nav, etc.)
   const textContent = htmlContent
-    .replace(/<h1[^>]*>.*?<\/h1>/gi, '')  // Remove H1
-    .replace(/<[^>]+>/g, ' ')              // Remove all HTML tags
-    .replace(/\s+/g, ' ')                  // Normalize whitespace
+    .replace(/<table[^>]*>[\s\S]*?<\/table>/gi, '')    // Remove all tables
+    .replace(/<figure[^>]*>[\s\S]*?<\/figure>/gi, '')  // Remove figures
+    .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, '')        // Remove nav
+    .replace(/<aside[^>]*>[\s\S]*?<\/aside>/gi, '')    // Remove aside
+    .replace(/<h1[^>]*>.*?<\/h1>/gi, '')               // Remove H1
+    .replace(/<h2[^>]*>.*?<\/h2>/gi, '')               // Remove H2
+    .replace(/<h3[^>]*>.*?<\/h3>/gi, '')               // Remove H3
+    .replace(/<[^>]+>/g, ' ')                           // Remove remaining HTML tags
+    .replace(/\s+/g, ' ')                               // Normalize whitespace
     .trim();
   
   // Find first meaningful sentence (skip very short fragments)
@@ -71,7 +78,7 @@ function generateExcerptFromContent(htmlContent: string, maxLength: number = 200
   
   for (const sentence of sentences) {
     const trimmed = sentence.trim();
-    if (trimmed.length > 30) {  // Skip short fragments
+    if (trimmed.length > 50) {  // Increased from 30 for better excerpts
       excerpt = trimmed;
       break;
     }
