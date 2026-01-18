@@ -360,16 +360,25 @@ srangam_tags
 
 ## 🎯 **Next Steps** (Current Phase)
 
-### **Immediate** (Phase 3: Enhanced Article Display)
-1. 🔜 **Evidence Table Component** (Optional)
-   - Create `src/components/articles/enhanced/EvidenceTable.tsx`
-   - Specialized 6-column scholarly table (Date/Place/Actors/Event/Meaning/Evidence)
-   - Card-based mobile layout with collapsible rows
-   - Source quality badges (Primary/Secondary/Tradition)
+### **Phase 7: Bibliography & Sources Integration** (2025-01-18)
 
-2. 🔜 **Markdown Import Enhancement**
-   - Auto-generate slug_alias on new imports
-   - Better evidence table detection
+**Problem Statement**: The "Sources & Pins" sidebar currently shows hardcoded data from static JSON files (`atlas_nodes.json`), not the rich bibliography data embedded in each article's markdown. The infrastructure exists but was never connected.
+
+**Current Data Audit**:
+- `srangam_markdown_sources`: **29 articles** with stored markdown (bibliography unutilized)
+- `srangam_bibliography_entries`: **0 rows** (never populated)
+- `srangam_article_bibliography`: **0 rows** (never populated)
+- `correlationEngine.ts`: References non-existent CSV, falls back to hardcoded entry
+
+**Implementation Phases**:
+
+1. ✅ **Phase 7.0: Documentation** - Create `docs/architecture/SOURCES_PINS_SYSTEM.md`
+2. 🔜 **Phase 7.1: Database Migration** - Add `srangam_article_evidence` table
+3. 🔜 **Phase 7.2: Bibliography Extraction** - Enhance markdown import
+4. 🔜 **Phase 7.3: Backfill Edge Function** - Process 29 existing articles
+5. 🔜 **Phase 7.4: Frontend Integration** - Database-driven SourcesAndPins
+
+See: `docs/architecture/SOURCES_PINS_SYSTEM.md` for full architecture details.
 
 ### **Short Term** (Sessions 3B & 3C - 2 hours)
 1. Enhanced Cross-Reference UX
