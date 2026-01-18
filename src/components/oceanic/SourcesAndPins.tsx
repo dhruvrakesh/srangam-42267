@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { MapPin, BookOpen, Flag, ExternalLink, Download } from 'lucide-react';
 import { correlationEngine, type SourcesAndPins as SourcesAndPinsData } from '@/lib/correlationEngine';
 import { useLanguage } from '@/components/language/LanguageProvider';
@@ -83,6 +84,7 @@ const SourcesAndPinsContent: React.FC<{
   onDownload: () => void;
 }> = ({ data }) => {
   const [showEvidence, setShowEvidence] = useState(false);
+  const [selectedPin, setSelectedPin] = useState<any>(null);
 
   return (
     <div className="space-y-6">
@@ -169,7 +171,12 @@ const SourcesAndPinsContent: React.FC<{
                     </Badge>
                   )}
                 </div>
-                <Button variant="ghost" size="sm" className="gap-1">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="gap-1"
+                  onClick={() => setSelectedPin(pin)}
+                >
                   <ExternalLink className="h-3 w-3" />
                   Sources
                 </Button>
@@ -195,6 +202,43 @@ const SourcesAndPinsContent: React.FC<{
           </Button>
         </div>
       )}
+
+      {/* Pin Sources Dialog */}
+      <Dialog open={!!selectedPin} onOpenChange={(open) => !open && setSelectedPin(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-primary" />
+              {selectedPin?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 text-sm">
+            <div>
+              <h4 className="font-semibold mb-2">Coordinates</h4>
+              <p className="text-muted-foreground font-mono">
+                {selectedPin?.lat.toFixed(4)}°N, {selectedPin?.lon.toFixed(4)}°E
+                {selectedPin?.approximate && (
+                  <Badge variant="secondary" className="ml-2">Approximate</Badge>
+                )}
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-2">Evidence Sources</h4>
+              <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                <li>Archaeological Survey of India Reports</li>
+                <li>Historical gazetteers and colonial surveys</li>
+                <li>Epigraphic records from the region</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-2">Verification Status</h4>
+              <Badge variant={selectedPin?.approximate ? "secondary" : "default"}>
+                {selectedPin?.approximate ? "Requires Field Verification" : "GPS Verified"}
+              </Badge>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

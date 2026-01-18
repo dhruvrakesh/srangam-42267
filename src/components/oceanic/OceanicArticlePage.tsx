@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Clock, MapPin, BookOpen, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Clock, MapPin, BookOpen, ExternalLink, PanelRightOpen, PanelRightClose } from 'lucide-react';
 import { SourcesAndPins } from './SourcesAndPins';
 import { useLanguage } from '@/components/language/LanguageProvider';
 import { getOceanicCards } from '@/lib/oceanicCardsLoader';
@@ -12,6 +12,8 @@ import { ProfessionalTextFormatter } from '@/components/articles/enhanced/Profes
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
 import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
 
 export const OceanicArticlePage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -19,6 +21,8 @@ export const OceanicArticlePage: React.FC = () => {
   const { currentLanguage } = useLanguage();
   const [article, setArticle] = useState<ResolvedArticle | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [showMethodsDialog, setShowMethodsDialog] = useState(false);
   const allCards = getOceanicCards();
 
   useEffect(() => {
@@ -112,13 +116,38 @@ export const OceanicArticlePage: React.FC = () => {
                 <MapPin className="h-4 w-4" />
                 <span className="text-sm">{article.pins.length} pins</span>
               </div>
+              {/* Sidebar Toggle */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="hidden lg:flex gap-2 ml-auto"
+              >
+                {sidebarCollapsed ? (
+                  <>
+                    <PanelRightOpen className="h-4 w-4" />
+                    Show Sidebar
+                  </>
+                ) : (
+                  <>
+                    <PanelRightClose className="h-4 w-4" />
+                    Hide Sidebar
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="grid lg:grid-cols-4 gap-8">
-          <div className="lg:col-span-3 space-y-8">
+        <div className={cn(
+          "grid gap-8 transition-all duration-300",
+          sidebarCollapsed ? "lg:grid-cols-1" : "lg:grid-cols-4"
+        )}>
+          <div className={cn(
+            "space-y-8 transition-all duration-300",
+            sidebarCollapsed ? "lg:col-span-1" : "lg:col-span-3"
+          )}>
             {/* Full Article Content */}
             <Card>
               <CardContent className="pt-6">
@@ -199,8 +228,11 @@ export const OceanicArticlePage: React.FC = () => {
             </Card>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
+          {/* Sidebar - Collapsible */}
+          <div className={cn(
+            "space-y-6 transition-all duration-300",
+            sidebarCollapsed && "lg:hidden"
+          )}>
             {/* Sources & Pins Integration */}
             <SourcesAndPins pageOrCard={article.title} />
 
@@ -211,7 +243,12 @@ export const OceanicArticlePage: React.FC = () => {
                 <p className="text-sm text-muted-foreground mb-3">
                   Learn about our curation methodology, confidence indicators, and source verification process.
                 </p>
-                <Button variant="outline" size="sm" className="w-full gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full gap-2"
+                  onClick={() => setShowMethodsDialog(true)}
+                >
                   <BookOpen className="h-4 w-4" />
                   View Methods
                 </Button>
@@ -248,6 +285,52 @@ export const OceanicArticlePage: React.FC = () => {
             </Card>
           </div>
         </div>
+
+        {/* Methods Dialog */}
+        <Dialog open={showMethodsDialog} onOpenChange={setShowMethodsDialog}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5" />
+                Research Methodology
+              </DialogTitle>
+              <DialogDescription>
+                How we curate, verify, and present scholarly content
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 text-sm">
+              <div>
+                <h4 className="font-semibold mb-2">Source Verification</h4>
+                <p className="text-muted-foreground">
+                  All claims are traced to primary sources including inscriptions, archaeological reports, 
+                  and peer-reviewed publications. Secondary sources are cross-referenced for accuracy.
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Confidence Indicators</h4>
+                <p className="text-muted-foreground">
+                  Evidence is categorized as <Badge variant="default" className="mx-1">Primary</Badge> (direct archaeological/textual evidence),
+                  <Badge variant="secondary" className="mx-1">Secondary</Badge> (scholarly analysis), or
+                  <Badge variant="outline" className="mx-1">Tradition</Badge> (oral/textual traditions requiring further verification).
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Geographical Pins</h4>
+                <p className="text-muted-foreground">
+                  Location data comes from survey reports and GPS coordinates. Pins marked "Approx." indicate 
+                  general areas where exact coordinates are uncertain due to historical changes or incomplete records.
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Citation Standards</h4>
+                <p className="text-muted-foreground">
+                  All references follow MLA format. Primary sources include archive locations and accession numbers 
+                  where available. Digital Object Identifiers (DOIs) are provided for accessible publications.
+                </p>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Audio Narration */}
         <NarrationErrorBoundary>
