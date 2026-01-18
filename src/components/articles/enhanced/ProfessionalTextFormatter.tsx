@@ -361,12 +361,12 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
         );
       }
       
-      // Default generic table rendering
+      // Default generic table rendering - improved for 6+ column tables
       return (
         <div className="relative overflow-x-auto my-8 rounded-lg border border-burgundy/20 shadow-sm">
           {/* Mobile scroll indicator */}
           <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/80 to-transparent pointer-events-none lg:hidden z-20" />
-          <table className="w-full border-collapse" {...props}>
+          <table className="w-full border-collapse min-w-[900px]" {...props}>
             {children}
           </table>
         </div>
@@ -432,38 +432,89 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
   };
 
   // Helper to extract table data from React children for evidence table detection
+  // ROBUST: Handles all ReactMarkdown output variations (strings, functions, components)
   const extractTableData = (children: React.ReactNode): { headers: string[]; rows: string[][] } | null => {
     try {
       const headers: string[] = [];
       const rows: string[][] = [];
       
-      React.Children.forEach(children, (child: any) => {
-        if (child?.type === 'thead' || child?.props?.className?.includes?.('thead')) {
-          // Extract headers from thead
-          const theadChildren = child.props?.children;
-          React.Children.forEach(theadChildren, (tr: any) => {
-            React.Children.forEach(tr?.props?.children, (th: any) => {
-              const text = extractTextFromNode(th);
-              if (text) headers.push(text);
-            });
+      const isTheadElement = (node: any): boolean => {
+        if (!node) return false;
+        // Check direct type (string like 'thead')
+        if (node.type === 'thead') return true;
+        // Check function/component name
+        if (typeof node.type === 'function' && 
+            (node.type.name?.toLowerCase()?.includes('thead') || 
+             node.type.displayName?.toLowerCase()?.includes('thead'))) return true;
+        // Check data attributes
+        if (node.props?.['data-tag'] === 'thead') return true;
+        return false;
+      };
+      
+      const isTbodyElement = (node: any): boolean => {
+        if (!node) return false;
+        if (node.type === 'tbody') return true;
+        if (typeof node.type === 'function' && 
+            (node.type.name?.toLowerCase()?.includes('tbody') ||
+             node.type.displayName?.toLowerCase()?.includes('tbody'))) return true;
+        if (node.props?.['data-tag'] === 'tbody') return true;
+        return false;
+      };
+      
+      const extractHeaders = (trChildren: any) => {
+        React.Children.forEach(trChildren, (tr: any) => {
+          if (!tr?.props?.children) return;
+          React.Children.forEach(tr.props.children, (th: any) => {
+            const text = extractTextFromNode(th);
+            if (text && text.trim()) headers.push(text.trim());
           });
-        }
-        if (child?.type === 'tbody' || child?.props?.className?.includes?.('tbody')) {
-          // Extract rows from tbody
-          React.Children.forEach(child?.props?.children, (tr: any) => {
-            const row: string[] = [];
-            React.Children.forEach(tr?.props?.children, (td: any) => {
-              const text = extractTextFromNode(td);
-              row.push(text || '');
-            });
-            if (row.length > 0) rows.push(row);
+        });
+      };
+      
+      const extractRows = (trChildren: any) => {
+        React.Children.forEach(trChildren, (tr: any) => {
+          if (!tr?.props?.children) return;
+          const row: string[] = [];
+          React.Children.forEach(tr.props.children, (td: any) => {
+            const text = extractTextFromNode(td);
+            row.push((text || '').trim());
           });
+          if (row.length > 0 && row.some(cell => cell)) rows.push(row);
+        });
+      };
+      
+      const processNode = (node: any) => {
+        if (!node) return;
+        
+        // Handle arrays
+        if (Array.isArray(node)) {
+          node.forEach(processNode);
+          return;
         }
+        
+        // Check if this is thead or tbody
+        if (isTheadElement(node)) {
+          extractHeaders(node.props?.children);
+        } else if (isTbodyElement(node)) {
+          extractRows(node.props?.children);
+        } else if (node?.props?.children) {
+          // Recursively search for thead/tbody in children
+          processNode(node.props.children);
+        }
+      };
+      
+      // Process table children
+      React.Children.forEach(children, processNode);
+      
+      console.log('[TableExtraction]', { 
+        headerCount: headers.length, 
+        rowCount: rows.length,
+        headers: headers.slice(0, 3).join(', ')
       });
       
       return headers.length > 0 ? { headers, rows } : null;
     } catch (e) {
-      console.warn('Failed to extract table data:', e);
+      console.error('[TableExtraction] Failed:', e);
       return null;
     }
   };

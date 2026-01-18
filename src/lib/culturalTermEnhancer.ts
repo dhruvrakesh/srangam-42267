@@ -65,15 +65,33 @@ export const enhanceTextWithCulturalTerms = (
 
   if (!text || text.length === 0) return text;
 
-  // Limit processing for very long texts
-  const textToProcess = text.length > maxLength 
-    ? text.substring(0, maxLength) 
-    : text;
-
   // If preserving existing markers, skip text that already has markers
-  if (preserveExisting && textToProcess.includes('{{cultural:')) {
+  if (preserveExisting && text.includes('{{cultural:')) {
     return text; // Already enhanced
   }
+
+  // CRITICAL: Protect table content from enhancement to prevent HTML corruption
+  const tableRegex = /<table[\s\S]*?<\/table>/gi;
+  const tables: string[] = [];
+  
+  // Extract tables and replace with placeholders
+  let protectedText = text.replace(tableRegex, (match) => {
+    tables.push(match);
+    return `__TABLE_PLACEHOLDER_${tables.length - 1}__`;
+  });
+
+  // Also protect markdown tables (lines starting with |)
+  const markdownTableRegex = /(\|[^\n]+\|\n)+/g;
+  const mdTables: string[] = [];
+  protectedText = protectedText.replace(markdownTableRegex, (match) => {
+    mdTables.push(match);
+    return `__MDTABLE_PLACEHOLDER_${mdTables.length - 1}__`;
+  });
+
+  // Limit processing for very long texts
+  const textToProcess = protectedText.length > maxLength 
+    ? protectedText.substring(0, maxLength) 
+    : protectedText;
 
   const pattern = buildTermPattern();
   const termsSet = getCulturalTermsSet();
@@ -98,10 +116,20 @@ export const enhanceTextWithCulturalTerms = (
     return `{{cultural:${normalizedTerm}}}`;
   });
 
-  // If we truncated, append the rest of the original text
-  if (text.length > maxLength) {
-    enhancedText += text.substring(maxLength);
+  // If we truncated, append the rest of the protected text
+  if (protectedText.length > maxLength) {
+    enhancedText += protectedText.substring(maxLength);
   }
+
+  // Restore markdown tables
+  mdTables.forEach((table, index) => {
+    enhancedText = enhancedText.replace(`__MDTABLE_PLACEHOLDER_${index}__`, table);
+  });
+
+  // Restore HTML tables
+  tables.forEach((table, index) => {
+    enhancedText = enhancedText.replace(`__TABLE_PLACEHOLDER_${index}__`, table);
+  });
 
   return enhancedText;
 };
