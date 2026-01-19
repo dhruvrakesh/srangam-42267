@@ -215,6 +215,7 @@ function extractCitations(markdown: string): Array<{ text: string; url?: string;
 }
 
 // Extract cultural terms (terms in italics or with diacritics)
+// ENHANCED: Better filtering to avoid section headers and sentence fragments
 function extractCulturalTerms(markdown: string): string[] {
   const terms = new Set<string>();
   
@@ -225,17 +226,66 @@ function extractCulturalTerms(markdown: string): string[] {
   let match;
   let totalMatches = 0;
   
+  // Exclusion patterns for quality filtering
+  const sectionHeaderPatterns = [
+    /^[A-Z]\.\s/,                    // "A. ", "B. " etc (section labels)
+    /Category:/i,                     // Category labels
+    /Source[s]?:/i,                   // Source labels
+    /Section:/i,                      // Section labels
+    /Primary|Secondary|Tradition:/i,  // Source type labels
+    /Dossier/i,                       // Dossier labels
+    /Candidate/i,                     // Candidate labels
+    /^\d+\./,                         // Numbered items "1.", "2."
+  ];
+  
+  // Skip terms starting with common articles/prepositions
+  const startsWithStopWord = /^(the|a|an|in|of|for|from|with|to|and|or)\s/i;
+  
   while ((match = italicPattern.exec(markdown)) !== null) {
     totalMatches++;
     const term = match[1].trim();
+    
+    // ===== QUALITY FILTERS =====
+    
+    // Skip if too long (likely a sentence fragment)
+    if (term.length > 50) {
+      console.log(`✗ Skipped (too long): "${term.substring(0, 30)}..."`);
+      continue;
+    }
+    
+    // Skip if too short
+    if (term.length < 3) {
+      console.log(`✗ Skipped (too short): "${term}"`);
+      continue;
+    }
+    
+    // Skip if contains section-like patterns
+    if (sectionHeaderPatterns.some(p => p.test(term))) {
+      console.log(`✗ Skipped (section header): "${term}"`);
+      continue;
+    }
+    
+    // Skip if starts with stop words
+    if (startsWithStopWord.test(term)) {
+      console.log(`✗ Skipped (starts with stop word): "${term}"`);
+      continue;
+    }
+    
+    // Skip if contains punctuation that indicates sentence fragments
+    if (/[:;()]/.test(term)) {
+      console.log(`✗ Skipped (contains punctuation): "${term}"`);
+      continue;
+    }
+    
+    // ===== POSITIVE MARKERS =====
     
     // Comprehensive Sanskrit/Indic diacritics detection
     // Covers: IAST, Devanagari, and common transliteration patterns
     const hasSanskritDiacritics = /[āīūṛṝḷḹēōṁṃḥṇṭḍśṣñḻṅ]/i.test(term);
     const hasDevanagari = /[\u0900-\u097F]/i.test(term);
-    const hasCommonSanskritWords = /\b(veda|purana|dharma|karma|bhakti|yoga|tantra|mantra|shastra|sutra)\b/i.test(term);
+    const hasCommonSanskritWords = /\b(veda|purana|dharma|karma|bhakti|yoga|tantra|mantra|shastra|sutra|devi|deva|shakti|sakti|kali|durga|parvati|lakshmi|saraswati|brahma|vishnu|shiva|ganga|yamuna|temple|tirtha|pitha|kshetra|vidya)\b/i.test(term);
     
-    const isSanskritTerm = term.length > 2 && (hasSanskritDiacritics || hasDevanagari || hasCommonSanskritWords);
+    const isSanskritTerm = hasSanskritDiacritics || hasDevanagari || hasCommonSanskritWords;
     
     if (isSanskritTerm) {
       terms.add(term);
@@ -250,23 +300,53 @@ function extractCulturalTerms(markdown: string): string[] {
 }
 
 // Generate fallback frontmatter from content when none exists
+// ENHANCED: Prioritize filename extraction and skip section-like H4 headers
 function generateFallbackFrontmatter(content: string, filePath?: string): FrontMatter {
   console.log('🔧 Generating fallback frontmatter from content...');
   
-  // Extract title from first H1 heading (match optional backslash before #)
-  // and clean markdown formatting + escaped chars
-  const h1Match = content.match(/^\\?#\s+(.+)$/m);
-  let title = h1Match ? sanitizeEscapedMarkdown(cleanTitle(h1Match[1].trim())) : '';
+  let title = '';
   
-  // If no H1 found, try to extract from filename
-  if (!title && filePath) {
-    title = filePath
+  // PRIORITY 1: Extract from filename FIRST (most reliable for academic papers)
+  if (filePath) {
+    const filename = filePath
+      .replace(/\.docx\.md$/, '')   // Handle .docx.md exports
       .replace(/\.md$/, '')
-      .replace(/.*\//, '') // Remove path
-      .replace(/[_-]/g, ' ')
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+      .replace(/.*\//, '');         // Remove path
+    
+    // Clean filename: underscores to spaces, handle common patterns
+    const cleanedFilename = filename
+      .replace(/_/g, ', ')           // Underscores often separate concepts
+      .replace(/\s+/g, ' ')
+      .trim();
+    
+    // If filename is meaningful (not just numbers or generic names)
+    if (cleanedFilename.length > 10 && !/^(article|document|untitled)/i.test(cleanedFilename)) {
+      title = cleanedFilename;
+      console.log(`✓ Title extracted from filename: "${title}"`);
+    }
+  }
+  
+  // PRIORITY 2: Extract from H1 heading if no filename title
+  if (!title) {
+    const h1Match = content.match(/^\\?#\s+(.+)$/m);
+    if (h1Match) {
+      title = sanitizeEscapedMarkdown(cleanTitle(h1Match[1].trim()));
+      console.log(`✓ Title extracted from H1: "${title}"`);
+    }
+  }
+  
+  // PRIORITY 3: Extract from H2/H3 (skip H4 as they're often section labels)
+  if (!title) {
+    const h2Match = content.match(/^\\?##\s+(.+)$/m);
+    const h3Match = content.match(/^\\?###\s+(.+)$/m);
+    
+    if (h2Match) {
+      title = sanitizeEscapedMarkdown(cleanTitle(h2Match[1].trim()));
+      console.log(`✓ Title extracted from H2: "${title}"`);
+    } else if (h3Match) {
+      title = sanitizeEscapedMarkdown(cleanTitle(h3Match[1].trim()));
+      console.log(`✓ Title extracted from H3: "${title}"`);
+    }
   }
   
   // Last resort: use "Untitled Article"
@@ -278,7 +358,7 @@ function generateFallbackFrontmatter(content: string, filePath?: string): FrontM
   const paragraphMatch = content.match(/\n\n([^#\n][^\n]{20,})/);
   const dek = paragraphMatch ? paragraphMatch[1].substring(0, 200).trim() : '';
   
-  console.log(`✓ Extracted title: "${title}"`);
+  console.log(`✓ Final title: "${title}"`);
   console.log(`✓ Extracted dek: "${dek.substring(0, 50)}..."`);
   
   return {
