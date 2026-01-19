@@ -48,6 +48,7 @@ interface ImportResult {
     markdownSourceSaved?: boolean;
   };
   error?: string;
+  hint?: string;
 }
 
 const BOOK_CHAPTERS = [
@@ -313,14 +314,30 @@ slug: "${slug}"
         i === 0 ? { ...s, status: 'error' } : s
       ));
 
+      // Detect specific error types for better user guidance
+      const errorMessage = error.message || 'Unknown error occurred';
+      let userFriendlyMessage = errorMessage;
+      let actionableHint = '';
+      
+      // Duplicate slug error detection
+      if (errorMessage.includes('duplicate key') && errorMessage.includes('slug')) {
+        userFriendlyMessage = `An article with slug "${extractedMetadata.slug || 'auto-generated'}" already exists.`;
+        actionableHint = 'Enable "Overwrite existing article" below, or change the slug in your frontmatter.';
+      }
+      // YAML parse errors
+      else if (errorMessage.includes('YAML') || errorMessage.includes('frontmatter')) {
+        actionableHint = 'Ensure all text values are wrapped in quotes, especially titles with special characters.';
+      }
+
       setImportResult({
         success: false,
-        error: error.message || 'Unknown error occurred',
+        error: userFriendlyMessage,
+        hint: actionableHint,
       });
 
       toast({
         title: '❌ Import failed',
-        description: error.message,
+        description: userFriendlyMessage,
         variant: 'destructive',
       });
     } finally {
@@ -737,7 +754,14 @@ slug: "${slug}"
                       )}
                     </div>
                   ) : (
-                    <p>Error: {importResult.error}</p>
+                    <div className="space-y-2">
+                      <p><strong>Error:</strong> {importResult.error}</p>
+                      {importResult.hint && (
+                        <p className="text-sm bg-background/50 p-2 rounded border border-border">
+                          💡 <strong>Solution:</strong> {importResult.hint}
+                        </p>
+                      )}
+                    </div>
                   )}
                 </AlertDescription>
               </Alert>
