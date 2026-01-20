@@ -1,5 +1,7 @@
 # Srangam TTS Architecture
 
+**Last Updated**: 2025-01-20 (Phase 13: ElevenLabs Integration)
+
 ## Overview
 
 Srangam Digital implements a hybrid multi-provider text-to-speech (TTS) system optimized for scholarly content with Sanskrit IAST diacritics and multilingual support across 9 Indian languages.
@@ -10,9 +12,15 @@ Srangam Digital implements a hybrid multi-provider text-to-speech (TTS) system o
 
 The system automatically selects the optimal TTS provider based on content characteristics:
 
-- **Sanskrit diacritics (IAST) detected** → Google Cloud Neural2
-- **Pure English content** → OpenAI TTS-1 (faster)
-- **Regional language** → Google Cloud WaveNet (best multilingual support)
+- **English content** → **ElevenLabs** (highest quality, most human-like) - *Added Phase 13*
+- **Sanskrit diacritics (IAST) detected** → Google Cloud Neural2 (best pronunciation)
+- **Regional language (hi, ta, pa, bn, kn)** → Google Cloud WaveNet (best multilingual support)
+- **Fallback** → OpenAI TTS-1 (fast, reliable)
+
+### Provider Priority (English Content)
+1. **ElevenLabs** (default for English) - eleven_turbo_v2_5 model
+2. **Google Cloud Neural2** (if Sanskrit detected)
+3. **OpenAI TTS-1** (fallback)
 
 ### 2. Cache-First Strategy
 
@@ -87,16 +95,17 @@ Cache Check (srangam_audio_narrations)
     ├─ Cache Hit → Stream from Google Drive
     └─ Cache Miss
           ↓
-    Content Analysis
-          ├─ Sanskrit → Google Cloud Neural2
-          ├─ English → OpenAI TTS-1
-          └─ Regional → Google Cloud WaveNet
+    Content Analysis (VoiceStrategyEngine.ts)
+          ├─ English → ElevenLabs (George voice)
+          ├─ English + Sanskrit → Google Cloud Neural2
+          ├─ Regional (hi/ta/pa) → Google Cloud WaveNet
+          └─ Fallback → OpenAI TTS-1
           ↓
-    Text Chunking (1500 chars)
+    Text Chunking (1500 chars Google, 4000 chars OpenAI)
           ↓
     Parallel TTS Generation (3 chunks)
           ↓
-    Server-Sent Events (SSE) Stream
+    NDJSON Streaming (newline-delimited JSON)
           ↓
     AudioContext Playback
           ↓
@@ -107,6 +116,26 @@ Cache Check (srangam_audio_narrations)
 
 ## Edge Functions
 
+### tts-stream-elevenlabs (NEW - Phase 13)
+
+**Purpose:** High-quality English narration with human-like voices
+
+**Features:**
+- ElevenLabs `eleven_turbo_v2_5` model (low latency, high quality)
+- NDJSON streaming (compatible with client)
+- Request stitching for multi-chunk content
+- Voice personality mapping
+
+**Voice Mapping:**
+| Voice ID | Name | Use Case |
+|----------|------|----------|
+| JBFqnCBsd6RMkjVDRZzb | George | Scholarly (default for English) |
+| nPczCjzI2devNBz1zQrb | Brian | Dramatic, epic narratives |
+| XrExE9yKIg1WjnnlVkGX | Matilda | Reverent, devotional |
+| onwK4e9ZLuTAKqWW03F9 | Daniel | Short-form, preview |
+
+**Rate Limits:** 10,000 chars/month (free tier)
+
 ### tts-stream-google
 
 **Purpose:** Stream audio from Google Cloud Text-to-Speech
@@ -114,7 +143,7 @@ Cache Check (srangam_audio_narrations)
 **Features:**
 - SSML generation for Sanskrit diacritics
 - Neural2 voices for academic tone
-- Server-Sent Events (SSE) streaming
+- NDJSON streaming
 - Chunk-by-chunk delivery
 
 **Rate Limits:** 600 requests/minute
@@ -136,10 +165,12 @@ Cache Check (srangam_audio_narrations)
 **Purpose:** Upload generated audio to Google Drive
 
 **Features:**
-- Service account authentication
+- Service account authentication (RS256 JWT)
 - Public shareable links
 - Metadata storage in Supabase
 - Cost tracking (character count × rate)
+
+**Critical Fix (Phase 13):** JWT signing bug fixed - now uses `crypto.subtle.sign()` instead of string concatenation
 
 ## Database Schema
 
@@ -149,7 +180,7 @@ Cache Check (srangam_audio_narrations)
 CREATE TABLE srangam_audio_narrations (
   id UUID PRIMARY KEY,
   article_slug TEXT NOT NULL,
-  provider TEXT CHECK (provider IN ('google-cloud', 'openai')),
+  provider TEXT CHECK (provider IN ('google-cloud', 'openai', 'elevenlabs')),
   voice_id TEXT NOT NULL,
   language_code TEXT NOT NULL,
   google_drive_file_id TEXT,
@@ -157,7 +188,12 @@ CREATE TABLE srangam_audio_narrations (
   content_hash TEXT,  -- SHA-256 for cache invalidation
   character_count INTEGER,
   cost_usd DECIMAL(10, 4),
+  duration_seconds INTEGER,
+  file_size_bytes INTEGER,
+  audio_format TEXT DEFAULT 'mp3',
+  sample_rate INTEGER DEFAULT 44100,
   created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(article_slug, language_code, provider)
 );
 ```
