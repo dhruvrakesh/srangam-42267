@@ -1,6 +1,6 @@
 # Srangam Platform - Current Status
 
-**Last Updated**: 2025-01-20 (Phase 12: Evidence Extraction Fix + Dynamic OG Images)
+**Last Updated**: 2025-01-20 (Phase 13: Audio Narration System Overhaul + ElevenLabs Integration)
 
 ---
 
@@ -144,6 +144,30 @@
 
 ## 🔧 **Recent Fixes & Deployments**
 
+### **2025-01-20 (Phase 13: Audio Narration System Overhaul)**
+
+1. ✅ **Critical JWT Signing Bug Fix**:
+   - Fixed `tts-save-drive/index.ts` line 59 - was using string concatenation instead of `crypto.subtle.sign()`
+   - Proper RS256 JWT now created for Google OAuth2 (same method as working `tts-stream-google`)
+   - Audio caching to Google Drive now functional
+
+2. ✅ **ElevenLabs TTS Integration**:
+   - Created `tts-stream-elevenlabs` edge function with streaming NDJSON output
+   - Uses `eleven_turbo_v2_5` model for low latency, high quality
+   - Request stitching enabled for multi-chunk content
+   - Voice mapping: George (scholarly), Brian (dramatic), Matilda (reverent), Daniel (short-form)
+   - Free tier: 10,000 characters/month
+
+3. ✅ **Voice Strategy Engine Update**:
+   - ElevenLabs now default provider for English content
+   - Google Neural2/WaveNet retained for Indic languages (hi, ta, pa, bn, kn)
+   - Profile-based voice selection (Sanskrit content → George, dramatic → Brian)
+
+4. ✅ **NarrationService Provider Routing**:
+   - Added ElevenLabs endpoint routing (`/functions/v1/tts-stream-elevenlabs`)
+   - Updated cost estimation to include ElevenLabs pricing
+   - Debug logging added for stream diagnostics
+
 ### **2025-01-20 (Phase 12: Evidence Extraction Fix + Dynamic OG Images)**
 
 1. ✅ **Evidence Table Extraction Fix**:
@@ -279,6 +303,10 @@
 ### **Edge Functions**
 - `supabase/functions/generate-sitemap/index.ts` - Dynamic sitemap
 - `supabase/functions/markdown-to-article-import/index.ts` - Article import
+- `supabase/functions/tts-stream-google/index.ts` - Google Cloud TTS (Indic languages)
+- `supabase/functions/tts-stream-elevenlabs/index.ts` - ElevenLabs TTS (English, Phase 13)
+- `supabase/functions/tts-save-drive/index.ts` - Audio caching to Google Drive
+- `supabase/functions/generate-article-og/index.ts` - DALL-E OG image generation
 
 ### **Documentation**
 - `docs/CURRENT_STATUS.md` - This file

@@ -22,9 +22,19 @@ export class NarrationService {
       const processedContent = content;
 
       // Call appropriate edge function based on provider
-      const endpoint = config.provider === 'openai' 
-        ? '/functions/v1/tts-stream-openai'
-        : '/functions/v1/tts-stream-google';
+      let endpoint: string;
+      switch (config.provider) {
+        case 'elevenlabs':
+          endpoint = '/functions/v1/tts-stream-elevenlabs';
+          break;
+        case 'openai':
+          endpoint = '/functions/v1/tts-stream-openai';
+          break;
+        default:
+          endpoint = '/functions/v1/tts-stream-google';
+      }
+      
+      console.log(`[NarrationService] Streaming from ${config.provider} via ${endpoint}`);
 
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}${endpoint}`,
@@ -180,13 +190,14 @@ export class NarrationService {
   /**
    * Estimate cost for generating audio
    */
-  estimateCost(content: string, provider: 'google-cloud' | 'openai'): number {
+  estimateCost(content: string, provider: 'google-cloud' | 'openai' | 'elevenlabs'): number {
     const charCount = content.length;
     
     // Pricing (approximate)
-    const pricing = {
+    const pricing: Record<string, number> = {
       'google-cloud': 0.000016, // $16 per 1M characters (Neural2)
       'openai': 0.000015, // $15 per 1M characters (TTS-1)
+      'elevenlabs': 0.00003, // ~$30 per 1M chars, but free tier: 10k chars/month
     };
 
     return charCount * pricing[provider];

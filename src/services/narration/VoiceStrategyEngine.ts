@@ -104,12 +104,12 @@ export class VoiceStrategyEngine {
       return this.selectIndicVoice(language, profile);
     }
 
-    // Default fallback
+    // Default fallback - use ElevenLabs for English for better quality
     return {
-      provider: 'google-cloud',
-      voiceId: 'en-US-Neural2-J',
+      provider: 'elevenlabs',
+      voiceId: 'george',
       languageCode: 'en-US',
-      name: 'Journey (Neural)',
+      name: 'George (ElevenLabs)',
       speakingRate: 1.0,
     };
   }
@@ -118,59 +118,56 @@ export class VoiceStrategyEngine {
    * Select voice for English content based on profile
    */
   private selectEnglishVoice(profile: ContentProfile, contentType: NarrationContentType): VoiceConfig {
-    // Sanskrit-heavy scholarly content
+    // Sanskrit-heavy scholarly content - use ElevenLabs George for best quality
     if (profile.hasSanskrit && profile.hasCitations) {
       return {
-        provider: 'google-cloud',
-        voiceId: 'en-US-Neural2-J',
+        provider: 'elevenlabs',
+        voiceId: 'george', // Scholarly, authoritative
         languageCode: 'en-US',
-        name: 'Journey (Neural)',
-        pitch: 0,
+        name: 'George (ElevenLabs)',
         speakingRate: 0.95, // Slightly slower for Sanskrit terms
       };
     }
 
-    // Dramatic narrative
+    // Dramatic narrative - use Brian for dramatic effect
     if (profile.emotionalTone === 'dramatic' && profile.contentType === 'narrative') {
       return {
-        provider: 'google-cloud',
-        voiceId: 'en-US-Neural2-D',
+        provider: 'elevenlabs',
+        voiceId: 'brian', // Deep, dramatic voice
         languageCode: 'en-US',
-        name: 'Dynamic (Neural)',
-        pitch: 1,
-        speakingRate: 1.05, // Faster for dramatic effect
-      };
-    }
-
-    // Reverent/temple content
-    if (profile.emotionalTone === 'reverent') {
-      return {
-        provider: 'google-cloud',
-        voiceId: 'en-US-Neural2-F',
-        languageCode: 'en-US',
-        name: 'Feminine (Neural)',
-        pitch: -1,
-        speakingRate: 0.9, // Slower, more reverent
-      };
-    }
-
-    // Short-form content (glossary terms, previews)
-    if (contentType === 'term' || contentType === 'preview') {
-      return {
-        provider: 'openai',
-        voiceId: 'echo',
-        languageCode: 'en-US',
-        name: 'Echo',
+        name: 'Brian (ElevenLabs)',
         speakingRate: 1.0,
       };
     }
 
-    // Default scholarly voice
+    // Reverent/temple content - use Matilda for warmth
+    if (profile.emotionalTone === 'reverent') {
+      return {
+        provider: 'elevenlabs',
+        voiceId: 'matilda', // Warm, reverent tone
+        languageCode: 'en-US',
+        name: 'Matilda (ElevenLabs)',
+        speakingRate: 0.9, // Slower, more reverent
+      };
+    }
+
+    // Short-form content (glossary terms, previews) - use Daniel for clarity
+    if (contentType === 'term' || contentType === 'preview') {
+      return {
+        provider: 'elevenlabs',
+        voiceId: 'daniel', // Clear, concise
+        languageCode: 'en-US',
+        name: 'Daniel (ElevenLabs)',
+        speakingRate: 1.0,
+      };
+    }
+
+    // Default scholarly voice - ElevenLabs George
     return {
-      provider: 'google-cloud',
-      voiceId: 'en-US-Neural2-J',
+      provider: 'elevenlabs',
+      voiceId: 'george',
       languageCode: 'en-US',
-      name: 'Journey (Neural)',
+      name: 'George (ElevenLabs)',
       speakingRate: 1.0,
     };
   }
