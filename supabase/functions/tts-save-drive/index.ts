@@ -38,34 +38,79 @@ serve(async (req) => {
     // Parse service account credentials
     const serviceAccount = JSON.parse(serviceAccountJson);
     
-    // Create JWT for OAuth2 authentication
-    const jwtHeader = btoa(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
-    const now = Math.floor(Date.now() / 1000);
-    const jwtPayload = btoa(JSON.stringify({
-      iss: serviceAccount.client_email,
-      scope: 'https://www.googleapis.com/auth/drive.file',
-      aud: 'https://oauth2.googleapis.com/token',
-      exp: now + 3600,
-      iat: now,
-    }));
+    // Proper RS256 JWT signing (copied from working tts-stream-google function)
+    async function createJWT(sa: any): Promise<string> {
+      const header = { alg: 'RS256', typ: 'JWT' };
+      const now = Math.floor(Date.now() / 1000);
+      const payload = {
+        iss: sa.client_email,
+        scope: 'https://www.googleapis.com/auth/drive.file',
+        aud: 'https://oauth2.googleapis.com/token',
+        iat: now,
+        exp: now + 3600,
+      };
+
+      const encodedHeader = btoa(JSON.stringify(header)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+      const encodedPayload = btoa(JSON.stringify(payload)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+      const unsignedToken = `${encodedHeader}.${encodedPayload}`;
+
+      // Convert PEM private key to ArrayBuffer for crypto.subtle
+      const pemHeader = '-----BEGIN PRIVATE KEY-----';
+      const pemFooter = '-----END PRIVATE KEY-----';
+      const pemContents = sa.private_key
+        .replace(pemHeader, '')
+        .replace(pemFooter, '')
+        .replace(/\\n/g, '')
+        .replace(/\s/g, '');
+      
+      const binaryString = atob(pemContents);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      const key = await crypto.subtle.importKey(
+        'pkcs8',
+        bytes.buffer,
+        { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+        false,
+        ['sign']
+      );
+
+      const signature = await crypto.subtle.sign(
+        'RSASSA-PKCS1-v1_5',
+        key,
+        new TextEncoder().encode(unsignedToken)
+      );
+
+      const encodedSignature = btoa(String.fromCharCode(...new Uint8Array(signature)))
+        .replace(/=/g, '')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_');
+
+      return `${unsignedToken}.${encodedSignature}`;
+    }
+
+    const jwt = await createJWT(serviceAccount);
+    console.log('JWT created successfully for Google Drive authentication');
     
-    // Note: For production, use a proper JWT library with RSA signing
-    // This is a simplified implementation - consider using jose or similar
     const accessTokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-        assertion: `${jwtHeader}.${jwtPayload}.${serviceAccount.private_key}`, // Simplified
+        assertion: jwt,
       }),
     });
 
     if (!accessTokenResponse.ok) {
-      console.error('OAuth2 token error:', await accessTokenResponse.text());
-      throw new Error('Failed to authenticate with Google Drive');
+      const errorText = await accessTokenResponse.text();
+      console.error('OAuth2 token error:', errorText);
+      throw new Error(`Failed to authenticate with Google Drive: ${errorText}`);
     }
 
     const { access_token } = await accessTokenResponse.json();
+    console.log('Google OAuth2 access token obtained successfully');
 
     // Upload to Google Drive using multipart upload
     const metadata = {
