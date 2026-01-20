@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .bg { fill: #F8F5F0; }
+      .outer { fill: none; stroke: #2A9D8F; stroke-width: 12; stroke-linecap: round; }
+      .wave { fill: none; stroke: #7B2D26; stroke-width: 14; stroke-linecap: round; }
+      .word { fill: #7B2D26; font-family: Georgia, 'Times New Roman', serif; font-size: 96px; font-weight: 600; letter-spacing: 8px; }
+      .tagline { fill: #111111; font-family: Georgia, 'Times New Roman', serif; font-size: 28px; font-style: italic; opacity: 0.85; }
+      .geometry { fill: none; stroke: #2A9D8F; stroke-width: 1; opacity: 0.12; }
+      .border-accent { fill: none; stroke: #2A9D8F; stroke-width: 3; opacity: 0.6; }
+      .border-inner { fill: none; stroke: #7B2D26; stroke-width: 1; opacity: 0.3; }
+    </style>
+    <!-- Gradient for subtle depth -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FAF8F5"/>
+      <stop offset="100%" style="stop-color:#F0EBE3"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background with subtle gradient -->
+  <rect fill="url(#bgGradient)" width="1200" height="630"/>
+  
+  <!-- Double border accent -->
+  <rect class="border-accent" x="16" y="16" width="1168" height="598" rx="6"/>
+  <rect class="border-inner" x="24" y="24" width="1152" height="582" rx="4"/>
+  
+  <!-- Sacred geometry pattern (Vesica Piscis / interlocking circles - bottom portion) -->
+  <g class="geometry">
+    <!-- Left cluster -->
+    <circle cx="120" cy="520" r="55"/>
+    <circle cx="175" cy="520" r="55"/>
+    <circle cx="147" cy="470" r="55"/>
+    
+    <!-- Center-left cluster -->
+    <circle cx="350" cy="540" r="45"/>
+    <circle cx="395" cy="540" r="45"/>
+    <circle cx="372" cy="500" r="45"/>
+    
+    <!-- Center cluster -->
+    <circle cx="580" cy="530" r="50"/>
+    <circle cx="630" cy="530" r="50"/>
+    <circle cx="605" cy="485" r="50"/>
+    
+    <!-- Center-right cluster -->
+    <circle cx="810" cy="540" r="45"/>
+    <circle cx="855" cy="540" r="45"/>
+    <circle cx="832" cy="500" r="45"/>
+    
+    <!-- Right cluster -->
+    <circle cx="1030" cy="520" r="55"/>
+    <circle cx="1085" cy="520" r="55"/>
+    <circle cx="1057" cy="470" r="55"/>
+  </g>
+  
+  <!-- Logo mark (scaled and positioned) -->
+  <g transform="translate(100, 180)">
+    <!-- Outer circle - Ocean Teal -->
+    <circle cx="110" cy="110" r="95" fill="none" stroke="#2A9D8F" stroke-width="8" stroke-linecap="round"/>
+    <!-- Wave/Sangam symbol - Epigraphy Maroon -->
+    <path d="M 55 65 C 100 35, 165 55, 155 95 C 145 135, 75 125, 80 165" 
+          fill="none" stroke="#7B2D26" stroke-width="10" stroke-linecap="round"/>
+  </g>
+  
+  <!-- SRANGAM text -->
+  <text x="340" y="280" class="word">SRANGAM</text>
+  
+  <!-- Tagline -->
+  <text x="340" y="340" class="tagline">Dharmic Scholarship for the Digital Age</text>
+  
+  <!-- Decorative line under tagline -->
+  <line x1="340" y1="365" x2="740" y2="365" stroke="#2A9D8F" stroke-width="2" opacity="0.4"/>
+  
+  <!-- Accessibility title -->
+  <title>Srangam — Dharmic Scholarship for the Digital Age</title>
+  <desc>Open Graph image for Srangam, a platform for dharmic scholarship exploring histories of the Indian Ocean World.</desc>
+</svg>
