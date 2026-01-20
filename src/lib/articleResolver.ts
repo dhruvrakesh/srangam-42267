@@ -4,13 +4,17 @@ import { getOceanicCardBySlug, type OceanicCard } from './oceanicCardsLoader';
 export interface ResolvedArticle {
   source: 'json' | 'database';
   slug: string;
+  slug_alias?: string;
+  id?: string;
   title: string;
   title_hi?: string;
   title_pa?: string;
   title_ta?: string;
   abstract: string;
+  dek?: any; // Multilingual dek/description
   content?: any; // Full multilingual content (MultilingualContent or string)
   read_time_min: number;
+  word_count?: number; // For ScholarlyArticle schema
   tags: string[];
   pins: Array<{
     name: string;
@@ -19,6 +23,9 @@ export interface ResolvedArticle {
     approximate?: boolean;
   }>;
   mla_refs: string[];
+  theme?: string;
+  published_date?: string;
+  og_image_url?: string | null;
 }
 
 /**
@@ -97,16 +104,23 @@ export async function resolveOceanicArticle(slug: string): Promise<ResolvedArtic
     return {
       source: 'database',
       slug: data.slug,
+      slug_alias: data.slug_alias || undefined,
+      id: data.id,
       title,
       title_hi,
       title_pa,
       title_ta,
       abstract: abstract.substring(0, 500) + '...', // Extract first 500 chars as abstract
+      dek: data.dek,
       content: data.content, // Full multilingual content for proper rendering
       read_time_min: data.read_time_minutes || 10,
+      word_count: data.word_count || undefined,
       tags: data.tags || [],
       pins: [], // Database articles don't have pins by default
       mla_refs: [], // Would need to join with bibliography table
+      theme: data.theme,
+      published_date: data.published_date,
+      og_image_url: data.og_image_url,
     };
   } catch (err) {
     console.error('Error resolving article from database:', err);
