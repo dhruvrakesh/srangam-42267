@@ -181,23 +181,27 @@
    - Added `og_image_url` column to `srangam_articles` table
    - Updated `ArticleHead.tsx` to use dynamic OG images with fallback
    - Added bulk generation UI to Data Health Dashboard
-   - **MIGRATED TO GOOGLE DRIVE** (Phase 13b): OG images now stored in GDrive, not Supabase Storage
+   - ⚠️ **MIGRATION PENDING**: Edge function updated to upload to GDrive, but existing 32 images still in Supabase Storage
 
 3. ✅ **Cost Optimization**:
    - Decision: Use existing `OPENAI_API_KEY` instead of Lovable AI (50% cost savings)
    - Total cost for 32 articles: ~$1.28
-   - Storage cost: $0 (Google Drive instead of Supabase Storage)
+   - Storage cost: Will be $0 after GDrive migration (currently ~$0.0005/month in Supabase)
 
-### **Storage Architecture (Centralized)**
+### **Storage Architecture (Target State)**
 
-| Asset Type | Storage Location | URL Format |
-|------------|------------------|------------|
-| Audio narrations | Google Drive | `https://drive.google.com/file/d/{id}/view` |
-| OG images | Google Drive | `https://drive.google.com/uc?export=view&id={id}` |
-| Context snapshots | Google Drive | `https://drive.google.com/file/d/{id}/view` |
-| User uploads | Supabase Storage | `{supabase_url}/storage/v1/object/public/{bucket}/{path}` |
+| Asset Type | Current Location | Target Location | Migration Status |
+|------------|------------------|-----------------|------------------|
+| Audio narrations | Google Drive | Google Drive | ✅ Complete |
+| OG images (32) | Supabase Storage | Google Drive | ⏳ Pending - run regeneration |
+| Context snapshots | Google Drive | Google Drive | ✅ Complete |
+| User uploads | Supabase Storage | Supabase Storage | ✅ Correct (stays here) |
 
-**Rationale**: Heavy media files (audio, images, documents) stored in Google Drive to eliminate Supabase Storage costs. Only lightweight user uploads remain in Supabase.
+**Migration Path for OG Images**:
+1. Clear `og_image_url` for all 32 published articles
+2. Regenerate via Data Health Dashboard (uses updated edge function)
+3. New images upload directly to GDrive via `generate-article-og`
+4. Total cost: ~$1.28 (DALL-E 3)
 
 ### **2025-01-20 (Phase 9: Dark Mode Rationalization + Bibliography Backfill)**
 
