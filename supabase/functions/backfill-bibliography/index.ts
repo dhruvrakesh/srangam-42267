@@ -125,14 +125,24 @@ function extractEvidenceTableData(htmlContent: string): EvidenceEntry[] {
   for (const tableMatch of tableMatches) {
     const tableHtml = tableMatch[1];
     
-    // Check for scholarly headers (English or Hindi)
+    // Check for scholarly headers (multilingual: English, Hindi, Punjabi, Tamil)
     const hasScholarlyHeaders = 
-      /(?:Date|तिथि).*(?:Place|स्थान).*(?:Event|घटना)/i.test(tableHtml) ||
-      /(?:Sl\.?\s*#?|Date).*(?:Place|Location).*(?:Event|Actor)/i.test(tableHtml);
+      // English patterns
+      /(?:Date|Sl\.?\s*#?).*(?:Place|Location).*(?:Event|Actor)/i.test(tableHtml) ||
+      // Hindi patterns (तिथि = Date, स्थान = Place, घटना = Event)
+      /(?:तिथि|Date).*(?:स्थान|Place).*(?:घटना|Event)/i.test(tableHtml) ||
+      // Punjabi patterns (ਤਾਰੀਖ = Date, ਥਾਂ = Place, ਘਟਨਾ = Event)
+      /(?:ਤਾਰੀਖ|ਮਿਤੀ).*(?:ਥਾਂ|ਸਥਾਨ).*(?:ਘਟਨਾ|ਵਾਕਿਆ)/i.test(tableHtml) ||
+      // Tamil patterns (தேதி = Date, இடம் = Place, நிகழ்வு = Event)
+      /(?:தேதி).*(?:இடம்).*(?:நிகழ்வு)/i.test(tableHtml) ||
+      // Generic: 6+ column scholarly table with source quality indicators
+      /(?:Primary|Secondary|Tradition|ਸਬੂਤ|ਪ੍ਰਮਾਣ|प्राथमिक|द्वितीयक|प्रमाण)/i.test(tableHtml) ||
+      // Fallback: Table with Evidence/Conf. column header
+      /<th[^>]*>(?:Evidence|ਪ੍ਰਮਾਣ|प्रमाण|Conf\.?|Source\s*Quality)/i.test(tableHtml);
     
     if (!hasScholarlyHeaders) continue;
     
-    console.log('Found scholarly evidence table');
+    console.log('Found scholarly evidence table (multilingual pattern matched)');
     
     // Extract rows
     const rowMatches = tableHtml.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi);
@@ -223,6 +233,16 @@ Deno.serve(async (req) => {
         
         // Convert markdown to HTML for evidence extraction
         const htmlContent = marked.parse(source.markdown_content) as string;
+        
+        // Debug: Verify table conversion
+        const markdownTableCount = (source.markdown_content.match(/\|[^\n]+\n\|[-:| ]+\n/g) || []).length;
+        const htmlTableCount = (htmlContent.match(/<table/gi) || []).length;
+        console.log(`  - Markdown tables: ${markdownTableCount}, HTML tables: ${htmlTableCount}`);
+        
+        if (markdownTableCount > htmlTableCount) {
+          console.log('  ⚠️ WARNING: Some markdown tables not converted to HTML');
+        }
+        
         const evidence = extractEvidenceTableData(htmlContent);
         console.log(`  - Found ${evidence.length} evidence entries`);
         
