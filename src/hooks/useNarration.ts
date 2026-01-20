@@ -83,62 +83,121 @@ export function useNarration(initialConfig?: Partial<NarrationConfig>) {
 
       // Stream from TTS provider
       const audioChunks: Uint8Array[] = [];
+      let receivedAnyChunks = false;
       
       try {
         for await (const chunk of narrationService.streamAudio(content, config)) {
-        if (chunk.audioContent.length > 0) {
-          audioChunks.push(chunk.audioContent);
+          if (chunk.audioContent.length > 0) {
+            audioChunks.push(chunk.audioContent);
+            receivedAnyChunks = true;
+          }
+
+          if (chunk.isLast) {
+            // Combine all chunks into a single blob
+            const totalLength = audioChunks.reduce((sum, arr) => sum + arr.length, 0);
+            const combinedArray = new Uint8Array(totalLength);
+            let offset = 0;
+            
+            for (const arr of audioChunks) {
+              combinedArray.set(arr, offset);
+              offset += arr.length;
+            }
+
+            const audioBlob = new Blob([combinedArray], { type: 'audio/mpeg' });
+            const audioUrl = URL.createObjectURL(audioBlob);
+
+            // Play audio
+            if (!audioRef.current) {
+              audioRef.current = new Audio();
+            }
+            
+            audioRef.current.src = audioUrl;
+            audioRef.current.playbackRate = config.speed;
+            
+            try {
+              await audioRef.current.play();
+            } catch (playError) {
+              console.error('Streamed audio playback failed:', playError);
+              throw new Error('Audio playback blocked. Please check browser permissions.');
+            }
+
+            setState(prev => ({
+              ...prev,
+              status: 'playing',
+              isLoading: false,
+              config,
+            }));
+
+            // Save to cache (async, don't await)
+            narrationService.saveToStorage(audioBlob, {
+              contentHash,
+              articleSlug: config.contentType === 'article' ? content.substring(0, 50) : undefined,
+              language: config.language,
+              provider: config.provider,
+              voice: config.voice,
+              fileSize: audioBlob.size,
+              config,
+            }).catch(err => console.error('Failed to cache audio:', err));
+          }
         }
-
-        if (chunk.isLast) {
-          // Combine all chunks into a single blob
-          const totalLength = audioChunks.reduce((sum, arr) => sum + arr.length, 0);
-          const combinedArray = new Uint8Array(totalLength);
-          let offset = 0;
-          
-          for (const arr of audioChunks) {
-            combinedArray.set(arr, offset);
-            offset += arr.length;
-          }
-
-          const audioBlob = new Blob([combinedArray], { type: 'audio/mpeg' });
-          const audioUrl = URL.createObjectURL(audioBlob);
-
-          // Play audio
-          if (!audioRef.current) {
-            audioRef.current = new Audio();
-          }
-          
-          audioRef.current.src = audioUrl;
-          audioRef.current.playbackRate = config.speed;
-          
-          try {
-            await audioRef.current.play();
-          } catch (playError) {
-            console.error('Streamed audio playback failed:', playError);
-            throw new Error('Audio playback blocked. Please check browser permissions.');
-          }
-
-          setState(prev => ({
-            ...prev,
-            status: 'playing',
-            isLoading: false,
-            config,
-          }));
-
-          // Save to cache (async, don't await)
-          narrationService.saveToStorage(audioBlob, {
-            contentHash,
-            articleSlug: config.contentType === 'article' ? content.substring(0, 50) : undefined,
-            language: config.language,
-            provider: config.provider,
-            voice: config.voice,
-            fileSize: audioBlob.size,
-            config,
-          }).catch(err => console.error('Failed to cache audio:', err));
+        
+        // Phase 14d: Detect stream-death (backend crashed before sending any chunks)
+        if (!receivedAnyChunks) {
+          console.warn('[useNarration] No chunks received from primary provider, stream may have died');
+          throw new Error('STREAM_DIED');
         }
-      }
       } catch (streamError) {
+        // Phase 14d: If stream died or failed, auto-retry with Google TTS
+        if (streamError instanceof Error && 
+            (streamError.message === 'STREAM_DIED' || streamError.message.includes('TTS'))) {
+          console.warn('[useNarration] Primary TTS failed, falling back to Google Cloud');
+          
+          // Retry with Google Cloud
+          const fallbackConfig: NarrationConfig = {
+            ...config,
+            provider: 'google-cloud',
+            voice: 'en-US-Neural2-D',
+          };
+          
+          audioChunks.length = 0; // Clear any partial data
+          
+          for await (const chunk of narrationService.streamAudio(content, fallbackConfig)) {
+            if (chunk.audioContent.length > 0) {
+              audioChunks.push(chunk.audioContent);
+            }
+
+            if (chunk.isLast && audioChunks.length > 0) {
+              const totalLength = audioChunks.reduce((sum, arr) => sum + arr.length, 0);
+              const combinedArray = new Uint8Array(totalLength);
+              let offset = 0;
+              
+              for (const arr of audioChunks) {
+                combinedArray.set(arr, offset);
+                offset += arr.length;
+              }
+
+              const audioBlob = new Blob([combinedArray], { type: 'audio/mpeg' });
+              const audioUrl = URL.createObjectURL(audioBlob);
+
+              if (!audioRef.current) {
+                audioRef.current = new Audio();
+              }
+              
+              audioRef.current.src = audioUrl;
+              audioRef.current.playbackRate = fallbackConfig.speed;
+              await audioRef.current.play();
+
+              setState(prev => ({
+                ...prev,
+                status: 'playing',
+                isLoading: false,
+                config: fallbackConfig,
+              }));
+              return;
+            }
+          }
+        }
+        
         console.error('TTS streaming error:', streamError);
         throw new Error('Text-to-speech generation failed. Please try again later.');
       }

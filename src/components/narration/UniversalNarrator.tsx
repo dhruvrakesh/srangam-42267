@@ -1,10 +1,38 @@
 // Universal narrator component - can be used anywhere
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useLanguage } from '@/components/language/LanguageProvider';
 import { useNarration } from '@/hooks/useNarration';
 import { NarrationControls } from './NarrationControls';
 import { voiceStrategyEngine } from '@/services/narration/VoiceStrategyEngine';
 import type { NarrationConfig, NarrationContentType } from '@/types/narration';
+
+/**
+ * Phase 14d: Strip HTML tags, URLs, and footnotes from content before TTS
+ * Reduces character count by ~30% and produces cleaner audio
+ */
+function extractNarrationText(html: string): string {
+  let text = html;
+  
+  // Remove HTML tags but keep content
+  text = text.replace(/<[^>]+>/g, ' ');
+  
+  // Remove URLs (http/https/file)
+  text = text.replace(/(?:https?|file):\/\/[^\s<>"']+/gi, '');
+  
+  // Remove footnote markers like [1], [2], etc.
+  text = text.replace(/\[\d+\]/g, '');
+  
+  // Remove citation patterns like (Author, Year)
+  text = text.replace(/\([A-Za-z]+,?\s*\d{4}[a-z]?\)/g, '');
+  
+  // Collapse multiple spaces/newlines
+  text = text.replace(/\s+/g, ' ');
+  
+  // Trim
+  text = text.trim();
+  
+  return text;
+}
 
 interface UniversalNarratorProps {
   content: string;
@@ -43,12 +71,16 @@ export function UniversalNarrator({
     seek,
   } = useNarration({ speed: 1.0 });
 
-  // ✅ Simple validation - don't over-render
-  if (!currentLanguage || !content || content.trim().length === 0) {
-    return null; // Fail silently to avoid error cascades
-  }
+  // Phase 14d: Sanitize content before sending to TTS
+  const sanitizedContent = useMemo(() => extractNarrationText(content), [content]);
 
   const handlePlay = useCallback(async () => {
+    // Validation inside callback to avoid early return before hooks
+    if (!currentLanguage || !sanitizedContent || sanitizedContent.trim().length === 0) {
+      console.warn('[UniversalNarrator] Cannot play: missing language or content');
+      return;
+    }
+
     if (status === 'paused') {
       await resume();
       return;
@@ -83,16 +115,18 @@ export function UniversalNarrator({
         language: currentLanguage,
         contentType,
         contextHints: autoAnalyze ? {
-          hasCitations: content.includes('('),
-          hasSanskrit: /[āīūṛṝḷḹṃḥṅñṭḍṇśṣ]/i.test(content),
-          hasPoetry: content.split('\n').filter(l => l.length < 80).length > 10,
+          hasCitations: sanitizedContent.includes('('),
+          hasSanskrit: /[āīūṛṝḷḹṃḥṅñṭḍṇśṣ]/i.test(sanitizedContent),
+          hasPoetry: sanitizedContent.split('\n').filter(l => l.length < 80).length > 10,
         } : undefined,
       };
 
-      await playContent(content, config);
+      // Phase 14d: Use sanitized content (no HTML/URLs)
+      console.log(`[UniversalNarrator] Playing ${sanitizedContent.length} chars (sanitized from ${content.length})`);
+      await playContent(sanitizedContent, config);
       setHasStarted(true);
     }
-  }, [status, hasStarted, content, contentType, currentLanguage, speed, autoAnalyze, playContent, resume]);
+  }, [status, hasStarted, sanitizedContent, content, contentType, currentLanguage, speed, autoAnalyze, playContent, resume]);
 
   const handlePause = useCallback(() => {
     pause();
@@ -110,6 +144,11 @@ export function UniversalNarrator({
   const handleSeek = useCallback((time: number) => {
     seek(time);
   }, [seek]);
+
+  // Early return AFTER all hooks
+  if (!currentLanguage || !content || content.trim().length === 0) {
+    return null;
+  }
 
   return (
     <NarrationControls

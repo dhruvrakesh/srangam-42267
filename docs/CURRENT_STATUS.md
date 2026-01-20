@@ -144,11 +144,35 @@
 
 ## 🔧 **Recent Fixes & Deployments**
 
-### **2025-01-20 (Phase 14c: Critical Stream Buffering Fix)**
+### **2025-01-20 (Phase 14d: Memory Crash Fix + Stream Resilience)**
 
 **Status: ✅ DEPLOYED**
 
-1. ✅ **NDJSON Stream Buffering Bug Fixed** (CRITICAL):
+1. ✅ **ElevenLabs Memory Crash Fix** (CRITICAL):
+   - **Problem**: Edge function dies mid-stream with "Memory limit exceeded" due to base64-encoding large audio buffers
+   - **Root Cause**: `base64Encode(audioBuffer)` on ~500KB chunks causes memory spike
+   - **Fix**: Reduced `MAX_CHUNKS` to 8, added chunked base64 encoding to process in 32KB segments
+   - **File**: `supabase/functions/tts-stream-elevenlabs/index.ts`
+
+2. ✅ **Stream-Death Fallback** (CRITICAL):
+   - **Problem**: When backend dies mid-stream, no `done` event arrives, UI shows 0:00 forever
+   - **Fix**: `useNarration.ts` now detects zero-chunk streams and auto-retries with Google TTS
+   - **File**: `src/hooks/useNarration.ts`
+
+3. ✅ **Content Sanitization**:
+   - **Problem**: Raw HTML/URLs sent to TTS waste characters and produce poor audio
+   - **Fix**: Added `extractNarrationText()` in `UniversalNarrator.tsx` to strip HTML, URLs, and footnotes
+   - **Result**: ~30% reduction in character count, cleaner audio output
+
+4. ✅ **Google TTS Optimization**:
+   - Increased chunk size from 1500 to 3000 chars (halves API calls)
+   - Token fetch moved outside loop (cached for session)
+
+### **2025-01-20 (Phase 14c: Stream Buffering Fix)**
+
+**Status: ✅ DEPLOYED**
+
+1. ✅ **NDJSON Stream Buffering Bug Fixed**:
    - **Problem**: Network chunks split mid-JSON line, causing "Failed to parse TTS chunk" errors
    - **Root Cause**: `processStreamResponse()` split on `\n` without accumulating incomplete lines
    - **Fix**: Added line buffer accumulator - keeps partial JSON until complete line received

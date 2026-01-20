@@ -1,10 +1,19 @@
 # Srangam TTS Architecture
 
-**Last Updated**: 2025-01-20 (Phase 13: ElevenLabs Integration)
+**Last Updated**: 2025-01-20 (Phase 14d: Memory Crash Fix + Stream Resilience)
 
 ## Overview
 
 Srangam Digital implements a hybrid multi-provider text-to-speech (TTS) system optimized for scholarly content with Sanskrit IAST diacritics and multilingual support across 9 Indian languages.
+
+## Known Limitations & Mitigations
+
+| Issue | Root Cause | Mitigation |
+|-------|------------|------------|
+| ElevenLabs Memory Crash | Base64 encoding ~500KB audio buffers | MAX_CHUNKS=8, chunked base64 encoding (32KB) |
+| Stream-Death No Recovery | Backend dies before sending `done` event | Frontend detects 0 chunks → auto-fallback to Google |
+| OG Images Not Visible | Google Drive CORS/hotlinking restrictions | Graceful hide-on-error + proxy planned |
+| Caching Not Functional | RLS prevents client-side INSERT | Server-side caching via edge function (planned) |
 
 ## Provider Selection Logic
 
