@@ -86,18 +86,20 @@
 - ✅ Open Graph meta tags (branded image, description)
 - ✅ Twitter Card meta tags
 - ✅ Google Search Console ready (verification placeholder)
-- ✅ **Schema.org Structured Data** (Phase 11)
+- ✅ **Schema.org Structured Data** (Phase 11-12)
   - ✅ `Organization` schema in `SiteSchema.tsx`
   - ✅ `WebSite` schema with `SearchAction` for sitelinks search box
   - ✅ `ScholarlyArticle` schema in `ArticleHead.tsx` and `OceanicArticlePage.tsx`
   - ✅ `BreadcrumbList` schema in `BreadcrumbSchema.tsx`
   - ✅ `WebApplication` schema on tool pages
   - ✅ **wordCount field** populated for all 41 articles (Phase 12)
+  - ✅ **citation field** wired from `useArticleBibliographyBySlug` hook (Phase 12)
 - ✅ **Dynamic OG Images** (Phase 12)
   - ✅ AI-generated article-specific OG images (OpenAI DALL-E 3)
   - ✅ `generate-article-og` edge function
   - ✅ `og-images` storage bucket for caching
   - ✅ `og_image_url` column in `srangam_articles`
+  - ⏳ Generate OG images for 32 published articles via Data Health Dashboard
 ### **9. Research Tool Showcase Pages**
 - ✅ **Sanskrit Translator** landing page (`/sanskrit-translator`)
 - ✅ **Jyotish Horoscope** landing page (`/jyotish-horoscope`)
