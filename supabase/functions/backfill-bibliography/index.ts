@@ -314,22 +314,28 @@ Deno.serve(async (req) => {
           }
         }
         
-        // Insert evidence entries
-        for (const entry of evidence) {
-          const { error: evidenceError } = await supabase
+        // Upsert evidence entries (deduplicated by article + date + place + event)
+        if (evidence.length > 0) {
+          const evidenceEntries = evidence.map(entry => ({
+            article_id: source.article_id,
+            date_approx: entry.date_approx,
+            place: entry.place,
+            actors: entry.actors,
+            event_description: entry.event_description,
+            significance: entry.significance,
+            source_quality: entry.source_quality,
+          }));
+          
+          // Use batch insert - duplicates handled by unique constraint
+          const { error: evidenceError, count } = await supabase
             .from('srangam_article_evidence')
-            .insert({
-              article_id: source.article_id,
-              date_approx: entry.date_approx,
-              place: entry.place,
-              actors: entry.actors,
-              event_description: entry.event_description,
-              significance: entry.significance,
-              source_quality: entry.source_quality,
+            .upsert(evidenceEntries, {
+              onConflict: 'article_id,date_approx,place,event_description',
+              ignoreDuplicates: true,
             });
           
           if (!evidenceError) {
-            stats.evidenceEntriesCreated++;
+            stats.evidenceEntriesCreated += evidence.length;
           } else {
             console.error(`  - Error inserting evidence: ${evidenceError.message}`);
           }
