@@ -370,6 +370,7 @@ export type Database = {
           dek: Json | null
           featured: boolean | null
           id: string
+          og_image_url: string | null
           part_number: number | null
           published_date: string
           read_time_minutes: number | null
@@ -390,6 +391,7 @@ export type Database = {
           dek?: Json | null
           featured?: boolean | null
           id?: string
+          og_image_url?: string | null
           part_number?: number | null
           published_date?: string
           read_time_minutes?: number | null
@@ -410,6 +412,7 @@ export type Database = {
           dek?: Json | null
           featured?: boolean | null
           id?: string
+          og_image_url?: string | null
           part_number?: number | null
           published_date?: string
           read_time_minutes?: number | null

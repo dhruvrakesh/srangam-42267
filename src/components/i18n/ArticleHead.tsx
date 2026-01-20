@@ -24,6 +24,8 @@ interface ArticleHeadProps {
   wordCount?: number;
   /** Optional bibliography citations for ScholarlyArticle schema */
   citations?: string[];
+  /** Optional AI-generated OG image URL */
+  ogImageUrl?: string | null;
 }
 
 /**
@@ -41,7 +43,8 @@ export const ArticleHead: React.FC<ArticleHeadProps> = ({
   section,
   tags,
   wordCount,
-  citations
+  citations,
+  ogImageUrl
 }) => {
   const { i18n } = useTranslation();
   const currentLang = normalizeLanguageCode(i18n.language) as SupportedLanguage;
@@ -55,6 +58,9 @@ export const ArticleHead: React.FC<ArticleHeadProps> = ({
   const currentTitle = (title[currentLang] || title.en || '') as string;
   const currentDescription = (description[currentLang] || description.en || '') as string;
   const canonicalUrl = `${BASE_URL}/${articleSlug}`;
+  
+  // Dynamic OG image with fallback to default branded image
+  const effectiveOgImageUrl = ogImageUrl || `${BASE_URL}/brand/og-image.svg`;
   
   // Generate breadcrumbs for this article
   const breadcrumbs = getArticleBreadcrumbs(currentTitle, articleSlug, section);
@@ -72,7 +78,7 @@ export const ArticleHead: React.FC<ArticleHeadProps> = ({
     description: currentDescription,
     image: {
       '@type': 'ImageObject',
-      url: `${BASE_URL}/brand/og-image.svg`,
+      url: effectiveOgImageUrl,
       width: 1200,
       height: 630
     },
@@ -138,7 +144,7 @@ export const ArticleHead: React.FC<ArticleHeadProps> = ({
         <meta property="og:title" content={currentTitle} />
         <meta property="og:description" content={currentDescription} />
         <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:image" content={`${BASE_URL}/brand/og-image.svg`} />
+        <meta property="og:image" content={effectiveOgImageUrl} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:locale" content={currentLang === 'en' ? 'en_US' : currentLang} />
@@ -167,7 +173,7 @@ export const ArticleHead: React.FC<ArticleHeadProps> = ({
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={currentTitle} />
         <meta name="twitter:description" content={currentDescription} />
-        <meta name="twitter:image" content={`${BASE_URL}/brand/og-image.svg`} />
+        <meta name="twitter:image" content={effectiveOgImageUrl} />
         
         {/* Structured Data (JSON-LD) - ScholarlyArticle */}
         <script type="application/ld+json">

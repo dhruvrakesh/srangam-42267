@@ -30,6 +30,7 @@ import {
   RefreshCw,
   Loader2,
   XCircle,
+  ImageIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -67,6 +68,8 @@ export default function DataHealth() {
   const queryClient = useQueryClient();
   const [dryRun, setDryRun] = useState(true);
   const [backfillLogs, setBackfillLogs] = useState<string[]>([]);
+  const [ogProgress, setOgProgress] = useState({ current: 0, total: 0, generating: false });
+  const [ogLogs, setOgLogs] = useState<string[]>([]);
 
   // Fetch table counts
   const { data: tableHealth, isLoading: healthLoading } = useQuery({
@@ -207,6 +210,72 @@ export default function DataHealth() {
       toast.error("Backfill failed: " + error.message);
     },
   });
+
+  // Fetch articles for OG image generation
+  const { data: articlesForOg } = useQuery({
+    queryKey: ["articles-for-og"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("srangam_articles")
+        .select("id, title, theme, slug_alias, slug, og_image_url")
+        .eq("status", "published")
+        .order("title");
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const articlesWithoutOg = articlesForOg?.filter(a => !a.og_image_url) || [];
+  const estimatedCost = (articlesWithoutOg.length * 0.04).toFixed(2);
+
+  // Generate OG images for articles
+  const handleGenerateOgImages = async () => {
+    if (articlesWithoutOg.length === 0) {
+      toast.info("All articles already have OG images");
+      return;
+    }
+
+    setOgProgress({ current: 0, total: articlesWithoutOg.length, generating: true });
+    setOgLogs([`Starting OG image generation for ${articlesWithoutOg.length} articles...`]);
+
+    for (let i = 0; i < articlesWithoutOg.length; i++) {
+      const article = articlesWithoutOg[i];
+      const title = (article.title as { en?: string })?.en || "Untitled";
+      const slug = article.slug_alias || article.slug;
+
+      setOgLogs(prev => [...prev, `[${i + 1}/${articlesWithoutOg.length}] Generating: ${title}`]);
+      setOgProgress(prev => ({ ...prev, current: i + 1 }));
+
+      try {
+        const { data, error } = await supabase.functions.invoke("generate-article-og", {
+          body: {
+            articleId: article.id,
+            title,
+            theme: article.theme,
+            slug,
+          },
+        });
+
+        if (error) throw error;
+        
+        if (data.success) {
+          setOgLogs(prev => [...prev, `  ✓ Generated: ${data.url}`]);
+        } else {
+          setOgLogs(prev => [...prev, `  ✗ Failed: ${data.error}`]);
+        }
+      } catch (err) {
+        setOgLogs(prev => [...prev, `  ✗ Error: ${err instanceof Error ? err.message : 'Unknown error'}`]);
+      }
+
+      // Small delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    setOgProgress(prev => ({ ...prev, generating: false }));
+    setOgLogs(prev => [...prev, `\n✅ OG image generation complete!`]);
+    queryClient.invalidateQueries({ queryKey: ["articles-for-og"] });
+    toast.success("OG image generation complete!");
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -354,6 +423,83 @@ export default function DataHealth() {
                 <div className="p-4 font-mono text-sm space-y-1">
                   {backfillLogs.map((log, i) => (
                     <div key={i} className={log.startsWith("ERROR") ? "text-red-500" : "text-muted-foreground"}>
+                      {log}
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* OG Image Generation Panel */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ImageIcon className="h-5 w-5" />
+            Dynamic OG Image Generation
+          </CardTitle>
+          <CardDescription>
+            Generate AI-powered Open Graph images for social sharing (DALL-E 3, $0.04/image)
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Stats Summary */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="p-4 bg-muted/30 rounded-lg text-center">
+              <div className="text-2xl font-bold">{articlesForOg?.length || 0}</div>
+              <div className="text-sm text-muted-foreground">Total Articles</div>
+            </div>
+            <div className="p-4 bg-muted/30 rounded-lg text-center">
+              <div className="text-2xl font-bold text-primary">{articlesForOg?.filter(a => a.og_image_url).length || 0}</div>
+              <div className="text-sm text-muted-foreground">With OG Image</div>
+            </div>
+            <div className="p-4 bg-muted/30 rounded-lg text-center">
+              <div className="text-2xl font-bold text-destructive">{articlesWithoutOg.length}</div>
+              <div className="text-sm text-muted-foreground">Missing OG Image</div>
+            </div>
+            <div className="p-4 bg-muted/30 rounded-lg text-center">
+              <div className="text-2xl font-bold">${estimatedCost}</div>
+              <div className="text-sm text-muted-foreground">Est. Cost</div>
+            </div>
+          </div>
+
+          {/* Controls */}
+          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+            <div className="text-sm text-muted-foreground">
+              {articlesWithoutOg.length > 0 
+                ? `Ready to generate ${articlesWithoutOg.length} OG images`
+                : "All articles have OG images"}
+            </div>
+            <Button
+              onClick={handleGenerateOgImages}
+              disabled={ogProgress.generating || articlesWithoutOg.length === 0}
+            >
+              {ogProgress.generating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Generating ({ogProgress.current}/{ogProgress.total})...
+                </>
+              ) : (
+                <>
+                  <ImageIcon className="h-4 w-4 mr-2" />
+                  Generate OG Images
+                </>
+              )}
+            </Button>
+          </div>
+
+          {/* Logs */}
+          {ogLogs.length > 0 && (
+            <div className="border rounded-lg">
+              <div className="px-4 py-2 bg-muted/50 border-b font-medium text-sm">
+                Generation Logs
+              </div>
+              <ScrollArea className="h-40">
+                <div className="p-4 font-mono text-sm space-y-1">
+                  {ogLogs.map((log, i) => (
+                    <div key={i} className={log.includes("✗") ? "text-destructive" : log.includes("✓") ? "text-primary" : "text-muted-foreground"}>
                       {log}
                     </div>
                   ))}
