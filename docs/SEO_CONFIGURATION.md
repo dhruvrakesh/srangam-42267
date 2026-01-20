@@ -82,18 +82,33 @@ Add this to `index.html` `<head>`:
 
 ## 🖼️ Open Graph Image
 
-**Recommended Dimensions**: 1200 x 630 pixels (1.91:1 ratio)
-**Location**: `/public/brand/og-image.png`
+**Dimensions**: 1200 x 630 pixels (1.91:1 ratio)
+**Location**: `/public/brand/og-image.svg`
+**Format**: SVG (scalable, crisp text, small file size)
 
 **Current Configuration:**
 ```html
-<meta property="og:image" content="https://srangam-db.lovable.app/brand/srangam_mark_simple.svg" />
+<meta property="og:image" content="https://srangam-db.lovable.app/brand/og-image.svg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:type" content="image/svg+xml" />
 ```
 
-**For optimal social sharing, create a dedicated OG image with:**
-- Srangam logo/branding
-- Tagline: "Histories of the Indian Ocean World"
-- Visual elements representing archaeology/history
+**Design Elements:**
+- Srangam logo mark (Ocean Teal circle + Epigraphy Maroon wave)
+- "SRANGAM" in Georgia serif, 96px
+- Tagline: "Dharmic Scholarship for the Digital Age"
+- Sacred geometry pattern (Vesica Piscis / interlocking circles)
+- Cream background (#F8F5F0) with subtle gradient
+- Double border accent in Ocean Teal and Epigraphy Maroon
+
+**Brand Colors Used:**
+| Color | Hex | Usage |
+|-------|-----|-------|
+| Ocean Teal | `#2A9D8F` | Outer circle, borders, geometry |
+| Epigraphy Maroon | `#7B2D26` | Wave symbol, SRANGAM text |
+| Cream | `#F8F5F0` | Background |
+| Charcoal | `#111111` | Tagline text |
 
 ---
 
