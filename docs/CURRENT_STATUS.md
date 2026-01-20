@@ -1,6 +1,6 @@
 # Srangam Platform - Current Status
 
-**Last Updated**: 2025-01-20 (Phase 9: Dark Mode Rationalization + Bibliography Backfill)
+**Last Updated**: 2025-01-20 (Phase 12: Evidence Extraction Fix + Dynamic OG Images)
 
 ---
 
@@ -90,7 +90,11 @@
   - ✅ `ScholarlyArticle` schema in `ArticleHead.tsx`
   - ✅ `BreadcrumbList` schema in `BreadcrumbSchema.tsx`
   - ✅ `WebApplication` schema on tool pages
-
+- ✅ **Dynamic OG Images** (Phase 12)
+  - ✅ AI-generated article-specific OG images (OpenAI DALL-E 3)
+  - ✅ `generate-article-og` edge function
+  - ✅ `og-images` storage bucket for caching
+  - ✅ `og_image_url` column in `srangam_articles`
 ### **9. Research Tool Showcase Pages**
 - ✅ **Sanskrit Translator** landing page (`/sanskrit-translator`)
 - ✅ **Jyotish Horoscope** landing page (`/jyotish-horoscope`)
@@ -134,6 +138,25 @@
 ---
 
 ## 🔧 **Recent Fixes & Deployments**
+
+### **2025-01-20 (Phase 12: Evidence Extraction Fix + Dynamic OG Images)**
+
+1. ✅ **Evidence Table Extraction Fix**:
+   - Enhanced `hasScholarlyHeaders` regex in `backfill-bibliography/index.ts`
+   - Added multilingual support: Punjabi (ਤਾਰੀਖ, ਥਾਂ), Tamil (தேதி, இடம்), Hindi (तिथि, स्थान)
+   - Added debug logging for markdown→HTML table conversion verification
+   - Generic pattern fallback for 6+ column tables with source quality indicators
+
+2. ✅ **Dynamic OG Image Generation**:
+   - Created `generate-article-og` edge function using OpenAI DALL-E 3 ($0.04/image)
+   - Created `og-images` storage bucket with public read access
+   - Added `og_image_url` column to `srangam_articles` table
+   - Updated `ArticleHead.tsx` to use dynamic OG images with fallback
+   - Added bulk generation UI to Data Health Dashboard
+
+3. ✅ **Cost Optimization**:
+   - Decision: Use existing `OPENAI_API_KEY` instead of Lovable AI (50% cost savings)
+   - Total cost for 32 articles: ~$1.28
 
 ### **2025-01-20 (Phase 9: Dark Mode Rationalization + Bibliography Backfill)**
 

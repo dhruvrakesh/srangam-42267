@@ -44,3 +44,9 @@ verify_jwt = false
 
 [functions.markdown-to-article-import]
 verify_jwt = false
+
+[functions.backfill-bibliography]
+verify_jwt = false
+
+[functions.generate-article-og]
+verify_jwt = false
