@@ -48,6 +48,7 @@ export class NarrationService {
 
   /**
    * Process NDJSON stream response and yield audio chunks
+   * Phase 14c: Fixed stream buffering bug - properly handles partial JSON lines
    */
   private async *processStreamResponse(
     response: Response
@@ -59,15 +60,51 @@ export class NarrationService {
 
     let chunkIndex = 0;
     const decoder = new TextDecoder();
+    let buffer = ''; // Accumulator for incomplete NDJSON lines
 
     while (true) {
       const { done, value } = await reader.read();
-      if (done) break;
 
-      const text = decoder.decode(value, { stream: true });
-      const lines = text.split('\n').filter(line => line.trim());
+      if (done) {
+        // Process any remaining buffer on stream end
+        if (buffer.trim()) {
+          try {
+            const data = JSON.parse(buffer);
+            if (data.audio) {
+              const audioContent = Uint8Array.from(atob(data.audio), c => c.charCodeAt(0));
+              yield {
+                audioContent,
+                chunkIndex: chunkIndex++,
+                totalChunks: -1,
+                isLast: false,
+              };
+            }
+            if (data.done) {
+              yield {
+                audioContent: new Uint8Array(0),
+                chunkIndex: chunkIndex,
+                totalChunks: chunkIndex,
+                isLast: true,
+              };
+            }
+          } catch (e) {
+            // Ignore incomplete final line
+            console.debug('[NarrationService] Ignoring incomplete final buffer');
+          }
+        }
+        break;
+      }
+
+      // Accumulate text in buffer
+      buffer += decoder.decode(value, { stream: true });
+
+      // Split into lines, keeping incomplete last line in buffer
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || ''; // Keep incomplete line for next iteration
 
       for (const line of lines) {
+        if (!line.trim()) continue;
+
         try {
           const data = JSON.parse(line);
 
@@ -98,7 +135,7 @@ export class NarrationService {
           if (e instanceof Error && e.message === 'AUTH_BLOCKED') {
             throw e;
           }
-          console.warn('Failed to parse TTS chunk:', e);
+          console.warn('[NarrationService] Failed to parse TTS chunk:', line.substring(0, 50), e);
         }
       }
     }
