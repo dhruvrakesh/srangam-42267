@@ -15,6 +15,7 @@ import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
 import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { useArticleBibliographyBySlug } from '@/hooks/useArticleBibliography';
 
 const BASE_URL = 'https://srangam-db.lovable.app';
 
@@ -27,6 +28,9 @@ export const OceanicArticlePage: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showMethodsDialog, setShowMethodsDialog] = useState(false);
   const allCards = getOceanicCards();
+  
+  // Fetch bibliography for ScholarlyArticle schema citations
+  const { data: bibliography } = useArticleBibliographyBySlug(slug);
 
   useEffect(() => {
     async function loadArticle() {
@@ -112,7 +116,14 @@ export const OceanicArticlePage: React.FC = () => {
     mainEntityOfPage: canonicalUrl,
     keywords: article.tags.join(', '),
     ...(article.word_count && { wordCount: article.word_count }),
-    articleSection: article.theme || 'Research'
+    articleSection: article.theme || 'Research',
+    // Add citations from bibliography for Google rich snippets
+    ...(bibliography && bibliography.length > 0 && {
+      citation: bibliography.map(b => 
+        b.bibliography.full_citation_mla || 
+        `${b.bibliography.authors?.[0]?.last || 'Unknown'}. ${(b.bibliography.title as Record<string, string>)?.en || 'Untitled'}. ${b.bibliography.year || ''}`
+      )
+    })
   } : null;
 
   return (
