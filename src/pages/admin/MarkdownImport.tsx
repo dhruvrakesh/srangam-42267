@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Upload, FileText, Loader2, CheckCircle, Circle, AlertCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Upload, FileText, Loader2, CheckCircle, Circle, AlertCircle, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -739,19 +740,61 @@ slug: "${slug}"
 
             {/* Import Result */}
             {importResult && (
-              <Alert variant={importResult.success ? 'default' : 'destructive'}>
-                <AlertTitle>
-                  {importResult.success ? '✅ Import Successful!' : '❌ Import Failed'}
+              <Alert variant={importResult.success ? 'default' : 'destructive'} className={importResult.success ? 'border-green-500 bg-green-50 dark:bg-green-950' : ''}>
+                <AlertTitle className="flex items-center gap-2">
+                  {importResult.success ? (
+                    <>
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      Import Successful!
+                    </>
+                  ) : (
+                    '❌ Import Failed'
+                  )}
                 </AlertTitle>
                 <AlertDescription>
                   {importResult.success ? (
-                    <div className="space-y-2">
-                      <p>Article imported: <code className="bg-muted px-1 py-0.5 rounded">{importResult.slug}</code></p>
+                    <div className="space-y-3 mt-2">
+                      <p className="font-medium">
+                        Article published: <code className="bg-muted px-2 py-1 rounded text-sm">{importResult.slug}</code>
+                      </p>
                       {importResult.stats && (
-                        <p>
-                          Stats: {importResult.stats.wordCount} words, {importResult.stats.termsExtracted} terms, {importResult.stats.citationsCreated} citations
-                        </p>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                          <div className="bg-background rounded p-2 border">
+                            <div className="font-semibold text-foreground">{importResult.stats.wordCount?.toLocaleString()}</div>
+                            <div className="text-muted-foreground text-xs">Words</div>
+                          </div>
+                          <div className="bg-background rounded p-2 border">
+                            <div className="font-semibold text-foreground">{importResult.stats.termsExtracted}</div>
+                            <div className="text-muted-foreground text-xs">Terms Extracted</div>
+                          </div>
+                          <div className="bg-background rounded p-2 border">
+                            <div className="font-semibold text-foreground">{importResult.stats.crossReferencesCreated || 0}</div>
+                            <div className="text-muted-foreground text-xs">Cross-References</div>
+                          </div>
+                          <div className="bg-background rounded p-2 border">
+                            <div className="font-semibold text-foreground">{importResult.stats.citationsCreated}</div>
+                            <div className="text-muted-foreground text-xs">Citations</div>
+                          </div>
+                        </div>
                       )}
+                      <div className="flex gap-2 pt-2">
+                        <Button asChild variant="default" size="sm">
+                          <Link to={`/articles/${importResult.slug}`} className="gap-2">
+                            <ExternalLink className="h-4 w-4" />
+                            View Article
+                          </Link>
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setImportResult(null);
+                            setImportSteps([]);
+                          }}
+                        >
+                          Import Another
+                        </Button>
+                      </div>
                     </div>
                   ) : (
                     <div className="space-y-2">

@@ -8,9 +8,11 @@ import { Layout } from "@/components/layout/Layout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LanguageProvider } from "@/components/language/LanguageProvider";
 import { HelmetProvider } from 'react-helmet-async';
+import { ThemeProvider } from 'next-themes';
 import { Loader2 } from 'lucide-react';
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/admin/ProtectedRoute";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 // Immediate load for critical pages
 import Home from "./pages/Home";
@@ -134,15 +136,17 @@ function PageLoadingFallback() {
 const App = () => (
   <ErrorBoundary>
     <HelmetProvider>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <LanguageProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <Layout>
-                  <Suspense fallback={<PageLoadingFallback />}>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <LanguageProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <ScrollToTop />
+                  <Layout>
+                    <Suspense fallback={<PageLoadingFallback />}>
                     <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/begin-journey" element={<BeginJourney />} />
@@ -244,14 +248,15 @@ const App = () => (
                   </Route>
                   
                   <Route path="*" element={<NotFound />} />
-                  </Routes>
-                  </Suspense>
-              </Layout>
-            </BrowserRouter>
-          </TooltipProvider>
-          </LanguageProvider>
-        </AuthProvider>
-      </QueryClientProvider>
+                    </Routes>
+                    </Suspense>
+                </Layout>
+              </BrowserRouter>
+            </TooltipProvider>
+            </LanguageProvider>
+          </AuthProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
     </HelmetProvider>
   </ErrorBoundary>
 );
