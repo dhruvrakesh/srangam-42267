@@ -12,8 +12,8 @@ export function TagChip({ children, variant = "default", className }: TagChipPro
       className={cn(
         "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
         variant === "theme" 
-          ? "bg-ocean text-white"
-          : "bg-sand border border-border text-foreground",
+          ? "bg-ocean text-white dark:bg-ocean dark:text-charcoal-om"
+          : "bg-sand border border-border text-foreground dark:bg-card dark:text-card-foreground dark:border-border",
         className
       )}
     >

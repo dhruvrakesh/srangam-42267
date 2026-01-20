@@ -115,6 +115,12 @@ All colors MUST be HSL.
     --border: 218 15% 20%;
     --input: 218 15% 20%;
     --ring: var(--burgundy-light);
+    
+    /* Dark mode overrides for hardcoded colors */
+    --sand: 218 15% 22%;          /* Dark gray-blue for chip backgrounds */
+    --ocean: 195 75% 50%;         /* Brighter teal for visibility */
+    --saffron: 25 90% 58%;        /* Slightly brighter saffron */
+    
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;

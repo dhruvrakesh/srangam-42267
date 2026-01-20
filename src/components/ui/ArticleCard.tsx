@@ -101,7 +101,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
             {article.tags.slice(0, 3).map((tag, index) => (
               <TagChip 
                 key={index} 
-                className={`text-xs group-hover:scale-105 transition-transform duration-200 ${
+                className={`text-xs group-hover:scale-105 transition-transform duration-200 dark:bg-card dark:text-card-foreground dark:border-border ${
                   index === 1 ? 'delay-50' : index === 2 ? 'delay-100' : ''
                 }`}
               >
