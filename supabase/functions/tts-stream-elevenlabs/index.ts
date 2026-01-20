@@ -1,13 +1,27 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Phase 14d: Chunked base64 encoding to prevent memory spikes
+// Process in 32KB segments to avoid "Memory limit exceeded"
+function chunkedBase64Encode(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  const CHUNK_SIZE = 32768; // 32KB chunks
+  let result = '';
+  
+  for (let i = 0; i < bytes.length; i += CHUNK_SIZE) {
+    const chunk = bytes.subarray(i, Math.min(i + CHUNK_SIZE, bytes.length));
+    result += btoa(String.fromCharCode(...chunk));
+  }
+  
+  return result;
+}
+
 // Smart text chunking at sentence boundaries
-// Phase 14c: Increased to 7500 chars to reduce API calls and prevent CPU timeout
+// Phase 14c: Increased to 7500 chars to reduce API calls
 function chunkText(text: string, maxChars: number = 7500): string[] {
   const chunks: string[] = [];
   let currentChunk = '';
@@ -30,8 +44,9 @@ function chunkText(text: string, maxChars: number = 7500): string[] {
   return chunks;
 }
 
-// Maximum chunks to prevent CPU timeout on very long articles
-const MAX_CHUNKS = 12; // ~90,000 characters max (~20-25 min audio)
+// Phase 14d: Reduced to 8 chunks to prevent memory crash
+// ~60,000 characters max (~15-18 min audio)
+const MAX_CHUNKS = 8;
 
 // Map voice names to ElevenLabs voice IDs
 const voiceIdMap: Record<string, string> = {
@@ -134,9 +149,10 @@ serve(async (req) => {
               throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
             }
 
-            // Get audio buffer and encode to base64
+            // Phase 14d: Get audio buffer and encode to base64 in chunks to prevent memory spike
             const audioBuffer = await response.arrayBuffer();
-            const base64Audio = base64Encode(audioBuffer);
+            console.log(`[tts-stream-elevenlabs] Encoding ${audioBuffer.byteLength} bytes for chunk ${i + 1}`);
+            const base64Audio = chunkedBase64Encode(audioBuffer);
             
             // Send audio chunk as NDJSON (matches Google TTS format for client compatibility)
             controller.enqueue(

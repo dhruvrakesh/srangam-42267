@@ -45,7 +45,8 @@ function mapLanguageCode(lang: string): string {
 }
 
 // Smart text chunking at sentence boundaries
-function chunkText(text: string, maxChars: number = 1500): string[] {
+// Phase 14d: Increased to 3000 chars to reduce API calls
+function chunkText(text: string, maxChars: number = 3000): string[] {
   const chunks: string[] = [];
   let currentChunk = '';
   
