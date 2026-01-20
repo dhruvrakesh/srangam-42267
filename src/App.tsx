@@ -13,6 +13,7 @@ import { Loader2 } from 'lucide-react';
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/admin/ProtectedRoute";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { SiteSchema } from "@/components/seo/SiteSchema";
 
 // Immediate load for critical pages
 import Home from "./pages/Home";
@@ -143,6 +144,7 @@ const App = () => (
               <TooltipProvider>
                 <Toaster />
                 <Sonner />
+                <SiteSchema />
                 <BrowserRouter>
                   <ScrollToTop />
                   <Layout>

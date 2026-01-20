@@ -77,13 +77,19 @@
 - ✅ Language switcher integration
 - ⚠️ `TopNavigation.tsx` deprecated (kept for reference)
 
-### **8. SEO & Discoverability** (added Jan 2025)
+### **8. SEO & Discoverability** (updated Jan 2025)
 - ✅ Canonical URL: `https://srangam-db.lovable.app`
 - ✅ Sitemap generation with correct base URL
 - ✅ `robots.txt` with sitemap directive
 - ✅ Open Graph meta tags (branded image, description)
 - ✅ Twitter Card meta tags
 - ✅ Google Search Console ready (verification placeholder)
+- ✅ **Schema.org Structured Data** (Phase 11)
+  - ✅ `Organization` schema in `SiteSchema.tsx`
+  - ✅ `WebSite` schema with `SearchAction` for sitelinks search box
+  - ✅ `ScholarlyArticle` schema in `ArticleHead.tsx`
+  - ✅ `BreadcrumbList` schema in `BreadcrumbSchema.tsx`
+  - ✅ `WebApplication` schema on tool pages
 
 ### **9. Research Tool Showcase Pages**
 - ✅ **Sanskrit Translator** landing page (`/sanskrit-translator`)

@@ -14,6 +14,60 @@ All SEO configurations, sitemaps, and canonical URLs should reference this domai
 
 ---
 
+## 🏗️ Structured Data (Schema.org JSON-LD)
+
+Comprehensive Schema.org implementation for Google rich snippets and knowledge panels.
+
+### Site-Wide Schemas
+
+| Schema Type | Location | Google Feature |
+|-------------|----------|----------------|
+| `Organization` | `src/components/seo/SiteSchema.tsx` | Knowledge panel, branding |
+| `WebSite` + `SearchAction` | `src/components/seo/SiteSchema.tsx` | Sitelinks search box |
+
+**Organization Schema Fields:**
+- Name, description, logo, founding date
+- Founder (Nartiang Foundation)
+- `knowsAbout`: Ancient Indian History, Sanskrit Epigraphy, Maritime Archaeology, etc.
+- Geographic area served (Indian Ocean region)
+
+**WebSite Schema Fields:**
+- Search action targeting `/search?q={query}`
+- Multiple language support (en, hi, pa, ta)
+
+### Article Schemas
+
+| Schema Type | Location | Google Feature |
+|-------------|----------|----------------|
+| `ScholarlyArticle` | `src/components/i18n/ArticleHead.tsx` | Rich snippets with author, date, citations |
+| `BreadcrumbList` | `src/components/seo/BreadcrumbSchema.tsx` | Breadcrumb trail in search results |
+
+**ScholarlyArticle Enhanced Props:**
+- `wordCount?: number` - Displays in rich snippets
+- `citations?: string[]` - MLA bibliography citations
+- `mainEntityOfPage` - WebPage reference
+- `about` - Tags as Thing entities
+- `availableLanguage` - Multilingual support
+
+### Tool Page Schemas
+
+| Schema Type | Location | Google Feature |
+|-------------|----------|----------------|
+| `WebApplication` | Tool pages | Software app cards |
+
+**Existing implementations**: 
+- `JyotishHoroscope.tsx` - Vedic astronomy tool
+- `SanskritTranslator.tsx` - Translation tool
+- Interactive Atlas page
+
+### Testing Structured Data
+
+1. **Google Rich Results Test**: https://search.google.com/test/rich-results
+2. **Schema.org Validator**: https://validator.schema.org/
+3. **Structured Data Linter**: https://linter.structured-data.org/
+
+---
+
 ## 📄 Key Files
 
 ### 1. `public/robots.txt`
@@ -118,7 +172,7 @@ Add this to `index.html` `<head>`:
 
 ```html
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:image" content="https://srangam-db.lovable.app/brand/srangam_mark_simple.svg" />
+<meta name="twitter:image" content="https://srangam-db.lovable.app/brand/og-image.svg" />
 ```
 
 ---
@@ -152,9 +206,14 @@ The sitemap is dynamically generated and includes:
 - [x] Semantic HTML structure
 - [x] Proper heading hierarchy (H1 → H6)
 - [x] Alt text on images
+- [x] Branded OG image (1200x630)
+- [x] Schema.org structured data
+  - [x] Organization schema
+  - [x] WebSite schema with SearchAction
+  - [x] ScholarlyArticle schema
+  - [x] BreadcrumbList schema
+  - [x] WebApplication schema (tool pages)
 - [ ] Google Search Console verification
-- [ ] Branded OG image (1200x630)
-- [ ] Schema.org structured data
 
 ---
 
@@ -164,6 +223,7 @@ The sitemap is dynamically generated and includes:
 1. Check Search Console for crawl errors
 2. Review indexed pages count
 3. Monitor Core Web Vitals
+4. Validate structured data with Google's tools
 
 ### After Content Updates
 1. Sitemap auto-updates with new articles
