@@ -1,6 +1,6 @@
 # Srangam Platform - Current Status
 
-**Last Updated**: 2025-01-20 (Phase 13: Audio Narration System Overhaul + ElevenLabs Integration)
+**Last Updated**: 2025-01-20 (Phase 14: TTS Provider Fallback + OG Image Display)
 
 ---
 
@@ -143,6 +143,34 @@
 ---
 
 ## 🔧 **Recent Fixes & Deployments**
+
+### **2025-01-20 (Phase 14: TTS Provider Fallback + OG Image Display)**
+
+1. ✅ **ElevenLabs Free Tier Blocked - Auto-Fallback System**:
+   - Problem: ElevenLabs returning 401 "Unusual activity detected. Free Tier usage disabled"
+   - Solution: Implemented intelligent provider fallback in `NarrationService.ts`
+   - On 401/403 errors, automatically retries with Google Cloud Neural2 (en-US-Neural2-D)
+   - User experience: seamless narration without visible error
+
+2. ✅ **VoiceStrategyEngine Fallback Methods**:
+   - Added `getFallbackVoice(language, contentType)` method
+   - Returns Google Cloud Neural2 for English, retains Google WaveNet for Indic languages
+   - Added `needsFallbackCapability(config)` to detect ElevenLabs provider
+
+3. ✅ **Article Hero Image Display**:
+   - OG images now visually displayed on article pages (not just in meta tags)
+   - Constrained height (h-48 md:h-64 lg:h-72) to not overwhelm content
+   - Graceful degradation: hidden if image fails to load (CORS issues)
+   - Subtle AI-generated caption for scholarly integrity
+
+4. ✅ **ElevenLabs Edge Function Error Handling**:
+   - Structured 401/403 error response with `auth_blocked` flag
+   - Returns `fallback_provider: 'google-cloud'` for client-side handling
+   - Improved console logging for diagnostics
+
+5. ✅ **Evidence Deduplication**:
+   - Added unique constraint on `srangam_article_evidence(article_id, date_approx, place, event_description)`
+   - Backfill function now uses upsert with onConflict for idempotency
 
 ### **2025-01-20 (Phase 13: Audio Narration System Overhaul)**
 
