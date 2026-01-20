@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +15,8 @@ import { UniversalNarrator } from '@/components/narration/UniversalNarrator';
 import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBoundary';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+
+const BASE_URL = 'https://srangam-db.lovable.app';
 
 export const OceanicArticlePage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -77,11 +80,81 @@ export const OceanicArticlePage: React.FC = () => {
     window.open('/reading-room', '_blank');
   };
 
+  // Build SEO metadata
+  const articleTitle = getArticleTitle(article, currentLanguage);
+  const articleSlug = article.slug_alias || article.slug;
+  const canonicalUrl = `${BASE_URL}/${articleSlug}`;
+  const ogImageUrl = article.og_image_url || `${BASE_URL}/brand/og-image.svg`;
+  const description = article.abstract.substring(0, 160);
+
+  // Build ScholarlyArticle structured data for database articles
+  const scholarlyArticleSchema = article.source === 'database' ? {
+    '@context': 'https://schema.org',
+    '@type': 'ScholarlyArticle',
+    headline: articleTitle,
+    description: description,
+    image: ogImageUrl,
+    datePublished: article.published_date,
+    author: {
+      '@type': 'Organization',
+      name: 'Nartiang Foundation Research Team',
+      url: BASE_URL
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Srangam',
+      url: BASE_URL,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${BASE_URL}/brand/og-image.svg`
+      }
+    },
+    mainEntityOfPage: canonicalUrl,
+    keywords: article.tags.join(', '),
+    ...(article.word_count && { wordCount: article.word_count }),
+    articleSection: article.theme || 'Research'
+  } : null;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Header */}
-        <div className="mb-8">
+    <>
+      {/* SEO Head */}
+      <Helmet>
+        <title>{articleTitle} | Srangam</title>
+        <meta name="description" content={description} />
+        <link rel="canonical" href={canonicalUrl} />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content={articleTitle} />
+        <meta property="og:description" content={description} />
+        <meta property="og:image" content={ogImageUrl} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:type" content="article" />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={articleTitle} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={ogImageUrl} />
+        
+        {/* Article meta */}
+        <meta property="article:published_time" content={article.published_date} />
+        <meta property="article:section" content={article.theme || 'Research'} />
+        {article.tags.map((tag, i) => (
+          <meta key={i} property="article:tag" content={tag} />
+        ))}
+        
+        {/* ScholarlyArticle structured data */}
+        {scholarlyArticleSchema && (
+          <script type="application/ld+json">
+            {JSON.stringify(scholarlyArticleSchema)}
+          </script>
+        )}
+      </Helmet>
+
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
+          {/* Header */}
+          <div className="mb-8">
           <Button 
             variant="ghost" 
             onClick={() => {
@@ -348,6 +421,7 @@ export const OceanicArticlePage: React.FC = () => {
         </NarrationErrorBoundary>
       </div>
     </div>
+    </>
   );
 };
 

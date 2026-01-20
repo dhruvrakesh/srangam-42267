@@ -620,6 +620,7 @@ Deno.serve(async (req) => {
       theme: theme,
       tags: tags,
       read_time_minutes: frontmatter.readTime || readTimeMinutes,
+      word_count: wordCount,  // Persist calculated word count for ScholarlyArticle schema
       status: 'published',
       featured: false,
     };

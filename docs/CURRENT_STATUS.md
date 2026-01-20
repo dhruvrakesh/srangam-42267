@@ -10,6 +10,7 @@
 - ✅ YAML frontmatter parsing with special character handling
 - ✅ Markdown to HTML conversion (marked.js)
 - ✅ Word count & read time calculation
+- ✅ **Word count persistence** to database for ScholarlyArticle schema (Phase 12)
 - ✅ Duplicate slug detection with "Overwrite if exists" option
 - ✅ Markdown source preservation in separate table
 - ✅ Slug standardization (110 → 38 chars avg, 65% reduction)
@@ -18,6 +19,7 @@
 - ✅ Unicode-safe content hashing (SHA-256 for non-Latin scripts)
 - ✅ Escaped markdown character sanitization (\#, \*, \-)
 - ✅ Auto slug_alias generation for all new imports
+- ✅ **Evidence extraction** - 79 entries backfilled from markdown tables (Phase 12)
 
 ### **2. AI-Powered Tag Generation**
 - ✅ OpenAI GPT-4o-mini integration (migrated Nov 2025)
@@ -87,9 +89,10 @@
 - ✅ **Schema.org Structured Data** (Phase 11)
   - ✅ `Organization` schema in `SiteSchema.tsx`
   - ✅ `WebSite` schema with `SearchAction` for sitelinks search box
-  - ✅ `ScholarlyArticle` schema in `ArticleHead.tsx`
+  - ✅ `ScholarlyArticle` schema in `ArticleHead.tsx` and `OceanicArticlePage.tsx`
   - ✅ `BreadcrumbList` schema in `BreadcrumbSchema.tsx`
   - ✅ `WebApplication` schema on tool pages
+  - ✅ **wordCount field** populated for all 41 articles (Phase 12)
 - ✅ **Dynamic OG Images** (Phase 12)
   - ✅ AI-generated article-specific OG images (OpenAI DALL-E 3)
   - ✅ `generate-article-og` edge function
