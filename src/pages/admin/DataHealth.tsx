@@ -50,6 +50,8 @@ interface MarkdownSourceAnalysis {
   hasBibliography: boolean;
   hasEvidenceTable: boolean;
   articleTitle: string | null;
+  biblioCount: number;
+  evidenceCount: number;
 }
 
 interface BackfillResult {
@@ -129,7 +131,7 @@ export default function DataHealth() {
     },
   });
 
-  // Fetch markdown source analysis
+  // Fetch markdown source analysis with actual database counts
   const { data: sourceAnalysis, isLoading: analysisLoading } = useQuery({
     queryKey: ["markdown-source-analysis"],
     queryFn: async () => {
@@ -154,20 +156,55 @@ export default function DataHealth() {
 
       const articleMap = new Map(articles?.map(a => [a.id, a.title]) || []);
 
+      // Fetch actual bibliography and evidence counts per article from database
+      const { data: biblioLinks } = await supabase
+        .from("srangam_article_bibliography")
+        .select("article_id")
+        .not("article_id", "is", null);
+
+      const { data: evidenceEntries } = await supabase
+        .from("srangam_article_evidence")
+        .select("article_id")
+        .not("article_id", "is", null);
+
+      // Group counts by article_id
+      const biblioCountMap = new Map<string, number>();
+      const evidenceCountMap = new Map<string, number>();
+      
+      biblioLinks?.forEach(b => {
+        if (b.article_id) {
+          biblioCountMap.set(b.article_id, (biblioCountMap.get(b.article_id) || 0) + 1);
+        }
+      });
+      evidenceEntries?.forEach(e => {
+        if (e.article_id) {
+          evidenceCountMap.set(e.article_id, (evidenceCountMap.get(e.article_id) || 0) + 1);
+        }
+      });
+
       return sources?.map(source => {
         const content = source.markdown_content || "";
-        const hasBibliography = /## (Bibliography|References|Works Cited)/i.test(content);
-        const hasEvidenceTable = /\|.*Date.*\|.*Place.*\|/i.test(content) || 
-                                  /\|.*तिथि.*\|.*स्थान.*\|/i.test(content);
+        // Regex detection for markdown patterns (fallback)
+        const hasBibliographyInMarkdown = /## (Bibliography|References|Works Cited)/i.test(content);
+        const hasEvidenceTableInMarkdown = /\|.*Date.*\|.*Place.*\|/i.test(content) || 
+                                            /\|.*तिथि.*\|.*स्थान.*\|/i.test(content) ||
+                                            /\|.*ਤਾਰੀਖ.*\|.*ਥਾਂ.*\|/i.test(content);
         const title = source.article_id ? articleMap.get(source.article_id) : null;
+        
+        // Actual database counts
+        const biblioCount = source.article_id ? (biblioCountMap.get(source.article_id) || 0) : 0;
+        const evidenceCount = source.article_id ? (evidenceCountMap.get(source.article_id) || 0) : 0;
 
         return {
           id: source.id,
           articleId: source.article_id,
           filePath: source.file_path,
-          hasBibliography,
-          hasEvidenceTable,
+          // Show as true if extracted OR detected in markdown
+          hasBibliography: biblioCount > 0 || hasBibliographyInMarkdown,
+          hasEvidenceTable: evidenceCount > 0 || hasEvidenceTableInMarkdown,
           articleTitle: title ? (title as { en?: string })?.en || "Untitled" : null,
+          biblioCount,
+          evidenceCount,
         } as MarkdownSourceAnalysis;
       }) || [];
     },
@@ -225,10 +262,11 @@ export default function DataHealth() {
     },
   });
 
+  const articlesWithOg = articlesForOg?.filter(a => a.og_image_url) || [];
   const articlesWithoutOg = articlesForOg?.filter(a => !a.og_image_url) || [];
   const estimatedCost = (articlesWithoutOg.length * 0.04).toFixed(2);
 
-  // Generate OG images for articles
+  // Generate OG images with retry logic for transient DALL-E errors
   const handleGenerateOgImages = async () => {
     if (articlesWithoutOg.length === 0) {
       toast.info("All articles already have OG images");
@@ -237,6 +275,45 @@ export default function DataHealth() {
 
     setOgProgress({ current: 0, total: articlesWithoutOg.length, generating: true });
     setOgLogs([`Starting OG image generation for ${articlesWithoutOg.length} articles...`]);
+
+    // Retry helper with exponential backoff
+    const generateWithRetry = async (
+      article: typeof articlesWithoutOg[0],
+      title: string,
+      slug: string,
+      maxRetries = 3
+    ) => {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        const { data, error } = await supabase.functions.invoke("generate-article-og", {
+          body: {
+            articleId: article.id,
+            title,
+            theme: article.theme,
+            slug,
+          },
+        });
+
+        // Success case
+        if (!error && data?.success) {
+          return { success: true, url: data.url };
+        }
+
+        // Check if it's a retryable 500 error
+        const errorMsg = error?.message || data?.error || "";
+        const is500Error = errorMsg.includes("500") || errorMsg.includes("server had an error");
+        
+        if (is500Error && attempt < maxRetries) {
+          const waitTime = attempt * 2000; // 2s, 4s, 6s backoff
+          setOgLogs(prev => [...prev, `  ⚠ DALL-E 500 error, retrying in ${waitTime / 1000}s (attempt ${attempt}/${maxRetries})...`]);
+          await new Promise(r => setTimeout(r, waitTime));
+          continue;
+        }
+
+        // Non-retryable error or max retries reached
+        return { success: false, error: errorMsg || "Unknown error" };
+      }
+      return { success: false, error: "Max retries exceeded" };
+    };
 
     for (let i = 0; i < articlesWithoutOg.length; i++) {
       const article = articlesWithoutOg[i];
@@ -247,28 +324,19 @@ export default function DataHealth() {
       setOgProgress(prev => ({ ...prev, current: i + 1 }));
 
       try {
-        const { data, error } = await supabase.functions.invoke("generate-article-og", {
-          body: {
-            articleId: article.id,
-            title,
-            theme: article.theme,
-            slug,
-          },
-        });
-
-        if (error) throw error;
+        const result = await generateWithRetry(article, title, slug);
         
-        if (data.success) {
-          setOgLogs(prev => [...prev, `  ✓ Generated: ${data.url}`]);
+        if (result.success) {
+          setOgLogs(prev => [...prev, `  ✓ Generated: ${result.url}`]);
         } else {
-          setOgLogs(prev => [...prev, `  ✗ Failed: ${data.error}`]);
+          setOgLogs(prev => [...prev, `  ✗ Failed: ${result.error}`]);
         }
       } catch (err) {
         setOgLogs(prev => [...prev, `  ✗ Error: ${err instanceof Error ? err.message : 'Unknown error'}`]);
       }
 
-      // Small delay to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Delay between requests to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 1500));
     }
 
     setOgProgress(prev => ({ ...prev, generating: false }));
@@ -290,8 +358,10 @@ export default function DataHealth() {
     }
   };
 
-  const sourcesWithBib = sourceAnalysis?.filter(s => s.hasBibliography).length || 0;
-  const sourcesWithEvidence = sourceAnalysis?.filter(s => s.hasEvidenceTable).length || 0;
+  // Calculate actual extracted counts from database
+  const totalEvidenceExtracted = sourceAnalysis?.reduce((sum, s) => sum + s.evidenceCount, 0) || 0;
+  const sourcesWithBib = sourceAnalysis?.filter(s => s.biblioCount > 0 || s.hasBibliography).length || 0;
+  const sourcesWithEvidence = sourceAnalysis?.filter(s => s.evidenceCount > 0 || s.hasEvidenceTable).length || 0;
 
   return (
     <div className="space-y-6">
@@ -407,9 +477,9 @@ export default function DataHealth() {
               <div className="text-2xl font-bold">{sourcesWithEvidence}</div>
               <div className="text-sm text-muted-foreground">With Evidence Tables</div>
             </div>
-            <div className="p-4 bg-muted/30 rounded-lg text-center">
-              <div className="text-2xl font-bold">{tableHealth?.find(t => t.name === "srangam_bibliography_entries")?.count || 0}</div>
-              <div className="text-sm text-muted-foreground">Extracted Entries</div>
+            <div className="p-4 bg-primary/10 rounded-lg text-center border border-primary/20">
+              <div className="text-2xl font-bold text-primary">{totalEvidenceExtracted}</div>
+              <div className="text-sm text-muted-foreground">Evidence Extracted</div>
             </div>
           </div>
 
@@ -441,7 +511,7 @@ export default function DataHealth() {
             Dynamic OG Image Generation
           </CardTitle>
           <CardDescription>
-            Generate AI-powered Open Graph images for social sharing (DALL-E 3, $0.04/image)
+            Generate AI-powered Open Graph images for social sharing (DALL-E 3, $0.04/image, auto-retry on 500 errors)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -451,12 +521,12 @@ export default function DataHealth() {
               <div className="text-2xl font-bold">{articlesForOg?.length || 0}</div>
               <div className="text-sm text-muted-foreground">Total Articles</div>
             </div>
-            <div className="p-4 bg-muted/30 rounded-lg text-center">
-              <div className="text-2xl font-bold text-primary">{articlesForOg?.filter(a => a.og_image_url).length || 0}</div>
-              <div className="text-sm text-muted-foreground">With OG Image</div>
+            <div className="p-4 bg-green-500/10 rounded-lg text-center border border-green-500/20">
+              <div className="text-2xl font-bold text-green-600">{articlesWithOg.length}</div>
+              <div className="text-sm text-muted-foreground">Already Generated</div>
             </div>
             <div className="p-4 bg-muted/30 rounded-lg text-center">
-              <div className="text-2xl font-bold text-destructive">{articlesWithoutOg.length}</div>
+              <div className="text-2xl font-bold text-amber-600">{articlesWithoutOg.length}</div>
               <div className="text-sm text-muted-foreground">Missing OG Image</div>
             </div>
             <div className="p-4 bg-muted/30 rounded-lg text-center">
@@ -468,9 +538,11 @@ export default function DataHealth() {
           {/* Controls */}
           <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
             <div className="text-sm text-muted-foreground">
-              {articlesWithoutOg.length > 0 
-                ? `Ready to generate ${articlesWithoutOg.length} OG images`
-                : "All articles have OG images"}
+              {articlesWithOg.length > 0 && articlesWithoutOg.length > 0
+                ? `Resume from where you left off (${articlesWithOg.length} done, ${articlesWithoutOg.length} remaining)`
+                : articlesWithoutOg.length > 0 
+                  ? `Ready to generate ${articlesWithoutOg.length} OG images`
+                  : "All articles have OG images"}
             </div>
             <Button
               onClick={handleGenerateOgImages}
@@ -480,6 +552,11 @@ export default function DataHealth() {
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Generating ({ogProgress.current}/{ogProgress.total})...
+                </>
+              ) : articlesWithOg.length > 0 && articlesWithoutOg.length > 0 ? (
+                <>
+                  <ImageIcon className="h-4 w-4 mr-2" />
+                  Resume ({articlesWithoutOg.length} left)
                 </>
               ) : (
                 <>
@@ -499,7 +576,12 @@ export default function DataHealth() {
               <ScrollArea className="h-40">
                 <div className="p-4 font-mono text-sm space-y-1">
                   {ogLogs.map((log, i) => (
-                    <div key={i} className={log.includes("✗") ? "text-destructive" : log.includes("✓") ? "text-primary" : "text-muted-foreground"}>
+                    <div key={i} className={
+                      log.includes("✗") ? "text-destructive" : 
+                      log.includes("✓") ? "text-green-600" : 
+                      log.includes("⚠") ? "text-amber-500" :
+                      "text-muted-foreground"
+                    }>
                       {log}
                     </div>
                   ))}
@@ -518,7 +600,7 @@ export default function DataHealth() {
             Markdown Source Analysis
           </CardTitle>
           <CardDescription>
-            Detailed breakdown of bibliography and evidence table presence
+            Actual extracted counts from database (green badges) vs markdown detection (yellow = detected but not extracted)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -534,7 +616,7 @@ export default function DataHealth() {
                     <TableHead>Article</TableHead>
                     <TableHead>File Path</TableHead>
                     <TableHead className="text-center">Bibliography</TableHead>
-                    <TableHead className="text-center">Evidence Table</TableHead>
+                    <TableHead className="text-center">Evidence</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -547,15 +629,27 @@ export default function DataHealth() {
                         {source.filePath || "—"}
                       </TableCell>
                       <TableCell className="text-center">
-                        {source.hasBibliography ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-500 mx-auto" />
+                        {source.biblioCount > 0 ? (
+                          <Badge variant="outline" className="bg-green-500/20 text-green-600 border-green-500/30">
+                            {source.biblioCount}
+                          </Badge>
+                        ) : source.hasBibliography ? (
+                          <span title="Detected in markdown, not yet extracted">
+                            <CheckCircle2 className="h-4 w-4 text-amber-500 mx-auto" />
+                          </span>
                         ) : (
                           <XCircle className="h-4 w-4 text-muted-foreground/30 mx-auto" />
                         )}
                       </TableCell>
                       <TableCell className="text-center">
-                        {source.hasEvidenceTable ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-500 mx-auto" />
+                        {source.evidenceCount > 0 ? (
+                          <Badge variant="outline" className="bg-green-500/20 text-green-600 border-green-500/30">
+                            {source.evidenceCount}
+                          </Badge>
+                        ) : source.hasEvidenceTable ? (
+                          <span title="Detected in markdown, not yet extracted">
+                            <CheckCircle2 className="h-4 w-4 text-amber-500 mx-auto" />
+                          </span>
                         ) : (
                           <XCircle className="h-4 w-4 text-muted-foreground/30 mx-auto" />
                         )}

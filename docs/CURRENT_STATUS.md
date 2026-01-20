@@ -223,6 +223,13 @@
 - ✅ Created `docs/DARK_MODE_AUDIT.md` documenting all findings and exempt components
 - ✅ Bibliography backfill executed: 25 entries, 63 article-bibliography links
 
+### **2026-01-20 (Phase 12b: Dashboard Resilience & Accuracy)**
+- ✅ **OG Image Generation Retry Logic**: Added 3-attempt exponential backoff (2s, 4s, 6s) for DALL-E 500 errors
+- ✅ **Data Health Dashboard Accuracy**: Now queries actual database counts vs regex pattern detection
+- ✅ **Resume Capability**: OG generation automatically resumes from where it left off
+- ✅ **Visual Improvements**: Green badges show extracted counts, amber icons show detected-but-not-extracted
+- ✅ **ScholarlyArticle Schema Citations**: Wired `useArticleBibliographyBySlug` to populate `citation` field
+
 ---
 
 ## 🎯 **Next Steps**
