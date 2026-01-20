@@ -24,13 +24,15 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    const baseUrl = 'https://srangam.org';
+    // Use the actual published URL
+    const baseUrl = 'https://srangam-db.lovable.app';
     const urls: SitemapUrl[] = [];
 
     // Static routes with SEO priorities
     const staticRoutes: SitemapUrl[] = [
       { loc: '/', priority: 1.0, changefreq: 'daily' },
       { loc: '/articles', priority: 0.9, changefreq: 'daily' },
+      { loc: '/begin-journey', priority: 0.9, changefreq: 'weekly' },
       { loc: '/about', priority: 0.8, changefreq: 'monthly' },
       { loc: '/maps-data', priority: 0.7, changefreq: 'weekly' },
       { loc: '/research-network', priority: 0.7, changefreq: 'weekly' },
@@ -38,11 +40,12 @@ serve(async (req) => {
       { loc: '/field-notes', priority: 0.6, changefreq: 'monthly' },
       { loc: '/reading-room', priority: 0.8, changefreq: 'weekly' },
       { loc: '/sources-method', priority: 0.7, changefreq: 'monthly' },
-      { loc: '/scripts-that-sailed-ii', priority: 0.7, changefreq: 'monthly' },
       { loc: '/sitemap', priority: 0.5, changefreq: 'monthly' },
       { loc: '/sources/epigraphy', priority: 0.7, changefreq: 'monthly' },
       { loc: '/sources/edicts', priority: 0.7, changefreq: 'monthly' },
       { loc: '/sources/sanskrit-terminology', priority: 0.7, changefreq: 'monthly' },
+      { loc: '/sanskrit-translator', priority: 0.6, changefreq: 'monthly' },
+      { loc: '/jyotish-horoscope', priority: 0.6, changefreq: 'monthly' },
     ];
 
     urls.push(...staticRoutes);
@@ -64,10 +67,10 @@ serve(async (req) => {
       });
     });
 
-    // Fetch database articles
+    // Fetch database articles - prefer slug_alias over slug
     const { data: dbArticles, error: dbError } = await supabase
       .from('srangam_articles')
-      .select('slug, updated_at, published_date')
+      .select('slug, slug_alias, updated_at, published_date')
       .eq('status', 'published')
       .order('published_date', { ascending: false });
 
@@ -75,11 +78,12 @@ serve(async (req) => {
       console.error('Database articles fetch error:', dbError);
     }
 
-    // Add database articles
+    // Add database articles - use slug_alias if available
     if (dbArticles) {
       dbArticles.forEach(article => {
+        const articleSlug = article.slug_alias || article.slug;
         urls.push({
-          loc: `/articles/${article.slug}`,
+          loc: `/articles/${articleSlug}`,
           lastmod: article.updated_at || article.published_date,
           priority: 0.9,
           changefreq: 'monthly',
@@ -87,27 +91,7 @@ serve(async (req) => {
       });
     }
 
-    // Add oceanic articles (from JSON)
-    const oceanicArticles = [
-      'samudragupta-allahabad-pillar',
-      'ashokan-edicts-mapping',
-      'maritime-trade-cholas',
-      'pallava-shore-temples',
-      'ancient-ports-tamil-nadu',
-      'brahmi-inscriptions-analysis',
-      'indo-iranian-schism-dwaraka',
-      // Add remaining oceanic article slugs here
-    ];
-
-    oceanicArticles.forEach(slug => {
-      urls.push({
-        loc: `/articles/${slug}`,
-        priority: 0.9,
-        changefreq: 'monthly',
-      });
-    });
-
-    console.log(`Generated sitemap with ${urls.length} URLs`);
+    console.log(`Generated sitemap with ${urls.length} URLs for ${baseUrl}`);
 
     // Generate XML sitemap
     const xml = generateSitemapXML(baseUrl, urls);

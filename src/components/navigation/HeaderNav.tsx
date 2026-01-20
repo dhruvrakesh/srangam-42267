@@ -4,6 +4,7 @@ import { Search, ChevronDown, Globe, Menu as MenuIcon, X, Home, Map as MapIcon, 
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/Logo";
 import { EnhancedLanguageSwitcher } from "@/components/language/EnhancedLanguageSwitcher";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
   Popover,
   PopoverContent,
@@ -199,6 +200,9 @@ export function HeaderNav() {
               aria-label="Search"
             />
           </form>
+
+          {/* Theme toggle */}
+          <ThemeToggle />
 
           {/* Language switcher */}
           <EnhancedLanguageSwitcher />

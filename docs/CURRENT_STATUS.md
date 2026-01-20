@@ -1,6 +1,6 @@
 # Srangam Platform - Current Status
 
-**Last Updated**: 2025-12-28 (Phase 0 Documentation Update - Context Preservation)
+**Last Updated**: 2025-01-20 (Phase 8: Navigation UX, Dark Mode, SEO)
 
 ---
 
@@ -17,6 +17,7 @@
 - ✅ Multilingual content support (EN, HI, PA merged into single article)
 - ✅ Unicode-safe content hashing (SHA-256 for non-Latin scripts)
 - ✅ Escaped markdown character sanitization (\#, \*, \-)
+- ✅ Auto slug_alias generation for all new imports
 
 ### **2. AI-Powered Tag Generation**
 - ✅ OpenAI GPT-4o-mini integration (migrated Nov 2025)
@@ -26,7 +27,7 @@
 - ✅ Self-improving tag registry with usage tracking
 
 ### **3. Cultural Terms Extraction**
-- ✅ 1,221+ AI-enhanced terms in database
+- ✅ **1,628+ AI-enhanced terms** in database (updated Jan 2025)
 - ✅ 217+ Sanskrit/diacritics pattern detection
 - ✅ Devanagari script recognition (U+0900-U+097F)
 - ✅ Italic text pattern matching (non-greedy across newlines)
@@ -59,7 +60,7 @@
 ### **6. Typography & Design System**
 - ✅ Academic-standard typography implemented
 - ✅ Tailwind CSS semantic tokens (HSL colors)
-- ✅ Dark/light mode support
+- ✅ **Dark/light/system mode support** (added Jan 2025)
 - ✅ Responsive design (mobile, tablet, desktop)
 - ✅ Custom color palette (ocean, vedic, maritime, geology)
 - ✅ Multilingual fonts (Noto Sans Devanagari, Gurmukhi, Tamil)
@@ -70,396 +71,148 @@
 - ✅ Keyboard shortcuts: `/` (search), `m` (maps), `gs` (sources)
 - ✅ Visual separator between logo and nav items with hover effect
 - ✅ Smooth scroll-to-top on logo click
+- ✅ **Global scroll restoration** - all navigation scrolls to top (added Jan 2025)
+- ✅ **Theme toggle** in header navigation (added Jan 2025)
 - ✅ Language switcher integration
 - ⚠️ `TopNavigation.tsx` deprecated (kept for reference)
 
-### **8. Research Tool Showcase Pages**
-- ✅ **Sanskrit Translator** landing page (`/sanskrit-translator`)
-  - 7-stage translation pipeline showcase (OCR → Sandhi → Morphology → Translation)
-  - Sample Mahābhārata verse analysis with BORI critical edition citations
-  - Integration with 1,108-term cultural database for named-entity recognition
-  - Methodology article published: `sanskrit-translator-methodology` (1,200+ words)
-  - Request access workflow via `mailto:research@srangam.app`
-  - SEO-optimized with schema.org structured data
-  
-- ✅ **Jyotish Horoscope** landing page (`/jyotish-horoscope`)
-  - Sidereal astronomy calculator showcase (Swiss Ephemeris + Lahiri Ayanāṃśa)
-  - Sample birth chart (15 Aug 1947) with D1/D9 charts and Vimśottarī Daśā timeline
-  - "Celestial Mathematics, Not Fortune-Telling" ethical positioning
-  - Methodology article published: `jyotish-methodology` (1,200+ words with Python code)
-  - Request access workflow via `mailto:research@srangam.app`
-  - SEO-optimized with schema.org structured data
-  
-- ✅ **Navigation Integration**: "Tools" menu in primary navigation
-- ✅ **Backend Integration**: N/A (external Python scripts by design)
-- 🔜 **GitHub Repository Links**: Pending publication of research scripts
+### **8. SEO & Discoverability** (added Jan 2025)
+- ✅ Canonical URL: `https://srangam-db.lovable.app`
+- ✅ Sitemap generation with correct base URL
+- ✅ `robots.txt` with sitemap directive
+- ✅ Open Graph meta tags (branded image, description)
+- ✅ Twitter Card meta tags
+- ✅ Google Search Console ready (verification placeholder)
 
-### **9. Landing Page Redesign** (2025-12-23)
+### **9. Research Tool Showcase Pages**
+- ✅ **Sanskrit Translator** landing page (`/sanskrit-translator`)
+- ✅ **Jyotish Horoscope** landing page (`/jyotish-horoscope`)
+- ✅ **Navigation Integration**: "Tools" menu in primary navigation
+
+### **10. Landing Page Redesign** (2025-12-23)
 - ✅ **Begin Journey Page** (`/begin-journey`)
-  - Mission statement hero with Sanskrit invocation
-  - Five research pillars with **live article counts** from database
-  - Research metrics (articles, cross-refs, terms) fetched in real-time
-  - Intersection observer scroll animations for all sections
-  - Cultural database teaser with sample terms
-  - "Choose Your Path" entry points for different reader interests
-  - SEO-optimized with dynamic meta descriptions
-  
 - ✅ **About Page Restructure** (`/about`)
-  - **Mission-first** layout: Srangam Vision at top
-  - Three methodological pillars (Archaeological, Textual, Geo-mythological)
-  - Knowledge Corpus section with live database stats
-  - Scholar Assembly moved below mission
-  - Institutional Support moved to bottom
-  - Scroll animations via intersection observer
-   
-- ✅ **New Hooks & Components Created**:
-  - `useResearchStats`: Fetches live article counts, cross-refs, cultural terms
-  - `useIntersectionObserver`: Reusable scroll animation hook with triggerOnce option
-  - `useCountUp`: Animated number counter with easeOutQuart easing, returns `{ count, isComplete }`
-  - `getThemeArticleCount`: Helper to map theme IDs to article counts
-  - `ResearchMetrics`: Shared component with staggered animations, pulse effect on complete, supports "minimal" and "cards" variants
-  - `ResearchThemes`: Shared component for theme display with "pills" and "cards" variants (2025-12-24)
-  - `researchThemes.ts`: Centralized theme configuration data (2025-12-24)
+- ✅ **New Hooks & Components**: `useResearchStats`, `useIntersectionObserver`, `useCountUp`, `ResearchMetrics`, `ResearchThemes`
 
 ---
 
 ## 📊 **Database State** (Current)
 
-### **Current Data** (as of 2025-12-28)
-- **Articles**: 40 published
+### **Current Data** (as of 2025-01-20)
+- **Articles**: 41 total (32 published, 9 drafts)
   - All in Supabase database with standardized slugs
-  - **12 articles missing `slug_alias`** (fix pending Phase 1)
-  - Theme distribution:
-    - Ancient India: 27 articles
-    - Indian Ocean World: 3 articles
-    - Geology & Deep Time: 3 articles
-    - Scripts & Inscriptions: 3 articles
-    - Empires & Exchange: 2 articles
-    - Sacred Ecology: 2 articles
-  - All 6 research themes now have articles (fixed 2025-12-27)
   - All have AI-generated tags (5-8 per article)
   - All have theme categorization
-  - **Multilingual**: Baba Ala Singh has EN + HI content
+  - **Multilingual**: Multiple articles with EN + HI content
   
 - **Cross-references**: 700+
   - Same-theme and thematic references
-  - All integrated on article pages via `ArticleCrossReferences` component
+  - All integrated on article pages
   - Visible in Research Network visualization
-  - Cross References Browser "Unknown" bug fixed (2025-12-27)
   
-- **Cultural terms**: 1,221+
+- **Cultural terms**: 1,628+
   - All terms have etymology and context (AI-enriched)
   - Module distribution: vedic, maritime, geology, other
-  - Connected to Sanskrit Translator named-entity recognition showcase
   - Pagination implemented (bypasses 1000-row limit)
+
+- **Bibliography entries**: 23
+  - Partially populated via backfill
+  - Data Health Dashboard available at `/admin/data-health`
 
 - **Tags**: 127 unique tags
   - Average 6.2 tags per article
-  - Categories: Historical Period (43), Concept (38), Location (29), Methodology (17)
-  - Top tags: "ancient-india", "epigraphy", "maritime-trade"
-
-- **Audio Narrations**: 940
-  - All stored in Google Drive
-  - Metadata not yet linked to database
-  - UI implementation pending (Phase 4)
-
-### **Database Schema**
-```
-srangam_articles
-├── id (uuid, PK)
-├── slug (text, UNIQUE)
-├── slug_alias (text) ← SEO-friendly short slugs (12 missing)
-├── title (jsonb)
-├── content (jsonb)
-├── theme (text)
-├── tags (text[])
-├── status (text)
-├── created_at (timestamptz)
-└── updated_at (timestamptz)
-
-srangam_cross_references
-├── id (uuid, PK)
-├── source_article_id (uuid, FK)
-├── target_article_id (uuid, FK)
-├── reference_type (text)  ← 'thematic' | 'same_theme' | 'explicit_citation'
-├── strength (integer)  ← 1-10 scale
-├── bidirectional (boolean)
-├── context_description (jsonb)
-└── created_at (timestamptz)
-
-srangam_cultural_terms
-├── id (uuid, PK)
-├── term (text, UNIQUE)
-├── display_term (text)
-├── translations (jsonb)
-├── etymology (jsonb)  ← AI-generated
-├── context (jsonb)  ← AI-generated
-├── usage_count (integer)
-├── module (text)
-├── related_terms (text[])
-└── created_at (timestamptz)
-
-srangam_tags
-├── id (uuid, PK)
-├── tag_name (text, UNIQUE)
-├── category (text)
-├── usage_count (integer)
-├── related_tags (jsonb)
-├── created_at (timestamptz)
-└── last_used (timestamptz)
-```
+  - Categories: Historical Period, Concept, Location, Methodology
 
 ---
 
 ## 🔧 **Recent Fixes & Deployments**
 
+### **2025-01-20 (Phase 8: Navigation UX, Dark Mode, SEO)**
+
+1. ✅ **Global Scroll Restoration**:
+   - Created `ScrollToTop.tsx` component
+   - Added to `App.tsx` inside `BrowserRouter`
+   - All navigation now scrolls to top of target page
+
+2. ✅ **Dark/Light/System Mode**:
+   - Added `ThemeProvider` from `next-themes` to `App.tsx`
+   - Created `theme-toggle.tsx` component with Sun/Moon/Monitor icons
+   - Added theme toggle to `HeaderNav.tsx` next to language switcher
+   - Dark mode CSS variables already configured in `index.css`
+
+3. ✅ **SEO Critical Fixes**:
+   - Updated `robots.txt` with sitemap directive for `srangam-db.lovable.app`
+   - Fixed `index.html` OG image, canonical URL, Twitter card
+   - Updated sitemap edge function with correct base URL
+   - Added `slug_alias` preference in sitemap URLs
+   - Added missing routes (`/begin-journey`, `/research-network`)
+
+4. ✅ **Import UI Improvements**:
+   - Added success state with "View Article" button after import
+   - Form now clears after successful import
+   - Progress indicators for all import steps
+
 ### **2025-01-18 (Phase 5: Robust English Table Rendering Fix)**
-1. 🔧 **Robust Table Data Extraction**:
-   - Rewrote `extractTableData()` in `ProfessionalTextFormatter.tsx`
-   - Now handles all ReactMarkdown output variations (strings, functions, components)
-   - Added `isTheadElement()` and `isTbodyElement()` helper functions
-   - Recursive node processing for nested structures
-   - Console logging for debugging: `[TableExtraction] { headerCount, rowCount, headers }`
-
-2. 🎯 **Improved isEvidenceTable Detection**:
-   - Updated `EvidenceTable.tsx` to support Hindi patterns (तिथि, स्थान, साक्ष्य)
-   - Added scholarly fallback for 6+ column tables with Sl# or Event headers
-   - Detection now works for both English AND Hindi content
-
-3. 🛡️ **Cultural Term Enhancement Protection**:
-   - Updated `culturalTermEnhancer.ts` to skip tables during enhancement
-   - Protects HTML tables (`<table>...</table>`) with placeholder extraction
-   - Protects markdown tables (lines starting with `|`) separately
-   - Restores tables after enhancement to prevent HTML corruption
-
-4. 📊 **Generic Table CSS Improvements**:
-   - Increased `min-w` from 800px to 900px for 6-column tables
-   - Better cell constraints with `min-w-[80px]` and `max-w-[280px]`
-   - Enhanced first column emphasis for chronological data
-
-### **2025-01-18 (Phase 4-5: Evidence Tables & Auto Slug Alias)**
-1. 📊 **Dynamic Table Rendering (Phase 4A)**:
-   - Removed hard-coded 6-column `<colgroup>` that was breaking tables
-   - Tables now auto-size columns based on content
-   - Added `min-w-[80px]` and `max-w-[280px]` for balanced cell widths
-   - Headers use `whitespace-normal` for natural wrapping
-   - First column emphasis preserved with `first:bg-sandalwood/20`
-
-2. 🎯 **EvidenceTable Component (Phase 4B)**:
-   - Created dedicated `EvidenceTable.tsx` for 6-column scholarly tables
-   - Source quality badges: Primary (emerald), Secondary (amber), Tradition (slate)
-   - Mobile card-based layout with collapsible rows
-   - Desktop table with optimized column distribution
-
-3. 🔗 **Auto slug_alias Generation (Phase 5)**:
-   - Added `generateShortSlug()` function to edge function
-   - Automatically generates SEO-friendly short slugs (max 40 chars)
-   - Removes dates, stop words, and normalizes diacritics
-   - Future imports will never have missing slug_alias values
+- ✅ Robust table data extraction in `ProfessionalTextFormatter.tsx`
+- ✅ Hindi pattern support in `EvidenceTable.tsx`
+- ✅ Cultural term enhancement protection for tables
 
 ### **2025-12-27 (Security Fixes & Cross References Browser)**
-1. ✅ **Cross References Browser Bug Fix**:
-   - Fixed "Unknown → Unknown" display in Reference List table
-   - Added `getNodeId` helper to handle `react-force-graph-2d` link mutation
-   - The library mutates link objects, replacing UUID strings with node objects
-   - Now correctly extracts IDs via `typeof node === 'string' ? node : node?.id`
-
-2. ✅ **Missing Articles Imported**:
-   - Added 8 articles to populate all 6 research themes:
-     - `scripts-that-sailed`, `riders-on-monsoon`, `monsoon-trade-clock` (Indian Ocean World)
-     - `gondwana-to-himalaya`, `earth-sea-sangam`, `stone-purana` (Geology & Deep Time)
-     - `indian-ocean-power-networks`, `chola-naval-raid` (Empires & Exchange)
-
-3. ✅ **Security Function Fixes**:
-   - Added `SET search_path = 'public'` to 5 SECURITY DEFINER functions:
-     - `analyze_tag_cooccurrence`
-     - `get_purana_statistics`
-     - `srangam_increment_bibliography_usage`
-     - `srangam_increment_term_usage`
-     - `update_tag_stats`
-   - Prevents search path injection attacks
-
-4. ✅ **Security Warnings Resolved**:
-   - Marked PostGIS system table warnings as acceptable (spatial_ref_sys is not user data)
-   - Marked extension-in-public warnings as acceptable (required for PostGIS/pgvector)
-   - Remaining function warnings are PostGIS system functions (st_estimatedextent)
-
-### **2025-12-24 (Theme System & Shared Components)**
-1. ✅ **Database Theme Corrections**:
-   - Fixed `scripts-sailed-epigraphic-atlas` → `Scripts & Inscriptions`
-   - Fixed `geomythology-cultural-continuity` → `Sacred Ecology`
-   - Fixed `ringing-rocks-rhythmic-cosmology` → `Geology & Deep Time`
-
-2. ✅ **Shared ResearchThemes Component**:
-   - Created `src/data/researchThemes.ts` - centralized theme configuration
-   - Created `src/components/research/ResearchThemes.tsx` - shared component with "pills" and "cards" variants
-   - Updated `BeginJourney.tsx` and `About.tsx` to use shared component
-   - Reduced code duplication (~80 lines removed)
-
-3. ✅ **Enhanced useCountUp Hook**:
-   - Now returns `{ count, isComplete }` instead of just count
-   - Enables triggering effects when animation completes
-
-4. ✅ **Pulse Animation on Count Complete**:
-   - Added `pulse-complete` keyframe to tailwind.config.ts
-   - Updated `ResearchMetrics` to apply pulse when count finishes
-   - Creates visual feedback when numbers finish animating
-
-### **2025-12-14 (Navigation UI Enhancements)**
-1. ✅ **Visual Separator Enhancement**:
-   - Added subtle vertical separator between logo and navigation
-   - Implemented hover effect (opacity 50% → 70% on nav hover)
-   - Used Tailwind group hover with named group (`group/nav`)
-
-2. ✅ **Smooth Scroll-to-Top**:
-   - Added `scrollToTop()` function with smooth behavior
-   - Integrated with logo click handler
-   - Works when on home page and scrolled down
-
-3. ✅ **Code Refactoring**:
-   - Added deprecation comment to `TopNavigation.tsx`
-   - Updated documentation with navigation system section
-
-### **2025-11-23 (Phase 3 - Cross-Reference Integration)**
-1. ✅ **Frontend Cross-Reference Integration**:
-   - Created `useArticleId` hook for slug-to-ID resolution
-   - Updated `ArticleCrossReferences` component to accept `articleSlug` prop
-   - Modified `ArticlePage` component to pass slug and render cross-references
-   - Updated all 14 article pages to integrate cross-reference component
-   - Cross-references now visible and functional on all pages
-
-2. ✅ **Typography Standardization**:
-   - Implemented academic typography standards
-   - Updated design system with semantic tokens
-   - Fixed color contrast issues
-   - Standardized heading hierarchy
-
-3. ✅ **Slug Standardization** (Session 3):
-   - Standardized all 23 database articles
-   - Average slug length reduced 65% (110 → 38 chars)
-   - Implemented slug_alias system for backward compatibility
-   - Updated resolver logic to prioritize aliases
-
-### **2025-11-09 (Phase 2 - AI Tagging Deployment)**
-1. ✅ **Deployed 3 Edge Functions**:
-   - `generate-article-tags` - AI tag generation using Lovable AI
-   - `markdown-to-article-import` - Updated with AI tag integration
-   - `analyze-tag-relationships` - Tag co-occurrence analysis
-
-2. ✅ **Fixed Database Constraints**:
-   - `srangam_cross_references.strength` now allows 1-10 (was 1-5)
-   - Added support for `same_theme` and `explicit_citation` reference types
-   - Fixed `srangam_markdown_sources.article_id` unique constraint
-
-3. ✅ **Fixed Cultural Terms Insertion**:
-   - Added `display_term` field (defaults to term value)
-   - Added `module` field (defaults to 'srangam')
-   - Improved validation filtering (removes URLs, markdown, numbers)
+- ✅ Cross References Browser bug fix ("Unknown → Unknown")
+- ✅ 8 missing articles imported across all themes
+- ✅ Security function hardening (search_path fixes)
 
 ---
 
-## 🎯 **Next Steps** (Current Phase)
+## 🎯 **Next Steps**
 
-### **Phase 7: Bibliography & Sources Integration** (2025-01-18)
+### **Short Term**
+1. Google Search Console setup (manual)
+   - Add property: `https://srangam-db.lovable.app`
+   - Verify ownership via HTML meta tag
+   - Submit sitemap URL
+   - Request indexing for key pages
 
-**Problem Statement**: The "Sources & Pins" sidebar currently shows hardcoded data from static JSON files (`atlas_nodes.json`), not the rich bibliography data embedded in each article's markdown. The infrastructure exists but was never connected.
+2. Create branded OG image (1200x630px)
+   - Design and upload to `/public/brand/og-image.png`
+   - Update `index.html` reference
 
-**Current Data Audit**:
-- `srangam_markdown_sources`: **29 articles** with stored markdown (bibliography unutilized)
-- `srangam_bibliography_entries`: **0 rows** (never populated)
-- `srangam_article_bibliography`: **0 rows** (never populated)
-- `correlationEngine.ts`: References non-existent CSV, falls back to hardcoded entry
-
-**Implementation Phases**:
-
-1. ✅ **Phase 7.0: Documentation** - Create `docs/architecture/SOURCES_PINS_SYSTEM.md`
-2. 🔜 **Phase 7.1: Database Migration** - Add `srangam_article_evidence` table
-3. 🔜 **Phase 7.2: Bibliography Extraction** - Enhance markdown import
-4. 🔜 **Phase 7.3: Backfill Edge Function** - Process 29 existing articles
-5. 🔜 **Phase 7.4: Frontend Integration** - Database-driven SourcesAndPins
-
-See: `docs/architecture/SOURCES_PINS_SYSTEM.md` for full architecture details.
-
-### **Short Term** (Sessions 3B & 3C - 2 hours)
+### **Medium Term** 
 1. Enhanced Cross-Reference UX
    - Add strength badges (strong/medium/weak)
    - Implement hover previews with article metadata
-   - Create inline callout boxes for `{{related:slug|text}}` patterns
 
-2. Map Loading Diagnostics
-   - Fix "Map temporarily unavailable" errors
-   - Diagnose Leaflet/MapLibre initialization issues
-   - Ensure all article maps render correctly
-
-### **Medium Term** (Phase 4 - Deferred)
-1. Audio Narration UI (backend complete, UI pending)
-2. Advanced network graph features (clustering, filtering)
-3. Chapter compilation system
-4. Bibliography consolidation
+2. Bibliography & Sources Integration (Phase 7)
+   - Connect `srangam_bibliography_entries` to article sidebar
+   - Populate `srangam_article_evidence` table
 
 ### **Long Term**
-1. AI-powered semantic similarity (vector embeddings)
-2. Topic clustering with K-means
-3. Manual curation tool for cross-references
-4. Advanced analytics dashboard
+1. Audio narration UI implementation
+2. GitHub repository links for research tools
+3. Full multilingual support (PA, TA)
 
 ---
 
-## 🐛 **Known Issues**
+## 📁 **Key Files Reference**
 
-### **Critical Issues** (Resolved 2025-12-28)
-- ~~**12 Articles Missing slug_alias**~~: Fixed via database migration
-- ~~**Evidence Table Poor Rendering**~~: Fixed via enhanced CSS
+### **Configuration**
+- `public/robots.txt` - SEO robots with sitemap
+- `index.html` - Meta tags, OG images, fonts
+- `src/index.css` - Design system tokens, dark mode CSS
+- `tailwind.config.ts` - Theme configuration
 
-### **Minor Issues** (Non-Blocking)
-- ⚠️ **Map "Temporarily Unavailable"**: ErrorBoundary fallback on 2-3 article pages
-  - Impact: Low
-  - Timeline: Post-launch patch (Session 3C)
+### **Core Components**
+- `src/App.tsx` - Router, providers, theme
+- `src/components/ScrollToTop.tsx` - Navigation scroll restoration
+- `src/components/ui/theme-toggle.tsx` - Dark/light/system toggle
+- `src/components/navigation/HeaderNav.tsx` - Primary navigation
+- `src/components/layout/Layout.tsx` - Page wrapper
 
-- ⚠️ **Audio Narration UI Not Built**: Backend complete (940 narrations), UI pending
-  - Impact: Medium (feature not visible to users)
-  - Timeline: Phase 4 (deprioritized per user request)
+### **Edge Functions**
+- `supabase/functions/generate-sitemap/index.ts` - Dynamic sitemap
+- `supabase/functions/markdown-to-article-import/index.ts` - Article import
 
-- ⚠️ **59 Cultural Terms with Zero Usage**: Terms extracted but not appearing in articles
-  - Impact: Low
-  - Action: Review and potentially merge or remove
-
-- ⚠️ **Hindi Table Content OCR Issues**: Some Hindi tables have formatting artifacts
-  - Impact: Low (content still readable)
-  - Action: Manual cleanup if needed
-
----
-
-## 📝 **Platform Readiness**
-
-### **Content Completeness**
-- ✅ 40/40 articles accessible (100%)
-- ✅ 1,221/1,221 cultural terms in database (100%)
-- ✅ 700+/700+ cross-references visible (100%)
-- ✅ 127 tags with categorization (100%)
-
-### **Feature Completeness**
-- ✅ Core reading experience (100%)
-- ✅ Cross-reference discovery (100%)
-- ✅ Cultural term tooltips (100%)
-- ✅ Responsive design (100%)
-- ✅ Evidence table rendering (100% - Phase 2 complete)
-- ✅ Public network browser (100%)
-- ⏳ Audio narration UI (0% - Phase 4)
-
-### **Launch Readiness**: **100%** ✅
-- All critical features complete
-- Research tool showcase pages published
-- Both methodology articles accessible
-- Minor issues documented and deprioritized
-- Platform ready for public announcement
-
----
-
-## 🔗 **Related Documentation**
-- [Article Status & Testing](./ARTICLE_STATUS.md)
-- [Article Display Guide](./ARTICLE_DISPLAY_GUIDE.md)
-- [Soft Launch Checklist](./SOFT_LAUNCH_CHECKLIST.md)
-- [Cross-Reference System Architecture](./architecture/CROSS_REFERENCE_SYSTEM.md)
-- [AI Tag Generation System](./AI_TAG_GENERATION.md)
-- [Import Workflow](./IMPORT_WORKFLOW.md)
+### **Documentation**
+- `docs/CURRENT_STATUS.md` - This file
+- `docs/SEO_CONFIGURATION.md` - SEO setup guide
+- `docs/ARTICLE_DISPLAY_GUIDE.md` - Markdown authoring standards
