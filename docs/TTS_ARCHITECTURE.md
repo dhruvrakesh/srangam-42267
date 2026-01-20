@@ -114,9 +114,42 @@ Cache Check (srangam_audio_narrations)
     Store metadata in DB
 ```
 
+## Provider Fallback Chain (Phase 14)
+
+When the primary provider fails (401/403 auth errors), the system automatically falls back:
+
+### Fallback Logic
+1. **Primary:** ElevenLabs (highest quality for English)
+2. **Fallback:** Google Cloud Neural2 (reliable, good quality)
+3. **Emergency:** OpenAI TTS-1 (fast, always available)
+
+### Implementation
+- `NarrationService.streamAudio()` catches 401/403 errors
+- Reconfigures provider to `google-cloud`
+- Retries request with Neural2 voice (en-US-Neural2-D)
+- User experience: seamless (no visible error)
+
+### Trigger Conditions
+| HTTP Status | Provider | Action |
+|-------------|----------|--------|
+| 401 | ElevenLabs | Switch to Google Cloud |
+| 403 | ElevenLabs | Switch to Google Cloud |
+| 429 | Any | Exponential backoff, then fallback |
+
+### Code Flow
+```
+NarrationService.streamAudio()
+    ├─ Try primary provider (ElevenLabs)
+    ├─ On 401/403: reconfigure to google-cloud
+    ├─ Retry with Google Neural2 voice
+    └─ Stream audio to client
+```
+
+---
+
 ## Edge Functions
 
-### tts-stream-elevenlabs (NEW - Phase 13)
+### tts-stream-elevenlabs (Phase 13, updated Phase 14)
 
 **Purpose:** High-quality English narration with human-like voices
 
@@ -125,6 +158,7 @@ Cache Check (srangam_audio_narrations)
 - NDJSON streaming (compatible with client)
 - Request stitching for multi-chunk content
 - Voice personality mapping
+- **Structured 401/403 error response** (Phase 14) - returns `auth_blocked` flag for client fallback
 
 **Voice Mapping:**
 | Voice ID | Name | Use Case |
@@ -135,6 +169,7 @@ Cache Check (srangam_audio_narrations)
 | onwK4e9ZLuTAKqWW03F9 | Daniel | Short-form, preview |
 
 **Rate Limits:** 10,000 chars/month (free tier)
+**Known Issue:** Free tier may be blocked for "unusual activity" - triggers fallback to Google Cloud
 
 ### tts-stream-google
 

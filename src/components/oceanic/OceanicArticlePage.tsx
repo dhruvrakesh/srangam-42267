@@ -223,6 +223,28 @@ export const OceanicArticlePage: React.FC = () => {
           </div>
         </div>
 
+        {/* Hero Image - AI-generated OG image (Phase 14) */}
+        {article.og_image_url && (
+          <div className="mb-6 relative">
+            <div className="overflow-hidden rounded-lg shadow-md bg-muted/20">
+              <img
+                src={article.og_image_url}
+                alt={`Visual illustration for ${articleTitle}`}
+                className="w-full h-48 md:h-64 lg:h-72 object-cover transition-opacity duration-500"
+                loading="lazy"
+                onError={(e) => {
+                  // Hide container if image fails to load (CORS or GDrive issues)
+                  const container = (e.target as HTMLImageElement).parentElement?.parentElement;
+                  if (container) container.classList.add('hidden');
+                }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground/60 mt-2 text-center italic">
+              AI-generated illustration based on article themes
+            </p>
+          </div>
+        )}
+
         {/* Main Content */}
         <div className={cn(
           "grid gap-8 transition-all duration-300",

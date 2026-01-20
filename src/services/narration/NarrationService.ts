@@ -1,4 +1,5 @@
 // Core narration service layer - provider-agnostic TTS logic
+// Phase 14: Added intelligent provider fallback (ElevenLabs → Google Cloud)
 import type { NarrationConfig, NarrationMetadata, CachedAudio, AudioChunk } from '@/types/narration';
 import { ssmlBuilder } from './SSMLBuilder';
 import { voiceStrategyEngine } from './VoiceStrategyEngine';
@@ -8,7 +9,104 @@ export class NarrationService {
   private abortController: AbortController | null = null;
 
   /**
-   * Stream audio from TTS provider (Google Cloud by default)
+   * Get endpoint for TTS provider
+   */
+  private getEndpoint(provider: string): string {
+    switch (provider) {
+      case 'elevenlabs':
+        return '/functions/v1/tts-stream-elevenlabs';
+      case 'openai':
+        return '/functions/v1/tts-stream-openai';
+      default:
+        return '/functions/v1/tts-stream-google';
+    }
+  }
+
+  /**
+   * Make TTS request to edge function
+   */
+  private async makeRequest(
+    endpoint: string,
+    config: NarrationConfig,
+    content: string
+  ): Promise<Response> {
+    return fetch(`${import.meta.env.VITE_SUPABASE_URL}${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+      body: JSON.stringify({
+        text: content,
+        language: config.language,
+        voice: config.voice,
+        speed: config.speed,
+      }),
+      signal: this.abortController?.signal,
+    });
+  }
+
+  /**
+   * Process NDJSON stream response and yield audio chunks
+   */
+  private async *processStreamResponse(
+    response: Response
+  ): AsyncGenerator<AudioChunk, void, unknown> {
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new Error('Response body is not readable');
+    }
+
+    let chunkIndex = 0;
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const text = decoder.decode(value, { stream: true });
+      const lines = text.split('\n').filter(line => line.trim());
+
+      for (const line of lines) {
+        try {
+          const data = JSON.parse(line);
+
+          // Check for auth_blocked error (triggers fallback in parent)
+          if (data.error === 'auth_blocked') {
+            throw new Error('AUTH_BLOCKED');
+          }
+
+          if (data.audio) {
+            const audioContent = Uint8Array.from(atob(data.audio), c => c.charCodeAt(0));
+            yield {
+              audioContent,
+              chunkIndex: chunkIndex++,
+              totalChunks: -1,
+              isLast: false,
+            };
+          }
+
+          if (data.done) {
+            yield {
+              audioContent: new Uint8Array(0),
+              chunkIndex: chunkIndex,
+              totalChunks: chunkIndex,
+              isLast: true,
+            };
+          }
+        } catch (e) {
+          if (e instanceof Error && e.message === 'AUTH_BLOCKED') {
+            throw e;
+          }
+          console.warn('Failed to parse TTS chunk:', e);
+        }
+      }
+    }
+  }
+
+  /**
+   * Stream audio from TTS provider with intelligent fallback
+   * Phase 14: Auto-fallback to Google Cloud on 401/403 from ElevenLabs
    */
   async *streamAudio(
     content: string,
@@ -16,91 +114,82 @@ export class NarrationService {
   ): AsyncGenerator<AudioChunk, void, unknown> {
     this.abortController = new AbortController();
 
+    // Track current config (may change on fallback)
+    let currentConfig = { ...config };
+    let endpoint = this.getEndpoint(currentConfig.provider);
+
+    console.log(`[NarrationService] Streaming from ${currentConfig.provider} via ${endpoint}`);
+
     try {
-      // Use plain text for Google Neural voices to avoid SSML validation errors
-      // Google's Neural2 voices require stricter SSML - sending plain text is more reliable
-      const processedContent = content;
+      const response = await this.makeRequest(endpoint, currentConfig, content);
 
-      // Call appropriate edge function based on provider
-      let endpoint: string;
-      switch (config.provider) {
-        case 'elevenlabs':
-          endpoint = '/functions/v1/tts-stream-elevenlabs';
-          break;
-        case 'openai':
-          endpoint = '/functions/v1/tts-stream-openai';
-          break;
-        default:
-          endpoint = '/functions/v1/tts-stream-google';
-      }
-      
-      console.log(`[NarrationService] Streaming from ${config.provider} via ${endpoint}`);
+      // Handle auth failures - trigger fallback to Google Cloud
+      if (response.status === 401 || response.status === 403) {
+        console.warn(
+          `[NarrationService] ${currentConfig.provider} auth failed (${response.status}), falling back to Google Cloud TTS`
+        );
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}${endpoint}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            text: processedContent,
-            language: config.language,
-            voice: config.voice,
-            speed: config.speed,
-          }),
-          signal: this.abortController.signal,
+        // Get fallback voice configuration
+        const fallbackVoice = voiceStrategyEngine.getFallbackVoice(
+          currentConfig.language,
+          'article'
+        );
+
+        // Reconfigure to Google Cloud
+        currentConfig = {
+          ...currentConfig,
+          provider: fallbackVoice.provider,
+          voice: fallbackVoice.voiceId,
+        };
+        endpoint = this.getEndpoint('google-cloud');
+
+        console.log(`[NarrationService] Retrying with fallback: ${currentConfig.provider} / ${currentConfig.voice}`);
+
+        // Retry with fallback provider
+        const fallbackResponse = await this.makeRequest(endpoint, currentConfig, content);
+
+        if (!fallbackResponse.ok) {
+          throw new Error(`Fallback TTS API error: ${fallbackResponse.statusText}`);
         }
-      );
+
+        yield* this.processStreamResponse(fallbackResponse);
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(`TTS API error: ${response.statusText}`);
       }
 
-      const reader = response.body?.getReader();
-      if (!reader) {
-        throw new Error('Response body is not readable');
-      }
+      // Process primary provider response
+      try {
+        yield* this.processStreamResponse(response);
+      } catch (streamError) {
+        // Handle auth_blocked error from stream (structured error response)
+        if (streamError instanceof Error && streamError.message === 'AUTH_BLOCKED') {
+          console.warn('[NarrationService] Auth blocked in stream, falling back to Google Cloud TTS');
 
-      let chunkIndex = 0;
-      const decoder = new TextDecoder();
+          const fallbackVoice = voiceStrategyEngine.getFallbackVoice(
+            currentConfig.language,
+            'article'
+          );
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+          currentConfig = {
+            ...currentConfig,
+            provider: fallbackVoice.provider,
+            voice: fallbackVoice.voiceId,
+          };
+          endpoint = this.getEndpoint('google-cloud');
 
-        // Parse JSON chunks
-        const text = decoder.decode(value, { stream: true });
-        const lines = text.split('\n').filter(line => line.trim());
+          const fallbackResponse = await this.makeRequest(endpoint, currentConfig, content);
 
-        for (const line of lines) {
-          try {
-            const data = JSON.parse(line);
-            
-            if (data.audio) {
-              const audioContent = Uint8Array.from(atob(data.audio), c => c.charCodeAt(0));
-              
-              yield {
-                audioContent,
-                chunkIndex: chunkIndex++,
-                totalChunks: -1, // Unknown until complete
-                isLast: false,
-              };
-            }
-
-            if (data.done) {
-              yield {
-                audioContent: new Uint8Array(0),
-                chunkIndex: chunkIndex,
-                totalChunks: chunkIndex,
-                isLast: true,
-              };
-            }
-          } catch (e) {
-            console.warn('Failed to parse TTS chunk:', e);
+          if (!fallbackResponse.ok) {
+            throw new Error(`Fallback TTS API error: ${fallbackResponse.statusText}`);
           }
+
+          yield* this.processStreamResponse(fallbackResponse);
+          return;
         }
+        throw streamError;
       }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
@@ -192,7 +281,7 @@ export class NarrationService {
    */
   estimateCost(content: string, provider: 'google-cloud' | 'openai' | 'elevenlabs'): number {
     const charCount = content.length;
-    
+
     // Pricing (approximate)
     const pricing: Record<string, number> = {
       'google-cloud': 0.000016, // $16 per 1M characters (Neural2)
@@ -228,7 +317,7 @@ export class NarrationService {
    */
   generateContentHash(content: string, config: Partial<NarrationConfig>): string {
     const key = `${content}_${config.language}_${config.voice}_${config.speed}`;
-    
+
     // Simple hash function (for production, use crypto.subtle.digest)
     let hash = 0;
     for (let i = 0; i < key.length; i++) {
@@ -236,7 +325,7 @@ export class NarrationService {
       hash = ((hash << 5) - hash) + char;
       hash = hash & hash; // Convert to 32bit integer
     }
-    
+
     return Math.abs(hash).toString(36);
   }
 }

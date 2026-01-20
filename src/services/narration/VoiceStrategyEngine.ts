@@ -1,7 +1,51 @@
 // Intelligent voice selection based on content analysis
+// Phase 14: Added fallback voice support for provider failures
 import type { ContentProfile, VoiceConfig, NarrationTone, NarrationContentType } from '@/types/narration';
 
 export class VoiceStrategyEngine {
+  /**
+   * Get fallback voice when primary provider fails (401/403 errors)
+   * Phase 14: Auto-fallback to Google Cloud TTS when ElevenLabs is blocked
+   */
+  getFallbackVoice(language: string, contentType: NarrationContentType): VoiceConfig {
+    if (language === 'en') {
+      return {
+        provider: 'google-cloud',
+        voiceId: 'en-US-Neural2-D',
+        languageCode: 'en-US',
+        name: 'English (Google Neural2 Fallback)',
+        speakingRate: 1.0,
+      };
+    }
+
+    // Indic languages already use Google Cloud - return appropriate voice
+    const langCode = this.getLanguageCode(language);
+    const voiceMap: Record<string, string> = {
+      'hi': 'hi-IN-Neural2-D',
+      'ta': 'ta-IN-Wavenet-D',
+      'te': 'te-IN-Standard-B',
+      'kn': 'kn-IN-Wavenet-B',
+      'bn': 'bn-IN-Wavenet-A',
+      'as': 'en-IN-Wavenet-D',
+      'pa': 'pa-IN-Wavenet-A',
+    };
+
+    return {
+      provider: 'google-cloud',
+      voiceId: voiceMap[language] || `${langCode}-Wavenet-A`,
+      languageCode: langCode,
+      name: `${language.toUpperCase()} (Google Cloud Fallback)`,
+      speakingRate: 1.0,
+    };
+  }
+
+  /**
+   * Check if current voice config uses a provider that might require fallback
+   */
+  needsFallbackCapability(config: VoiceConfig): boolean {
+    return config.provider === 'elevenlabs';
+  }
+
   /**
    * Analyze content to determine profile characteristics
    */

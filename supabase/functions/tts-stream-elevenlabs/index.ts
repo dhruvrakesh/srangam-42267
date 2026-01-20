@@ -105,6 +105,22 @@ serve(async (req) => {
             if (!response.ok) {
               const errorText = await response.text();
               console.error(`ElevenLabs API error (chunk ${i + 1}):`, errorText);
+              
+              // Phase 14: Structured 401/403 error response for client-side fallback
+              if (response.status === 401 || response.status === 403) {
+                console.warn(`ElevenLabs auth blocked (${response.status}), signaling fallback`);
+                controller.enqueue(
+                  new TextEncoder().encode(JSON.stringify({
+                    error: 'auth_blocked',
+                    status: response.status,
+                    fallback_provider: 'google-cloud',
+                    message: 'ElevenLabs authentication failed - use fallback provider'
+                  }) + '\n')
+                );
+                controller.close();
+                return;
+              }
+              
               throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
             }
 
