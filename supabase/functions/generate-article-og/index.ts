@@ -122,7 +122,18 @@ async function uploadToGoogleDrive(
     parents: ['0AHOa_eCfO3arUk9PVA'], // Srangam Shared Drive
   };
 
-  const base64Image = btoa(String.fromCharCode(...imageBytes));
+  // Chunked base64 encoding to avoid stack overflow on large images (2-3MB)
+  function bytesToBase64(bytes: Uint8Array): string {
+    let binaryString = '';
+    const chunkSize = 65536; // 64KB chunks - safe for call stack
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.slice(i, Math.min(i + chunkSize, bytes.length));
+      binaryString += String.fromCharCode(...chunk);
+    }
+    return btoa(binaryString);
+  }
+
+  const base64Image = bytesToBase64(imageBytes);
   const boundary = '-------314159265358979323846';
   const delimiter = `\r\n--${boundary}\r\n`;
   const closeDelimiter = `\r\n--${boundary}--`;
