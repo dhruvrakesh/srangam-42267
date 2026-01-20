@@ -179,6 +179,16 @@
 - ✅ 8 missing articles imported across all themes
 - ✅ Security function hardening (search_path fixes)
 
+### **2026-01-20 (Phase 10: Dark Mode Audit & WCAG Compliance)**
+- ✅ Comprehensive audit of 52+ UI components for dark mode contrast
+- ✅ Fixed critical components: GeomythologySection, CrossReferencePanel, OceanicIndex, InteractiveAtlas
+- ✅ Replaced hardcoded Tailwind grays with semantic tokens (`text-muted-foreground`, `bg-card`)
+- ✅ Updated PuranaCategoryBadge to use dharmic color palette
+- ✅ Added dark mode CSS overrides for `--sand`, `--ocean`, `--saffron`, `--cream`
+- ✅ Created `src/lib/darkModeUtils.ts` utility library for consistent color mappings
+- ✅ Created `docs/DARK_MODE_AUDIT.md` documenting all findings and exempt components
+- ✅ Bibliography backfill executed: 25 entries, 63 article-bibliography links
+
 ---
 
 ## 🎯 **Next Steps**

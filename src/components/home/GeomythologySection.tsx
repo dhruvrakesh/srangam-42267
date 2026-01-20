@@ -83,13 +83,13 @@ const cards = [
 // available as in the Srangam project.
 const GeomythologySection: React.FC = () => {
   return (
-    <section className="py-16 bg-sandalwood-50 dark:bg-sandalwood-900">
+    <section className="py-16 bg-muted/50 dark:bg-card/50">
       <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
         <header className="mb-10 text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-ink dark:text-gray-100">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">
             Geomythology & Cultural Continuity
           </h2>
-          <p className="mt-4 max-w-2xl mx-auto text-lg leading-relaxed text-gray-600 dark:text-gray-300">
+          <p className="mt-4 max-w-2xl mx-auto text-lg leading-relaxed text-muted-foreground">
             Our geomythology series connects legendary acts of land reclamation
             like the stories of
             {' '}
@@ -135,27 +135,27 @@ const GeomythologySection: React.FC = () => {
         </header>
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
           {cards.map(({ path, icon: Icon, title, items, description }) => (
-            <div key={path} className="flex flex-col justify-between rounded-xl bg-white dark:bg-gray-800 shadow-md p-6 border border-gray-200 dark:border-gray-700">
+            <div key={path} className="flex flex-col justify-between rounded-xl bg-card dark:bg-card shadow-md p-6 border border-border">
               <div>
-                <div className="flex items-center justify-center h-12 w-12 rounded-full bg-epigraphy-maroon-100 text-epigraphy-maroon-700 dark:bg-epigraphy-maroon-900 dark:text-epigraphy-maroon-200 mb-4">
+                <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary mb-4">
                   <Icon className="h-6 w-6" aria-hidden="true" />
                 </div>
-                <h3 className="text-xl font-semibold text-ink dark:text-gray-100 mb-2">
+                <h3 className="text-xl font-semibold text-foreground mb-2">
                   {title}
                 </h3>
-                <ul className="space-y-1 mb-3 list-disc list-inside text-gray-700 dark:text-gray-300">
+                <ul className="space-y-1 mb-3 list-disc list-inside text-muted-foreground">
                   {items.map((item, idx) => (
                     <li key={idx}>{item}</li>
                   ))}
                 </ul>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-muted-foreground">
                   {description}
                 </p>
               </div>
               <div className="mt-4">
                 <Link
                   to={path}
-                  className="inline-flex items-center text-primary-600 dark:text-primary-400 hover:underline"
+                  className="inline-flex items-center text-primary hover:text-primary/80 hover:underline"
                 >
                   Continue reading
                   <svg

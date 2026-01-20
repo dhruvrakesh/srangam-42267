@@ -53,17 +53,17 @@ export const CrossReferencePanel: React.FC<CrossReferencePanelProps> = ({
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'Same Period':
-        return 'bg-blue-500/10 text-blue-700 border-blue-500/20';
+        return 'bg-ocean/10 text-ocean dark:text-ocean border-ocean/20';
       case 'Same Region':
-        return 'bg-green-500/10 text-green-700 border-green-500/20';
+        return 'bg-saffron/10 text-saffron dark:text-saffron border-saffron/20';
       case 'Same Script Type':
-        return 'bg-purple-500/10 text-purple-700 border-purple-500/20';
+        return 'bg-burgundy/10 text-burgundy dark:text-burgundy-light border-burgundy/20';
       case 'Related Tags':
-        return 'bg-orange-500/10 text-orange-700 border-orange-500/20';
+        return 'bg-gold-warm/10 text-gold-warm dark:text-gold-light border-gold-warm/20';
       case 'Explicit References':
-        return 'bg-red-500/10 text-red-700 border-red-500/20';
+        return 'bg-laterite/10 text-laterite dark:text-laterite border-laterite/20';
       default:
-        return 'bg-gray-500/10 text-gray-700 border-gray-500/20';
+        return 'bg-muted text-muted-foreground border-border';
     }
   };
 

@@ -359,17 +359,18 @@ export const InteractiveAtlas: React.FC<InteractiveAtlasProps> = ({
     const title = node.title[currentLang] || node.title.en || node.id;
     const summary = node.summary[currentLang] || node.summary.en || '';
 
+    // Use inline styles for map popups (they don't inherit Tailwind dark mode)
     const popupContent = `
-      <div class="p-4 max-w-sm">
-        <h3 class="font-bold text-lg mb-2">${title}</h3>
-        <div class="flex gap-2 mb-2">
-          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+      <div class="atlas-popup-content" style="padding: 1rem; max-width: 20rem; background: var(--background, #fff); color: var(--foreground, #1a1f2e); border-radius: 0.5rem;">
+        <h3 style="font-weight: bold; font-size: 1.125rem; margin-bottom: 0.5rem; color: inherit;">${title}</h3>
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+          <span style="display: inline-flex; align-items: center; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; background: hsl(195, 82%, 27%, 0.15); color: hsl(195, 82%, 35%);">
             ${node.type}
           </span>
-          ${node.approximate ? '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Approx.</span>' : ''}
+          ${node.approximate ? '<span style="display: inline-flex; align-items: center; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; background: hsl(25, 95%, 53%, 0.15); color: hsl(25, 95%, 45%);">Approx.</span>' : ''}
         </div>
-        <p class="text-sm text-gray-600 mb-3">${summary.substring(0, 200)}${summary.length > 200 ? '...' : ''}</p>
-        ${node.articleSlug ? `<a href="/articles/${node.articleSlug}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Read Article →</a>` : ''}
+        <p style="font-size: 0.875rem; color: inherit; opacity: 0.8; margin-bottom: 0.75rem;">${summary.substring(0, 200)}${summary.length > 200 ? '...' : ''}</p>
+        ${node.articleSlug ? `<a href="/articles/${node.articleSlug}" style="color: hsl(195, 82%, 35%); font-size: 0.875rem; font-weight: 500; text-decoration: none;">Read Article →</a>` : ''}
       </div>
     `;
 
