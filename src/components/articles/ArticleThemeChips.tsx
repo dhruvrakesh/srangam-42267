@@ -32,8 +32,8 @@ export function ArticleThemeChips({ selectedThemes, onThemeToggle, articles }: A
           variant={selectedThemes.length === 0 ? "theme" : "default"}
           className={`cursor-pointer transition-colors ${
             selectedThemes.length === 0
-              ? "bg-saffron text-charcoal-om shadow-lg" 
-              : "hover:bg-saffron/10 hover:text-saffron hover:border-saffron/30"
+              ? "bg-saffron text-charcoal-om shadow-lg dark:text-charcoal-om" 
+              : "hover:bg-saffron/10 hover:text-saffron hover:border-saffron/30 dark:hover:bg-saffron/20"
           }`}
         >
           {t('filters.allArticles')} ({totalArticleCount})
@@ -58,8 +58,8 @@ export function ArticleThemeChips({ selectedThemes, onThemeToggle, articles }: A
               variant={isSelected ? "theme" : "default"}
               className={`cursor-pointer transition-colors ${
                 isSelected 
-                  ? "bg-ocean text-cream shadow-lg" 
-                  : "hover:bg-ocean/10 hover:text-ocean hover:border-ocean/30"
+                  ? "bg-ocean text-cream shadow-lg dark:text-charcoal-om" 
+                  : "hover:bg-ocean/10 hover:text-ocean hover:border-ocean/30 dark:hover:bg-ocean/20"
               }`}
             >
               {t(`themes.${themeKey}`)} ({count})

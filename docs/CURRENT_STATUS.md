@@ -1,6 +1,6 @@
 # Srangam Platform - Current Status
 
-**Last Updated**: 2025-01-20 (Phase 8: Navigation UX, Dark Mode, SEO)
+**Last Updated**: 2025-01-20 (Phase 9: Dark Mode Rationalization + Bibliography Backfill)
 
 ---
 
@@ -61,6 +61,7 @@
 - ✅ Academic-standard typography implemented
 - ✅ Tailwind CSS semantic tokens (HSL colors)
 - ✅ **Dark/light/system mode support** (added Jan 2025)
+- ✅ **Dark mode rationalization** - proper contrast for all chips/badges (Jan 2025)
 - ✅ Responsive design (mobile, tablet, desktop)
 - ✅ Custom color palette (ocean, vedic, maritime, geology)
 - ✅ Multilingual fonts (Noto Sans Devanagari, Gurmukhi, Tamil)
@@ -115,8 +116,9 @@
   - Module distribution: vedic, maritime, geology, other
   - Pagination implemented (bypasses 1000-row limit)
 
-- **Bibliography entries**: 23
-  - Partially populated via backfill
+- **Bibliography entries**: 25 (+2 new, 63 article links)
+  - **Backfill completed** (Jan 2025) - 30 articles processed
+  - 63 article-bibliography links created
   - Data Health Dashboard available at `/admin/data-health`
 
 - **Tags**: 127 unique tags
@@ -126,6 +128,21 @@
 ---
 
 ## 🔧 **Recent Fixes & Deployments**
+
+### **2025-01-20 (Phase 9: Dark Mode Rationalization + Bibliography Backfill)**
+
+1. ✅ **Dark Mode Visibility Fixes**:
+   - Added dark mode overrides for `--sand`, `--ocean`, `--saffron` in `index.css`
+   - Updated `TagChip.tsx` with explicit `dark:bg-card dark:text-card-foreground` classes
+   - Fixed `ArticleThemeChips.tsx` selected/unselected states for dark mode contrast
+   - Updated `ArticleCard.tsx` tag chips with dark mode styles
+   - All filter pills and tags now readable in dark mode
+
+2. ✅ **Bibliography Backfill Completed**:
+   - Ran `/backfill-bibliography` edge function (dry run OFF)
+   - Processed: 30 articles
+   - Created: 2 new bibliography entries, 63 article-bibliography links
+   - Total bibliography entries: 25
 
 ### **2025-01-20 (Phase 8: Navigation UX, Dark Mode, SEO)**
 
