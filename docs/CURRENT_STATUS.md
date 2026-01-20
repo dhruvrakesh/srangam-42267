@@ -144,6 +144,27 @@
 
 ## 🔧 **Recent Fixes & Deployments**
 
+### **2025-01-20 (Phase 14b: Verification & Hardening)**
+
+**Status: Code Complete - Verification Logs Added**
+
+1. ✅ **Diagnostic Logging Added**:
+   - `NarrationService.ts`: `[NarrationService] PRIMARY:` and `[NarrationService] FALLBACK:` logs
+   - `tts-stream-google/index.ts`: Request logging with config details
+   - `articleResolver.ts`: Query result logging
+   
+2. ✅ **Article Query Optimization**:
+   - Reduced from 2 sequential queries to 1 with `OR` condition
+   - Improves page load time for database articles
+   
+3. ⏳ **Verification Checklist**:
+   - [ ] Click "Play" on any article
+   - [ ] Check console for `[NarrationService] PRIMARY:` log
+   - [ ] If ElevenLabs blocked, see `[NarrationService] FALLBACK:` log
+   - [ ] Verify audio plays (Google Neural2 voice)
+   - [ ] Check OG image displays on article page
+   - [ ] If image fails, check console for CORS error
+
 ### **2025-01-20 (Phase 14: TTS Provider Fallback + OG Image Display)**
 
 1. ✅ **ElevenLabs Free Tier Blocked - Auto-Fallback System**:

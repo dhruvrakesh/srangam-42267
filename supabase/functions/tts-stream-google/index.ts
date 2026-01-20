@@ -159,19 +159,28 @@ async function getGoogleAccessToken(): Promise<string> {
 }
 
 serve(async (req) => {
+  console.log('[tts-stream-google] Request received');
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { text, language = 'en-US', voice = 'en-US-Neural2-J', articleSlug } = await req.json();
+    
+    console.log('[tts-stream-google] Config:', { 
+      language, 
+      voice, 
+      textLength: text?.length,
+      articleSlug 
+    });
 
     if (!text) {
       throw new Error('Text is required');
     }
 
     const chunks = chunkText(text);
-    console.log(`Processing ${chunks.length} chunks for article: ${articleSlug}`);
+    console.log(`[tts-stream-google] Processing ${chunks.length} chunks for article: ${articleSlug}`);
 
     // Create streaming response
     const stream = new ReadableStream({
