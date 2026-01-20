@@ -11,19 +11,19 @@ export const OceanicIndex: React.FC = () => {
   const cards = getOceanicCards();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-teal-50/20 to-cyan-50/30">
+    <div className="min-h-screen bg-gradient-to-br from-ocean/5 via-ocean-teal/5 to-peacock-blue/5 dark:from-ocean/10 dark:via-ocean-teal/10 dark:to-peacock-blue/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl lg:text-6xl font-bold mb-4">
-            <span className="bg-gradient-to-r from-blue-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-ocean via-ocean-teal to-peacock-blue bg-clip-text text-transparent">
               Oceanic Bharat
             </span>
           </h1>
-          <h2 className="text-2xl lg:text-3xl font-semibold text-blue-800 mb-8">
+          <h2 className="text-2xl lg:text-3xl font-semibold text-ocean dark:text-ocean mb-8">
             Maritime Networks of the Indian Ocean
           </h2>
-          <p className="text-lg text-gray-700 max-w-4xl mx-auto leading-relaxed">
+          <p className="text-lg text-muted-foreground max-w-4xl mx-auto leading-relaxed">
             Discover the rich maritime heritage of India through archaeological evidence, 
             textual sources, and geographical analysis of ancient ocean trade networks.
           </p>

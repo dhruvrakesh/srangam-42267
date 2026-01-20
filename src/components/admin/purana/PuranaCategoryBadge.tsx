@@ -5,11 +5,11 @@ interface PuranaCategoryBadgeProps {
 }
 
 const categoryStyles: Record<string, string> = {
-  Mahapurana: 'bg-purple-500 hover:bg-purple-600 text-white',
-  Veda: 'bg-amber-500 hover:bg-amber-600 text-white',
-  Itihasa: 'bg-blue-500 hover:bg-blue-600 text-white',
-  Upapurana: 'bg-green-500 hover:bg-green-600 text-white',
-  Agama: 'bg-red-500 hover:bg-red-600 text-white',
+  Mahapurana: 'bg-burgundy hover:bg-burgundy/90 text-cream',
+  Veda: 'bg-saffron hover:bg-saffron/90 text-charcoal-om',
+  Itihasa: 'bg-ocean hover:bg-ocean/90 text-cream dark:text-charcoal-om',
+  Upapurana: 'bg-ocean-teal hover:bg-ocean-teal/90 text-cream',
+  Agama: 'bg-laterite hover:bg-laterite/90 text-cream',
   Other: 'bg-muted hover:bg-muted/80 text-muted-foreground',
 };
 

@@ -120,6 +120,7 @@ All colors MUST be HSL.
     --sand: 218 15% 22%;          /* Dark gray-blue for chip backgrounds */
     --ocean: 195 75% 50%;         /* Brighter teal for visibility */
     --saffron: 25 90% 58%;        /* Slightly brighter saffron */
+    --cream: 218 15% 90%;         /* Lighter cream for dark mode text */
     
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
