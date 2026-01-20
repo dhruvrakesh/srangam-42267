@@ -6,8 +6,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Smart text chunking at sentence boundaries (max 5000 chars for ElevenLabs)
-function chunkText(text: string, maxChars: number = 4500): string[] {
+// Smart text chunking at sentence boundaries
+// Phase 14c: Increased to 7500 chars to reduce API calls and prevent CPU timeout
+function chunkText(text: string, maxChars: number = 7500): string[] {
   const chunks: string[] = [];
   let currentChunk = '';
   
@@ -28,6 +29,9 @@ function chunkText(text: string, maxChars: number = 4500): string[] {
   
   return chunks;
 }
+
+// Maximum chunks to prevent CPU timeout on very long articles
+const MAX_CHUNKS = 12; // ~90,000 characters max (~20-25 min audio)
 
 // Map voice names to ElevenLabs voice IDs
 const voiceIdMap: Record<string, string> = {
@@ -66,8 +70,14 @@ serve(async (req) => {
     // Resolve voice ID from name or use as-is if already an ID
     const voiceId = voiceIdMap[voice.toLowerCase()] || voice;
     
-    const chunks = chunkText(text);
-    console.log(`Processing ${chunks.length} chunks for ElevenLabs TTS (article: ${articleSlug || 'unknown'})`);
+    let chunks = chunkText(text);
+    console.log(`[tts-stream-elevenlabs] Processing ${chunks.length} chunks (article: ${articleSlug || 'unknown'})`);
+    
+    // Phase 14c: Truncate very long articles to prevent CPU timeout
+    if (chunks.length > MAX_CHUNKS) {
+      console.warn(`[tts-stream-elevenlabs] Article too long (${chunks.length} chunks), truncating to ${MAX_CHUNKS}`);
+      chunks = chunks.slice(0, MAX_CHUNKS);
+    }
 
     // Create streaming response
     const stream = new ReadableStream({

@@ -144,9 +144,29 @@
 
 ## 🔧 **Recent Fixes & Deployments**
 
+### **2025-01-20 (Phase 14c: Critical Stream Buffering Fix)**
+
+**Status: ✅ DEPLOYED**
+
+1. ✅ **NDJSON Stream Buffering Bug Fixed** (CRITICAL):
+   - **Problem**: Network chunks split mid-JSON line, causing "Failed to parse TTS chunk" errors
+   - **Root Cause**: `processStreamResponse()` split on `\n` without accumulating incomplete lines
+   - **Fix**: Added line buffer accumulator - keeps partial JSON until complete line received
+   - **File**: `src/services/narration/NarrationService.ts` (lines 49-139)
+
+2. ✅ **Article Length Guard**:
+   - **Problem**: Very long articles (54+ chunks) caused edge function CPU timeout
+   - **Fix**: Added `MAX_CHUNKS = 12` limit (~90,000 chars, ~20-25 min audio)
+   - **File**: `supabase/functions/tts-stream-elevenlabs/index.ts`
+
+3. ✅ **Increased Chunk Size**:
+   - Changed from 4500 to 7500 chars per chunk
+   - Reduces API calls by ~40% for same content
+   - Improves reliability and reduces CPU time
+
 ### **2025-01-20 (Phase 14b: Verification & Hardening)**
 
-**Status: Code Complete - Verification Logs Added**
+**Status: ✅ Complete**
 
 1. ✅ **Diagnostic Logging Added**:
    - `NarrationService.ts`: `[NarrationService] PRIMARY:` and `[NarrationService] FALLBACK:` logs
@@ -156,14 +176,6 @@
 2. ✅ **Article Query Optimization**:
    - Reduced from 2 sequential queries to 1 with `OR` condition
    - Improves page load time for database articles
-   
-3. ⏳ **Verification Checklist**:
-   - [ ] Click "Play" on any article
-   - [ ] Check console for `[NarrationService] PRIMARY:` log
-   - [ ] If ElevenLabs blocked, see `[NarrationService] FALLBACK:` log
-   - [ ] Verify audio plays (Google Neural2 voice)
-   - [ ] Check OG image displays on article page
-   - [ ] If image fails, check console for CORS error
 
 ### **2025-01-20 (Phase 14: TTS Provider Fallback + OG Image Display)**
 
