@@ -69,30 +69,21 @@ export async function resolveOceanicArticle(slug: string): Promise<ResolvedArtic
 
   // If not in JSON, query the database
   try {
-    // First try slug_alias (short slug), then fall back to slug (long slug)
-    let { data, error } = await supabase
+    // Optimized: Single query with OR condition for slug_alias or slug
+    // Phase 14b: Reduced from 2 sequential queries to 1 for faster page loads
+    const { data, error } = await supabase
       .from('srangam_articles')
       .select('*')
-      .eq('slug_alias', slug)
+      .or(`slug_alias.eq.${slug},slug.eq.${slug}`)
       .eq('status', 'published')
       .maybeSingle();
 
-    // If not found by alias, try the full slug
-    if (!data) {
-      const result = await supabase
-        .from('srangam_articles')
-        .select('*')
-        .eq('slug', slug)
-        .eq('status', 'published')
-        .maybeSingle();
-      
-      data = result.data;
-      error = result.error;
-    }
-
     if (error || !data) {
+      console.log(`[articleResolver] No article found for slug: ${slug}`);
       return null;
     }
+    
+    console.log(`[articleResolver] Found article: ${data.slug_alias || data.slug}`);
 
     // Transform database article to match oceanic format
     const title = typeof data.title === 'object' ? (data.title as any).en : String(data.title);

@@ -118,10 +118,12 @@ export class NarrationService {
     let currentConfig = { ...config };
     let endpoint = this.getEndpoint(currentConfig.provider);
 
-    console.log(`[NarrationService] Streaming from ${currentConfig.provider} via ${endpoint}`);
+    console.log(`[NarrationService] PRIMARY: Attempting ${currentConfig.provider} via ${endpoint}`);
+    console.log(`[NarrationService] Config: voice=${currentConfig.voice}, lang=${currentConfig.language}`);
 
     try {
       const response = await this.makeRequest(endpoint, currentConfig, content);
+      console.log(`[NarrationService] PRIMARY response status: ${response.status}`);
 
       // Handle auth failures - trigger fallback to Google Cloud
       if (response.status === 401 || response.status === 403) {
@@ -143,15 +145,17 @@ export class NarrationService {
         };
         endpoint = this.getEndpoint('google-cloud');
 
-        console.log(`[NarrationService] Retrying with fallback: ${currentConfig.provider} / ${currentConfig.voice}`);
+        console.log(`[NarrationService] FALLBACK: Retrying with ${currentConfig.provider} / ${currentConfig.voice}`);
 
         // Retry with fallback provider
         const fallbackResponse = await this.makeRequest(endpoint, currentConfig, content);
+        console.log(`[NarrationService] FALLBACK response status: ${fallbackResponse.status}`);
 
         if (!fallbackResponse.ok) {
           throw new Error(`Fallback TTS API error: ${fallbackResponse.statusText}`);
         }
 
+        console.log(`[NarrationService] FALLBACK SUCCESS: Streaming from ${currentConfig.provider}`);
         yield* this.processStreamResponse(fallbackResponse);
         return;
       }
