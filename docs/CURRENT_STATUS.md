@@ -178,14 +178,26 @@
 
 2. ✅ **Dynamic OG Image Generation**:
    - Created `generate-article-og` edge function using OpenAI DALL-E 3 ($0.04/image)
-   - Created `og-images` storage bucket with public read access
    - Added `og_image_url` column to `srangam_articles` table
    - Updated `ArticleHead.tsx` to use dynamic OG images with fallback
    - Added bulk generation UI to Data Health Dashboard
+   - **MIGRATED TO GOOGLE DRIVE** (Phase 13b): OG images now stored in GDrive, not Supabase Storage
 
 3. ✅ **Cost Optimization**:
    - Decision: Use existing `OPENAI_API_KEY` instead of Lovable AI (50% cost savings)
    - Total cost for 32 articles: ~$1.28
+   - Storage cost: $0 (Google Drive instead of Supabase Storage)
+
+### **Storage Architecture (Centralized)**
+
+| Asset Type | Storage Location | URL Format |
+|------------|------------------|------------|
+| Audio narrations | Google Drive | `https://drive.google.com/file/d/{id}/view` |
+| OG images | Google Drive | `https://drive.google.com/uc?export=view&id={id}` |
+| Context snapshots | Google Drive | `https://drive.google.com/file/d/{id}/view` |
+| User uploads | Supabase Storage | `{supabase_url}/storage/v1/object/public/{bucket}/{path}` |
+
+**Rationale**: Heavy media files (audio, images, documents) stored in Google Drive to eliminate Supabase Storage costs. Only lightweight user uploads remain in Supabase.
 
 ### **2025-01-20 (Phase 9: Dark Mode Rationalization + Bibliography Backfill)**
 
