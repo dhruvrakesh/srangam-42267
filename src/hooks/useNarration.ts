@@ -82,11 +82,13 @@ export function useNarration(initialConfig?: Partial<NarrationConfig>) {
       }
 
       // Stream from TTS provider
+      // Phase 15: Pass articleSlug and contentHash for server-side caching
       const audioChunks: Uint8Array[] = [];
       let receivedAnyChunks = false;
+      const articleSlug = config.contentType === 'article' ? content.substring(0, 50).replace(/[^a-z0-9]/gi, '-').toLowerCase() : undefined;
       
       try {
-        for await (const chunk of narrationService.streamAudio(content, config)) {
+        for await (const chunk of narrationService.streamAudio(content, config, articleSlug, contentHash)) {
           if (chunk.audioContent.length > 0) {
             audioChunks.push(chunk.audioContent);
             receivedAnyChunks = true;
@@ -128,16 +130,9 @@ export function useNarration(initialConfig?: Partial<NarrationConfig>) {
               config,
             }));
 
-            // Save to cache (async, don't await)
-            narrationService.saveToStorage(audioBlob, {
-              contentHash,
-              articleSlug: config.contentType === 'article' ? content.substring(0, 50) : undefined,
-              language: config.language,
-              provider: config.provider,
-              voice: config.voice,
-              fileSize: audioBlob.size,
-              config,
-            }).catch(err => console.error('Failed to cache audio:', err));
+            // Phase 15: Caching now handled server-side in edge functions
+            // Just log for debugging
+            console.log('[useNarration] Audio streaming complete, server-side caching in progress');
           }
         }
         
@@ -165,7 +160,7 @@ export function useNarration(initialConfig?: Partial<NarrationConfig>) {
           
           audioChunks.length = 0; // Clear any partial data
           
-          for await (const chunk of narrationService.streamAudio(content, fallbackConfig)) {
+          for await (const chunk of narrationService.streamAudio(content, fallbackConfig, articleSlug, contentHash)) {
             if (chunk.audioContent.length > 0) {
               audioChunks.push(chunk.audioContent);
             }

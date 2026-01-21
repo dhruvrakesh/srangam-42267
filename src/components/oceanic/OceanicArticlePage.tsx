@@ -16,6 +16,7 @@ import { NarrationErrorBoundary } from '@/components/narration/NarrationErrorBou
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { useArticleBibliographyBySlug } from '@/hooks/useArticleBibliography';
+import { getProxiedImageUrl } from '@/lib/gdriveProxy';
 
 const BASE_URL = 'https://srangam-db.lovable.app';
 
@@ -88,7 +89,9 @@ export const OceanicArticlePage: React.FC = () => {
   const articleTitle = getArticleTitle(article, currentLanguage);
   const articleSlug = article.slug_alias || article.slug;
   const canonicalUrl = `${BASE_URL}/${articleSlug}`;
-  const ogImageUrl = article.og_image_url || `${BASE_URL}/brand/og-image.svg`;
+  // Proxy GDrive URLs to bypass CORS restrictions (Phase 15)
+  const rawOgImageUrl = article.og_image_url || `${BASE_URL}/brand/og-image.svg`;
+  const ogImageUrl = getProxiedImageUrl(rawOgImageUrl);
   const description = article.abstract.substring(0, 160);
 
   // Build ScholarlyArticle structured data for database articles
@@ -223,17 +226,18 @@ export const OceanicArticlePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Hero Image - AI-generated OG image (Phase 14) */}
+        {/* Hero Image - AI-generated OG image (Phase 14, proxied Phase 15) */}
         {article.og_image_url && (
           <div className="mb-6 relative">
             <div className="overflow-hidden rounded-lg shadow-md bg-muted/20">
               <img
-                src={article.og_image_url}
+                src={ogImageUrl}
                 alt={`Visual illustration for ${articleTitle}`}
                 className="w-full h-48 md:h-64 lg:h-72 object-cover transition-opacity duration-500"
                 loading="lazy"
                 onError={(e) => {
-                  // Hide container if image fails to load (CORS or GDrive issues)
+                  // Hide container if image fails to load
+                  console.warn('[OceanicArticlePage] Hero image failed to load:', ogImageUrl);
                   const container = (e.target as HTMLImageElement).parentElement?.parentElement;
                   if (container) container.classList.add('hidden');
                 }}

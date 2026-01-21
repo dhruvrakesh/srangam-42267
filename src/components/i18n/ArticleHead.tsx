@@ -7,6 +7,7 @@ import { isLanguageAvailable } from '@/lib/i18n/coverage';
 import { CoverageMap } from '@/lib/i18n/coverage';
 import { MultilingualContent } from '@/types/multilingual';
 import { BreadcrumbSchema, getArticleBreadcrumbs } from '@/components/seo/BreadcrumbSchema';
+import { getProxiedImageUrl } from '@/lib/gdriveProxy';
 
 const BASE_URL = 'https://srangam-db.lovable.app';
 
@@ -59,8 +60,9 @@ export const ArticleHead: React.FC<ArticleHeadProps> = ({
   const currentDescription = (description[currentLang] || description.en || '') as string;
   const canonicalUrl = `${BASE_URL}/${articleSlug}`;
   
-  // Dynamic OG image with fallback to default branded image
-  const effectiveOgImageUrl = ogImageUrl || `${BASE_URL}/brand/og-image.svg`;
+  // Dynamic OG image with proxy for GDrive URLs and fallback to default branded image
+  const rawOgImageUrl = ogImageUrl || `${BASE_URL}/brand/og-image.svg`;
+  const effectiveOgImageUrl = getProxiedImageUrl(rawOgImageUrl);
   
   // Generate breadcrumbs for this article
   const breadcrumbs = getArticleBreadcrumbs(currentTitle, articleSlug, section);

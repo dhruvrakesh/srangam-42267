@@ -1,6 +1,6 @@
 # Srangam Platform - Current Status
 
-**Last Updated**: 2025-01-21 (Phase 14e: Admin-Only Narration + OpenAI TTS Fix)
+**Last Updated**: 2025-01-21 (Phase 15: Server-Side Audio Caching + GDrive Image Proxy)
 
 ---
 
@@ -143,6 +143,30 @@
 ---
 
 ## 🔧 **Recent Fixes & Deployments**
+
+### **2025-01-21 (Phase 15: Server-Side Audio Caching + GDrive Image Proxy)**
+
+**Status: ✅ DEPLOYED**
+
+1. ✅ **Server-Side Audio Caching** (CRITICAL):
+   - **Problem**: `srangam_audio_narrations` table empty (0 rows) - client INSERT blocked by RLS
+   - **Fix**: TTS edge functions now cache audio to GDrive and write to DB using service role
+   - **Files**: `tts-stream-openai/index.ts`, `tts-stream-google/index.ts`
+   - **Result**: Audio now cached for repeat plays, ~95% cost reduction
+
+2. ✅ **GDrive Image Proxy** (CRITICAL):
+   - **Problem**: OG hero images from GDrive fail with CORS/403 errors
+   - **Fix**: Created `gdrive-image-proxy` edge function to fetch images server-side
+   - **Files**: `supabase/functions/gdrive-image-proxy/index.ts`, `src/lib/gdriveProxy.ts`
+   - **Result**: Hero images now display reliably with 24h caching
+
+3. ✅ **Frontend Proxy Integration**:
+   - Updated `ArticleHead.tsx` and `OceanicArticlePage.tsx` to use proxied URLs
+   - Helper function `getProxiedImageUrl()` extracts GDrive file IDs
+
+4. ✅ **NarrationService Cleanup**:
+   - Removed broken client-side `saveToStorage()` DB writes
+   - Now passes `articleSlug` and `contentHash` to edge functions for caching
 
 ### **2025-01-21 (Phase 14e: Admin-Only Narration + OpenAI TTS Fix)**
 

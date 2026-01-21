@@ -1,6 +1,6 @@
 # Srangam TTS Architecture
 
-**Last Updated**: 2025-01-21 (Phase 14e: Admin-Only Narration + OpenAI TTS Fix)
+**Last Updated**: 2025-01-21 (Phase 15: Server-Side Audio Caching + GDrive Image Proxy)
 
 ## Overview
 
@@ -22,8 +22,8 @@ Srangam Digital implements a hybrid multi-provider text-to-speech (TTS) system o
 | ElevenLabs Free Tier Blocked | "Unusual activity" detection | Auto-fallback to OpenAI TTS (Phase 14e) |
 | Google TTS 5000 Byte Limit | SSML prosody wrapping inflates byte count | Simplified SSML, 1500 char chunks (Phase 14e) |
 | Stream-Death No Recovery | Backend dies before sending `done` event | Frontend detects 0 chunks → auto-fallback |
-| OG Images Not Visible | Google Drive CORS/hotlinking restrictions | Graceful hide-on-error + proxy planned |
-| Caching Not Functional | RLS prevents client-side INSERT | Server-side caching via edge function (planned) |
+| OG Images Not Visible | Google Drive CORS/hotlinking restrictions | `gdrive-image-proxy` edge function (Phase 15) ✅ |
+| Caching Not Functional | RLS prevents client-side INSERT | Server-side caching via edge function (Phase 15) ✅ |
 
 ## Provider Selection Logic
 
