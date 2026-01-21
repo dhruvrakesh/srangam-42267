@@ -20,8 +20,25 @@ import { getProxiedImageUrl } from '@/lib/gdriveProxy';
 
 const BASE_URL = 'https://srangam-db.lovable.app';
 
+/**
+ * Normalize slug: remove trailing punctuation, decode URI, trim whitespace
+ * Fixes issue where URLs like "...khy." fail to match database slugs
+ */
+function normalizeSlug(rawSlug: string | undefined): string | null {
+  if (!rawSlug) return null;
+  
+  let slug = decodeURIComponent(rawSlug).trim();
+  // Remove trailing punctuation (dots, slashes, etc.)
+  slug = slug.replace(/[.\-_/\\]+$/, '');
+  // Remove leading/trailing whitespace again after cleanup
+  slug = slug.trim();
+  
+  return slug || null;
+}
+
 export const OceanicArticlePage: React.FC = () => {
-  const { slug } = useParams<{ slug: string }>();
+  const { slug: rawSlug } = useParams<{ slug: string }>();
+  const slug = normalizeSlug(rawSlug);
   const navigate = useNavigate();
   const { currentLanguage } = useLanguage();
   const [article, setArticle] = useState<ResolvedArticle | null>(null);
@@ -31,18 +48,34 @@ export const OceanicArticlePage: React.FC = () => {
   const allCards = getOceanicCards();
   
   // Fetch bibliography for ScholarlyArticle schema citations
-  const { data: bibliography } = useArticleBibliographyBySlug(slug);
+  const { data: bibliography } = useArticleBibliographyBySlug(slug || undefined);
 
   useEffect(() => {
     async function loadArticle() {
-      if (!slug) return;
+      if (!slug) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
-      const resolved = await resolveOceanicArticle(slug);
-      setArticle(resolved);
-      setLoading(false);
+      try {
+        const resolved = await resolveOceanicArticle(slug);
+        setArticle(resolved);
+        
+        // Canonical redirect: if slug_alias exists and differs from current slug, redirect
+        if (resolved && resolved.slug_alias && resolved.slug_alias !== slug) {
+          const isOceanic = window.location.pathname.includes('/oceanic/');
+          const basePath = isOceanic ? '/oceanic/' : '/articles/';
+          navigate(basePath + resolved.slug_alias, { replace: true });
+        }
+      } catch (err) {
+        console.error('[OceanicArticlePage] Failed to load article:', err);
+        setArticle(null);
+      } finally {
+        setLoading(false);
+      }
     }
     loadArticle();
-  }, [slug]);
+  }, [slug, navigate]);
 
   if (loading) {
     return (
