@@ -151,7 +151,8 @@
 1. ✅ **Server-Side Audio Caching** (CRITICAL):
    - **Problem**: `srangam_audio_narrations` table empty (0 rows) - client INSERT blocked by RLS
    - **Fix**: TTS edge functions now cache audio to GDrive and write to DB using service role
-   - **Files**: `tts-stream-openai/index.ts`, `tts-stream-google/index.ts`
+   - **Files**: `tts-stream-openai/index.ts`, `tts-stream-google/index.ts`, `tts-stream-elevenlabs/index.ts`
+   - **Phase 15.1**: Added ElevenLabs caching (primary English provider was missing)
    - **Result**: Audio now cached for repeat plays, ~95% cost reduction
 
 2. ✅ **GDrive Image Proxy** (CRITICAL):
