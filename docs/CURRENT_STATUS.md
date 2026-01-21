@@ -1,6 +1,6 @@
 # Srangam Platform - Current Status
 
-**Last Updated**: 2025-01-21 (Phase 15: Server-Side Audio Caching + GDrive Image Proxy)
+**Last Updated**: 2025-01-21 (Phase 16: Article Loading Fix + Security Hardening)
 
 ---
 
@@ -144,38 +144,43 @@
 
 ## 🔧 **Recent Fixes & Deployments**
 
+### **2025-01-21 (Phase 16: Article Loading Fix + Security Hardening)**
+
+**Status: ✅ DEPLOYED**
+
+1. ✅ **Article Query Timeout** (RELIABILITY):
+   - **Problem**: Potential indefinite hang if database query fails silently
+   - **Fix**: Added 10-second timeout wrapper using `Promise.race()`
+   - **File**: `src/lib/articleResolver.ts`
+   - **Result**: Articles either load or show clear error within 10s
+
+2. ✅ **Error State UI** (UX):
+   - **Problem**: Only "Loading..." and "Not Found" states, no retry option
+   - **Fix**: Added `error` state with specific messages and "Retry" button
+   - **File**: `src/components/oceanic/OceanicArticlePage.tsx`
+   - **Result**: Users see actionable error messages with retry capability
+
+3. ✅ **Diagnostic Logging** (DEBUG):
+   - Added query timing logs: `[articleResolver] Query completed in Xms`
+   - Added page load timing: `[OceanicArticlePage] Resolved in Xms`
+   - Helps identify slow queries vs network issues
+
+4. ✅ **Security False Positives Marked**:
+   - `geography_columns_no_rls`: PostGIS system view, not user data
+   - `user_roles_table_public_exposure`: Has proper RLS (3 policies)
+   - `spatial_ref_sys_no_rls`: PostGIS system table
+
+5. ⚠️ **Known Security Warnings** (Non-Critical):
+   - `SUPA_auth_leaked_password_protection`: Enable in Supabase Auth settings
+   - `SUPA_rls_policy_always_true`: Audit overly permissive policies
+
+---
+
 ### **2025-01-21 (Phase 15: Server-Side Audio Caching + GDrive Image Proxy)**
 
 **Status: ✅ DEPLOYED**
 
 ### Phase 15.2 Hotfixes (2025-01-21)
-
-1. ✅ **Slug Normalization Fix** (CRITICAL):
-   - **Problem**: URLs with trailing punctuation (e.g., `...khy.`) caused infinite "Loading article..." state
-   - **Fix**: Added `normalizeSlug()` function to strip trailing `.`, `-`, `_`, `/` and decode URI components
-   - **File**: `src/components/oceanic/OceanicArticlePage.tsx`
-   - **Result**: Articles load correctly even with malformed URLs
-
-2. ✅ **Narration Fallback Routing Fix** (CRITICAL):
-   - **Problem**: OpenAI voice `onyx` was sent to Google TTS endpoint, causing "Voice does not exist" error
-   - **Root Cause**: `NarrationService.ts` hardcoded `endpoint = this.getEndpoint('google-cloud')` on fallback
-   - **Fix**: Now uses `endpoint = this.getEndpoint(fallbackVoice.provider)` to route to correct provider
-   - **File**: `src/services/narration/NarrationService.ts`
-   - **Result**: Fallback correctly routes OpenAI voices to OpenAI endpoint
-
-3. ✅ **Cache Lookup Fix** (CRITICAL):
-   - **Problem**: Cache queries never matched due to strict `language_code` and `voice_id` filters
-   - **Root Cause**: Frontend sent "en" but DB stored "en-US"; hash already encodes these values
-   - **Fix**: Query by `content_hash` only using `maybeSingle()`
-   - **File**: `src/services/narration/NarrationService.ts`
-   - **Result**: Cache hits now work correctly
-
-4. ✅ **Loading State Fail-Safe**:
-   - Added try/finally to ensure `setLoading(false)` always executes
-   - Added canonical redirect when `slug_alias` differs from URL slug
-   - **File**: `src/components/oceanic/OceanicArticlePage.tsx`
-
-### Phase 15.1 Caching (2025-01-21)
 
 1. ✅ **Server-Side Audio Caching** (CRITICAL):
    - **Problem**: `srangam_audio_narrations` table empty (0 rows) - client INSERT blocked by RLS

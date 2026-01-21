@@ -43,6 +43,7 @@ export const OceanicArticlePage: React.FC = () => {
   const { currentLanguage } = useLanguage();
   const [article, setArticle] = useState<ResolvedArticle | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showMethodsDialog, setShowMethodsDialog] = useState(false);
   const allCards = getOceanicCards();
@@ -54,11 +55,23 @@ export const OceanicArticlePage: React.FC = () => {
     async function loadArticle() {
       if (!slug) {
         setLoading(false);
+        setError('Invalid article URL');
         return;
       }
       setLoading(true);
+      setError(null);
+      
+      const startTime = Date.now();
+      console.log('[OceanicArticlePage] Loading article:', slug);
+      
       try {
         const resolved = await resolveOceanicArticle(slug);
+        const loadTime = Date.now() - startTime;
+        console.log(`[OceanicArticlePage] Resolved in ${loadTime}ms:`, resolved ? 'found' : 'not found');
+        
+        if (!resolved) {
+          setError('Article not found');
+        }
         setArticle(resolved);
         
         // Canonical redirect: if slug_alias exists and differs from current slug, redirect
@@ -68,7 +81,9 @@ export const OceanicArticlePage: React.FC = () => {
           navigate(basePath + resolved.slug_alias, { replace: true });
         }
       } catch (err) {
-        console.error('[OceanicArticlePage] Failed to load article:', err);
+        const loadTime = Date.now() - startTime;
+        console.error(`[OceanicArticlePage] Failed after ${loadTime}ms:`, err);
+        setError(err instanceof Error ? err.message : 'Failed to load article');
         setArticle(null);
       } finally {
         setLoading(false);
@@ -87,15 +102,30 @@ export const OceanicArticlePage: React.FC = () => {
     );
   }
 
-  if (!article) {
+  // Phase 16: Show error state with retry option
+  if (error || !article) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="max-w-md">
           <CardContent className="pt-6">
-            <h1 className="text-2xl font-bold text-center mb-4">Article Not Found</h1>
+            <h1 className="text-2xl font-bold text-center mb-4">
+              {error === 'Article not found' ? 'Article Not Found' : 'Error Loading Article'}
+            </h1>
             <p className="text-center text-muted-foreground mb-4">
-              The requested article could not be found in either the oceanic collection or the database.
+              {error === 'Article not found' 
+                ? 'The requested article could not be found in either the oceanic collection or the database.'
+                : `${error || 'An unexpected error occurred.'}. Please try again.`
+              }
             </p>
+            {error && error !== 'Article not found' && (
+              <Button 
+                onClick={() => window.location.reload()} 
+                variant="outline"
+                className="w-full mb-2"
+              >
+                Retry
+              </Button>
+            )}
             <Button 
               onClick={() => navigate(window.location.pathname.includes('/oceanic/') ? '/oceanic' : '/articles')} 
               className="w-full"

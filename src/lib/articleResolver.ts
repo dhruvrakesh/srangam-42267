@@ -57,6 +57,9 @@ export function getArticleTitle(article: ResolvedArticle, lang: string): string 
  * Resolves an article from either JSON or database sources
  * Tries JSON first (for backwards compatibility), then queries database
  */
+// Phase 16: Query timeout to prevent indefinite loading state
+const QUERY_TIMEOUT_MS = 10000; // 10 second timeout
+
 export async function resolveOceanicArticle(slug: string): Promise<ResolvedArticle | null> {
   // First, try to get from JSON (fast, local)
   const jsonArticle = getOceanicCardBySlug(slug);
@@ -67,19 +70,31 @@ export async function resolveOceanicArticle(slug: string): Promise<ResolvedArtic
     };
   }
 
-  // If not in JSON, query the database
+  // If not in JSON, query the database with timeout
   try {
+    const startTime = Date.now();
+    
     // Optimized: Single query with OR condition for slug_alias or slug
     // Phase 14b: Reduced from 2 sequential queries to 1 for faster page loads
-    const { data, error } = await supabase
+    // Phase 16: Added timeout wrapper to prevent indefinite hangs
+    const queryPromise = supabase
       .from('srangam_articles')
       .select('*')
       .or(`slug_alias.eq.${slug},slug.eq.${slug}`)
       .eq('status', 'published')
       .maybeSingle();
 
+    const timeoutPromise = new Promise<never>((_, reject) => 
+      setTimeout(() => reject(new Error(`Query timeout after ${QUERY_TIMEOUT_MS}ms`)), QUERY_TIMEOUT_MS)
+    );
+
+    const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
+    
+    const queryTime = Date.now() - startTime;
+    console.log(`[articleResolver] Query completed in ${queryTime}ms for slug: ${slug}`);
+
     if (error || !data) {
-      console.log(`[articleResolver] No article found for slug: ${slug}`);
+      console.log(`[articleResolver] No article found for slug: ${slug}`, error?.message);
       return null;
     }
     
