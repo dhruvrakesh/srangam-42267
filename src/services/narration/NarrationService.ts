@@ -171,10 +171,10 @@ export class NarrationService {
       const response = await this.makeRequest(endpoint, currentConfig, content, articleSlug, contentHash);
       console.log(`[NarrationService] PRIMARY response status: ${response.status}`);
 
-      // Handle auth failures - trigger fallback to Google Cloud
+      // Handle auth failures - trigger fallback
       if (response.status === 401 || response.status === 403) {
         console.warn(
-          `[NarrationService] ${currentConfig.provider} auth failed (${response.status}), falling back to Google Cloud TTS`
+          `[NarrationService] ${currentConfig.provider} auth failed (${response.status}), triggering fallback`
         );
 
         // Get fallback voice configuration
@@ -183,15 +183,16 @@ export class NarrationService {
           'article'
         );
 
-        // Reconfigure to Google Cloud
+        // Reconfigure to fallback provider
         currentConfig = {
           ...currentConfig,
           provider: fallbackVoice.provider,
           voice: fallbackVoice.voiceId,
         };
-        endpoint = this.getEndpoint('google-cloud');
+        // CRITICAL FIX: Use the fallback provider's endpoint, not hardcoded google-cloud
+        endpoint = this.getEndpoint(fallbackVoice.provider);
 
-        console.log(`[NarrationService] FALLBACK: Retrying with ${currentConfig.provider} / ${currentConfig.voice}`);
+        console.log(`[NarrationService] FALLBACK: Retrying with ${currentConfig.provider} / ${currentConfig.voice} via ${endpoint}`);
 
         // Retry with fallback provider
         const fallbackResponse = await this.makeRequest(endpoint, currentConfig, content, articleSlug, contentHash);
@@ -216,7 +217,7 @@ export class NarrationService {
       } catch (streamError) {
         // Handle auth_blocked error from stream (structured error response)
         if (streamError instanceof Error && streamError.message === 'AUTH_BLOCKED') {
-          console.warn('[NarrationService] Auth blocked in stream, falling back to Google Cloud TTS');
+          console.warn('[NarrationService] Auth blocked in stream, triggering fallback');
 
           const fallbackVoice = voiceStrategyEngine.getFallbackVoice(
             currentConfig.language,
@@ -228,7 +229,10 @@ export class NarrationService {
             provider: fallbackVoice.provider,
             voice: fallbackVoice.voiceId,
           };
-          endpoint = this.getEndpoint('google-cloud');
+          // CRITICAL FIX: Use the fallback provider's endpoint, not hardcoded google-cloud
+          endpoint = this.getEndpoint(fallbackVoice.provider);
+
+          console.log(`[NarrationService] STREAM FALLBACK: Retrying with ${currentConfig.provider} / ${currentConfig.voice} via ${endpoint}`);
 
           const fallbackResponse = await this.makeRequest(endpoint, currentConfig, content, articleSlug, contentHash);
 
@@ -253,31 +257,43 @@ export class NarrationService {
 
   /**
    * Get cached audio from Supabase - uses Google Drive URLs
+   * Phase 15.2: Relaxed filtering to match by content_hash only (hash already encodes lang/voice/speed)
    */
   async getCachedAudio(contentHash: string, config: NarrationConfig): Promise<CachedAudio | null> {
     try {
+      // Query by content_hash only - the hash already includes language, voice, speed
+      // Previous filters on language_code/voice_id caused cache misses due to format differences (e.g., "en" vs "en-US")
       const { data, error } = await supabase
         .from('srangam_audio_narrations')
         .select('*')
         .eq('content_hash', contentHash)
-        .eq('language_code', config.language)
-        .eq('voice_id', config.voice)
-        .single();
+        .maybeSingle();
 
-      if (error || !data) {
+      if (error) {
+        console.warn('[NarrationService] Cache lookup error:', error.message);
+        return null;
+      }
+      
+      if (!data || !data.google_drive_share_url) {
         return null;
       }
 
-      // Use Google Drive share URL
-      const url = data.google_drive_share_url || '';
+      console.log(`[NarrationService] Cache HIT for hash ${contentHash.substring(0, 8)}`);
+
+      // Map provider string from DB to valid NarrationProvider type
+      const providerFromDb = data.provider as 'google-cloud' | 'openai' | 'elevenlabs' | undefined;
+      const validProvider: 'google-cloud' | 'openai' | 'elevenlabs' = 
+        providerFromDb && ['google-cloud', 'openai', 'elevenlabs'].includes(providerFromDb) 
+          ? providerFromDb 
+          : config.provider;
 
       return {
-        url,
+        url: data.google_drive_share_url,
         metadata: {
           contentHash: data.content_hash || contentHash,
           articleSlug: data.article_slug,
           language: data.language_code,
-          provider: config.provider,
+          provider: validProvider,
           voice: data.voice_id,
           duration: data.duration_seconds || undefined,
           fileSize: data.file_size_bytes || undefined,

@@ -82,10 +82,12 @@ export function useNarration(initialConfig?: Partial<NarrationConfig>) {
       }
 
       // Stream from TTS provider
-      // Phase 15: Pass articleSlug and contentHash for server-side caching
+      // Phase 15.2: Pass stable articleSlug (from config, not content-derived) and contentHash for server-side caching
       const audioChunks: Uint8Array[] = [];
       let receivedAnyChunks = false;
-      const articleSlug = config.contentType === 'article' ? content.substring(0, 50).replace(/[^a-z0-9]/gi, '-').toLowerCase() : undefined;
+      // Use the real article slug from config if available, otherwise generate from content
+      const articleSlug = (config as any).articleSlug || 
+        (config.contentType === 'article' ? content.substring(0, 50).replace(/[^a-z0-9]/gi, '-').toLowerCase() : undefined);
       
       try {
         for await (const chunk of narrationService.streamAudio(content, config, articleSlug, contentHash)) {

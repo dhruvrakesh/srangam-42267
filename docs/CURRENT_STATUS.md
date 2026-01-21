@@ -148,6 +148,35 @@
 
 **Status: ✅ DEPLOYED**
 
+### Phase 15.2 Hotfixes (2025-01-21)
+
+1. ✅ **Slug Normalization Fix** (CRITICAL):
+   - **Problem**: URLs with trailing punctuation (e.g., `...khy.`) caused infinite "Loading article..." state
+   - **Fix**: Added `normalizeSlug()` function to strip trailing `.`, `-`, `_`, `/` and decode URI components
+   - **File**: `src/components/oceanic/OceanicArticlePage.tsx`
+   - **Result**: Articles load correctly even with malformed URLs
+
+2. ✅ **Narration Fallback Routing Fix** (CRITICAL):
+   - **Problem**: OpenAI voice `onyx` was sent to Google TTS endpoint, causing "Voice does not exist" error
+   - **Root Cause**: `NarrationService.ts` hardcoded `endpoint = this.getEndpoint('google-cloud')` on fallback
+   - **Fix**: Now uses `endpoint = this.getEndpoint(fallbackVoice.provider)` to route to correct provider
+   - **File**: `src/services/narration/NarrationService.ts`
+   - **Result**: Fallback correctly routes OpenAI voices to OpenAI endpoint
+
+3. ✅ **Cache Lookup Fix** (CRITICAL):
+   - **Problem**: Cache queries never matched due to strict `language_code` and `voice_id` filters
+   - **Root Cause**: Frontend sent "en" but DB stored "en-US"; hash already encodes these values
+   - **Fix**: Query by `content_hash` only using `maybeSingle()`
+   - **File**: `src/services/narration/NarrationService.ts`
+   - **Result**: Cache hits now work correctly
+
+4. ✅ **Loading State Fail-Safe**:
+   - Added try/finally to ensure `setLoading(false)` always executes
+   - Added canonical redirect when `slug_alias` differs from URL slug
+   - **File**: `src/components/oceanic/OceanicArticlePage.tsx`
+
+### Phase 15.1 Caching (2025-01-21)
+
 1. ✅ **Server-Side Audio Caching** (CRITICAL):
    - **Problem**: `srangam_audio_narrations` table empty (0 rows) - client INSERT blocked by RLS
    - **Fix**: TTS edge functions now cache audio to GDrive and write to DB using service role
