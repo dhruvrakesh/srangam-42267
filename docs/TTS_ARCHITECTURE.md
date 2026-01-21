@@ -1,17 +1,27 @@
 # Srangam TTS Architecture
 
-**Last Updated**: 2025-01-20 (Phase 14d: Memory Crash Fix + Stream Resilience)
+**Last Updated**: 2025-01-21 (Phase 14e: Admin-Only Narration + OpenAI TTS Fix)
 
 ## Overview
 
 Srangam Digital implements a hybrid multi-provider text-to-speech (TTS) system optimized for scholarly content with Sanskrit IAST diacritics and multilingual support across 9 Indian languages.
+
+## Access Control (Phase 14e)
+
+**IMPORTANT**: Audio narration is an **admin-only feature** to prevent TTS cost abuse.
+
+- Non-admin users see no narration controls on article pages
+- Access gated via `isAdmin` check from `AuthContext` in `UniversalNarrator.tsx`
+- Cost: $0 for public visitors
 
 ## Known Limitations & Mitigations
 
 | Issue | Root Cause | Mitigation |
 |-------|------------|------------|
 | ElevenLabs Memory Crash | Base64 encoding ~500KB audio buffers | MAX_CHUNKS=8, chunked base64 encoding (32KB) |
-| Stream-Death No Recovery | Backend dies before sending `done` event | Frontend detects 0 chunks → auto-fallback to Google |
+| ElevenLabs Free Tier Blocked | "Unusual activity" detection | Auto-fallback to OpenAI TTS (Phase 14e) |
+| Google TTS 5000 Byte Limit | SSML prosody wrapping inflates byte count | Simplified SSML, 1500 char chunks (Phase 14e) |
+| Stream-Death No Recovery | Backend dies before sending `done` event | Frontend detects 0 chunks → auto-fallback |
 | OG Images Not Visible | Google Drive CORS/hotlinking restrictions | Graceful hide-on-error + proxy planned |
 | Caching Not Functional | RLS prevents client-side INSERT | Server-side caching via edge function (planned) |
 
@@ -123,34 +133,40 @@ Cache Check (srangam_audio_narrations)
     Store metadata in DB
 ```
 
-## Provider Fallback Chain (Phase 14)
+## Provider Fallback Chain (Phase 14e)
 
 When the primary provider fails (401/403 auth errors), the system automatically falls back:
 
-### Fallback Logic
+### Fallback Logic (Updated Phase 14e)
 1. **Primary:** ElevenLabs (highest quality for English)
-2. **Fallback:** Google Cloud Neural2 (reliable, good quality)
-3. **Emergency:** OpenAI TTS-1 (fast, always available)
+2. **Fallback #1 (English):** OpenAI TTS-1 (`onyx` voice) ← NEW
+3. **Fallback #2 (Indic):** Google Cloud Neural2
+
+### Why OpenAI over Google for English?
+- Google TTS has a 5000-byte SSML limit
+- Sanskrit diacritics with prosody tags cause byte explosion
+- OpenAI has no SSML, handles plain text reliably
 
 ### Implementation
-- `NarrationService.streamAudio()` catches 401/403 errors
-- Reconfigures provider to `google-cloud`
-- Retries request with Neural2 voice (en-US-Neural2-D)
+- `VoiceStrategyEngine.getFallbackVoice()` returns OpenAI for English, Google for Indic
+- `useNarration.ts` detects stream failures and applies fallback
 - User experience: seamless (no visible error)
 
 ### Trigger Conditions
 | HTTP Status | Provider | Action |
 |-------------|----------|--------|
-| 401 | ElevenLabs | Switch to Google Cloud |
-| 403 | ElevenLabs | Switch to Google Cloud |
+| 401 | ElevenLabs | Switch to OpenAI (English) or Google (Indic) |
+| 403 | ElevenLabs | Switch to OpenAI (English) or Google (Indic) |
 | 429 | Any | Exponential backoff, then fallback |
+| STREAM_DIED | Any | Auto-retry with fallback provider |
 
 ### Code Flow
 ```
 NarrationService.streamAudio()
     ├─ Try primary provider (ElevenLabs)
-    ├─ On 401/403: reconfigure to google-cloud
-    ├─ Retry with Google Neural2 voice
+    ├─ On 401/403/STREAM_DIED:
+    │   ├─ English → reconfigure to OpenAI (onyx)
+    │   └─ Indic → reconfigure to Google Neural2
     └─ Stream audio to client
 ```
 

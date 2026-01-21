@@ -6,21 +6,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Build SSML with Sanskrit diacritics support
+// Phase 14e: Simplified SSML to prevent byte-limit issues (5000 byte max)
+// Removed per-character prosody wrapping that caused byte explosion
 function buildSSML(text: string, language: string): string {
-  // Enhanced SSML for Sanskrit/IAST diacritics
-  const ssmlWrapped = `
-    <speak>
-      <lang xml:lang="${language}">
-        ${text.replace(/([ĀāĪīŪūṚṛṜṝḶḷḸḹṂṃṄṅṆṇŅṇŚśṢṣṬṭḌḍÑñ])/g, (match) => {
-          // Add prosody for diacritical marks
-          return `<prosody rate="95%">${match}</prosody>`;
-        })}
-      </lang>
-    </speak>
-  `.trim();
-  
-  return ssmlWrapped;
+  return `<speak><lang xml:lang="${language}">${text}</lang></speak>`;
 }
 
 // Map ISO 639-1 codes to Google TTS locale codes
@@ -45,8 +34,8 @@ function mapLanguageCode(lang: string): string {
 }
 
 // Smart text chunking at sentence boundaries
-// Phase 14d: Increased to 3000 chars to reduce API calls
-function chunkText(text: string, maxChars: number = 3000): string[] {
+// Phase 14e: Reduced to 1500 chars to prevent SSML byte-limit issues (5000 byte max)
+function chunkText(text: string, maxChars: number = 1500): string[] {
   const chunks: string[] = [];
   let currentChunk = '';
   
