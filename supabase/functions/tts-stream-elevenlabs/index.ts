@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -64,13 +65,135 @@ const voiceIdMap: Record<string, string> = {
   'lily': 'pFZP5JQG7iQjIQuC4Bku',
 };
 
+// Phase 15.1: JWT creation for Google Drive authentication
+async function createJWT(serviceAccount: { client_email: string; private_key: string }): Promise<string> {
+  const header = { alg: 'RS256', typ: 'JWT' };
+  const now = Math.floor(Date.now() / 1000);
+  const claim = {
+    iss: serviceAccount.client_email,
+    scope: 'https://www.googleapis.com/auth/drive.file',
+    aud: 'https://oauth2.googleapis.com/token',
+    exp: now + 3600,
+    iat: now,
+  };
+
+  const encoder = new TextEncoder();
+  const headerB64 = btoa(JSON.stringify(header)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  const claimB64 = btoa(JSON.stringify(claim)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  const unsignedToken = `${headerB64}.${claimB64}`;
+
+  // Import the private key
+  const pemContents = serviceAccount.private_key
+    .replace(/-----BEGIN PRIVATE KEY-----/, '')
+    .replace(/-----END PRIVATE KEY-----/, '')
+    .replace(/\s/g, '');
+  const binaryKey = Uint8Array.from(atob(pemContents), c => c.charCodeAt(0));
+
+  const cryptoKey = await crypto.subtle.importKey(
+    'pkcs8',
+    binaryKey,
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+
+  const signature = await crypto.subtle.sign(
+    'RSASSA-PKCS1-v1_5',
+    cryptoKey,
+    encoder.encode(unsignedToken)
+  );
+
+  const signatureB64 = btoa(String.fromCharCode(...new Uint8Array(signature)))
+    .replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+
+  return `${unsignedToken}.${signatureB64}`;
+}
+
+// Phase 15.1: Upload audio to Google Drive and return share URL
+async function uploadAudioToGDrive(
+  audioBytes: Uint8Array,
+  fileName: string,
+  serviceAccount: { client_email: string; private_key: string }
+): Promise<{ fileId: string; shareUrl: string }> {
+  // Get access token
+  const jwt = await createJWT(serviceAccount);
+  const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`,
+  });
+
+  if (!tokenResponse.ok) {
+    throw new Error(`Failed to get access token: ${tokenResponse.status}`);
+  }
+
+  const { access_token } = await tokenResponse.json();
+  const folderId = Deno.env.get('GDRIVE_AUDIO_FOLDER_ID') || '1FHKTfDLqNTq1wCzpmjDxN6Xz4IZoTGxt';
+
+  // Upload file
+  const metadata = {
+    name: fileName,
+    parents: [folderId],
+    mimeType: 'audio/mpeg',
+  };
+
+  const boundary = '-------314159265358979323846';
+  const delimiter = `\r\n--${boundary}\r\n`;
+  const closeDelimiter = `\r\n--${boundary}--`;
+
+  const multipartBody = new Uint8Array([
+    ...new TextEncoder().encode(
+      delimiter +
+      'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+      JSON.stringify(metadata) +
+      delimiter +
+      'Content-Type: audio/mpeg\r\n\r\n'
+    ),
+    ...audioBytes,
+    ...new TextEncoder().encode(closeDelimiter),
+  ]);
+
+  const uploadResponse = await fetch(
+    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${access_token}`,
+        'Content-Type': `multipart/related; boundary=${boundary}`,
+      },
+      body: multipartBody,
+    }
+  );
+
+  if (!uploadResponse.ok) {
+    throw new Error(`Failed to upload to GDrive: ${uploadResponse.status}`);
+  }
+
+  const { id: fileId } = await uploadResponse.json();
+
+  // Make file publicly accessible
+  await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${access_token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ role: 'reader', type: 'anyone' }),
+  });
+
+  const shareUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+  console.log(`[tts-stream-elevenlabs] Audio uploaded to GDrive: ${fileId}`);
+
+  return { fileId, shareUrl };
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { text, voice = 'george', speed = 1.0, articleSlug } = await req.json();
+    const { text, voice = 'george', speed = 1.0, articleSlug, contentHash } = await req.json();
 
     if (!text) {
       throw new Error('Text is required');
@@ -93,6 +216,10 @@ serve(async (req) => {
       console.warn(`[tts-stream-elevenlabs] Article too long (${chunks.length} chunks), truncating to ${MAX_CHUNKS}`);
       chunks = chunks.slice(0, MAX_CHUNKS);
     }
+
+    // Phase 15.1: Collect all audio for server-side caching
+    const allAudioChunks: Uint8Array[] = [];
+    const shouldCache = articleSlug && contentHash;
 
     // Create streaming response
     const stream = new ReadableStream({
@@ -151,6 +278,13 @@ serve(async (req) => {
 
             // Phase 14d: Get audio buffer and encode to base64 in chunks to prevent memory spike
             const audioBuffer = await response.arrayBuffer();
+            const audioBytes = new Uint8Array(audioBuffer);
+            
+            // Phase 15.1: Collect for caching
+            if (shouldCache) {
+              allAudioChunks.push(audioBytes);
+            }
+            
             console.log(`[tts-stream-elevenlabs] Encoding ${audioBuffer.byteLength} bytes for chunk ${i + 1}`);
             const base64Audio = chunkedBase64Encode(audioBuffer);
             
@@ -160,9 +294,65 @@ serve(async (req) => {
             );
           }
 
-          // Send completion event
+          // Phase 15.1: Server-side caching after all chunks generated
+          let cacheUrl: string | undefined;
+          if (shouldCache && allAudioChunks.length > 0) {
+            try {
+              const serviceAccountJson = Deno.env.get('GOOGLE_CLOUD_SERVICE_ACCOUNT');
+              if (serviceAccountJson) {
+                const serviceAccount = JSON.parse(serviceAccountJson);
+                
+                // Combine all audio chunks
+                const totalLength = allAudioChunks.reduce((sum, chunk) => sum + chunk.length, 0);
+                const combinedAudio = new Uint8Array(totalLength);
+                let offset = 0;
+                for (const chunk of allAudioChunks) {
+                  combinedAudio.set(chunk, offset);
+                  offset += chunk.length;
+                }
+
+                console.log(`[tts-stream-elevenlabs] Uploading ${combinedAudio.length} bytes to GDrive for caching`);
+                
+                const fileName = `elevenlabs_${articleSlug}_${Date.now()}.mp3`;
+                const { fileId, shareUrl } = await uploadAudioToGDrive(combinedAudio, fileName, serviceAccount);
+                cacheUrl = shareUrl;
+
+                // Write to database using service role (bypasses RLS)
+                const supabase = createClient(
+                  Deno.env.get('SUPABASE_URL')!,
+                  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+                );
+
+                const { error: dbError } = await supabase
+                  .from('srangam_audio_narrations')
+                  .upsert({
+                    article_slug: articleSlug,
+                    provider: 'elevenlabs',
+                    voice_id: voice,
+                    language_code: 'en-US',
+                    google_drive_file_id: fileId,
+                    google_drive_share_url: shareUrl,
+                    content_hash: contentHash,
+                    character_count: text.length,
+                    file_size_bytes: combinedAudio.length,
+                    cost_usd: (text.length / 1000) * 0.18, // ElevenLabs ~$0.18/1k chars
+                  }, { onConflict: 'article_slug,voice_id,language_code' });
+
+                if (dbError) {
+                  console.error('[tts-stream-elevenlabs] Failed to save cache metadata:', dbError);
+                } else {
+                  console.log(`[tts-stream-elevenlabs] Audio cached successfully: ${fileId}`);
+                }
+              }
+            } catch (cacheError) {
+              console.error('[tts-stream-elevenlabs] Caching failed (non-fatal):', cacheError);
+              // Continue - caching failure shouldn't break playback
+            }
+          }
+
+          // Send completion event with optional cache URL
           controller.enqueue(
-            new TextEncoder().encode(JSON.stringify({ done: true }) + '\n')
+            new TextEncoder().encode(JSON.stringify({ done: true, ...(cacheUrl && { cacheUrl }) }) + '\n')
           );
           controller.close();
           console.log('ElevenLabs TTS stream completed successfully');
