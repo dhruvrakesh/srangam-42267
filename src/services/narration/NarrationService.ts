@@ -24,11 +24,14 @@ export class NarrationService {
 
   /**
    * Make TTS request to edge function
+   * Phase 15: Added articleSlug and contentHash for server-side caching
    */
   private async makeRequest(
     endpoint: string,
     config: NarrationConfig,
-    content: string
+    content: string,
+    articleSlug?: string,
+    contentHash?: string
   ): Promise<Response> {
     return fetch(`${import.meta.env.VITE_SUPABASE_URL}${endpoint}`, {
       method: 'POST',
@@ -41,6 +44,9 @@ export class NarrationService {
         language: config.language,
         voice: config.voice,
         speed: config.speed,
+        // Phase 15: Send caching params to edge function
+        articleSlug,
+        contentHash,
       }),
       signal: this.abortController?.signal,
     });
@@ -144,10 +150,13 @@ export class NarrationService {
   /**
    * Stream audio from TTS provider with intelligent fallback
    * Phase 14: Auto-fallback to Google Cloud on 401/403 from ElevenLabs
+   * Phase 15: Added articleSlug and contentHash for server-side caching
    */
   async *streamAudio(
     content: string,
-    config: NarrationConfig
+    config: NarrationConfig,
+    articleSlug?: string,
+    contentHash?: string
   ): AsyncGenerator<AudioChunk, void, unknown> {
     this.abortController = new AbortController();
 
@@ -156,10 +165,10 @@ export class NarrationService {
     let endpoint = this.getEndpoint(currentConfig.provider);
 
     console.log(`[NarrationService] PRIMARY: Attempting ${currentConfig.provider} via ${endpoint}`);
-    console.log(`[NarrationService] Config: voice=${currentConfig.voice}, lang=${currentConfig.language}`);
+    console.log(`[NarrationService] Config: voice=${currentConfig.voice}, lang=${currentConfig.language}, caching=${!!(articleSlug && contentHash)}`);
 
     try {
-      const response = await this.makeRequest(endpoint, currentConfig, content);
+      const response = await this.makeRequest(endpoint, currentConfig, content, articleSlug, contentHash);
       console.log(`[NarrationService] PRIMARY response status: ${response.status}`);
 
       // Handle auth failures - trigger fallback to Google Cloud
@@ -185,7 +194,7 @@ export class NarrationService {
         console.log(`[NarrationService] FALLBACK: Retrying with ${currentConfig.provider} / ${currentConfig.voice}`);
 
         // Retry with fallback provider
-        const fallbackResponse = await this.makeRequest(endpoint, currentConfig, content);
+        const fallbackResponse = await this.makeRequest(endpoint, currentConfig, content, articleSlug, contentHash);
         console.log(`[NarrationService] FALLBACK response status: ${fallbackResponse.status}`);
 
         if (!fallbackResponse.ok) {
@@ -221,7 +230,7 @@ export class NarrationService {
           };
           endpoint = this.getEndpoint('google-cloud');
 
-          const fallbackResponse = await this.makeRequest(endpoint, currentConfig, content);
+          const fallbackResponse = await this.makeRequest(endpoint, currentConfig, content, articleSlug, contentHash);
 
           if (!fallbackResponse.ok) {
             throw new Error(`Fallback TTS API error: ${fallbackResponse.statusText}`);
@@ -283,38 +292,18 @@ export class NarrationService {
   }
 
   /**
-   * Save audio metadata to database (actual file stored on Google Drive via edge function)
+   * Save audio metadata - Phase 15: Server-side caching now handles DB writes
+   * This method just returns blob URL for immediate playback
+   * Actual caching happens in edge functions with service role
    */
   async saveToStorage(
     audioBlob: Blob,
     metadata: NarrationMetadata
   ): Promise<string> {
-    try {
-      // Note: Actual audio upload happens in edge function to Google Drive
-      // This just saves metadata for future reference
-      const { error: dbError } = await supabase
-        .from('srangam_audio_narrations')
-        .insert({
-          article_slug: metadata.articleSlug || 'unknown',
-          language_code: metadata.language,
-          voice_id: metadata.voice,
-          provider: metadata.provider,
-          content_hash: metadata.contentHash,
-          duration_seconds: metadata.duration,
-          file_size_bytes: metadata.fileSize,
-          character_count: metadata.contentHash.length, // Approximate
-        });
-
-      if (dbError) {
-        console.error('Database insert error:', dbError);
-      }
-
-      // For now, return blob URL (in production, edge function handles Google Drive upload)
-      return URL.createObjectURL(audioBlob);
-    } catch (error) {
-      console.error('Error saving audio metadata:', error);
-      throw error;
-    }
+    // Phase 15: Server-side caching handles GDrive upload and DB write
+    // This just returns blob URL for immediate playback
+    console.log('[NarrationService] Audio caching handled server-side, returning blob URL');
+    return URL.createObjectURL(audioBlob);
   }
 
   /**
