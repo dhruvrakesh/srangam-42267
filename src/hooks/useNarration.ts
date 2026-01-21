@@ -147,16 +147,20 @@ export function useNarration(initialConfig?: Partial<NarrationConfig>) {
           throw new Error('STREAM_DIED');
         }
       } catch (streamError) {
-        // Phase 14d: If stream died or failed, auto-retry with Google TTS
+        // Phase 14e: If stream died or failed, auto-retry with OpenAI TTS (more reliable than Google for English)
         if (streamError instanceof Error && 
             (streamError.message === 'STREAM_DIED' || streamError.message.includes('TTS'))) {
-          console.warn('[useNarration] Primary TTS failed, falling back to Google Cloud');
+          // Use OpenAI for English, Google for other languages
+          const isEnglish = config.language === 'en';
+          const fallbackProvider = isEnglish ? 'openai' : 'google-cloud';
+          const fallbackVoice = isEnglish ? 'onyx' : 'en-US-Neural2-D';
           
-          // Retry with Google Cloud
+          console.warn(`[useNarration] Primary TTS failed, falling back to ${fallbackProvider} / ${fallbackVoice}`);
+          
           const fallbackConfig: NarrationConfig = {
             ...config,
-            provider: 'google-cloud',
-            voice: 'en-US-Neural2-D',
+            provider: fallbackProvider,
+            voice: fallbackVoice,
           };
           
           audioChunks.length = 0; // Clear any partial data

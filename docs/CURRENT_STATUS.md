@@ -1,6 +1,6 @@
 # Srangam Platform - Current Status
 
-**Last Updated**: 2025-01-20 (Phase 14: TTS Provider Fallback + OG Image Display)
+**Last Updated**: 2025-01-21 (Phase 14e: Admin-Only Narration + OpenAI TTS Fix)
 
 ---
 
@@ -143,6 +143,40 @@
 ---
 
 ## 🔧 **Recent Fixes & Deployments**
+
+### **2025-01-21 (Phase 14e: Admin-Only Narration + OpenAI TTS Fix)**
+
+**Status: ✅ DEPLOYED**
+
+1. ✅ **Admin-Only Access Control** (CRITICAL):
+   - **Problem**: Any user could trigger expensive TTS generation
+   - **Fix**: Added `isAdmin` gate in `UniversalNarrator.tsx` using existing `AuthContext`
+   - **Result**: Non-admin users see no narration controls; zero TTS cost for public visitors
+   - **File**: `src/components/narration/UniversalNarrator.tsx`
+
+2. ✅ **OpenAI TTS as Primary Fallback** (CRITICAL):
+   - **Problem**: Google TTS failing with "5000 bytes exceeded" due to SSML byte-bloat from Sanskrit
+   - **Fix**: Updated `VoiceStrategyEngine.getFallbackVoice()` to return OpenAI `onyx` for English
+   - **Files**: `src/services/narration/VoiceStrategyEngine.ts`, `src/hooks/useNarration.ts`
+
+3. ✅ **OpenAI TTS Edge Function Fixed**:
+   - **Problem**: Used SSE format but client expected NDJSON
+   - **Fix**: Changed to NDJSON format (`{ audio: base64 }\n`), added chunked base64 encoding
+   - **File**: `supabase/functions/tts-stream-openai/index.ts`
+
+4. ✅ **Google TTS Byte-Limit Fix**:
+   - **Problem**: Per-character prosody wrapping for Sanskrit caused SSML to exceed 5000 bytes
+   - **Fix**: Simplified SSML to `<speak><lang>...</lang></speak>`, reduced chunk size to 1500 chars
+   - **File**: `supabase/functions/tts-stream-google/index.ts`
+
+**Fallback Chain (Updated)**:
+```
+ElevenLabs (primary for English)
+    ↓ 401/403 blocked
+OpenAI TTS (fallback #1 for English) ← NEW
+    ↓ if fails
+Google Cloud (fallback for Indic languages)
+```
 
 ### **2025-01-20 (Phase 14d: Memory Crash Fix + Stream Resilience)**
 

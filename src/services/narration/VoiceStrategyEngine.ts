@@ -5,15 +5,16 @@ import type { ContentProfile, VoiceConfig, NarrationTone, NarrationContentType }
 export class VoiceStrategyEngine {
   /**
    * Get fallback voice when primary provider fails (401/403 errors)
-   * Phase 14: Auto-fallback to Google Cloud TTS when ElevenLabs is blocked
+   * Phase 14e: OpenAI TTS as primary fallback for English (Google has byte-limit issues with Sanskrit SSML)
    */
   getFallbackVoice(language: string, contentType: NarrationContentType): VoiceConfig {
     if (language === 'en') {
+      // Phase 14e: OpenAI is reliable fallback - Google has SSML byte-limit issues
       return {
-        provider: 'google-cloud',
-        voiceId: 'en-US-Neural2-D',
+        provider: 'openai',
+        voiceId: 'onyx', // Deep, scholarly voice
         languageCode: 'en-US',
-        name: 'English (Google Neural2 Fallback)',
+        name: 'English (OpenAI Onyx Fallback)',
         speakingRate: 1.0,
       };
     }

@@ -1,6 +1,8 @@
-// Universal narrator component - can be used anywhere
+// Universal narrator component - ADMIN ONLY (Phase 14e)
+// Prevents TTS cost abuse by non-authenticated users
 import React, { useState, useCallback, useMemo } from 'react';
 import { useLanguage } from '@/components/language/LanguageProvider';
+import { useAuth } from '@/contexts/AuthContext';
 import { useNarration } from '@/hooks/useNarration';
 import { NarrationControls } from './NarrationControls';
 import { voiceStrategyEngine } from '@/services/narration/VoiceStrategyEngine';
@@ -53,6 +55,7 @@ export function UniversalNarrator({
 }: UniversalNarratorProps) {
   // ✅ ALL HOOKS MUST BE CALLED AT THE TOP - NEVER CONDITIONALLY
   const { currentLanguage } = useLanguage();
+  const { isAdmin, isLoading: authLoading } = useAuth();
   const [hasStarted, setHasStarted] = useState(false);
   
   const {
@@ -146,6 +149,11 @@ export function UniversalNarrator({
   }, [seek]);
 
   // Early return AFTER all hooks
+  // Phase 14e: Admin-only gate - hide narrator for non-admins to prevent TTS abuse
+  if (authLoading || !isAdmin) {
+    return null;
+  }
+  
   if (!currentLanguage || !content || content.trim().length === 0) {
     return null;
   }
