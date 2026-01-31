@@ -448,6 +448,54 @@ Google Cloud (fallback for Indic languages)
 - ✅ **Visual Improvements**: Green badges show extracted counts, amber icons show detected-but-not-extracted
 - ✅ **ScholarlyArticle Schema Citations**: Wired `useArticleBibliographyBySlug` to populate `citation` field
 
+### **2025-01-31 (Phase 17: Theme Data Accuracy + Enterprise Admin Dashboard)**
+
+**Status: 🟡 IN PROGRESS**
+
+#### Phase 17a: Theme Article Count Accuracy
+
+**Root Cause Analysis:**
+- Homepage theme cards use `getThemeArticleCount()` from `useResearchStats` hook
+- Hook queries ONLY `srangam_articles` database (ignores JSON static articles)
+- Indian Ocean World shows "0" because all 3 articles are in **draft** status
+- Empires & Exchange shows "0" because all 2 articles are in **draft** status
+- Display is technically accurate for published content, but misleading for platform content
+
+**Current Database Distribution (Verified):**
+| Theme | Published | Draft | Total |
+|-------|-----------|-------|-------|
+| Ancient India | 28 | 0 | 28 |
+| Geology & Deep Time | 1 | 2 | 3 |
+| Scripts & Inscriptions | 2 | 1 | 3 |
+| Sacred Ecology | 1 | 1 | 2 |
+| Indian Ocean World | 0 | 3 | 3 |
+| Empires & Exchange | 0 | 2 | 2 |
+| **Total** | **32** | **9** | **41** |
+
+**Solution Implemented:**
+1. ✅ Updated `ThemeStats` interface to include `draftCount`
+2. ✅ Modified `fetchResearchStats()` to query articles with status
+3. ✅ Updated `ResearchThemes.tsx` to display draft indicator
+4. ✅ Theme cards now show: "0 articles (+3 drafts)"
+
+#### Phase 17b: Enterprise Admin Dashboard
+
+**New Components Created:**
+- `src/components/admin/ContentStatusCards.tsx` - Published/Draft/OG/Audio metrics
+- `src/components/admin/ThemeDistributionChart.tsx` - Pie chart with dharmic colors
+- `src/components/admin/ContentHealthProgress.tsx` - OG/Narration/Bibliography coverage
+- `src/components/admin/QuickActionsPanel.tsx` - Bulk publish/generate actions
+
+**Dashboard Enhancements:**
+- Theme distribution visualization using Recharts
+- Content health progress bars
+- Quick action buttons for common workflows
+- Status-aware recent articles table
+
+#### Documentation Created:
+- `docs/ADMIN_DASHBOARD.md` - Admin routes and capabilities
+- `docs/CONTENT_ARCHITECTURE.md` - Document lifecycle and workflows
+
 ---
 
 ## 🎯 **Next Steps**
@@ -459,23 +507,27 @@ Google Cloud (fallback for Indic languages)
    - Submit sitemap URL
    - Request indexing for key pages
 
-2. Create branded OG image (1200x630px)
-   - Design and upload to `/public/brand/og-image.png`
-   - Update `index.html` reference
+2. ⏳ Publish draft articles (9 pending review)
+   - Indian Ocean World: 3 drafts
+   - Empires & Exchange: 2 drafts
+   - Geology & Deep Time: 2 drafts
+   - Sacred Ecology: 1 draft
+   - Scripts & Inscriptions: 1 draft
 
 ### **Medium Term** 
 1. Enhanced Cross-Reference UX
    - Add strength badges (strong/medium/weak)
    - Implement hover previews with article metadata
 
-2. Bibliography & Sources Integration (Phase 7)
-   - Connect `srangam_bibliography_entries` to article sidebar
-   - Populate `srangam_article_evidence` table
+2. Draft Publishing Workflow (Phase 17d)
+   - Create `/admin/drafts` review page
+   - Bulk publish with confirmation
+   - Preview before publish
 
 ### **Long Term**
-1. Audio narration UI implementation
-2. GitHub repository links for research tools
-3. Full multilingual support (PA, TA)
+1. Full multilingual support (PA, TA)
+2. Translation queue management
+3. Content analytics dashboard
 
 ---
 
