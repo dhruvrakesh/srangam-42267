@@ -11,10 +11,11 @@ import {
   AlertDialogHeader, 
   AlertDialogTitle 
 } from "@/components/ui/alert-dialog";
-import { Rocket, Image, Tags, Loader2 } from "lucide-react";
+import { Rocket, Image, Tags, Loader2, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { BulkAuthorUpdate } from "./BulkAuthorUpdate";
 
 interface QuickActionsPanelProps {
   draftCount: number;
@@ -23,6 +24,7 @@ interface QuickActionsPanelProps {
 
 export function QuickActionsPanel({ draftCount, onPublishComplete }: QuickActionsPanelProps) {
   const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const [showAuthorDialog, setShowAuthorDialog] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
 
   const handlePublishAllDrafts = async () => {
@@ -87,6 +89,15 @@ export function QuickActionsPanel({ draftCount, onPublishComplete }: QuickAction
                 Manage Tags
               </Link>
             </Button>
+            
+            <Button 
+              variant="outline" 
+              className="gap-2"
+              onClick={() => setShowAuthorDialog(true)}
+            >
+              <Users className="h-4 w-4" />
+              Normalize Authors
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -114,6 +125,11 @@ export function QuickActionsPanel({ draftCount, onPublishComplete }: QuickAction
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <BulkAuthorUpdate 
+        open={showAuthorDialog} 
+        onOpenChange={setShowAuthorDialog} 
+      />
     </>
   );
 }

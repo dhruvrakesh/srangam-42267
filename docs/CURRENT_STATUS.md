@@ -496,6 +496,57 @@ Google Cloud (fallback for Indic languages)
 - `docs/ADMIN_DASHBOARD.md` - Admin routes and capabilities
 - `docs/CONTENT_ARCHITECTURE.md` - Document lifecycle and workflows
 
+### **2025-01-31 (Phase 18: Author & Article Metadata Management)**
+
+**Status: ✅ DEPLOYED**
+
+#### Problem Identified:
+- "Edit Metadata" menu item was a non-functional placeholder
+- No way to edit article title, author, theme, or tags after import
+- 4 author name variants existed in database with no normalization:
+  - "NF Research Team" (30 articles)
+  - "Srangam Research" (8 articles)
+  - "Srangam Research Team" (2 articles)
+  - "Nartiang Foundation Research Team" (1 article)
+
+#### Solution Implemented:
+
+**1. Article Metadata Edit Dialog:**
+- Created `src/components/admin/ArticleEditDialog.tsx`
+- Sheet component with form for editing:
+  - Title (English)
+  - Author (with autocomplete from existing authors)
+  - Theme (dropdown with 6 standard themes)
+  - Status (draft/published)
+  - Tags (array editor)
+  - Description/Dek (English)
+  - Featured toggle
+- Validation before save
+- Query invalidation for immediate UI refresh
+
+**2. Author Autocomplete Hook:**
+- Created `src/hooks/useUniqueAuthors.ts`
+- Returns unique authors with article counts
+- Sorted by frequency for quick selection
+- Powers autocomplete in edit dialog
+
+**3. Bulk Author Normalization:**
+- Created `src/components/admin/BulkAuthorUpdate.tsx`
+- Select source authors to merge
+- Choose target author name
+- Preview affected articles before merge
+- Single database transaction for consistency
+
+**4. Wired to ArticleManagement:**
+- Updated `src/pages/admin/ArticleManagement.tsx`
+- "Edit Metadata" now opens ArticleEditDialog
+- Delete confirmation dialog retained
+
+#### Database Considerations:
+- No schema changes required
+- Uses existing RLS policies (admin role required for UPDATE)
+- All updates use service role through existing policies
+
 ---
 
 ## 🎯 **Next Steps**
@@ -514,6 +565,9 @@ Google Cloud (fallback for Indic languages)
    - Sacred Ecology: 1 draft
    - Scripts & Inscriptions: 1 draft
 
+3. ✅ Normalize author names using BulkAuthorUpdate
+   - Consolidate 4 variants to 2 canonical names
+
 ### **Medium Term** 
 1. Enhanced Cross-Reference UX
    - Add strength badges (strong/medium/weak)
@@ -523,6 +577,11 @@ Google Cloud (fallback for Indic languages)
    - Create `/admin/drafts` review page
    - Bulk publish with confirmation
    - Preview before publish
+
+3. Author Registry (Phase 19 - Optional)
+   - Create `srangam_authors` table with structured data
+   - Author profiles with bio, affiliation, ORCID
+   - Foreign key reference from articles
 
 ### **Long Term**
 1. Full multilingual support (PA, TA)

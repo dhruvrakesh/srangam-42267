@@ -203,6 +203,75 @@ USING (has_role(auth.uid(), 'admin'));
 
 ---
 
+---
+
+## Article Metadata Editor
+
+### Capabilities (Phase 18)
+
+The Article Edit Dialog allows admins to modify article metadata after import:
+
+| Field | Type | Notes |
+|-------|------|-------|
+| Title (English) | Text | Required, main display title |
+| Author | Combobox | Autocomplete from existing authors |
+| Theme | Select | 6 standard themes |
+| Status | Radio | Draft or Published |
+| Tags | Array | Add/remove tag badges |
+| Description (Dek) | Textarea | Article summary |
+| Featured | Toggle | Homepage featuring |
+
+### Access
+
+1. Navigate to `/admin/article-management`
+2. Find article in table
+3. Click "⋮" menu → "Edit Metadata"
+4. Make changes → Click "Save Changes"
+
+### Author Autocomplete
+
+The author field shows existing authors with article counts:
+
+```
+┌─────────────────────────────────────────────┐
+│ NF Research Team (30 articles)              │
+│ Srangam Research (8 articles)               │
+│ Srangam Research Team (2 articles)          │
+│ Nartiang Foundation Research Team (1)       │
+└─────────────────────────────────────────────┘
+```
+
+Custom author names can also be typed directly.
+
+---
+
+## Bulk Author Update
+
+### Purpose
+
+Normalize author name variants across articles:
+
+- Merge "Nartiang Foundation Research Team" → "NF Research Team"
+- Consolidate "Srangam Research Team" and "Srangam Research"
+
+### Workflow
+
+1. Navigate to Dashboard → "Normalize Authors" action
+2. Select source authors to merge (checkbox)
+3. Choose target author name (dropdown)
+4. Click "Preview Changes" to see affected articles
+5. Click "Apply Merge" to execute
+
+### Database Operation
+
+```sql
+UPDATE srangam_articles
+SET author = $target, updated_at = NOW()
+WHERE author = ANY($sources);
+```
+
+---
+
 ## Related Documentation
 
 - `docs/CURRENT_STATUS.md` - Platform status and recent changes
