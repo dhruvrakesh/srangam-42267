@@ -1,386 +1,407 @@
 
-# Phase 18: Author & Article Metadata Management System
+# Phase 19: Srangam Platform Reliability & Scalability Implementation
 
 ## Executive Summary
 
-This phase implements a comprehensive author management system and article metadata editor to address the missing content management capabilities identified in the admin dashboard. The solution includes both immediate fixes (article edit dialog) and enterprise enhancements (author registry with normalization).
+This phase implements the comprehensive improvements identified in the reliability and scalability audit. The plan is organized into four sub-phases, each deployable independently with rollback capability.
 
 ---
 
-## Audit Findings
+## Current State Analysis (Verified from Code & Database)
 
-### Current Database State (Verified)
+### Database Metrics (January 2025)
+| Metric | Count | Status |
+|--------|-------|--------|
+| Total Articles | 41 | 32 published, 9 drafts |
+| Cross-References | 740 | 531 same_theme, 209 thematic |
+| Cultural Terms | 1,628+ | All AI-enriched |
+| Tags | 146 | 42 uncategorized (29%) |
+| Bibliography Entries | 25+ | 63 article links |
 
-**Author Distribution:**
-| Author Name | Article Count |
-|-------------|---------------|
-| NF Research Team | 30 |
-| Srangam Research | 8 |
-| Srangam Research Team | 2 |
-| Nartiang Foundation Research Team | 1 |
+### Key Issues Identified
 
-**Issues Identified:**
-1. 4 different author name variants for what appears to be 2 entities
-2. No structured author data (bio, affiliation, ORCID)
-3. "Edit Metadata" menu item is a non-functional placeholder
-4. No way to correct article metadata after import
+**1. Tag Management Context Problem (User's Primary Concern)**
+- 42 tags remain **Uncategorized** (29% of 146 total)
+- AI categorization is **one-shot per batch** - no persistent memory
+- `suggest-tag-categories` uses OpenAI API directly (not Lovable AI)
+- No learning from previous categorization decisions
+- Screenshots show: Mahāvidyās, Monsoon Patterns, Patiala, Baba Ala Singh all uncategorized
 
-### Database Schema (srangam_articles - Author Related)
+**2. Cross-Reference O(N) Scaling**
+- `markdown-to-article-import` scans ALL published articles (lines 808-920)
+- For each article: compares tags, checks theme, scans for citations
+- Currently manageable with 32 articles, but scales poorly
 
-| Column | Type | Nullable | Current State |
-|--------|------|----------|---------------|
-| `author` | TEXT | NO | Plain text, 4 variants |
-| `title` | JSONB | NO | Multilingual `{en, hi, ta}` |
-| `dek` | JSONB | YES | Subtitle/summary |
-| `theme` | TEXT | NO | One of 6 themes |
-| `status` | TEXT | NO | `draft` or `published` |
-| `tags` | TEXT[] | YES | AI-generated array |
+**3. Cultural Terms N+1 Pattern**
+- Lines 728-792: For each extracted term, performs separate SELECT + INSERT/UPDATE
+- 1,628 terms × N queries per import = high database load
 
----
+**4. Slug Resolution Inconsistency**
+- `articleResolver.ts` uses single OR query (optimized)
+- But `useArticleBibliographyBySlug` and other hooks use sequential queries
+- Duplicate logic across 5+ files
 
-## Implementation Architecture
-
-### Option A: Inline Author Autocomplete (Minimal - Recommended Start)
-- Edit dialog with author text field
-- Autocomplete from existing unique authors
-- No new database tables
-- Quick to implement, immediate value
-
-### Option B: Author Registry (Enterprise - Future Phase)
-- New `srangam_authors` table with structured data
-- Author profiles with bio, affiliation, ORCID
-- Foreign key reference from articles
-- Author management page in admin
-
-**Recommendation:** Implement Option A now, with architecture ready for Option B later.
+**5. Client-Side Data Processing**
+- `useAllArticles` fetches all articles without pagination
+- Force-directed graph in `CrossReferencesBrowser.tsx` loads all 740+ references
 
 ---
 
-## Phase 18.0: Documentation Update (Context Preservation)
+## Phase 19.0: Documentation Hardening (Prerequisite)
 
-### Files to Update
+### Files to Update/Create
 
-**1. Update `docs/CURRENT_STATUS.md`**
-Add Phase 18 section documenting:
-- Author management capability gap
-- Article edit dialog implementation
-- Author normalization approach
+**1. Create `docs/RELIABILITY_AUDIT.md`**
+Document:
+- Core invariants (unique slugs, RLS enforcement, usage count integrity)
+- Critical paths (import, resolver, tag generation)
+- Failure modes and mitigation strategies
+- Performance benchmarks and thresholds
 
-**2. Update `docs/ADMIN_DASHBOARD.md`**
-Add new sections:
-- Article Metadata Editor capabilities
-- Author field with autocomplete
-- Bulk update workflows
+**2. Update `docs/CURRENT_STATUS.md`**
+Add Phase 19 section documenting:
+- All audit findings
+- Implementation progress tracking
+- Rollback procedures
+
+**3. Create `docs/SCALABILITY_ROADMAP.md`**
+Document:
+- Data growth projections (10×, 50×, 100×)
+- Bottleneck thresholds and migration triggers
+- Long-term architecture evolution
 
 ---
 
-## Phase 18a: Article Metadata Edit Dialog
+## Phase 19a: Tag Categorization with Persistent Context
 
-### New Component: `src/components/admin/ArticleEditDialog.tsx`
+### Problem
+Tags are categorized one batch at a time without memory of previous decisions. The AI prompt includes no historical context, leading to inconsistent categorization.
 
-A Sheet component for editing article metadata:
+### Solution: Contextual Tag Categorization
 
-```
-┌─────────────────────────────────────────────────────────┐
-│ Edit Article Metadata                                  ✕│
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│ Title (English) *                                       │
-│ ┌─────────────────────────────────────────────────────┐ │
-│ │ Vedic Preservation Techniques in Ancient India      │ │
-│ └─────────────────────────────────────────────────────┘ │
-│                                                         │
-│ Author *                                                │
-│ ┌─────────────────────────────────────────────────────┐ │
-│ │ Srangam Research Team                          ▼   │ │
-│ │ ─────────────────────────────────────────────────── │ │
-│ │ ○ NF Research Team (30 articles)                   │ │
-│ │ ○ Srangam Research (8 articles)                    │ │
-│ │ ○ Srangam Research Team (2 articles)               │ │
-│ │ ○ Nartiang Foundation Research Team (1 article)    │ │
-│ └─────────────────────────────────────────────────────┘ │
-│                                                         │
-│ Theme *                                                 │
-│ ┌─────────────────────────────────────────────────────┐ │
-│ │ Ancient India                                   ▼  │ │
-│ └─────────────────────────────────────────────────────┘ │
-│                                                         │
-│ Status *                                                │
-│ ○ Draft   ● Published                                   │
-│                                                         │
-│ Tags                                                    │
-│ ┌─────────────────────────────────────────────────────┐ │
-│ │ [vedic] [preservation] [ancient-india] [+]          │ │
-│ └─────────────────────────────────────────────────────┘ │
-│                                                         │
-│ Description/Dek (English)                               │
-│ ┌─────────────────────────────────────────────────────┐ │
-│ │ An exploration of how Vedic texts were preserved    │ │
-│ │ through oral tradition and early manuscripts...     │ │
-│ └─────────────────────────────────────────────────────┘ │
-│                                                         │
-│               [Cancel]              [Save Changes]      │
-└─────────────────────────────────────────────────────────┘
-```
+**1. Update `suggest-tag-categories` Edge Function**
 
-### Component Structure
+Enhance the system prompt to include:
+- Previously categorized tags as examples (top 10 per category)
+- Tag co-occurrence patterns from articles
+- Description of categorization rules with examples
 
 ```typescript
-interface ArticleEditDialogProps {
-  article: Article | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSave: () => void;
+// Enhanced system prompt with category examples
+const categoryExamples = await fetchCategoryExamples(supabase);
+
+const systemPrompt = `You are an expert in academic taxonomy...
+
+EXISTING CATEGORIZATIONS (learn from these examples):
+${categoryExamples.period.map(t => `- "${t.tag_name}" → Period`).join('\n')}
+${categoryExamples.concept.map(t => `- "${t.tag_name}" → Concept`).join('\n')}
+// ... etc
+
+CATEGORIES WITH DEFINITIONS:
+- Period: Historical eras, dynasties, time periods
+  Examples: "Mauryan Empire", "Vedic Period", "Chola Dynasty"
+- Concept: Abstract ideas, practices, themes
+  Examples: "Maritime Trade", "Ritual Practices"
+// ...
+`;
+```
+
+**2. Migrate to Lovable AI Gateway**
+
+Replace OpenAI direct calls with Lovable AI:
+- Change endpoint from `api.openai.com` to `ai.gateway.lovable.dev`
+- Use `LOVABLE_API_KEY` instead of `OPENAI_API_KEY`
+- Model: `google/gemini-3-flash-preview` (fast, reliable)
+
+**3. Add Bulk Categorization with Preview**
+
+Enhance `TagManagement.tsx` to:
+- Show preview of suggested categories before applying
+- Allow manual override per tag
+- Batch apply with confirmation
+
+### Files to Modify
+
+| File | Change |
+|------|--------|
+| `supabase/functions/suggest-tag-categories/index.ts` | Add context examples, migrate to Lovable AI |
+| `src/pages/admin/TagManagement.tsx` | Add preview/confirm flow for bulk categorization |
+
+---
+
+## Phase 19b: Cross-Reference Scalability
+
+### Problem
+O(N) algorithm scans all articles on every import. With 1000 articles, each import would compare against all 1000.
+
+### Solution: Pre-computed Tag Clusters + Incremental Updates
+
+**1. Add Tag Vector Column**
+
+```sql
+-- Migration: Add tag_vector column for fast similarity search
+ALTER TABLE srangam_articles 
+ADD COLUMN IF NOT EXISTS tag_vector tsvector 
+GENERATED ALWAYS AS (array_to_tsvector(tags)) STORED;
+
+CREATE INDEX IF NOT EXISTS idx_articles_tag_vector 
+ON srangam_articles USING GIN(tag_vector);
+```
+
+**2. Optimize Cross-Reference Algorithm**
+
+Replace full scan with indexed search:
+```typescript
+// Instead of: for each article, check if tags overlap
+// Use: SELECT articles WHERE tag_vector @@ to_tsquery(new_tags)
+
+const { data: similarArticles } = await supabase
+  .from('srangam_articles')
+  .select('id, slug, tags, theme, title')
+  .textSearch('tag_vector', tags.join(' | '), { type: 'plain' })
+  .eq('status', 'published')
+  .neq('id', articleId)
+  .limit(50); // Cap at 50 most relevant
+```
+
+**3. Add Incremental Re-computation**
+
+When tags change, only recompute affected cross-references:
+- Store last computed hash of tags
+- On update, if hash differs, recompute only for that article
+
+### Files to Modify
+
+| File | Change |
+|------|--------|
+| Database migration | Add `tag_vector` column with GIN index |
+| `markdown-to-article-import/index.ts` | Replace O(N) scan with indexed query |
+
+---
+
+## Phase 19c: Query Efficiency & Batching
+
+### Problem
+- Cultural terms: N+1 pattern (individual SELECT for each term)
+- Multiple hooks resolve slugs differently
+
+### Solution: Batch Operations + Centralized Resolver
+
+**1. Batch Cultural Term Upsert**
+
+Replace individual queries with single upsert:
+```typescript
+// Collect all terms first
+const termsToUpsert = culturalTerms.map(term => ({
+  term: term.toLowerCase().trim(),
+  display_term: term,
+  module: 'general',
+  translations: { en: term },
+  usage_count: 1,
+}));
+
+// Single upsert operation
+const { data, error } = await supabase
+  .from('srangam_cultural_terms')
+  .upsert(termsToUpsert, {
+    onConflict: 'term',
+    ignoreDuplicates: false
+  });
+```
+
+**2. Centralize Slug Resolution**
+
+Create shared utility used by all hooks:
+```typescript
+// src/lib/slugResolver.ts
+export async function resolveArticleId(slug: string): Promise<{
+  id: string;
+  slug: string;
+  slugAlias?: string;
+} | null> {
+  const { data, error } = await supabase
+    .from('srangam_articles')
+    .select('id, slug, slug_alias')
+    .or(`slug_alias.eq.${slug},slug.eq.${slug}`)
+    .maybeSingle();
+  
+  return data;
 }
-
-// Form fields
-interface ArticleEditForm {
-  title_en: string;
-  title_hi: string;  // Optional
-  author: string;
-  theme: string;
-  status: 'draft' | 'published';
-  tags: string[];
-  dek_en: string;
-  featured: boolean;
-}
 ```
+
+**3. Update Hooks to Use Central Resolver**
+
+Refactor these hooks:
+- `useArticleBibliographyBySlug`
+- `useArticleId`
+- `useArticleCrossReferences`
+
+### Files to Create/Modify
+
+| File | Change |
+|------|--------|
+| `src/lib/slugResolver.ts` | Create centralized resolver |
+| `markdown-to-article-import/index.ts` | Batch cultural term upsert |
+| `src/hooks/useArticleBibliographyBySlug.ts` | Use central resolver |
 
 ---
 
-## Phase 18b: Wire Edit Dialog to ArticleManagement
+## Phase 19d: Frontend Performance & Pagination
 
-### Target File: `src/pages/admin/ArticleManagement.tsx`
+### Problem
+- `useAllArticles` fetches entire table
+- Graph visualization loads all 740+ cross-references
 
-**Current State (Line 333):**
-```typescript
-<DropdownMenuItem>Edit Metadata</DropdownMenuItem>
-```
+### Solution: Server-Side Pagination + Lazy Loading
 
-**Updated State:**
-```typescript
-const [editArticle, setEditArticle] = useState<Article | null>(null);
-
-// In dropdown menu:
-<DropdownMenuItem onClick={() => setEditArticle(article)}>
-  <Edit className="mr-2 h-4 w-4" />
-  Edit Metadata
-</DropdownMenuItem>
-
-// After the delete dialog:
-<ArticleEditDialog
-  article={editArticle}
-  open={!!editArticle}
-  onOpenChange={() => setEditArticle(null)}
-  onSave={() => {
-    queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
-    setEditArticle(null);
-    toast({ title: "Article updated successfully" });
-  }}
-/>
-```
-
----
-
-## Phase 18c: Author Autocomplete Hook
-
-### New Hook: `src/hooks/useUniqueAuthors.ts`
+**1. Add Pagination to Article Queries**
 
 ```typescript
-export function useUniqueAuthors() {
+// src/hooks/useArticlesPaginated.ts
+export function useArticlesPaginated(options: {
+  page: number;
+  pageSize: number;
+  theme?: string;
+  status?: string;
+}) {
   return useQuery({
-    queryKey: ['unique-authors'],
+    queryKey: ['articles-paginated', options],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const from = options.page * options.pageSize;
+      const to = from + options.pageSize - 1;
+      
+      let query = supabase
         .from('srangam_articles')
-        .select('author');
+        .select('*', { count: 'exact' })
+        .range(from, to);
       
-      if (error) throw error;
+      if (options.theme) query = query.eq('theme', options.theme);
+      if (options.status) query = query.eq('status', options.status);
       
-      // Count occurrences and get unique
-      const authorCounts = data.reduce((acc, { author }) => {
-        acc[author] = (acc[author] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
-      
-      return Object.entries(authorCounts)
-        .map(([name, count]) => ({ name, count }))
-        .sort((a, b) => b.count - a.count);
+      return query;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 ```
 
-**Usage in ArticleEditDialog:**
-```typescript
-const { data: authors } = useUniqueAuthors();
+**2. Graph Visualization Lazy Loading**
 
-// Render as combobox with article counts
-{authors?.map(({ name, count }) => (
-  <ComboboxItem key={name} value={name}>
-    {name} ({count} articles)
-  </ComboboxItem>
-))}
-```
+Modify `CrossReferencesBrowser.tsx`:
+- Initial load: Only articles with ≥3 connections
+- Add "Show more" button for full network
+- Filter by strength threshold (default: ≥3)
+
+**3. Add Virtual Scrolling for Large Tables**
+
+Use tanstack-virtual for admin tables with 100+ rows.
+
+### Files to Create/Modify
+
+| File | Change |
+|------|--------|
+| `src/hooks/useArticlesPaginated.ts` | Create new paginated hook |
+| `src/pages/admin/CrossReferencesBrowser.tsx` | Add connection threshold filter |
+| `src/pages/admin/ArticleManagement.tsx` | Implement pagination |
 
 ---
 
-## Phase 18d: Bulk Author Normalization
+## Phase 19e: Error Handling & Observability
 
 ### Problem
-4 author variants need consolidation:
-- "NF Research Team" (30) → Keep as canonical
-- "Srangam Research" (8) → Decide if same entity
-- "Srangam Research Team" (2) → Likely same as above
-- "Nartiang Foundation Research Team" (1) → Same as NF
+- Generic 500 errors without context
+- No structured logging across edge functions
 
-### Solution: Add "Bulk Update Author" Action
+### Solution: Structured Errors + Diagnostic Logging
 
-**New Component: `src/components/admin/BulkAuthorUpdate.tsx`**
-
-```
-┌─────────────────────────────────────────────────┐
-│ Normalize Author Names                          │
-├─────────────────────────────────────────────────┤
-│ Select source authors to merge:                 │
-│                                                 │
-│ ☑ Nartiang Foundation Research Team (1)        │
-│ ☑ Srangam Research Team (2)                    │
-│ ☐ Srangam Research (8)                         │
-│ ☐ NF Research Team (30)                        │
-│                                                 │
-│ Merge into:                                     │
-│ ┌─────────────────────────────────────────────┐ │
-│ │ Srangam Research Team                   ▼  │ │
-│ └─────────────────────────────────────────────┘ │
-│                                                 │
-│ [Preview Changes] [Apply Merge]                 │
-└─────────────────────────────────────────────────┘
-```
-
-### Database Update Query
-```sql
-UPDATE srangam_articles
-SET author = 'Srangam Research Team', updated_at = NOW()
-WHERE author IN ('Nartiang Foundation Research Team', 'NF Research Team');
-```
-
----
-
-## Phase 18e: Admin Settings Page (Optional Enhancement)
-
-### New Page: `src/pages/admin/Settings.tsx`
-
-Platform-wide defaults:
-- Default author for new imports
-- Default theme for new articles
-- Enable/disable narration feature
-- AI model preferences
-
-### Add to Admin Navigation
-
-**File: `src/components/admin/AdminLayout.tsx`**
+**1. Define Error Types**
 
 ```typescript
-{
-  title: "Settings",
-  url: "/admin/settings",
-  icon: Settings,
+// supabase/functions/_shared/errors.ts
+export class SrangamError extends Error {
+  constructor(
+    public code: string,
+    message: string,
+    public details?: Record<string, any>
+  ) {
+    super(message);
+    this.name = 'SrangamError';
+  }
+}
+
+export const ErrorCodes = {
+  DUPLICATE_SLUG: 'SRANGAM-E001',
+  MISSING_FRONTMATTER: 'SRANGAM-E002',
+  INVALID_THEME: 'SRANGAM-E003',
+  AI_RATE_LIMIT: 'SRANGAM-E004',
+  DATABASE_WRITE_FAILED: 'SRANGAM-E005',
+};
+```
+
+**2. Enhance Import Function Error Handling**
+
+```typescript
+// Catch specific errors and return structured responses
+if (frontmatter === null) {
+  throw new SrangamError(
+    ErrorCodes.MISSING_FRONTMATTER,
+    'YAML frontmatter not found or invalid',
+    { hint: 'Wrap title and other text in quotes' }
+  );
 }
 ```
+
+**3. Add Query Timing Logs**
+
+Consistent timing logs across all edge functions:
+```typescript
+const startTime = Date.now();
+// ... operation ...
+console.log(`[${functionName}] Operation completed in ${Date.now() - startTime}ms`);
+```
+
+### Files to Create/Modify
+
+| File | Change |
+|------|--------|
+| `supabase/functions/_shared/errors.ts` | Create shared error types |
+| `supabase/functions/markdown-to-article-import/index.ts` | Use structured errors |
+| `docs/ERROR_HANDLING.md` | Document error codes |
 
 ---
 
 ## Implementation Order
 
-| Phase | Task | Priority | Effort |
-|-------|------|----------|--------|
-| 18.0 | Update docs/CURRENT_STATUS.md | HIGH | 10 min |
-| 18.0 | Update docs/ADMIN_DASHBOARD.md | HIGH | 10 min |
-| 18a | Create ArticleEditDialog component | HIGH | 45 min |
-| 18b | Wire dialog to ArticleManagement | HIGH | 15 min |
-| 18c | Create useUniqueAuthors hook | MEDIUM | 15 min |
-| 18d | Create BulkAuthorUpdate component | MEDIUM | 30 min |
-| 18e | Create Settings page (optional) | LOW | 30 min |
+| Phase | Task | Priority | Effort | Risk |
+|-------|------|----------|--------|------|
+| 19.0 | Documentation hardening | HIGH | 2h | Low |
+| 19a.1 | Add context to tag categorization | HIGH | 1h | Low |
+| 19a.2 | Migrate to Lovable AI | HIGH | 30m | Medium |
+| 19a.3 | Add preview flow for bulk categorization | MEDIUM | 1h | Low |
+| 19b.1 | Add tag_vector column | MEDIUM | 30m | Medium |
+| 19b.2 | Optimize cross-reference algorithm | MEDIUM | 1h | Medium |
+| 19c.1 | Batch cultural term upsert | HIGH | 1h | Low |
+| 19c.2 | Centralize slug resolution | MEDIUM | 1h | Low |
+| 19d.1 | Add pagination hooks | MEDIUM | 1h | Low |
+| 19d.2 | Graph lazy loading | LOW | 1h | Low |
+| 19e | Structured error handling | MEDIUM | 2h | Low |
 
 ---
 
-## Files to Create/Modify
-
-### Create
-
-| File | Purpose |
-|------|---------|
-| `src/components/admin/ArticleEditDialog.tsx` | Article metadata editor |
-| `src/hooks/useUniqueAuthors.ts` | Author autocomplete data |
-| `src/components/admin/BulkAuthorUpdate.tsx` | Author normalization UI |
-| `src/pages/admin/Settings.tsx` | Admin settings (optional) |
-
-### Modify
-
-| File | Change |
-|------|--------|
-| `src/pages/admin/ArticleManagement.tsx` | Wire edit dialog, add state |
-| `src/components/admin/AdminLayout.tsx` | Add Settings nav (optional) |
-| `docs/CURRENT_STATUS.md` | Phase 18 documentation |
-| `docs/ADMIN_DASHBOARD.md` | Editor capabilities |
-
----
-
-## Database Considerations
-
-### No Schema Changes Required
-
-The existing `srangam_articles` table has all needed columns:
-- `title` (JSONB) - Multilingual
-- `author` (TEXT) - Required
-- `theme` (TEXT) - Required
-- `status` (TEXT) - Required
-- `tags` (TEXT[]) - Optional
-- `dek` (JSONB) - Optional
-
-### RLS Already Configured
+## Database Changes Required
 
 ```sql
--- Existing policy
-Policy Name: Only admins can update articles
-Command: UPDATE
-Using: has_role(auth.uid(), 'admin')
-```
-
-No new RLS policies needed.
-
----
-
-## Future: Author Registry (Phase 19)
-
-If structured author data becomes needed:
-
-### New Table: `srangam_authors`
-
-```sql
-CREATE TABLE srangam_authors (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  display_name TEXT,
-  bio JSONB,  -- { en: "...", hi: "..." }
-  affiliation TEXT,
-  orcid TEXT,
-  email TEXT,
-  avatar_url TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Add foreign key to articles
+-- Phase 19b: Tag vector for similarity search
 ALTER TABLE srangam_articles 
-ADD COLUMN author_id UUID REFERENCES srangam_authors(id);
-```
+ADD COLUMN IF NOT EXISTS tag_vector tsvector 
+GENERATED ALWAYS AS (array_to_tsvector(COALESCE(tags, '{}'::text[]))) STORED;
 
-### Migration Path
-1. Create authors from unique `author` values
-2. Populate `author_id` based on text matching
-3. Eventually remove `author` text column (breaking change)
+CREATE INDEX IF NOT EXISTS idx_articles_tag_vector 
+ON srangam_articles USING GIN(tag_vector);
+
+-- Phase 19b: Track tag hash for incremental updates
+ALTER TABLE srangam_articles
+ADD COLUMN IF NOT EXISTS tags_hash text;
+```
 
 ---
 
@@ -388,96 +409,96 @@ ADD COLUMN author_id UUID REFERENCES srangam_authors(id);
 
 | Metric | Before | After |
 |--------|--------|-------|
-| Can edit article title | No | Yes |
-| Can edit author | No | Yes |
-| Can change theme | No | Yes |
-| Can toggle status | No | Yes |
-| Can edit tags | No | Yes |
-| Author autocomplete | N/A | Yes (with counts) |
-| Bulk author normalization | N/A | Yes |
-| Author variants | 4 | 1-2 (normalized) |
-
----
-
-## UI/UX Guidelines
-
-### ArticleEditDialog Design
-- Use Sheet component (slides from right)
-- Form validation with react-hook-form + zod
-- Optimistic updates with query invalidation
-- Toast confirmation on save
-- Loading state during save
-
-### Author Combobox Design
-- Show article counts next to each author
-- Allow typing custom author name
-- Keyboard navigable
-- "Create new author" option at bottom
+| Uncategorized tags | 42 (29%) | <10 (7%) |
+| Cross-ref calculation time | O(N) | O(log N) |
+| Cultural term insert time | N queries | 1 batch |
+| Initial page load (1000 articles) | Fetch all | Paginated (20/page) |
+| Error clarity | Generic 500 | Structured codes |
 
 ---
 
 ## Risk Mitigation
 
-1. **Sheet component is non-blocking** - Article list remains usable
-2. **Form validation before save** - Prevent empty required fields
-3. **Query invalidation** - UI updates immediately after save
-4. **No schema changes** - Uses existing database structure
-5. **RLS already configured** - Only admins can update
+1. **Feature Flags**: New algorithms behind flags, revert if issues
+2. **Rollback Scripts**: SQL to remove new columns if needed
+3. **Parallel Deployment**: Keep old code paths until new ones validated
+4. **Incremental Rollout**: Test each phase independently
+
+---
+
+## Rollback Procedures
+
+**Phase 19a (Tag Context)**:
+- Revert edge function to previous version
+- No database changes to roll back
+
+**Phase 19b (Tag Vector)**:
+```sql
+DROP INDEX IF EXISTS idx_articles_tag_vector;
+ALTER TABLE srangam_articles DROP COLUMN IF EXISTS tag_vector;
+ALTER TABLE srangam_articles DROP COLUMN IF EXISTS tags_hash;
+```
+
+**Phase 19c (Batch Upsert)**:
+- Revert edge function to N+1 pattern
+- No database changes
+
+**Phase 19d (Pagination)**:
+- Keep old hooks, disable new ones via flag
 
 ---
 
 ## Technical Details
 
-### ArticleEditDialog Save Handler
+### Tag Categorization Context Fetch
 
 ```typescript
-const handleSave = async () => {
-  setIsSaving(true);
-  try {
-    const { error } = await supabase
-      .from('srangam_articles')
-      .update({
-        title: { 
-          ...article.title, 
-          en: formData.title_en,
-          ...(formData.title_hi && { hi: formData.title_hi })
-        },
-        author: formData.author,
-        theme: formData.theme,
-        status: formData.status,
-        tags: formData.tags,
-        dek: formData.dek_en ? { 
-          ...article.dek, 
-          en: formData.dek_en 
-        } : article.dek,
-        featured: formData.featured,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', article.id);
-
-    if (error) throw error;
-    onSave();
-  } catch (err) {
-    toast({ 
-      title: "Update failed", 
-      description: err.message,
-      variant: "destructive" 
-    });
-  } finally {
-    setIsSaving(false);
+async function fetchCategoryExamples(supabase: any) {
+  const categories = ['Period', 'Concept', 'Location', 'Methodology', 'Subject'];
+  const examples: Record<string, any[]> = {};
+  
+  for (const category of categories) {
+    const { data } = await supabase
+      .from('srangam_tags')
+      .select('tag_name')
+      .eq('category', category)
+      .order('usage_count', { ascending: false })
+      .limit(10);
+    
+    examples[category.toLowerCase()] = data || [];
   }
-};
+  
+  return examples;
+}
 ```
 
-### Theme Dropdown Options
+### Lovable AI Integration for Tags
 
 ```typescript
-const THEMES = [
-  { value: "Ancient India", label: "Ancient India" },
-  { value: "Indian Ocean World", label: "Indian Ocean World" },
-  { value: "Scripts & Inscriptions", label: "Scripts & Inscriptions" },
-  { value: "Geology & Deep Time", label: "Geology & Deep Time" },
-  { value: "Empires & Exchange", label: "Empires & Exchange" },
-  { value: "Sacred Ecology", label: "Sacred Ecology" },
-];
+// Replace OpenAI with Lovable AI
+const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "google/gemini-3-flash-preview",
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt }
+    ],
+  }),
+});
 ```
+
+---
+
+## Success Criteria
+
+- [ ] 90%+ tags categorized (from 71%)
+- [ ] Cross-reference calculation <100ms (from ~500ms at 32 articles)
+- [ ] Cultural term import <500ms (from ~2s with N+1)
+- [ ] Admin article list loads in <1s for 1000+ articles
+- [ ] Zero uncaught errors in edge function logs
+- [ ] Documentation complete for all phases
