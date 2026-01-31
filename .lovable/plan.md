@@ -1,303 +1,293 @@
 
-# Phase 17: Article Theme Data Accuracy + Enterprise Admin Dashboard
+# Phase 18: Author & Article Metadata Management System
 
-## ✅ IMPLEMENTATION COMPLETE (2025-01-31)
+## Executive Summary
 
-## Context Snapshot (Documentation-First)
+This phase implements a comprehensive author management system and article metadata editor to address the missing content management capabilities identified in the admin dashboard. The solution includes both immediate fixes (article edit dialog) and enterprise enhancements (author registry with normalization).
+
+---
+
+## Audit Findings
 
 ### Current Database State (Verified)
 
-**Theme Distribution (from actual DB query):**
-| Theme | Published | Draft | Total |
-|-------|-----------|-------|-------|
-| Ancient India | 28 | 0 | 28 |
-| Geology & Deep Time | 1 | 2 | 3 |
-| Scripts & Inscriptions | 2 | 1 | 3 |
-| Sacred Ecology | 1 | 1 | 2 |
-| Indian Ocean World | 0 | 3 | 3 |
-| Empires & Exchange | 0 | 2 | 2 |
-| **Total** | **32 published** | **9 drafts** | **41** |
+**Author Distribution:**
+| Author Name | Article Count |
+|-------------|---------------|
+| NF Research Team | 30 |
+| Srangam Research | 8 |
+| Srangam Research Team | 2 |
+| Nartiang Foundation Research Team | 1 |
 
-**JSON Static Articles (28 total in `ARTICLE_METADATA`):**
-- Use legacy theme names: `sacred-geography`, `acoustic-archaeology`
-- These map to "Ancient India" but are counted separately
+**Issues Identified:**
+1. 4 different author name variants for what appears to be 2 entities
+2. No structured author data (bio, affiliation, ORCID)
+3. "Edit Metadata" menu item is a non-functional placeholder
+4. No way to correct article metadata after import
 
-### Root Cause of Theme Count Discrepancy
+### Database Schema (srangam_articles - Author Related)
 
-1. **Homepage theme cards** use `getThemeArticleCount()` from `useResearchStats` hook
-2. This hook queries ONLY `srangam_articles` database (ignores JSON articles)
-3. Indian Ocean World shows "0" because all 3 articles are in **draft** status
-4. Empires & Exchange shows "0" because all 2 articles are in **draft** status
-5. The display is technically **accurate** for published content, but misleading for overall platform content
-
-### Existing Admin Dashboard Capabilities
-- Located at `/admin` → `src/pages/admin/Dashboard.tsx`
-- Shows: Total Articles (41), Tags (68), Cross-References (688), Cultural Terms (1,238)
-- Recent Imports table with slug, theme, word count, date
-- Basic Tag Growth chart (appears to use mock/static data)
-- Missing: Theme distribution, content health indicators, bulk actions
+| Column | Type | Nullable | Current State |
+|--------|------|----------|---------------|
+| `author` | TEXT | NO | Plain text, 4 variants |
+| `title` | JSONB | NO | Multilingual `{en, hi, ta}` |
+| `dek` | JSONB | YES | Subtitle/summary |
+| `theme` | TEXT | NO | One of 6 themes |
+| `status` | TEXT | NO | `draft` or `published` |
+| `tags` | TEXT[] | YES | AI-generated array |
 
 ---
 
-## Phase 17.0: Documentation Update (Context Preservation)
+## Implementation Architecture
+
+### Option A: Inline Author Autocomplete (Minimal - Recommended Start)
+- Edit dialog with author text field
+- Autocomplete from existing unique authors
+- No new database tables
+- Quick to implement, immediate value
+
+### Option B: Author Registry (Enterprise - Future Phase)
+- New `srangam_authors` table with structured data
+- Author profiles with bio, affiliation, ORCID
+- Foreign key reference from articles
+- Author management page in admin
+
+**Recommendation:** Implement Option A now, with architecture ready for Option B later.
+
+---
+
+## Phase 18.0: Documentation Update (Context Preservation)
 
 ### Files to Update
 
-**1. `docs/CURRENT_STATUS.md`**
-Add Phase 17 section documenting:
-- Theme count accuracy issue and resolution
-- JSON vs Database article source architecture
-- Admin dashboard enhancement roadmap
-- Content health metrics definitions
+**1. Update `docs/CURRENT_STATUS.md`**
+Add Phase 18 section documenting:
+- Author management capability gap
+- Article edit dialog implementation
+- Author normalization approach
 
-**2. Create `docs/ADMIN_DASHBOARD.md`**
-Document:
-- Current admin routes and capabilities
-- Theme normalization rules
-- Content health indicators
-- Bulk action workflows
-
-**3. Create `docs/CONTENT_ARCHITECTURE.md`**
-Absorb patterns from uploaded CONTENT_MANAGEMENT.md:
-- Document lifecycle (draft → published)
-- Translation workflow (EN → HI/PA/TA)
-- OG image generation pipeline
-- Narration caching architecture
+**2. Update `docs/ADMIN_DASHBOARD.md`**
+Add new sections:
+- Article Metadata Editor capabilities
+- Author field with autocomplete
+- Bulk update workflows
 
 ---
 
-## Phase 17a: Fix Theme Article Counts
+## Phase 18a: Article Metadata Edit Dialog
 
-### Problem Analysis
+### New Component: `src/components/admin/ArticleEditDialog.tsx`
 
-The theme cards on Begin Journey page show:
-- Ancient India: 28 ✓ (correct)
-- Indian Ocean World: 0 ✗ (3 drafts exist)
-- Scripts & Inscriptions: 2 ✓ (correct)
-- Geology & Deep Time: 1 ✓ (correct)
-- Empires & Exchange: 0 ✗ (2 drafts exist)
+A Sheet component for editing article metadata:
 
-### Decision Point: What Should Counts Represent?
+```
+┌─────────────────────────────────────────────────────────┐
+│ Edit Article Metadata                                  ✕│
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ Title (English) *                                       │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ Vedic Preservation Techniques in Ancient India      │ │
+│ └─────────────────────────────────────────────────────┘ │
+│                                                         │
+│ Author *                                                │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ Srangam Research Team                          ▼   │ │
+│ │ ─────────────────────────────────────────────────── │ │
+│ │ ○ NF Research Team (30 articles)                   │ │
+│ │ ○ Srangam Research (8 articles)                    │ │
+│ │ ○ Srangam Research Team (2 articles)               │ │
+│ │ ○ Nartiang Foundation Research Team (1 article)    │ │
+│ └─────────────────────────────────────────────────────┘ │
+│                                                         │
+│ Theme *                                                 │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ Ancient India                                   ▼  │ │
+│ └─────────────────────────────────────────────────────┘ │
+│                                                         │
+│ Status *                                                │
+│ ○ Draft   ● Published                                   │
+│                                                         │
+│ Tags                                                    │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ [vedic] [preservation] [ancient-india] [+]          │ │
+│ └─────────────────────────────────────────────────────┘ │
+│                                                         │
+│ Description/Dek (English)                               │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ An exploration of how Vedic texts were preserved    │ │
+│ │ through oral tradition and early manuscripts...     │ │
+│ └─────────────────────────────────────────────────────┘ │
+│                                                         │
+│               [Cancel]              [Save Changes]      │
+└─────────────────────────────────────────────────────────┘
+```
 
-**Option A: Published Only (Current Behavior)**
-- Accurate for public-facing content
-- Discouraging for themes with 0 published
+### Component Structure
 
-**Option B: All Articles (Draft + Published)**
-- Shows platform content richness
-- May mislead visitors about available content
-
-**Option C: Published + "(X drafts)" indicator**
-- Best of both worlds
-- Requires UI enhancement
-
-**Recommended: Option C** - Show published count with draft indicator
-
-### Implementation
-
-**File: `src/hooks/useResearchStats.ts`**
-
-Add draft counts to ThemeStats interface:
 ```typescript
-export interface ThemeStats {
+interface ArticleEditDialogProps {
+  article: Article | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSave: () => void;
+}
+
+// Form fields
+interface ArticleEditForm {
+  title_en: string;
+  title_hi: string;  // Optional
+  author: string;
   theme: string;
-  count: number;        // published
-  draftCount: number;   // drafts
+  status: 'draft' | 'published';
+  tags: string[];
+  dek_en: string;
+  featured: boolean;
 }
 ```
 
-Update query to include draft articles:
+---
+
+## Phase 18b: Wire Edit Dialog to ArticleManagement
+
+### Target File: `src/pages/admin/ArticleManagement.tsx`
+
+**Current State (Line 333):**
 ```typescript
-// Articles grouped by theme (all statuses)
-supabase
-  .from('srangam_articles')
-  .select('theme, status')
+<DropdownMenuItem>Edit Metadata</DropdownMenuItem>
 ```
 
-**File: `src/components/research/ResearchThemes.tsx`**
-
-Update card display to show draft indicator:
-```
-Indian Ocean World
-0 articles (+3 drafts)
-```
-
-### Theme Normalization
-
-**File: `src/data/researchThemes.ts`**
-
-Current mapping is correct but not used consistently:
+**Updated State:**
 ```typescript
-export const themeIdToDbNames: Record<string, string[]> = {
-  "ancient-india": ["Ancient India", "ancient-india", "sacred-geography", "acoustic-archaeology"],
-  "indian-ocean": ["Indian Ocean World", "indian-ocean-world", "indian-ocean"],
-  // ...
-};
-```
+const [editArticle, setEditArticle] = useState<Article | null>(null);
 
-Ensure all theme counting uses this normalization map.
+// In dropdown menu:
+<DropdownMenuItem onClick={() => setEditArticle(article)}>
+  <Edit className="mr-2 h-4 w-4" />
+  Edit Metadata
+</DropdownMenuItem>
+
+// After the delete dialog:
+<ArticleEditDialog
+  article={editArticle}
+  open={!!editArticle}
+  onOpenChange={() => setEditArticle(null)}
+  onSave={() => {
+    queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
+    setEditArticle(null);
+    toast({ title: "Article updated successfully" });
+  }}
+/>
+```
 
 ---
 
-## Phase 17b: Enterprise Admin Dashboard Enhancement
+## Phase 18c: Author Autocomplete Hook
 
-### Current State Analysis
+### New Hook: `src/hooks/useUniqueAuthors.ts`
 
-**Existing Components:**
-- `src/pages/admin/Dashboard.tsx` - Main dashboard
-- `src/pages/admin/Articles.tsx` - Basic article list
-- `src/pages/admin/ArticleManagement.tsx` - Full CRUD interface
-- `src/pages/admin/DataHealth.tsx` - Data integrity monitoring
-
-**Missing Enterprise Features:**
-1. Theme distribution visualization
-2. Content health indicators (missing OG, no narration, no translations)
-3. Bulk status actions (publish all drafts)
-4. Draft workflow management
-5. Translation queue visibility
-
-### Target Dashboard Layout
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│ SRANGAM ADMIN DASHBOARD                                         │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐            │
-│ │Published │ │ Drafts   │ │Missing OG│ │No Audio  │            │
-│ │    32    │ │    9     │ │    27    │ │   35     │            │
-│ │ ✓ Ready  │ │⚠ Review  │ │⚠ Generate│ │⚠ TTS     │            │
-│ └──────────┘ └──────────┘ └──────────┘ └──────────┘            │
-│                                                                 │
-│ ┌─────────────────────────┐ ┌─────────────────────────────────┐│
-│ │ Theme Distribution      │ │ Content Health                  ││
-│ │ [Pie Chart]             │ │ ▓▓▓▓▓▓▓▓░░ OG Images: 34%      ││
-│ │ Ancient India: 28       │ │ ▓▓▓▓▓░░░░░ Narrations: 15%     ││
-│ │ Geology: 3              │ │ ▓▓▓▓▓▓▓░░░ Hindi Trans: 60%    ││
-│ │ Scripts: 3              │ │ ▓▓░░░░░░░░ Bibliography: 20%   ││
-│ │ Sacred Ecology: 2       │ │                                 ││
-│ │ Indian Ocean: 3 (draft) │ │ [View Data Health →]            ││
-│ │ Empires: 2 (draft)      │ │                                 ││
-│ └─────────────────────────┘ └─────────────────────────────────┘│
-│                                                                 │
-│ ┌─────────────────────────────────────────────────────────────┐│
-│ │ Quick Actions                                                ││
-│ │ [Publish All Drafts] [Generate OG Images] [Retag Articles]  ││
-│ └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│ ┌─────────────────────────────────────────────────────────────┐│
-│ │ Recent Articles                                              ││
-│ │ ┌────┬─────────────────────────┬──────────────┬───────────┐ ││
-│ │ │ St │ Title                   │ Theme        │ Updated   │ ││
-│ │ ├────┼─────────────────────────┼──────────────┼───────────┤ ││
-│ │ │ ✓  │ Vedic Preservation...   │ Ancient India│ 2 days ago│ ││
-│ │ │ ⚠  │ Maritime Networks...    │ Indian Ocean │ 5 days ago│ ││
-│ │ │ ⚠  │ Chola Trade Routes...   │ Empires      │ 1 week ago│ ││
-│ │ └────┴─────────────────────────┴──────────────┴───────────┘ ││
-│ └─────────────────────────────────────────────────────────────┘│
-└─────────────────────────────────────────────────────────────────┘
+```typescript
+export function useUniqueAuthors() {
+  return useQuery({
+    queryKey: ['unique-authors'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('srangam_articles')
+        .select('author');
+      
+      if (error) throw error;
+      
+      // Count occurrences and get unique
+      const authorCounts = data.reduce((acc, { author }) => {
+        acc[author] = (acc[author] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      return Object.entries(authorCounts)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count);
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
 ```
 
-### New Components to Create
+**Usage in ArticleEditDialog:**
+```typescript
+const { data: authors } = useUniqueAuthors();
 
-**1. `src/components/admin/ContentStatusCards.tsx`**
-Four metric cards showing:
-- Published count (green)
-- Draft count (amber)
-- Missing OG images count (amber)
-- Missing narration count (amber)
+// Render as combobox with article counts
+{authors?.map(({ name, count }) => (
+  <ComboboxItem key={name} value={name}>
+    {name} ({count} articles)
+  </ComboboxItem>
+))}
+```
 
-**2. `src/components/admin/ThemeDistributionChart.tsx`**
-Pie or bar chart using Recharts (already installed):
-- Show all 6 themes
-- Color-code by theme colors from `researchThemes.ts`
-- Distinguish published vs draft
+---
 
-**3. `src/components/admin/ContentHealthProgress.tsx`**
-Progress bars showing:
-- OG image coverage %
-- Narration coverage %
-- Hindi translation coverage %
-- Bibliography extraction %
+## Phase 18d: Bulk Author Normalization
 
-**4. `src/components/admin/QuickActionsPanel.tsx`**
-Bulk action buttons:
-- Publish All Drafts (with confirmation modal)
-- Generate Missing OG Images (link to Data Health)
-- Retag Untagged Articles
+### Problem
+4 author variants need consolidation:
+- "NF Research Team" (30) → Keep as canonical
+- "Srangam Research" (8) → Decide if same entity
+- "Srangam Research Team" (2) → Likely same as above
+- "Nartiang Foundation Research Team" (1) → Same as NF
 
-### Database Queries Needed
+### Solution: Add "Bulk Update Author" Action
 
+**New Component: `src/components/admin/BulkAuthorUpdate.tsx`**
+
+```
+┌─────────────────────────────────────────────────┐
+│ Normalize Author Names                          │
+├─────────────────────────────────────────────────┤
+│ Select source authors to merge:                 │
+│                                                 │
+│ ☑ Nartiang Foundation Research Team (1)        │
+│ ☑ Srangam Research Team (2)                    │
+│ ☐ Srangam Research (8)                         │
+│ ☐ NF Research Team (30)                        │
+│                                                 │
+│ Merge into:                                     │
+│ ┌─────────────────────────────────────────────┐ │
+│ │ Srangam Research Team                   ▼  │ │
+│ └─────────────────────────────────────────────┘ │
+│                                                 │
+│ [Preview Changes] [Apply Merge]                 │
+└─────────────────────────────────────────────────┘
+```
+
+### Database Update Query
 ```sql
--- Content health metrics
-SELECT 
-  COUNT(*) as total,
-  COUNT(*) FILTER (WHERE og_image_url IS NOT NULL) as has_og,
-  COUNT(*) FILTER (WHERE status = 'published') as published,
-  COUNT(*) FILTER (WHERE status = 'draft') as drafts
-FROM srangam_articles;
-
--- Narration coverage
-SELECT COUNT(DISTINCT article_slug) as narrated
-FROM srangam_audio_narrations;
-
--- Bibliography coverage
-SELECT COUNT(DISTINCT article_id) as has_bib
-FROM srangam_article_bibliography;
+UPDATE srangam_articles
+SET author = 'Srangam Research Team', updated_at = NOW()
+WHERE author IN ('Nartiang Foundation Research Team', 'NF Research Team');
 ```
 
 ---
 
-## Phase 17c: Admin Article List Enhancement
+## Phase 18e: Admin Settings Page (Optional Enhancement)
 
-### Current State
-`src/pages/admin/Articles.tsx` shows basic table with:
-- Slug, Theme, Status, Tags, Date
+### New Page: `src/pages/admin/Settings.tsx`
 
-### Enhancements
+Platform-wide defaults:
+- Default author for new imports
+- Default theme for new articles
+- Enable/disable narration feature
+- AI model preferences
 
-**1. Status Filter Tabs**
-```
-[All (41)] [Published (32)] [Drafts (9)]
-```
+### Add to Admin Navigation
 
-**2. Theme Filter Dropdown**
-Select to filter by theme
+**File: `src/components/admin/AdminLayout.tsx`**
 
-**3. Bulk Selection**
-Checkboxes for selecting multiple articles
-
-**4. Bulk Actions**
-- Publish Selected
-- Change Theme
-- Delete Selected (with confirmation)
-
-**5. Inline Status Toggle**
-Click to toggle draft/published
-
----
-
-## Phase 17d: Draft Publishing Workflow
-
-### Current Gap
-Drafts exist but no streamlined way to:
-1. Preview draft content
-2. Review and approve
-3. Bulk publish
-
-### Implementation
-
-**File: `src/pages/admin/DraftReview.tsx`** (New)
-- List all draft articles
-- Preview content inline
-- "Publish" button per article
-- "Publish All" with confirmation
-
-**Database Update Query:**
-```sql
-UPDATE srangam_articles 
-SET status = 'published', updated_at = now()
-WHERE id = ANY($1::uuid[]);
+```typescript
+{
+  title: "Settings",
+  url: "/admin/settings",
+  icon: Settings,
+}
 ```
 
 ---
@@ -306,38 +296,91 @@ WHERE id = ANY($1::uuid[]);
 
 | Phase | Task | Priority | Effort |
 |-------|------|----------|--------|
-| 17.0 | Update docs/CURRENT_STATUS.md | HIGH | 10 min |
-| 17.0 | Create docs/ADMIN_DASHBOARD.md | MEDIUM | 15 min |
-| 17a.1 | Add draft counts to useResearchStats | HIGH | 15 min |
-| 17a.2 | Update ResearchThemes to show drafts | HIGH | 10 min |
-| 17b.1 | Create ContentStatusCards component | MEDIUM | 20 min |
-| 17b.2 | Create ThemeDistributionChart | MEDIUM | 25 min |
-| 17b.3 | Create ContentHealthProgress | MEDIUM | 15 min |
-| 17b.4 | Integrate into Dashboard.tsx | MEDIUM | 15 min |
-| 17c | Enhance Articles list with filters | LOW | 30 min |
-| 17d | Create DraftReview page | LOW | 45 min |
+| 18.0 | Update docs/CURRENT_STATUS.md | HIGH | 10 min |
+| 18.0 | Update docs/ADMIN_DASHBOARD.md | HIGH | 10 min |
+| 18a | Create ArticleEditDialog component | HIGH | 45 min |
+| 18b | Wire dialog to ArticleManagement | HIGH | 15 min |
+| 18c | Create useUniqueAuthors hook | MEDIUM | 15 min |
+| 18d | Create BulkAuthorUpdate component | MEDIUM | 30 min |
+| 18e | Create Settings page (optional) | LOW | 30 min |
 
 ---
 
-## Files to Modify/Create
+## Files to Create/Modify
 
-**Modify:**
-| File | Change |
-|------|--------|
-| `docs/CURRENT_STATUS.md` | Add Phase 17 documentation |
-| `src/hooks/useResearchStats.ts` | Add draft counts to theme stats |
-| `src/components/research/ResearchThemes.tsx` | Show draft indicator |
-| `src/pages/admin/Dashboard.tsx` | Add new dashboard sections |
-| `src/pages/admin/Articles.tsx` | Add filters and bulk actions |
+### Create
 
-**Create:**
 | File | Purpose |
 |------|---------|
-| `docs/ADMIN_DASHBOARD.md` | Admin capabilities documentation |
-| `src/components/admin/ContentStatusCards.tsx` | Status overview cards |
-| `src/components/admin/ThemeDistributionChart.tsx` | Theme pie chart |
-| `src/components/admin/ContentHealthProgress.tsx` | Health progress bars |
-| `src/components/admin/QuickActionsPanel.tsx` | Bulk action buttons |
+| `src/components/admin/ArticleEditDialog.tsx` | Article metadata editor |
+| `src/hooks/useUniqueAuthors.ts` | Author autocomplete data |
+| `src/components/admin/BulkAuthorUpdate.tsx` | Author normalization UI |
+| `src/pages/admin/Settings.tsx` | Admin settings (optional) |
+
+### Modify
+
+| File | Change |
+|------|--------|
+| `src/pages/admin/ArticleManagement.tsx` | Wire edit dialog, add state |
+| `src/components/admin/AdminLayout.tsx` | Add Settings nav (optional) |
+| `docs/CURRENT_STATUS.md` | Phase 18 documentation |
+| `docs/ADMIN_DASHBOARD.md` | Editor capabilities |
+
+---
+
+## Database Considerations
+
+### No Schema Changes Required
+
+The existing `srangam_articles` table has all needed columns:
+- `title` (JSONB) - Multilingual
+- `author` (TEXT) - Required
+- `theme` (TEXT) - Required
+- `status` (TEXT) - Required
+- `tags` (TEXT[]) - Optional
+- `dek` (JSONB) - Optional
+
+### RLS Already Configured
+
+```sql
+-- Existing policy
+Policy Name: Only admins can update articles
+Command: UPDATE
+Using: has_role(auth.uid(), 'admin')
+```
+
+No new RLS policies needed.
+
+---
+
+## Future: Author Registry (Phase 19)
+
+If structured author data becomes needed:
+
+### New Table: `srangam_authors`
+
+```sql
+CREATE TABLE srangam_authors (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  display_name TEXT,
+  bio JSONB,  -- { en: "...", hi: "..." }
+  affiliation TEXT,
+  orcid TEXT,
+  email TEXT,
+  avatar_url TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Add foreign key to articles
+ALTER TABLE srangam_articles 
+ADD COLUMN author_id UUID REFERENCES srangam_authors(id);
+```
+
+### Migration Path
+1. Create authors from unique `author` values
+2. Populate `author_id` based on text matching
+3. Eventually remove `author` text column (breaking change)
 
 ---
 
@@ -345,28 +388,96 @@ WHERE id = ANY($1::uuid[]);
 
 | Metric | Before | After |
 |--------|--------|-------|
-| Indian Ocean World shown | 0 | "0 (+3 drafts)" |
-| Empires & Exchange shown | 0 | "0 (+2 drafts)" |
-| Theme visibility in admin | None | Full chart |
-| Draft management | Manual DB | UI workflow |
-| Content health visibility | Partial (Data Health) | Dashboard overview |
-| Bulk publish capability | None | Yes |
+| Can edit article title | No | Yes |
+| Can edit author | No | Yes |
+| Can change theme | No | Yes |
+| Can toggle status | No | Yes |
+| Can edit tags | No | Yes |
+| Author autocomplete | N/A | Yes (with counts) |
+| Bulk author normalization | N/A | Yes |
+| Author variants | 4 | 1-2 (normalized) |
+
+---
+
+## UI/UX Guidelines
+
+### ArticleEditDialog Design
+- Use Sheet component (slides from right)
+- Form validation with react-hook-form + zod
+- Optimistic updates with query invalidation
+- Toast confirmation on save
+- Loading state during save
+
+### Author Combobox Design
+- Show article counts next to each author
+- Allow typing custom author name
+- Keyboard navigable
+- "Create new author" option at bottom
 
 ---
 
 ## Risk Mitigation
 
-1. **Theme count changes are display-only** - No database modifications
-2. **Draft indicator is additive** - Published counts unchanged
-3. **Dashboard components are modular** - Can be added incrementally
-4. **All queries use existing RLS policies** - No security changes needed
-5. **Recharts already installed** - No new dependencies
+1. **Sheet component is non-blocking** - Article list remains usable
+2. **Form validation before save** - Prevent empty required fields
+3. **Query invalidation** - UI updates immediately after save
+4. **No schema changes** - Uses existing database structure
+5. **RLS already configured** - Only admins can update
 
 ---
 
-## Security Considerations
+## Technical Details
 
-All admin features already require authentication via existing routes.
-RLS policies on `srangam_articles` require `admin` role for INSERT/UPDATE/DELETE.
-Read operations are public for published articles only.
-Draft articles visible only to authenticated users in admin context.
+### ArticleEditDialog Save Handler
+
+```typescript
+const handleSave = async () => {
+  setIsSaving(true);
+  try {
+    const { error } = await supabase
+      .from('srangam_articles')
+      .update({
+        title: { 
+          ...article.title, 
+          en: formData.title_en,
+          ...(formData.title_hi && { hi: formData.title_hi })
+        },
+        author: formData.author,
+        theme: formData.theme,
+        status: formData.status,
+        tags: formData.tags,
+        dek: formData.dek_en ? { 
+          ...article.dek, 
+          en: formData.dek_en 
+        } : article.dek,
+        featured: formData.featured,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', article.id);
+
+    if (error) throw error;
+    onSave();
+  } catch (err) {
+    toast({ 
+      title: "Update failed", 
+      description: err.message,
+      variant: "destructive" 
+    });
+  } finally {
+    setIsSaving(false);
+  }
+};
+```
+
+### Theme Dropdown Options
+
+```typescript
+const THEMES = [
+  { value: "Ancient India", label: "Ancient India" },
+  { value: "Indian Ocean World", label: "Indian Ocean World" },
+  { value: "Scripts & Inscriptions", label: "Scripts & Inscriptions" },
+  { value: "Geology & Deep Time", label: "Geology & Deep Time" },
+  { value: "Empires & Exchange", label: "Empires & Exchange" },
+  { value: "Sacred Ecology", label: "Sacred Ecology" },
+];
+```
