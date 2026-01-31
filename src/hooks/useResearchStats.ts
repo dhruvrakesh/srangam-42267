@@ -3,11 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 
 export interface ThemeStats {
   theme: string;
-  count: number;
+  count: number;        // published articles
+  draftCount: number;   // draft articles
 }
 
 export interface ResearchStats {
   totalArticles: number;
+  publishedArticles: number;
+  draftArticles: number;
   crossReferences: number;
   culturalTerms: number;
   themes: ThemeStats[];
@@ -33,29 +36,45 @@ async function fetchResearchStats(): Promise<Omit<ResearchStats, 'isLoading'>> {
       .from('srangam_cultural_terms')
       .select('id', { count: 'exact', head: true }),
     
-    // Articles grouped by theme
+    // Articles grouped by theme with status
     supabase
       .from('srangam_articles')
-      .select('theme')
-      .eq('status', 'published')
+      .select('theme, status')
   ]);
 
-  // Calculate theme counts
-  const themeMap = new Map<string, number>();
+  // Calculate theme counts with published and draft separation
+  const themeMap = new Map<string, { published: number; draft: number }>();
+  
   if (themeStatsResult.data) {
     themeStatsResult.data.forEach((article) => {
       const theme = article.theme || 'other';
-      themeMap.set(theme, (themeMap.get(theme) || 0) + 1);
+      const current = themeMap.get(theme) || { published: 0, draft: 0 };
+      
+      if (article.status === 'published') {
+        current.published += 1;
+      } else {
+        current.draft += 1;
+      }
+      
+      themeMap.set(theme, current);
     });
   }
 
-  const themes: ThemeStats[] = Array.from(themeMap.entries()).map(([theme, count]) => ({
+  const themes: ThemeStats[] = Array.from(themeMap.entries()).map(([theme, counts]) => ({
     theme,
-    count
+    count: counts.published,
+    draftCount: counts.draft
   }));
 
+  // Calculate totals
+  const totalArticles = themeStatsResult.data?.length || 0;
+  const publishedArticles = themes.reduce((sum, t) => sum + t.count, 0);
+  const draftArticles = themes.reduce((sum, t) => sum + t.draftCount, 0);
+
   return {
-    totalArticles: articlesResult.count || 0,
+    totalArticles,
+    publishedArticles,
+    draftArticles,
     crossReferences: crossRefsResult.count || 0,
     culturalTerms: termsResult.count || 0,
     themes
@@ -72,6 +91,8 @@ export function useResearchStats(): ResearchStats {
 
   return {
     totalArticles: data?.totalArticles || 0,
+    publishedArticles: data?.publishedArticles || 0,
+    draftArticles: data?.draftArticles || 0,
     crossReferences: data?.crossReferences || 0,
     culturalTerms: data?.culturalTerms || 0,
     themes: data?.themes || [],
@@ -103,4 +124,29 @@ export function getThemeArticleCount(themes: ThemeStats[], themeId: string): num
       t.theme.toLowerCase().includes(m.toLowerCase())
     ))
     .reduce((sum, t) => sum + t.count, 0);
+}
+
+// Helper to get draft count for a specific theme
+export function getThemeDraftCount(themes: ThemeStats[], themeId: string): number {
+  const themeMapping: Record<string, string[]> = {
+    'ancient-india': [
+      'ancient-india', 
+      'Ancient India', 
+      'sacred-geography',
+      'acoustic-archaeology'
+    ],
+    'indian-ocean': ['indian-ocean-world', 'Indian Ocean World', 'indian-ocean'],
+    'scripts-inscriptions': ['scripts-inscriptions', 'Scripts & Inscriptions', 'scripts-and-inscriptions'],
+    'geology-deep-time': ['geology-deep-time', 'Geology & Deep Time', 'geology'],
+    'empires-exchange': ['empires-exchange', 'Empires & Exchange', 'empires-and-exchange'],
+    'sacred-ecology': ['sacred-ecology', 'Sacred Ecology']
+  };
+
+  const matchingThemes = themeMapping[themeId] || [themeId];
+  return themes
+    .filter(t => matchingThemes.some(m => 
+      t.theme.toLowerCase() === m.toLowerCase() || 
+      t.theme.toLowerCase().includes(m.toLowerCase())
+    ))
+    .reduce((sum, t) => sum + t.draftCount, 0);
 }

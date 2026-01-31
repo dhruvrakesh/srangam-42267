@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowRight } from "lucide-react";
 import { researchThemes, ResearchTheme } from "@/data/researchThemes";
-import { useResearchStats, getThemeArticleCount } from "@/hooks/useResearchStats";
+import { useResearchStats, getThemeArticleCount, getThemeDraftCount } from "@/hooks/useResearchStats";
 
 interface ResearchThemesProps {
   variant: "pills" | "cards";
@@ -34,13 +34,15 @@ function ThemeCard({
   index, 
   isVisible, 
   isLoading, 
-  articleCount 
+  articleCount,
+  draftCount
 }: { 
   theme: ResearchTheme; 
   index: number; 
   isVisible: boolean; 
   isLoading: boolean;
   articleCount: number;
+  draftCount: number;
 }) {
   const IconComponent = theme.icon;
   
@@ -63,9 +65,16 @@ function ThemeCard({
             </span>
             <span className="text-sm font-normal text-muted-foreground bg-muted px-2 py-1 rounded">
               {isLoading ? (
-                <Skeleton className="h-4 w-12" />
+                <Skeleton className="h-4 w-16" />
               ) : (
-                `${articleCount} articles`
+                <>
+                  {articleCount} article{articleCount !== 1 ? 's' : ''}
+                  {draftCount > 0 && (
+                    <span className="text-amber-600 dark:text-amber-400 ml-1">
+                      (+{draftCount} draft{draftCount !== 1 ? 's' : ''})
+                    </span>
+                  )}
+                </>
               )}
             </span>
           </CardTitle>
@@ -115,6 +124,7 @@ export function ResearchThemes({
     <div className={`grid md:grid-cols-2 lg:grid-cols-3 gap-6 ${className}`}>
       {researchThemes.map((theme, index) => {
         const articleCount = showArticleCounts ? getThemeArticleCount(themes, theme.id) : 0;
+        const draftCount = showArticleCounts ? getThemeDraftCount(themes, theme.id) : 0;
         
         return (
           <ThemeCard
@@ -124,6 +134,7 @@ export function ResearchThemes({
             isVisible={isVisible}
             isLoading={isLoading && showArticleCounts}
             articleCount={articleCount}
+            draftCount={draftCount}
           />
         );
       })}
