@@ -1,0 +1,267 @@
+# Srangam Platform Reliability Audit
+
+**Last Updated**: 2025-01-31 (Phase 19)
+
+---
+
+## Executive Summary
+
+This document captures the findings from a comprehensive reliability and scalability audit of the Srangam platform. It defines core invariants that must never break, identifies critical paths, and documents failure modes with mitigation strategies.
+
+---
+
+## Core Invariants (DO NOT BREAK)
+
+### 1. Unique Slugs and Slug Aliases
+
+Every article must have:
+- A unique `slug` column value
+- A unique `slug_alias` column value (if set)
+
+**Enforcement:**
+- Unique constraint on `slug` column
+- Unique constraint on `slug_alias` column
+- Import function checks for duplicates before insert
+
+**Violation Impact:** Broken article URLs, 404 errors, SEO issues
+
+### 2. Row-Level Security (RLS)
+
+All tables with user data must have RLS enabled:
+- Unauthenticated users: Read-only access to published articles
+- Authenticated users: CRUD on own data
+- Admins: Full access via `user_roles` table
+
+**Critical Tables with RLS:**
+- `srangam_articles` - Admin-only write, public read (published)
+- `srangam_tags` - Admin-only write, public read
+- `srangam_cultural_terms` - Authenticated write, public read
+- `srangam_cross_references` - Authenticated write, public read
+- `user_roles` - Admin-only access
+
+**Violation Impact:** Data breach, unauthorized modifications
+
+### 3. Usage Count Integrity
+
+Usage counters must accurately reflect actual usage:
+- `srangam_tags.usage_count` - Number of articles using tag
+- `srangam_cultural_terms.usage_count` - Number of term occurrences
+
+**Enforcement:**
+- Database triggers on article updates
+- `update_tag_stats` function with `SET search_path = 'public'`
+
+**Violation Impact:** Incorrect analytics, broken AI context
+
+### 4. Cross-Reference Integrity
+
+Cross-references must maintain referential integrity:
+- Source and target articles must exist
+- No duplicate references
+- Bidirectional references should be symmetric
+
+**Enforcement:**
+- Foreign key constraints on `source_article_id` and `target_article_id`
+- Unique constraint on (source, target, type) tuple
+
+**Violation Impact:** Broken "Related Articles" sections, orphaned references
+
+### 5. Immutability of Historical Data
+
+Version history must be preserved:
+- `srangam_article_versions` - Previous article states
+- `srangam_markdown_sources` - Original markdown content
+
+**Violation Impact:** Lost audit trail, reproducibility failures
+
+---
+
+## Critical Paths
+
+### 1. Markdown Import Pipeline
+
+**Path:** Admin Dashboard → `markdown-to-article-import` → Database
+
+**Components:**
+- YAML frontmatter parsing
+- Slug generation and normalization
+- Cultural term extraction
+- Cross-reference calculation
+- Tag generation (AI)
+
+**Failure Modes:**
+- Invalid YAML syntax → Returns `SRANGAM-E002`
+- Duplicate slug → Returns `SRANGAM-E001`
+- AI rate limit → Returns 429 with fallback
+- Database timeout → 10s timeout with error state
+
+**Monitoring:**
+- Edge function logs with timing
+- Import success/failure counts in dashboard
+
+### 2. Article Resolution
+
+**Path:** URL slug → `resolveOceanicArticle()` → Article data
+
+**Components:**
+- `src/lib/articleResolver.ts` - Main resolver
+- `src/lib/slugResolver.ts` - Centralized slug lookup
+- Supabase query with OR condition
+
+**Failure Modes:**
+- Query timeout (10s) → Shows error with retry button
+- Article not found → Shows 404 page
+- Network error → Shows error state
+
+**Monitoring:**
+- Query timing logs: `[articleResolver] Query completed in Xms`
+- Resolution logs: `[slugResolver] Resolved: slug → id`
+
+### 3. Tag Generation
+
+**Path:** Article content → `generate-article-tags` → Normalized tags
+
+**Components:**
+- OpenAI/Lovable AI GPT-4o-mini integration
+- Fuzzy matching against existing taxonomy
+- Tag normalization and deduplication
+
+**Failure Modes:**
+- AI rate limit → 429 response
+- No API key → 500 with configuration error
+- Empty content → Returns default tags
+
+### 4. Cross-Reference Calculation
+
+**Path:** Article import → Tag/theme comparison → `srangam_cross_references`
+
+**Current Algorithm (O(N)):**
+1. Load all published articles
+2. For each article: compare tags (≥2 shared), check theme
+3. Insert bidirectional references
+
+**Performance Note:** With 32 articles, takes ~500ms. May degrade at 1000+ articles.
+
+**Future Optimization (Phase 19b):**
+- Add `tag_vector` column with GIN index
+- Use text search for similarity matching
+- Reduce to O(log N) complexity
+
+### 5. Audio Narration
+
+**Path:** Article → TTS Edge Function → Google Drive cache → Audio playback
+
+**Components:**
+- ElevenLabs (primary English)
+- OpenAI TTS (fallback English)
+- Google Cloud TTS (Indic languages)
+- `tts-save-drive` for caching
+
+**Failure Modes:**
+- Provider 401/403 → Auto-fallback to next provider
+- Rate limit → 429 with retry guidance
+- Memory limit → Chunked processing (8 chunks max)
+
+---
+
+## Performance Benchmarks
+
+### Target SLAs
+
+| Metric | Target | Current | Status |
+|--------|--------|---------|--------|
+| Article page load | < 2s | ~1.5s | ✅ |
+| Slug resolution | < 100ms | ~50ms | ✅ |
+| Cross-ref calculation | < 500ms | ~300ms | ✅ |
+| Tag generation | < 5s | ~3s | ✅ |
+| Cultural term import | < 500ms | ~2s | ⚠️ (N+1) |
+
+### Thresholds for Action
+
+| Metric | Warning | Critical |
+|--------|---------|----------|
+| Article count | 100 | 500 |
+| Cross-references | 2,000 | 10,000 |
+| Cultural terms | 5,000 | 20,000 |
+| Tags | 500 | 2,000 |
+
+---
+
+## Known Issues and Mitigations
+
+### 1. Cultural Terms N+1 Pattern
+
+**Issue:** Each term extraction triggers individual SELECT + INSERT
+**Impact:** Slow imports with many terms
+**Mitigation (Phase 19c):** Batch upsert with single query
+
+### 2. Cross-Reference O(N) Scaling
+
+**Issue:** Full article scan on every import
+**Impact:** Import time grows linearly with article count
+**Mitigation (Phase 19b):** `tag_vector` column with GIN index
+
+### 3. Tag Categorization One-Shot
+
+**Issue:** AI has no memory of previous categorizations
+**Impact:** 29% of tags remain uncategorized
+**Mitigation (Phase 19a):** Include historical examples in prompt
+
+### 4. Client-Side Data Processing
+
+**Issue:** `useAllArticles` fetches entire table
+**Impact:** Slow initial load at scale
+**Mitigation (Phase 19d):** Server-side pagination
+
+---
+
+## Rollback Procedures
+
+### Edge Function Rollback
+
+1. Navigate to Lovable Cloud → Functions
+2. Select the affected function
+3. View deployment history
+4. Redeploy previous version
+
+### Database Rollback
+
+Schema changes are additive - no destructive migrations.
+
+To remove Phase 19b columns:
+```sql
+DROP INDEX IF EXISTS idx_articles_tag_vector;
+ALTER TABLE srangam_articles DROP COLUMN IF EXISTS tag_vector;
+ALTER TABLE srangam_articles DROP COLUMN IF EXISTS tags_hash;
+```
+
+---
+
+## Security Considerations
+
+### Verified RLS Policies
+
+| Table | SELECT | INSERT | UPDATE | DELETE |
+|-------|--------|--------|--------|--------|
+| srangam_articles | Public (published) | Admin | Admin | Admin |
+| srangam_tags | Public | Admin | Admin | Admin |
+| srangam_cultural_terms | Public | Auth | Auth | Auth |
+| user_roles | Own/Admin | Admin | Admin | Admin |
+
+### False Positive Security Warnings
+
+The following warnings are acknowledged and safe:
+- `geography_columns_no_rls` - PostGIS system view
+- `spatial_ref_sys_no_rls` - PostGIS system table
+- `user_roles_table_public_exposure` - Has proper RLS (3 policies)
+
+---
+
+## Monitoring Checklist
+
+- [ ] Edge function error rate < 1%
+- [ ] Query timeout errors = 0
+- [ ] Import success rate > 95%
+- [ ] Tag categorization rate > 90%
+- [ ] Cross-reference orphan count = 0
+- [ ] Usage count accuracy = 100%

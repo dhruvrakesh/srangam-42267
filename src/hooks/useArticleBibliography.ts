@@ -69,32 +69,19 @@ export function useArticleBibliography(articleId: string | undefined) {
 }
 
 export function useArticleBibliographyBySlug(slug: string | undefined) {
-  // First resolve slug to article ID
-  const { data: article } = useQuery({
-    queryKey: ['article-id-from-slug', slug],
+  // Phase 19c: Use centralized slug resolver instead of sequential queries
+  const { data: resolved } = useQuery({
+    queryKey: ['article-slug-resolved', slug],
     queryFn: async () => {
       if (!slug) return null;
       
-      // Try slug_alias first, then slug
-      let { data } = await supabase
-        .from('srangam_articles')
-        .select('id')
-        .eq('slug_alias', slug)
-        .maybeSingle();
-      
-      if (!data) {
-        const result = await supabase
-          .from('srangam_articles')
-          .select('id')
-          .eq('slug', slug)
-          .maybeSingle();
-        data = result.data;
-      }
-      
-      return data;
+      // Single OR query via centralized resolver
+      const { resolveArticleId } = await import('@/lib/slugResolver');
+      return resolveArticleId(slug);
     },
     enabled: !!slug,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
   
-  return useArticleBibliography(article?.id);
+  return useArticleBibliography(resolved?.id);
 }

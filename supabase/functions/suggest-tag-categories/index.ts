@@ -3,13 +3,34 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+// Phase 19a: Fetch historical examples per category for context
+async function fetchCategoryExamples(supabase: any) {
+  const categories = ['Period', 'Concept', 'Location', 'Methodology', 'Subject'];
+  const examples: Record<string, any[]> = {};
+  
+  for (const category of categories) {
+    const { data } = await supabase
+      .from('srangam_tags')
+      .select('tag_name, usage_count')
+      .eq('category', category)
+      .order('usage_count', { ascending: false })
+      .limit(10);
+    
+    examples[category.toLowerCase()] = data || [];
+  }
+  
+  return examples;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const startTime = Date.now();
 
   try {
     const { tags } = await req.json();
@@ -21,25 +42,66 @@ serve(async (req) => {
       );
     }
 
-    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-    if (!OPENAI_API_KEY) {
-      console.error("OPENAI_API_KEY is not configured");
+    // Phase 19a: Use Lovable AI Gateway instead of OpenAI directly
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      console.error("LOVABLE_API_KEY is not configured");
       return new Response(
         JSON.stringify({ error: "AI service not configured" }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`🤖 Suggesting categories for ${tags.length} tags...`);
+    // Initialize Supabase client to fetch historical context
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const systemPrompt = `You are an expert in academic taxonomy and South Asian studies. Categorize tags into these categories:
+    // Phase 19a: Fetch existing categorized tags as examples
+    console.log(`🔍 Fetching category examples for context...`);
+    const categoryExamples = await fetchCategoryExamples(supabase);
+    
+    const exampleCounts = Object.entries(categoryExamples)
+      .map(([cat, tags]) => `${cat}: ${tags.length}`)
+      .join(', ');
+    console.log(`📚 Found examples: ${exampleCounts}`);
 
-CATEGORIES:
-- Period: Historical eras, dynasties, time periods (e.g., "Mauryan Empire", "Vedic Period", "Medieval Period")
-- Concept: Abstract ideas, practices, themes (e.g., "Maritime Trade", "Ritual Practices", "Religious Pluralism")
-- Location: Geographical places, regions (e.g., "Tamil Nadu", "Kerala", "Indian Ocean")
-- Methodology: Research methods, academic approaches (e.g., "Epigraphy", "Archaeological Survey", "Textual Analysis")
-- Subject: Specific topics, religions, traditions (e.g., "Buddhism", "Shaivism", "Sanskrit Literature")
+    console.log(`🤖 Suggesting categories for ${tags.length} tags with historical context...`);
+
+    // Phase 19a: Enhanced system prompt with historical examples
+    const systemPrompt = `You are an expert in academic taxonomy and South Asian studies. Your task is to categorize tags consistently with existing categorizations.
+
+EXISTING CATEGORIZATIONS (follow these patterns):
+
+**Period** (Historical eras, dynasties, time periods):
+${categoryExamples.period.map(t => `- "${t.tag_name}" (used ${t.usage_count}×)`).join('\n') || '- No examples yet'}
+
+**Concept** (Abstract ideas, practices, themes):
+${categoryExamples.concept.map(t => `- "${t.tag_name}" (used ${t.usage_count}×)`).join('\n') || '- No examples yet'}
+
+**Location** (Geographical places, regions):
+${categoryExamples.location.map(t => `- "${t.tag_name}" (used ${t.usage_count}×)`).join('\n') || '- No examples yet'}
+
+**Methodology** (Research methods, academic approaches):
+${categoryExamples.methodology.map(t => `- "${t.tag_name}" (used ${t.usage_count}×)`).join('\n') || '- No examples yet'}
+
+**Subject** (Specific topics, religions, traditions):
+${categoryExamples.subject.map(t => `- "${t.tag_name}" (used ${t.usage_count}×)`).join('\n') || '- No examples yet'}
+
+CATEGORY DEFINITIONS:
+- Period: Historical eras, dynasties, empires, centuries, time periods (e.g., "Mauryan Empire", "Vedic Period", "Medieval Period", "7th Century CE")
+- Concept: Abstract ideas, practices, themes, processes (e.g., "Maritime Trade", "Ritual Practices", "Religious Pluralism", "Cultural Exchange")
+- Location: Geographical places, regions, cities, water bodies (e.g., "Tamil Nadu", "Kerala", "Indian Ocean", "Thanjavur")
+- Methodology: Research methods, academic approaches, disciplines (e.g., "Epigraphy", "Archaeological Survey", "Textual Analysis", "Comparative Study")
+- Subject: Specific topics, religions, traditions, art forms (e.g., "Buddhism", "Shaivism", "Sanskrit Literature", "Temple Architecture")
+
+GUIDELINES:
+1. Match new tags to the category of similar existing tags
+2. Personal names (e.g., "Baba Ala Singh", "Raja Chola") → Subject
+3. Dynasties and empires → Period
+4. Geographic features and places → Location
+5. Religious practices and traditions → Subject
+6. Trade routes and exchange patterns → Concept
 
 Return a JSON object with this exact structure:
 {
@@ -47,28 +109,28 @@ Return a JSON object with this exact structure:
     {
       "tagId": "tag-id-here",
       "category": "Period|Concept|Location|Methodology|Subject",
-      "reasoning": "Brief explanation"
+      "reasoning": "Brief explanation referencing similar existing tags"
     }
   ]
 }`;
 
-    const userPrompt = `Categorize these tags:\n\n${tags.map((t: any) => 
+    const userPrompt = `Categorize these tags consistently with the existing taxonomy:\n\n${tags.map((t: any) => 
       `- "${t.tag_name}" (ID: ${t.id}, Usage: ${t.usage_count || 0}${t.description ? `, Description: ${t.description}` : ''})`
     ).join('\n')}`;
 
-    const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+    // Phase 19a: Use Lovable AI Gateway with Gemini 3 Flash
+    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
-        response_format: { type: "json_object" }
       }),
     });
 
@@ -85,7 +147,7 @@ Return a JSON object with this exact structure:
       
       if (aiResponse.status === 402) {
         return new Response(
-          JSON.stringify({ error: "Payment required. Please check your OpenAI API credits." }),
+          JSON.stringify({ error: "AI credits exhausted. Please add credits to continue." }),
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -97,7 +159,37 @@ Return a JSON object with this exact structure:
     }
 
     const aiData = await aiResponse.json();
-    const parsed = JSON.parse(aiData.choices[0].message.content);
+    const content = aiData.choices?.[0]?.message?.content;
+    
+    if (!content) {
+      console.error('No content in AI response:', aiData);
+      return new Response(
+        JSON.stringify({ error: 'AI returned empty response' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Parse JSON from response (handle markdown code blocks)
+    let jsonContent = content;
+    const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (jsonMatch) {
+      jsonContent = jsonMatch[1].trim();
+    }
+    
+    let parsed;
+    try {
+      parsed = JSON.parse(jsonContent);
+    } catch (parseError) {
+      console.error('Failed to parse AI response:', jsonContent);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          suggestions: [],
+          error: 'AI returned invalid JSON format' 
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
     // Robust parsing to handle various response formats
     let suggestions = [];
@@ -132,13 +224,20 @@ Return a JSON object with this exact structure:
       );
     }
 
-    console.log(`✅ Generated ${suggestions.length} category suggestions`);
+    const elapsed = Date.now() - startTime;
+    console.log(`✅ Generated ${suggestions.length} category suggestions in ${elapsed}ms`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         suggestions,
-        message: `Successfully categorized ${suggestions.length} tags` 
+        context: {
+          examplesUsed: Object.fromEntries(
+            Object.entries(categoryExamples).map(([k, v]) => [k, v.length])
+          ),
+          processingTimeMs: elapsed
+        },
+        message: `Successfully categorized ${suggestions.length} tags with historical context` 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
