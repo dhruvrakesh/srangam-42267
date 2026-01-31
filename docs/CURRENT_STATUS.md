@@ -547,6 +547,58 @@ Google Cloud (fallback for Indic languages)
 - Uses existing RLS policies (admin role required for UPDATE)
 - All updates use service role through existing policies
 
+### **2025-01-31 (Phase 19: Reliability & Scalability Implementation)**
+
+**Status: ✅ DEPLOYED**
+
+#### Issues Addressed:
+
+1. **Tag Categorization Context Problem:**
+   - 42 tags (29%) remained "Uncategorized" due to one-shot AI prompts
+   - AI had no memory of previous categorization decisions
+
+2. **Slug Resolution Inconsistency:**
+   - Multiple hooks implemented slug resolution differently
+   - Some used sequential queries (2 DB calls), others used OR conditions
+
+3. **OpenAI Direct Dependency:**
+   - `suggest-tag-categories` used OpenAI API directly, not Lovable AI
+
+#### Solutions Implemented:
+
+**1. Contextual Tag Categorization (Phase 19a):**
+- Updated `suggest-tag-categories` edge function
+- Now fetches top 10 categorized tags per category as examples
+- Includes historical patterns in AI prompt for consistency
+- Migrated from OpenAI to **Lovable AI Gateway** (`google/gemini-3-flash-preview`)
+- Added `LOVABLE_API_KEY` usage (auto-provisioned)
+
+**2. Centralized Slug Resolver (Phase 19c):**
+- Created `src/lib/slugResolver.ts` with single OR query
+- Includes 10-second timeout for reliability
+- Performance logging: `[slugResolver] Query completed in Xms`
+- Refactored hooks to use central resolver:
+  - `src/hooks/useArticleId.ts` - Now uses `resolveArticleId()`
+  - `src/hooks/useArticleBibliography.ts` - Uses `resolveArticleId()`
+
+**3. Documentation Hardening (Phase 19.0):**
+- Created `docs/RELIABILITY_AUDIT.md` - Core invariants, critical paths, failure modes
+- Created `docs/SCALABILITY_ROADMAP.md` - Growth projections, bottleneck thresholds
+
+#### Files Changed:
+- `supabase/functions/suggest-tag-categories/index.ts` - Lovable AI + context
+- `src/lib/slugResolver.ts` - New centralized resolver
+- `src/hooks/useArticleId.ts` - Refactored to use resolver
+- `src/hooks/useArticleBibliography.ts` - Refactored to use resolver
+- `docs/RELIABILITY_AUDIT.md` - New documentation
+- `docs/SCALABILITY_ROADMAP.md` - New documentation
+
+#### Future Phases (Pending):
+- **19b**: Add `tag_vector` column with GIN index for O(log N) cross-ref calculation
+- **19c**: Batch cultural term upsert (resolve N+1 pattern)
+- **19d**: Server-side pagination for article lists
+- **19e**: Structured error codes for edge functions
+
 ---
 
 ## 🎯 **Next Steps**
@@ -569,16 +621,15 @@ Google Cloud (fallback for Indic languages)
    - Consolidate 4 variants to 2 canonical names
 
 ### **Medium Term** 
-1. Enhanced Cross-Reference UX
-   - Add strength badges (strong/medium/weak)
-   - Implement hover previews with article metadata
+1. Phase 19b: Tag Vector Index
+   - Add `tag_vector` column for fast similarity search
+   - Replace O(N) cross-reference algorithm
 
-2. Draft Publishing Workflow (Phase 17d)
-   - Create `/admin/drafts` review page
-   - Bulk publish with confirmation
-   - Preview before publish
+2. Phase 19c: Batch Operations
+   - Batch cultural term upsert
+   - Reduce import latency
 
-3. Author Registry (Phase 19 - Optional)
+3. Author Registry (Phase 20 - Optional)
    - Create `srangam_authors` table with structured data
    - Author profiles with bio, affiliation, ORCID
    - Foreign key reference from articles
@@ -617,3 +668,7 @@ Google Cloud (fallback for Indic languages)
 - `docs/CURRENT_STATUS.md` - This file
 - `docs/SEO_CONFIGURATION.md` - SEO setup guide
 - `docs/ARTICLE_DISPLAY_GUIDE.md` - Markdown authoring standards
+- `docs/RELIABILITY_AUDIT.md` - Core invariants and failure modes
+- `docs/SCALABILITY_ROADMAP.md` - Growth projections and bottleneck analysis
+- `docs/ADMIN_DASHBOARD.md` - Admin routes and capabilities
+- `docs/CONTENT_ARCHITECTURE.md` - Document lifecycle and workflows
