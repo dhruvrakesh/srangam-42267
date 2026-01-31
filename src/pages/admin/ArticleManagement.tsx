@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable, createSortableHeader } from "@/components/admin/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
-import { ExternalLink, MoreHorizontal, FileText, BookOpen, RefreshCw, Loader2 } from "lucide-react";
+import { ExternalLink, MoreHorizontal, FileText, BookOpen, RefreshCw, Loader2, Edit } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,6 +28,7 @@ import {
 import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { ArticleEditDialog } from "@/components/admin/ArticleEditDialog";
 
 type Article = {
   id: string;
@@ -54,6 +55,7 @@ export default function ArticleManagement() {
   const { toast } = useToast();
   const [retagging, setRetagging] = useState(false);
   const [deleteArticle, setDeleteArticle] = useState<Article | null>(null);
+  const [editArticle, setEditArticle] = useState<Article | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const queryClient = useQueryClient();
 
@@ -330,7 +332,10 @@ export default function ArticleManagement() {
               {isAdmin && (
                 <>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>Edit Metadata</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setEditArticle(article)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit Metadata
+                  </DropdownMenuItem>
                   <DropdownMenuItem 
                     className="text-destructive"
                     onClick={() => setDeleteArticle(article)}
@@ -456,6 +461,17 @@ export default function ArticleManagement() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Edit Metadata Dialog */}
+      <ArticleEditDialog
+        article={editArticle}
+        open={!!editArticle}
+        onOpenChange={() => setEditArticle(null)}
+        onSave={() => {
+          queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
+          setEditArticle(null);
+        }}
+      />
     </div>
   );
 }
