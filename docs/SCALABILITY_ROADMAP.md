@@ -208,6 +208,18 @@ USING ivfflat (content_embedding vector_cosine_ops);
 
 ---
 
+## External Services
+
+| Service | Purpose | Dependency | Phase |
+|---------|---------|------------|-------|
+| Sanskrit Automaton API | Sanskrit text analysis | Railway/Render | 21 |
+| Sanskrit Heritage | Morphological data | inria.fr | 21 |
+| IndicTrans2 | Machine translation | Hugging Face | 21 |
+| ElevenLabs | English TTS | elevenlabs.io | 20 |
+| Google Cloud TTS | Indic TTS | Google Cloud | 20 |
+
+---
+
 ## Cost Projections
 
 ### Current Costs (Lovable Cloud)
