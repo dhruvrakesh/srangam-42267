@@ -1,12 +1,12 @@
 import { useState, useMemo } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable, createSortableHeader } from "@/components/admin/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
-import { ExternalLink, MoreHorizontal, FileText, BookOpen, RefreshCw, Loader2, Edit } from "lucide-react";
+import { ExternalLink, MoreHorizontal, FileText, BookOpen, Loader2, Edit } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,22 +25,21 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { ArticleEditDialog } from "@/components/admin/ArticleEditDialog";
+import { useArticlesPaginated, type PaginatedArticle } from "@/hooks/useArticlesPaginated";
+import { ArticlePagination } from "@/components/admin/ArticlePagination";
 
-type Article = {
-  id: string;
-  slug: string;
-  title: any;
-  theme: string;
-  author: string;
-  status: string;
-  tags: string[];
-  created_at: string;
-  updated_at: string;
-};
+type Article = PaginatedArticle;
 
 const themeColors: Record<string, string> = {
   "Ancient India": "hsl(var(--chart-1))",
@@ -48,81 +47,61 @@ const themeColors: Record<string, string> = {
   "Maritime": "hsl(var(--chart-3))",
   "Cultural": "hsl(var(--chart-4))",
   "Historical": "hsl(var(--chart-5))",
+  "Indian Ocean World": "hsl(var(--chart-1))",
+  "Scripts & Inscriptions": "hsl(var(--chart-2))",
+  "Geology & Deep Time": "hsl(var(--chart-3))",
+  "Empires & Exchange": "hsl(var(--chart-4))",
+  "Sacred Ecology": "hsl(var(--chart-5))",
 };
+
+const THEMES = [
+  "Ancient India",
+  "Indian Ocean World",
+  "Scripts & Inscriptions",
+  "Geology & Deep Time",
+  "Empires & Exchange",
+  "Sacred Ecology",
+];
 
 export default function ArticleManagement() {
   const { isAdmin } = useAuth();
   const { toast } = useToast();
-  const [retagging, setRetagging] = useState(false);
+  const queryClient = useQueryClient();
+  
+  // Phase 1.2: Pagination state
+  const [page, setPage] = useState(0);
+  const [pageSize] = useState(20);
+  const [statusFilter, setStatusFilter] = useState<'published' | 'draft' | 'archived' | undefined>();
+  const [themeFilter, setThemeFilter] = useState<string | undefined>();
+  
+  // Component state
   const [deleteArticle, setDeleteArticle] = useState<Article | null>(null);
   const [editArticle, setEditArticle] = useState<Article | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const queryClient = useQueryClient();
 
-  const { data: articles = [], isLoading } = useQuery({
-    queryKey: ["admin-articles"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("srangam_articles")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      return data as Article[];
-    },
+  // Phase 1.2: Paginated query replaces full-table fetch
+  const { data: paginatedData, isLoading } = useArticlesPaginated({
+    page,
+    pageSize,
+    status: statusFilter,
+    theme: themeFilter,
   });
 
+  const articles = paginatedData?.data || [];
+
+  // Stats from paginated response totals
   const stats = useMemo(() => {
-    if (!articles) return { total: 0, published: 0, draft: 0, archived: 0, untagged: 0 };
+    if (!paginatedData) return { total: 0, published: 0, draft: 0, archived: 0, onPage: 0 };
     
+    // Note: For accurate stats we'd need separate counts, but for now show page info
     return {
-      total: articles.length,
-      published: articles.filter((a) => a.status === "published").length,
-      draft: articles.filter((a) => a.status === "draft").length,
-      archived: articles.filter((a) => a.status === "archived").length,
-      untagged: articles.filter((a) => !a.tags || a.tags.length === 0).length,
+      total: paginatedData.totalCount,
+      onPage: articles.length,
+      published: statusFilter === 'published' ? paginatedData.totalCount : 0,
+      draft: statusFilter === 'draft' ? paginatedData.totalCount : 0,
+      archived: statusFilter === 'archived' ? paginatedData.totalCount : 0,
     };
-  }, [articles]);
-
-  const retagUntaggedArticles = async () => {
-    if (!articles) return;
-    
-    const untaggedArticles = articles.filter(a => !a.tags || a.tags.length === 0);
-    
-    if (untaggedArticles.length === 0) {
-      toast({
-        title: "No articles to retag",
-        description: "All articles already have tags.",
-      });
-      return;
-    }
-
-    setRetagging(true);
-
-    const { data, error } = await supabase.functions.invoke('batch-enrich-terms', {
-      body: {
-        articleSlugs: untaggedArticles.map(a => a.slug)
-      }
-    });
-
-    setRetagging(false);
-
-    if (error) {
-      toast({
-        title: "Retagging failed",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
-
-    toast({
-      title: "Retagging complete",
-      description: `Successfully retagged ${data.summary.successful} articles.`,
-    });
-  };
+  }, [paginatedData, articles, statusFilter]);
 
   const handleDeleteArticle = async (article: Article) => {
     setIsDeleting(true);
@@ -131,44 +110,26 @@ export default function ArticleManagement() {
       const articleId = article.id;
       
       // Delete related records in correct order (foreign key dependencies)
-      // 1. Cross references (as source and target)
       await supabase.from('srangam_cross_references').delete().eq('source_article_id', articleId);
       await supabase.from('srangam_cross_references').delete().eq('target_article_id', articleId);
-      
-      // 2. Markdown sources
       await supabase.from('srangam_markdown_sources').delete().eq('article_id', articleId);
-      
-      // 3. Article metadata
       await supabase.from('srangam_article_metadata').delete().eq('article_id', articleId);
-      
-      // 4. Article versions
       await supabase.from('srangam_article_versions').delete().eq('article_id', articleId);
-      
-      // 5. Article chapters
       await supabase.from('srangam_article_chapters').delete().eq('article_id', articleId);
-      
-      // 6. Article bibliography
       await supabase.from('srangam_article_bibliography').delete().eq('article_id', articleId);
-      
-      // 7. Article analytics
       await supabase.from('srangam_article_analytics').delete().eq('article_id', articleId);
-      
-      // 8. Translation queue
       await supabase.from('srangam_translation_queue').delete().eq('article_id', articleId);
-      
-      // 9. Purana references
       await supabase.from('srangam_purana_references').delete().eq('article_id', articleId);
       
-      // 10. Finally, delete the article itself
       const { error } = await supabase.from('srangam_articles').delete().eq('id', articleId);
       
       if (error) throw error;
       
-      queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
+      queryClient.invalidateQueries({ queryKey: ['articles-paginated'] });
       
       toast({
         title: "Article deleted",
-        description: `Successfully deleted "${article.title?.en}" and all related data.`,
+        description: `Successfully deleted "${(article.title as Record<string, string>)?.en}" and all related data.`,
       });
     } catch (error: any) {
       console.error('Delete error:', error);
@@ -189,8 +150,8 @@ export default function ArticleManagement() {
       header: createSortableHeader("Title"),
       cell: ({ row }) => {
         const article = row.original;
-        const title = article.title?.en || "Untitled";
-        const titleTa = article.title?.ta;
+        const title = (article.title as Record<string, string>)?.en || "Untitled";
+        const titleTa = (article.title as Record<string, string>)?.ta;
         return (
           <div className="flex flex-col gap-1">
             <a
@@ -209,8 +170,8 @@ export default function ArticleManagement() {
         );
       },
       sortingFn: (rowA, rowB) => {
-        const titleA = rowA.original.title?.en || "";
-        const titleB = rowB.original.title?.en || "";
+        const titleA = (rowA.original.title as Record<string, string>)?.en || "";
+        const titleB = (rowB.original.title as Record<string, string>)?.en || "";
         return titleA.localeCompare(titleB);
       },
     },
@@ -376,6 +337,9 @@ export default function ArticleManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.total}</div>
+            <p className="text-xs text-muted-foreground">
+              Showing {stats.onPage} on this page
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -384,7 +348,10 @@ export default function ArticleManagement() {
             <BookOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.published}</div>
+            <div className="text-2xl font-bold">{statusFilter === 'published' ? stats.total : '—'}</div>
+            <p className="text-xs text-muted-foreground">
+              {statusFilter !== 'published' && 'Filter to see count'}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -393,7 +360,10 @@ export default function ArticleManagement() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.draft}</div>
+            <div className="text-2xl font-bold">{statusFilter === 'draft' ? stats.total : '—'}</div>
+            <p className="text-xs text-muted-foreground">
+              {statusFilter !== 'draft' && 'Filter to see count'}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -402,17 +372,64 @@ export default function ArticleManagement() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.archived}</div>
+            <div className="text-2xl font-bold">{statusFilter === 'archived' ? stats.total : '—'}</div>
+            <p className="text-xs text-muted-foreground">
+              {statusFilter !== 'archived' && 'Filter to see count'}
+            </p>
           </CardContent>
         </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>All Articles</CardTitle>
-          <CardDescription>
-            Browse, search, and manage all articles in the system
-          </CardDescription>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <CardTitle>All Articles</CardTitle>
+              <CardDescription>
+                Browse, search, and manage all articles in the system
+              </CardDescription>
+            </div>
+            {/* Phase 1.2: Filter dropdowns */}
+            <div className="flex gap-2">
+              <Select
+                value={statusFilter || "all"}
+                onValueChange={(val) => {
+                  setStatusFilter(val === "all" ? undefined : val as 'published' | 'draft' | 'archived');
+                  setPage(0); // Reset to first page when filtering
+                }}
+              >
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="All Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Select
+                value={themeFilter || "all"}
+                onValueChange={(val) => {
+                  setThemeFilter(val === "all" ? undefined : val);
+                  setPage(0);
+                }}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="All Themes" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Themes</SelectItem>
+                  {THEMES.map((theme) => (
+                    <SelectItem key={theme} value={theme}>
+                      {theme}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <DataTable
@@ -421,6 +438,17 @@ export default function ArticleManagement() {
             searchKey="slug"
             searchPlaceholder="Search articles..."
           />
+          
+          {/* Phase 1.2: Pagination controls */}
+          {paginatedData && (
+            <ArticlePagination
+              currentPage={paginatedData.currentPage}
+              totalPages={paginatedData.totalPages}
+              totalCount={paginatedData.totalCount}
+              pageSize={pageSize}
+              onPageChange={setPage}
+            />
+          )}
         </CardContent>
       </Card>
 
@@ -430,7 +458,7 @@ export default function ArticleManagement() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Article?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete <strong>"{deleteArticle?.title?.en}"</strong> and all related data including:
+              This will permanently delete <strong>"{(deleteArticle?.title as Record<string, string>)?.en}"</strong> and all related data including:
               <ul className="list-disc list-inside mt-2 space-y-1">
                 <li>Cross-references (source & target)</li>
                 <li>Markdown sources</li>
@@ -464,11 +492,11 @@ export default function ArticleManagement() {
 
       {/* Edit Metadata Dialog */}
       <ArticleEditDialog
-        article={editArticle}
+        article={editArticle as any}
         open={!!editArticle}
         onOpenChange={() => setEditArticle(null)}
         onSave={() => {
-          queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
+          queryClient.invalidateQueries({ queryKey: ['articles-paginated'] });
           setEditArticle(null);
         }}
       />

@@ -1486,6 +1486,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_term_usage_counts: {
+        Args: { term_names: string[] }
+        Returns: {
+          new_count: number
+          term: string
+        }[]
+      }
       longtransactionsenabled: { Args: never; Returns: boolean }
       populate_geometry_columns:
         | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }
