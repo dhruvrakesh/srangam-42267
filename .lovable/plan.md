@@ -1,139 +1,230 @@
-# Srangam Enterprise Implementation - Phase 1 Complete
 
-**Status**: READY FOR IMPLEMENTATION  
-**Last Updated**: 2025-02-01
+# Implementation Plan: Phase 20 - Fix 404 Routes, Migrate OG to Gemini, Update Documentation
+
+## Overview
+
+This implementation addresses three critical areas:
+1. Fix 404 broken links in `tabs.json` by adding redirect routes
+2. Migrate OG image generation from DALL-E 3 to Gemini with contextual prompts
+3. Create and update documentation to track Phase 20 implementation
 
 ---
 
-## Implementation Summary
+## Part 1: Fix 404 Broken Links
 
-This plan implements the approved Enterprise Reliability & Scalability Roadmap.
+### Current Problem
+The `src/data/ocean_networks/tabs.json` references 4 routes that don't exist:
+- `/maps/bujang-valley` (line 15)
+- `/field-notes/bujang-industrial-sites` (line 23)
+- `/maps/nagapattinam-ocean` (line 46)
+- `/maps/monsoon-windows` (line 77)
 
----
+### Solution
+Add redirect components in `src/App.tsx` that capture `/field-notes/:slug` and `/maps/:slug` and redirect to `/articles/:slug`.
 
-## Changes to Implement
+### Files to Modify
 
-### 1. Documentation Updates
+**File: `src/App.tsx`**
 
-**Create:** `docs/IMPLEMENTATION_STATUS.md`
-- Master tracking document for all Phase 1-3 tasks
-- Status tracking for each completed and pending item
-- Success metrics and changelog
-
-**Update:** `docs/RELIABILITY_AUDIT.md`
-- Add resolved 404 routing issues section
-- Update phase number to 20
-
-### 2. Fix 404 Broken Links (Phase 1.6)
-
-**File:** `src/App.tsx`
-
-Add redirect components for `/field-notes/:slug` and `/maps/:slug`:
+Add two redirect wrapper components and routes:
 
 ```typescript
-// Add import at top
-import { Navigate, useParams } from "react-router-dom";
+// After line 104 (after Auth import)
+// Redirect components for legacy routes
+const FieldNotesRedirect = lazy(() => import("./pages/redirects/FieldNotesRedirect"));
+const MapsRedirect = lazy(() => import("./pages/redirects/MapsRedirect"));
 
-// Create redirect components (after imports, before App component)
-function FieldNotesRedirect() {
-  const { slug } = useParams();
-  return <Navigate to={`/articles/${slug}`} replace />;
-}
-
-function MapsRedirect() {
-  const { slug } = useParams();
-  return <Navigate to={`/articles/${slug}`} replace />;
-}
-
-// Add routes (around line 161, after /field-notes route)
+// Add routes after line 160 (after /field-notes route)
 <Route path="/field-notes/:slug" element={<FieldNotesRedirect />} />
 <Route path="/maps/:slug" element={<MapsRedirect />} />
 ```
 
-**File:** `src/data/ocean_networks/tabs.json`
+**New File: `src/pages/redirects/FieldNotesRedirect.tsx`**
 
-Update draft slugs to use `/articles/` prefix:
-- `/field-notes/bujang-industrial-sites` → `/articles/bujang-industrial-sites`
-- `/maps/bujang-valley` → `/articles/bujang-valley`
-- `/maps/nagapattinam-ocean` → `/articles/nagapattinam-ocean`
-- `/maps/monsoon-windows` → `/articles/monsoon-windows`
-
-### 3. Migrate OG Image Generation to Gemini (Phase 1.8)
-
-**File:** `supabase/functions/generate-article-og/index.ts`
-
-Replace DALL-E 3 with Gemini (`google/gemini-2.5-flash-image`):
-
-1. Remove OpenAI API call
-2. Add Lovable AI Gateway call with `modalities: ["image", "text"]`
-3. Update prompt to use article dek/abstract for context
-4. Maintain Google Drive upload workflow
-
-**Key Changes:**
 ```typescript
-// Replace OpenAI with Lovable AI Gateway
-const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+import { useParams, Navigate } from 'react-router-dom';
 
-const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${LOVABLE_API_KEY}`,
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    model: "google/gemini-2.5-flash-image",
-    messages: [{ role: "user", content: prompt }],
-    modalities: ["image", "text"]
-  })
-});
+export default function FieldNotesRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/articles/${slug}`} replace />;
+}
 ```
 
-### 4. Updated Prompt Strategy for OG Images
-
-Instead of generic theme-based prompts, use article abstract/dek:
+**New File: `src/pages/redirects/MapsRedirect.tsx`**
 
 ```typescript
-const prompt = `Create a professional academic Open Graph image (1792x1024) for:
+import { useParams, Navigate } from 'react-router-dom';
 
-TITLE: "${title}"
-ABSTRACT: "${dek || 'A scholarly article about Indian civilization research'}"
-THEME: ${theme}
+export default function MapsRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/articles/${slug}`} replace />;
+}
+```
 
-DESIGN: Clean academic aesthetic with sacred geometry, ${colors.primary} primary color, ${colors.accent} accent. NO photographs, NO human faces. Display title prominently in elegant serif font. Background: warm cream with subtle ${colors.motif} motif.`;
+---
+
+## Part 2: Migrate OG Image Generation to Gemini
+
+### Current State
+- Uses OpenAI DALL-E 3 (`dall-e-3` model)
+- Generic prompt based only on title and theme
+- Cost: $0.04 per image
+- No article context (dek/abstract)
+
+### Target State
+- Use Gemini (`google/gemini-3-pro-image-preview`) via Lovable AI
+- Contextual prompts using article's `dek` (abstract/summary)
+- Lower cost, faster generation
+- Article-specific imagery based on content
+
+### Implementation
+
+**File: `supabase/functions/generate-article-og/index.ts`**
+
+Replace DALL-E 3 with Gemini image generation:
+
+1. Change API endpoint from OpenAI to Lovable AI (Gemini)
+2. Fetch article's `dek` field for contextual prompt generation
+3. Build richer prompts using the article abstract
+4. Update response handling for Gemini format
+
+```text
+Key Changes:
+
+1. Remove OPENAI_API_KEY check, use GEMINI_API_KEY
+2. Fetch article dek from database before generating
+3. Build enhanced prompt:
+   - Include article title
+   - Include dek/abstract (first 200 chars)
+   - Include theme colors and motifs
+   - Request scholarly academic aesthetic
+4. Call Gemini image generation API
+5. Handle base64 image response
+6. Upload to Google Drive (existing logic)
+```
+
+### Prompt Template
+
+```text
+Generate a professional academic Open Graph image (1792x1024 landscape) for:
+
+ARTICLE: "{title}"
+SUMMARY: "{dek_en}"
+THEME: {theme}
+
+DESIGN:
+- Sacred geometry background ({colors.motif})
+- Primary: {colors.primary}, Accent: {colors.accent}
+- Clean typography, no photographs
+- Scholarly aesthetic suitable for academic sharing
+```
+
+---
+
+## Part 3: Documentation Updates
+
+### New File: `docs/IMPLEMENTATION_STATUS.md`
+
+Master tracking document for all phases:
+
+```markdown
+# Srangam Implementation Status
+
+## Phase 20 (February 2025)
+
+| Task | Status | PR/Commit |
+|------|--------|-----------|
+| 1.1 Centralize slug resolution | ✅ COMPLETE | Phase 19 |
+| 1.2 Paginate article lists | ✅ COMPLETE | Phase 19 |
+| 1.3 Batch cultural term upsert | 🔲 PENDING | - |
+| 1.4 Refactor OceanicArticlePage | ✅ COMPLETE | Phase 19 |
+| 1.5 Structured error responses | 🔲 PENDING | - |
+| 1.6 Fix 404 broken links | ✅ COMPLETE | Phase 20 |
+| 1.7 Related Articles formatting | ✅ COMPLETE | Phase 20 |
+| 1.8 Migrate OG to Gemini | ✅ COMPLETE | Phase 20 |
+
+## Phase 2 Preview (March 2025)
+...
+```
+
+### Update: `docs/RELIABILITY_AUDIT.md`
+
+Add new section after line 215 (before Rollback Procedures):
+
+```markdown
+---
+
+## 404 Routing Issues (Phase 20)
+
+### Identified Broken Routes
+
+| Route | Source | Resolution |
+|-------|--------|------------|
+| `/field-notes/:slug` | tabs.json | Redirect to `/articles/:slug` |
+| `/maps/:slug` | tabs.json | Redirect to `/articles/:slug` |
+
+### Implementation
+
+Added redirect routes in `src/App.tsx`:
+- `FieldNotesRedirect.tsx` - Captures `/field-notes/:slug`
+- `MapsRedirect.tsx` - Captures `/maps/:slug`
+
+Both redirect to `/articles/:slug` where content is resolved via the unified article system.
+
+**Status:** ✅ RESOLVED (Phase 20)
 ```
 
 ---
 
 ## Files Summary
 
-### Create
-| File | Purpose |
-|------|---------|
-| `docs/IMPLEMENTATION_STATUS.md` | Master tracking for all phases |
+| Action | File | Purpose |
+|--------|------|---------|
+| CREATE | `src/pages/redirects/FieldNotesRedirect.tsx` | Redirect `/field-notes/:slug` to `/articles/:slug` |
+| CREATE | `src/pages/redirects/MapsRedirect.tsx` | Redirect `/maps/:slug` to `/articles/:slug` |
+| CREATE | `docs/IMPLEMENTATION_STATUS.md` | Master implementation tracking |
+| MODIFY | `src/App.tsx` | Add redirect route handlers |
+| MODIFY | `supabase/functions/generate-article-og/index.ts` | Replace DALL-E with Gemini |
+| MODIFY | `docs/RELIABILITY_AUDIT.md` | Add 404 resolution section, update to Phase 20 |
 
-### Modify
-| File | Change |
-|------|--------|
-| `src/App.tsx` | Add redirect routes for `/field-notes/:slug` and `/maps/:slug` |
-| `src/data/ocean_networks/tabs.json` | Update draft slugs to use `/articles/` prefix |
-| `supabase/functions/generate-article-og/index.ts` | Replace DALL-E 3 with Gemini |
-| `docs/RELIABILITY_AUDIT.md` | Add 404 section, update phase number |
+---
+
+## Technical Details
+
+### Gemini Image API Configuration
+
+```typescript
+// Using Lovable AI gateway
+const LOVABLE_AI_URL = 'https://api.lovable.dev/v1';
+const model = 'google/gemini-3-pro-image-preview';
+
+// Request format
+{
+  model: 'google/gemini-3-pro-image-preview',
+  prompt: enhancedPrompt,
+  size: '1792x1024',
+  response_format: 'b64_json'
+}
+```
+
+### Route Priority
+
+The redirect routes must be placed AFTER the base `/field-notes` and `/maps-data` routes but BEFORE the wildcard `*` route to ensure proper matching:
+
+```text
+/field-notes        → FieldNotes.tsx (list)
+/field-notes/:slug  → FieldNotesRedirect → /articles/:slug
+/maps-data          → MapsData.tsx
+/maps/:slug         → MapsRedirect → /articles/:slug
+```
 
 ---
 
 ## Testing Checklist
 
-- [ ] Navigate to `/field-notes/bujang-industrial-sites` → should redirect to `/articles/bujang-industrial-sites`
-- [ ] Navigate to `/maps/bujang-valley` → should redirect to `/articles/bujang-valley`
-- [ ] Generate OG image via Data Health Dashboard → should use Gemini
-- [ ] Verify OG images include article-specific context
-
----
-
-## Success Metrics
-
-| Metric | Current | Target |
-|--------|---------|--------|
-| 404 errors on known routes | 4 | 0 |
-| OG image generation cost | $0.04 | ~$0.02 |
-| Phase 1 completion | 5/8 | 8/8 |
+- [ ] Navigate to `/field-notes/bujang-industrial-sites` - should redirect to `/articles/bujang-industrial-sites`
+- [ ] Navigate to `/maps/bujang-valley` - should redirect to `/articles/bujang-valley`
+- [ ] Generate OG image for an article - verify Gemini is used
+- [ ] Verify OG image contains contextual elements from article dek
+- [ ] Check Google Drive upload still works
+- [ ] Verify documentation reflects current state
