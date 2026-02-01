@@ -1,0 +1,150 @@
+# Srangam Implementation Status
+
+**Last Updated**: 2026-02-01
+
+---
+
+## Active Phases
+
+### Phase 21 (February 2026) - Sanskrit Automaton Integration
+
+**Status**: 🔄 In Progress
+
+| Task | Status | Notes |
+|------|--------|-------|
+| 21.1 Documentation | ✅ Complete | `docs/SANSKRIT_AUTOMATON.md` |
+| 21.2 Edge Function Proxy | 🔲 Pending | `sanskrit-analyze` function |
+| 21.3 React Hook | 🔲 Pending | `useSanskritAnalysis.ts` |
+| 21.4 Input Component | 🔲 Pending | `SanskritInputPanel.tsx` |
+| 21.5 Results Component | 🔲 Pending | `SanskritResultsPanel.tsx` |
+| 21.6 Landing Page Update | 🔲 Pending | Interactive demo section |
+| 21.7 Python API Deployment | 🔲 Pending | External hosting required |
+
+**Architecture**: Three-tier (React → Edge Function → Python API/Lovable AI)
+
+**Access Control**: Admin-only (mirrors narration pattern)
+
+---
+
+## Completed Phases
+
+### Phase 20 (January 2026) - Narration System
+
+| Feature | Status |
+|---------|--------|
+| Multi-provider TTS | ✅ Complete |
+| ElevenLabs integration | ✅ Complete |
+| Google Drive caching | ✅ Complete |
+| Admin-only access | ✅ Complete |
+| Voice strategy engine | ✅ Complete |
+
+### Phase 19 (January 2026) - Reliability & Scalability
+
+| Feature | Status |
+|---------|--------|
+| Tag categorization context | ✅ Complete |
+| Centralized slug resolver | ✅ Complete |
+| Documentation updates | ✅ Complete |
+| RLS policy hardening | ✅ Complete |
+
+### Phase 18 (December 2025) - Context Snapshots
+
+| Feature | Status |
+|---------|--------|
+| Snapshot generation | ✅ Complete |
+| Google Drive export | ✅ Complete |
+| Admin UI | ✅ Complete |
+
+---
+
+## Upcoming Phases
+
+### Phase 22 - Search & Discovery
+
+**Trigger**: 500+ articles or user feedback
+
+| Task | Description |
+|------|-------------|
+| 22a | Add pgvector extension |
+| 22b | Generate article embeddings |
+| 22c | Implement semantic search |
+| 22d | "Similar articles" recommendations |
+
+### Phase 23 - Infrastructure Scaling
+
+**Trigger**: 1000+ articles or 10k+ monthly visitors
+
+| Task | Description |
+|------|-------------|
+| 23a | Evaluate table partitioning |
+| 23b | Add read replicas if needed |
+| 23c | Implement CDN for static assets |
+| 23d | Review and optimize indexes |
+
+---
+
+## Feature Matrix
+
+| Feature | Public | User | Admin |
+|---------|--------|------|-------|
+| Read articles | ✅ | ✅ | ✅ |
+| Cultural term tooltips | ✅ | ✅ | ✅ |
+| Cross-reference graph | ✅ | ✅ | ✅ |
+| Audio narration | ❌ | ❌ | ✅ |
+| Sanskrit analysis | ❌ | ❌ | ✅ |
+| Article import | ❌ | ❌ | ✅ |
+| Context snapshots | ❌ | ❌ | ✅ |
+
+---
+
+## Database Tables
+
+| Table | Purpose | RLS |
+|-------|---------|-----|
+| `srangam_articles` | Article content | Public read, admin write |
+| `srangam_cultural_terms` | Glossary | Public read, admin write |
+| `srangam_cross_references` | Article links | Public read, auth write |
+| `srangam_tags` | Tag taxonomy | Public read, admin write |
+| `srangam_audio_narrations` | TTS cache | Public read, auth write |
+| `user_roles` | RBAC | Self read, admin manage |
+
+---
+
+## Edge Functions
+
+| Function | Purpose | Auth |
+|----------|---------|------|
+| `tts-generate` | Text-to-speech | Admin only |
+| `tts-save-drive` | Google Drive upload | Admin only |
+| `process-article` | Import pipeline | Admin only |
+| `tag-categorize` | AI tag assignment | Admin only |
+| `sanskrit-analyze` | Sanskrit NLP | Admin only (Phase 21) |
+
+---
+
+## Key Metrics
+
+| Metric | Current | Target |
+|--------|---------|--------|
+| Articles | 41 | 100 (6 months) |
+| Cross-references | 740 | 2,000 |
+| Cultural terms | 1,628 | 2,500 |
+| Page load time | ~1.5s | < 3s |
+| Import latency | ~3s | < 10s |
+
+---
+
+## Known Issues
+
+| Issue | Priority | Status |
+|-------|----------|--------|
+| Large file writes can timeout | Medium | Mitigated with incremental phases |
+| Mobile Devanagari keyboard | Low | Pending Phase 21.4 |
+
+---
+
+## Documentation Index
+
+- [SANSKRIT_AUTOMATON.md](./SANSKRIT_AUTOMATON.md) - Sanskrit pipeline docs
+- [SCALABILITY_ROADMAP.md](./SCALABILITY_ROADMAP.md) - Performance planning
+- [CURRENT_STATUS.md](./CURRENT_STATUS.md) - Quick reference
