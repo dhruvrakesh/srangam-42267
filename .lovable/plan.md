@@ -1,165 +1,112 @@
 
-# Phase 21: Sanskrit Automaton Integration - Reliable Incremental Implementation
+# Sub-Phase 21.2: Edge Function Scaffold
 
-## Diagnosis: Why Execution Fails
+## Overview
 
-Based on your description that "the Lovable project making changes to code fails and stops," this typically occurs when:
-
-1. **Too many parallel file changes** - Large batch writes can time out
-2. **Complex file modifications** - Long files with many edits
-3. **Missing dependencies** - Files referencing non-existent paths
-
-## Solution: Smaller, Sequential Steps
-
-I will implement Phase 21 in **6 discrete sub-phases**, each with minimal file changes. After each sub-phase completes successfully, proceed to the next.
+This sub-phase creates the `sanskrit-analyze` edge function with Lovable AI fallback and updates the config.toml. The function provides admin-only Sanskrit text analysis using Gemini for transliteration, sandhi splitting, entity extraction, and translation.
 
 ---
 
-## Sub-Phase 21.1: Documentation Only (3 files)
+## Files to Create/Modify
 
-Create documentation to preserve context:
+### 1. CREATE: `supabase/functions/sanskrit-analyze/index.ts`
 
-| File | Action | Size |
-|------|--------|------|
-| `docs/SANSKRIT_AUTOMATON.md` | CREATE | ~150 lines |
-| `docs/IMPLEMENTATION_STATUS.md` | CREATE | ~100 lines |
-| `docs/SCALABILITY_ROADMAP.md` | UPDATE | Add ~30 lines |
+A ~300-line edge function that:
+- Validates authorization (admin-only via user_roles table)
+- Accepts POST with `{ text, mode, options }`
+- Uses Lovable AI Gateway (Gemini) for analysis
+- Returns structured response with error codes
 
-**This sub-phase:** No edge functions, no React components.
+**Key Features:**
 
----
+| Feature | Implementation |
+|---------|----------------|
+| CORS | Standard headers matching existing functions |
+| Auth | Admin check via user_roles table |
+| AI Gateway | `https://ai.gateway.lovable.dev/v1/chat/completions` |
+| Model | `google/gemini-3-flash-preview` |
+| Modes | `full`, `split`, `morph`, `ner`, `translate` |
+| Errors | Structured codes SANSKRIT-E001 through E006 |
 
-## Sub-Phase 21.2: Edge Function Scaffold (2 files)
-
-Create the `sanskrit-analyze` edge function with Lovable AI fallback:
-
-| File | Action |
-|------|--------|
-| `supabase/functions/sanskrit-analyze/index.ts` | CREATE |
-| `supabase/config.toml` | UPDATE (add 3 lines) |
-
-**Features in this sub-phase:**
-- CORS handling
-- Admin-only access check (mirrors `UniversalNarrator.tsx` pattern)
-- Lovable AI fallback for transliteration, sandhi, translation
-- Structured error codes (SANSKRIT-E001 through E005)
-
----
-
-## Sub-Phase 21.3: React Hook (1 file)
-
-Create the API hook for calling the edge function:
-
-| File | Action |
-|------|--------|
-| `src/hooks/useSanskritAnalysis.ts` | CREATE |
-
-**Features:**
-- Calls `/functions/v1/sanskrit-analyze`
-- Handles loading, error, success states
-- Returns structured analysis result
-
----
-
-## Sub-Phase 21.4: Input Component (1 file)
-
-Create the input panel component:
-
-| File | Action |
-|------|--------|
-| `src/components/sanskrit/SanskritInputPanel.tsx` | CREATE |
-
-**Features:**
-- Devanagari text input with proper font
-- Sample text buttons (3 canonical verses)
-- Mode selector (Full, Sandhi, Translate)
-- Analyze button with loading state
-
----
-
-## Sub-Phase 21.5: Results Component (1 file)
-
-Create the results display component:
-
-| File | Action |
-|------|--------|
-| `src/components/sanskrit/SanskritResultsPanel.tsx` | CREATE |
-
-**Features:**
-- Tabbed interface (Sandhi, Morphology, Entities, Translation)
-- Admin-only visibility (matches narration pattern)
-- Fallback indicator when using AI
-- Export buttons (JSON, copy)
-
----
-
-## Sub-Phase 21.6: Landing Page Integration (1 file)
-
-Update the existing Sanskrit Translator page:
-
-| File | Action |
-|------|--------|
-| `src/pages/SanskritTranslator.tsx` | UPDATE |
-
-**Changes:**
-- Add "Try It Now" section between pipeline and demo sections
-- Import and render `SanskritInputPanel` and `SanskritResultsPanel`
-- Admin gate for interactive features (public sees static demo)
-
----
-
-## Architecture Summary
-
-```text
-User (Admin) → SanskritInputPanel
-                     ↓
-              useSanskritAnalysis hook
-                     ↓
-              Edge Function (sanskrit-analyze)
-                     ↓
-          ┌─────────┴─────────┐
-          ↓                   ↓
-    SANSKRIT_API_URL     Lovable AI Fallback
-    (external Python)    (Gemini-based)
-          ↓                   ↓
-    Full Pipeline        AI Approximation
-          ↓                   ↓
-              SanskritResultsPanel
-```
-
----
-
-## Edge Function: Key Design Decisions
-
-### Admin-Only Access
-
+**Admin Check Pattern:**
 ```typescript
-// Mirrors existing UniversalNarrator pattern
-const isAdmin = await checkAdminRole(supabase, userId);
-if (!isAdmin) {
-  return new Response(JSON.stringify({
-    error: 'Admin access required',
-    code: 'SANSKRIT-E006'
-  }), { status: 403, headers: corsHeaders });
+// Using service role to query user_roles
+const { data: roleData } = await supabase
+  .from('user_roles')
+  .select('role')
+  .eq('user_id', userId)
+  .eq('role', 'admin')
+  .maybeSingle();
+
+if (!roleData) {
+  return Response with SANSKRIT-E006 (403 Forbidden)
 }
 ```
 
-### Lovable AI Fallback Prompts
+**Analysis Modes:**
 
-When `SANSKRIT_API_URL` is not configured, the edge function uses Gemini for:
+| Mode | AI Prompt Focus | Response Fields |
+|------|-----------------|-----------------|
+| `full` | All analysis steps | transliterated, sandhiSplit, morphology, entities, translation |
+| `split` | Sandhi splitting only | transliterated, sandhiSplit |
+| `morph` | Grammar analysis | transliterated, sandhiSplit, morphology |
+| `ner` | Entity extraction | transliterated, sandhiSplit, entities |
+| `translate` | Translation with evidence | transliterated, translation |
 
-1. **Transliteration**: Devanagari ↔ IAST with diacritics
-2. **Sandhi splitting**: AI-suggested word boundaries (marked as approximate)
-3. **Translation**: Evidence-based with citation prompts
-4. **Entity extraction**: NER via structured output
+**Tool Calling for Structured Output:**
+Uses Gemini's function calling to ensure valid JSON response with:
+- `transliterated`: IAST with diacritics
+- `sandhiSplit`: Array of split words
+- `morphology`: Array of {word, root, case, number, gender}
+- `entities`: Array of {text, type, normalized}
+- `translation`: {text, evidence[], confidence}
+
+**Error Codes:**
+
+| Code | Status | Condition |
+|------|--------|-----------|
+| SANSKRIT-E001 | 400 | Empty text input |
+| SANSKRIT-E002 | 400 | Invalid analysis mode |
+| SANSKRIT-E003 | 502 | External API unreachable |
+| SANSKRIT-E004 | 504 | Analysis exceeded timeout |
+| SANSKRIT-E005 | 200 | Using fallback (warning in response) |
+| SANSKRIT-E006 | 403 | Admin access required |
+
+---
+
+### 2. UPDATE: `supabase/config.toml`
+
+Add 3 lines for the new function:
+
+```toml
+[functions.sanskrit-analyze]
+verify_jwt = false
+```
+
+---
+
+## Technical Implementation Details
+
+### Request Schema
+
+```typescript
+interface SanskritAnalyzeRequest {
+  text: string;                    // Sanskrit text (Devanagari or IAST)
+  mode?: 'full' | 'split' | 'morph' | 'ner' | 'translate';
+  options?: {
+    transliterationScheme?: 'iast' | 'slp1' | 'hk';
+    includeEvidence?: boolean;
+  };
+}
+```
 
 ### Response Schema
 
 ```typescript
 interface SanskritAnalysisResult {
   success: boolean;
-  mode: 'full' | 'split' | 'morph' | 'ner' | 'translate';
-  source: 'python-api' | 'lovable-ai-fallback';
+  mode: string;
+  source: 'lovable-ai-fallback' | 'python-api';
   data: {
     original: string;
     transliterated: string;
@@ -170,58 +117,96 @@ interface SanskritAnalysisResult {
   };
   warnings?: string[];
   error?: { code: string; message: string };
+  processingTimeMs: number;
+}
+
+interface MorphologyEntry {
+  word: string;
+  root: string;
+  case?: string;
+  number?: string;
+  gender?: string;
+  partOfSpeech?: string;
+}
+
+interface EntityEntry {
+  text: string;
+  type: 'DEITY' | 'PLACE' | 'PERSON' | 'TRIBE' | 'DYNASTY' | 'TEXT' | 'CONCEPT';
+  normalized?: string;
+  context?: string;
+}
+
+interface TranslationResult {
+  text: string;
+  evidence?: string[];
+  confidence?: number;
 }
 ```
 
----
+### AI Prompt Strategy
 
-## Files Summary (9 total)
+**System Prompt (Transliteration + Sandhi):**
+```
+You are a Sanskrit linguistics expert. Given Sanskrit text (Devanagari or romanized), provide:
+1. IAST transliteration with proper diacritics (ā, ī, ū, ṛ, ṝ, ḷ, ṃ, ḥ, ñ, ṅ, ṭ, ḍ, ṇ, ś, ṣ)
+2. Sandhi-split words as an array
 
-| Sub-Phase | Files | Risk |
-|-----------|-------|------|
-| 21.1 | 3 docs | Low |
-| 21.2 | 2 (edge fn + config) | Medium |
-| 21.3 | 1 hook | Low |
-| 21.4 | 1 component | Low |
-| 21.5 | 1 component | Low |
-| 21.6 | 1 page update | Medium |
+Example:
+Input: "नारायणं नमस्कृत्य"
+Output: {
+  "transliterated": "nārāyaṇaṃ namaskṛtya",
+  "sandhiSplit": ["nārāyaṇam", "namas", "kṛtya"]
+}
+```
 
----
-
-## Secret Requirements
-
-| Secret | Required Now | Notes |
-|--------|--------------|-------|
-| `LOVABLE_API_KEY` | Already configured | Auto-provided |
-| `SANSKRIT_API_URL` | No | Add when Python API deployed |
+**System Prompt (Full Analysis):**
+Includes additional sections for morphology, entities, and translation with evidence-based citations.
 
 ---
 
-## External Dependencies (User Action Later)
+## Dependencies
 
-1. **Deploy Python API** to Railway/Render/Fly.io
-2. **Create `api.py`** wrapper using FastAPI (I can provide exact code)
-3. **Add `SANSKRIT_API_URL`** secret to Lovable Cloud
+| Dependency | Status |
+|------------|--------|
+| `LOVABLE_API_KEY` | Already configured (auto-provided) |
+| `SUPABASE_URL` | Auto-available in edge functions |
+| `SUPABASE_SERVICE_ROLE_KEY` | Auto-available for admin checks |
 
 ---
 
-## Recommended Execution Order
+## Security Model
 
-1. Approve this plan
-2. I implement **Sub-Phase 21.1** (docs only)
-3. Verify changes applied successfully
-4. Request **Sub-Phase 21.2** (edge function)
-5. Continue sequentially through 21.6
+1. **Auth Header Required**: Function extracts JWT from Authorization header
+2. **Admin Check**: Queries `user_roles` table for admin role
+3. **No User Data Storage**: Analysis results are not persisted
+4. **Rate Limiting**: Handled by Lovable AI gateway (429/402 errors surfaced)
 
-This incremental approach minimizes the risk of execution failures.
+---
+
+## Risk Assessment
+
+| Risk | Probability | Mitigation |
+|------|-------------|------------|
+| AI hallucination on morphology | Medium | Mark as "AI approximate" in warnings |
+| Rate limiting | Low | Surface 429 errors with retry guidance |
+| Long Sanskrit texts timeout | Medium | Truncate to 2000 characters |
 
 ---
 
 ## Success Criteria
 
-After all sub-phases:
-- Admin users see "Try It Now" section on `/sanskrit-translator`
-- Entering Sanskrit text and clicking "Analyze" returns AI-generated analysis
-- Results display in tabbed interface
-- Non-admin users see static landing page only
-- Console shows "Using Lovable AI fallback" until Python API connected
+After this sub-phase:
+- `POST /functions/v1/sanskrit-analyze` returns 403 for non-admins
+- Admin users receive AI-analyzed Sanskrit text
+- Response includes structured data with proper TypeScript types
+- Errors return structured codes (SANSKRIT-E001 through E006)
+- Console logs show "Using Lovable AI fallback"
+
+---
+
+## Estimated Size
+
+- `index.ts`: ~280 lines
+- `config.toml` update: 3 lines added
+
+This is a focused, low-risk change that creates the backend infrastructure for Sanskrit analysis.
