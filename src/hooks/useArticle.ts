@@ -18,6 +18,7 @@ export interface CrossReference {
     slug: string;
     slug_alias: string | null;
     title: Record<string, string> | null;
+    read_time_minutes: number | null;
   } | null;
 }
 
@@ -64,7 +65,7 @@ export function useArticle(slug: string | undefined): UseArticleResult {
           reference_type,
           strength,
           context_description,
-          target:srangam_articles!target_article_id(slug, slug_alias, title)
+          target:srangam_articles!target_article_id(slug, slug_alias, title, read_time_minutes)
         `)
         .eq('source_article_id', resolved.id)
         .order('strength', { ascending: false })

@@ -124,7 +124,7 @@ export const OceanicArticlePage: React.FC = () => {
     ? crossReferences.slice(0, 3).map(ref => ({
         slug: ref.target?.slug_alias || ref.target?.slug || '',
         title: (ref.target?.title as Record<string, string>)?.en || 'Related Article',
-        read_time_min: 5,
+        read_time_min: ref.target?.read_time_minutes || 5,
       }))
     : [];
 
@@ -369,11 +369,13 @@ export const OceanicArticlePage: React.FC = () => {
                         <Button
                           key={index}
                           variant="ghost"
-                          className="w-full justify-start p-2 h-auto text-left"
+                          className="w-full justify-start p-3 h-auto text-left whitespace-normal"
                           onClick={() => navigate(`/articles/${relatedArticle.slug}`)}
                         >
-                          <div>
-                            <div className="font-medium text-sm">{relatedArticle.title}</div>
+                          <div className="text-left overflow-hidden">
+                            <div className="font-medium text-sm break-words line-clamp-2">
+                              {relatedArticle.title}
+                            </div>
                             <div className="text-xs text-muted-foreground">
                               {relatedArticle.read_time_min} min
                             </div>
