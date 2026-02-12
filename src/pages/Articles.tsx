@@ -100,7 +100,7 @@ export default function Articles() {
           name="keywords" 
           content="Ancient India, Sanskrit Literature, Maritime Trade, Cultural Continuity, Vedic Period, Epigraphy, Puranic Literature, Sacred Ecology, Geology, Deep Time" 
         />
-        <link rel="canonical" href="https://srangam-db.lovable.app/articles" />
+        <link rel="canonical" href="https://srangam.nartiang.org/articles" />
         
         {/* Schema.org Structured Data */}
         {seoData?.structuredData && (

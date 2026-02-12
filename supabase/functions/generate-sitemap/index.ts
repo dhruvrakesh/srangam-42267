@@ -25,7 +25,7 @@ serve(async (req) => {
     );
 
     // Use the actual published URL
-    const baseUrl = 'https://srangam-db.lovable.app';
+    const baseUrl = 'https://srangam.nartiang.org';
     const urls: SitemapUrl[] = [];
 
     // Static routes with SEO priorities

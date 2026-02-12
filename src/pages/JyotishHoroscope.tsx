@@ -41,13 +41,13 @@ export default function JyotishHoroscope() {
           name="keywords" 
           content="Jyotish, Vedic astrology, sidereal astronomy, Swiss Ephemeris, Lahiri Ayanamsa, birth chart, D1 chart, D9 Navamsa, Vimshottari Dasha, astronomical calculations, open source" 
         />
-        <link rel="canonical" href="https://srangam-db.lovable.app/jyotish-horoscope" />
+        <link rel="canonical" href="https://srangam.nartiang.org/jyotish-horoscope" />
         
         {/* Open Graph */}
         <meta property="og:title" content="Jyotiṣa Horoscope Calculator | Srangam" />
         <meta property="og:description" content="Sidereal birth chart calculation with Swiss Ephemeris precision" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://srangam-db.lovable.app/jyotish-horoscope" />
+        <meta property="og:url" content="https://srangam.nartiang.org/jyotish-horoscope" />
         
         {/* Structured Data */}
         <script type="application/ld+json">

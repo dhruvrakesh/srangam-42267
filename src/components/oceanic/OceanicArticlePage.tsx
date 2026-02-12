@@ -18,7 +18,7 @@ import { getProxiedImageUrl } from '@/lib/gdriveProxy';
 import { useArticle } from '@/hooks/useArticle';
 import { ArticleFullSkeleton, ArticleError } from '@/components/oceanic/article';
 
-const BASE_URL = 'https://srangam-db.lovable.app';
+const BASE_URL = 'https://srangam.nartiang.org';
 
 /**
  * Normalize slug: remove trailing punctuation, decode URI, trim whitespace

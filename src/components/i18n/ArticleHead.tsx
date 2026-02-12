@@ -9,7 +9,7 @@ import { MultilingualContent } from '@/types/multilingual';
 import { BreadcrumbSchema, getArticleBreadcrumbs } from '@/components/seo/BreadcrumbSchema';
 import { getProxiedImageUrl } from '@/lib/gdriveProxy';
 
-const BASE_URL = 'https://srangam-db.lovable.app';
+const BASE_URL = 'https://srangam.nartiang.org';
 
 interface ArticleHeadProps {
   articleSlug: string;

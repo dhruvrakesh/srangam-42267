@@ -30,7 +30,7 @@ export default function ReasessingRigvedaAntiquity() {
         <meta property="og:type" content="article" />
         <meta property="article:author" content="Nartiang Foundation Research Team" />
         <meta property="article:published_time" content="2025-10-14" />
-        <link rel="canonical" href="https://srangam-db.lovable.app/reassessing-rigveda-antiquity" />
+        <link rel="canonical" href="https://srangam.nartiang.org/reassessing-rigveda-antiquity" />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
