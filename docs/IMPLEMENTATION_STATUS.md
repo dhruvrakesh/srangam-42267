@@ -34,10 +34,10 @@
 | 2 | Configure DNS: A record for `srangam.nartiang.org` → `185.158.133.1` | User | 🔲 Pending |
 | 3 | Add TXT record `_lovable` for domain verification | User | 🔲 Pending |
 | 4 | Wait for DNS propagation + SSL provisioning (up to 72h) | User | 🔲 Pending |
-| 5 | Update all canonical URLs from `srangam-db.lovable.app` → `srangam.nartiang.org` | AI | 🔲 Blocked on Step 4 |
-| 6 | Update sitemap base URL in edge function | AI | 🔲 Blocked on Step 4 |
-| 7 | Update OG tags in index.html | AI | 🔲 Blocked on Step 4 |
-| 8 | Register `srangam.nartiang.org` in Google Search Console (URL prefix) | User | 🔲 Blocked on Step 4 |
+| 5 | Update all canonical URLs from `srangam-db.lovable.app` → `srangam.nartiang.org` | AI | ✅ Complete (2026-02-12) |
+| 6 | Update sitemap base URL in edge function | AI | ✅ Complete (2026-02-12) |
+| 7 | Update OG tags in index.html | AI | ✅ Complete (2026-02-12) |
+| 8 | Register `srangam.nartiang.org` in Google Search Console (URL prefix) | User | 🔲 Pending |
 | 9 | Add GSC verification meta tag to `index.html` | AI | 🔲 Blocked on Step 8 |
 | 10 | Submit sitemap URL in GSC | User | 🔲 Blocked on Step 9 |
 | 11 | Request indexing for priority pages | User | 🔲 Blocked on Step 10 |

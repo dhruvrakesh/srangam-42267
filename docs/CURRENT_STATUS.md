@@ -80,7 +80,7 @@
 - ⚠️ `TopNavigation.tsx` deprecated (kept for reference)
 
 ### **8. SEO & Discoverability** (updated Jan 2025)
-- ✅ Canonical URL: `https://srangam-db.lovable.app`
+- ✅ Canonical URL: `https://srangam.nartiang.org`
 - ✅ Sitemap generation with correct base URL
 - ✅ `robots.txt` with sitemap directive
 - ✅ Open Graph meta tags (branded image, description)

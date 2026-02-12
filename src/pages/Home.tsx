@@ -112,12 +112,12 @@ export default function Home() {
       <Helmet>
         <title>Srangam — Histories of the Indian Ocean World</title>
         <meta name="description" content="Dharmic Scholarship for the Digital Age. Explore interconnected histories of the Indian Ocean through archaeology, epigraphy, Sanskrit literature, and deep time." />
-        <link rel="canonical" href="https://srangam-db.lovable.app/" />
+        <link rel="canonical" href="https://srangam.nartiang.org/" />
         <meta property="og:title" content="Srangam — Histories of the Indian Ocean World" />
         <meta property="og:description" content="Dharmic Scholarship for the Digital Age — Exploring the interconnected histories of the Indian Ocean through archaeology, epigraphy, and deep time" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://srangam-db.lovable.app/" />
-        <meta property="og:image" content="https://srangam-db.lovable.app/brand/og-image.png" />
+        <meta property="og:url" content="https://srangam.nartiang.org/" />
+        <meta property="og:image" content="https://srangam.nartiang.org/brand/og-image.png" />
       </Helmet>
       {/* Ocean-inspired Background Patterns */}
       <div className="fixed inset-0 ocean-waves opacity-60 pointer-events-none" />

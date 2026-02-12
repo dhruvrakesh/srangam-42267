@@ -1,7 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 
-const BASE_URL = 'https://srangam-db.lovable.app';
+const BASE_URL = 'https://srangam.nartiang.org';
 
 interface BreadcrumbItem {
   name: string;
