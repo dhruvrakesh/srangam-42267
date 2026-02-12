@@ -1,212 +1,186 @@
 
-# Sub-Phase 21.2: Edge Function Scaffold
 
-## Overview
+# SEO Repair: Diagnostic Report and Surgical Fix Plan
 
-This sub-phase creates the `sanskrit-analyze` edge function with Lovable AI fallback and updates the config.toml. The function provides admin-only Sanskrit text analysis using Gemini for transliteration, sandhi splitting, entity extraction, and translation.
-
----
-
-## Files to Create/Modify
-
-### 1. CREATE: `supabase/functions/sanskrit-analyze/index.ts`
-
-A ~300-line edge function that:
-- Validates authorization (admin-only via user_roles table)
-- Accepts POST with `{ text, mode, options }`
-- Uses Lovable AI Gateway (Gemini) for analysis
-- Returns structured response with error codes
-
-**Key Features:**
-
-| Feature | Implementation |
-|---------|----------------|
-| CORS | Standard headers matching existing functions |
-| Auth | Admin check via user_roles table |
-| AI Gateway | `https://ai.gateway.lovable.dev/v1/chat/completions` |
-| Model | `google/gemini-3-flash-preview` |
-| Modes | `full`, `split`, `morph`, `ner`, `translate` |
-| Errors | Structured codes SANSKRIT-E001 through E006 |
-
-**Admin Check Pattern:**
-```typescript
-// Using service role to query user_roles
-const { data: roleData } = await supabase
-  .from('user_roles')
-  .select('role')
-  .eq('user_id', userId)
-  .eq('role', 'admin')
-  .maybeSingle();
-
-if (!roleData) {
-  return Response with SANSKRIT-E006 (403 Forbidden)
-}
-```
-
-**Analysis Modes:**
-
-| Mode | AI Prompt Focus | Response Fields |
-|------|-----------------|-----------------|
-| `full` | All analysis steps | transliterated, sandhiSplit, morphology, entities, translation |
-| `split` | Sandhi splitting only | transliterated, sandhiSplit |
-| `morph` | Grammar analysis | transliterated, sandhiSplit, morphology |
-| `ner` | Entity extraction | transliterated, sandhiSplit, entities |
-| `translate` | Translation with evidence | transliterated, translation |
-
-**Tool Calling for Structured Output:**
-Uses Gemini's function calling to ensure valid JSON response with:
-- `transliterated`: IAST with diacritics
-- `sandhiSplit`: Array of split words
-- `morphology`: Array of {word, root, case, number, gender}
-- `entities`: Array of {text, type, normalized}
-- `translation`: {text, evidence[], confidence}
-
-**Error Codes:**
-
-| Code | Status | Condition |
-|------|--------|-----------|
-| SANSKRIT-E001 | 400 | Empty text input |
-| SANSKRIT-E002 | 400 | Invalid analysis mode |
-| SANSKRIT-E003 | 502 | External API unreachable |
-| SANSKRIT-E004 | 504 | Analysis exceeded timeout |
-| SANSKRIT-E005 | 200 | Using fallback (warning in response) |
-| SANSKRIT-E006 | 403 | Admin access required |
+**Last Audited**: 2026-02-12
+**Scope**: Fix broken SEO without expanding codebase or changing business logic
 
 ---
 
-### 2. UPDATE: `supabase/config.toml`
+## Part 1: Confirmed Issues (Evidence-Based)
 
-Add 3 lines for the new function:
+### CRITICAL-1: OG Image is SVG -- Social Previews Completely Broken
 
-```toml
-[functions.sanskrit-analyze]
-verify_jwt = false
-```
+**Files affected**: `index.html` (lines 44, 47, 54), `src/components/seo/SiteSchema.tsx` (line 27), `src/components/i18n/ArticleHead.tsx` (line 64), `src/components/oceanic/OceanicArticlePage.tsx` (lines 84, 107)
 
----
+**Evidence**: `public/brand/og-image.svg` is an SVG file. Twitter, Facebook, LinkedIn, iMessage, WhatsApp, Slack, and Discord **do not render SVG** for link previews. Every share of this site shows a blank or broken preview image.
 
-## Technical Implementation Details
-
-### Request Schema
-
-```typescript
-interface SanskritAnalyzeRequest {
-  text: string;                    // Sanskrit text (Devanagari or IAST)
-  mode?: 'full' | 'split' | 'morph' | 'ner' | 'translate';
-  options?: {
-    transliterationScheme?: 'iast' | 'slp1' | 'hk';
-    includeEvidence?: boolean;
-  };
-}
-```
-
-### Response Schema
-
-```typescript
-interface SanskritAnalysisResult {
-  success: boolean;
-  mode: string;
-  source: 'lovable-ai-fallback' | 'python-api';
-  data: {
-    original: string;
-    transliterated: string;
-    sandhiSplit: string[];
-    morphology?: MorphologyEntry[];
-    entities?: EntityEntry[];
-    translation?: TranslationResult;
-  };
-  warnings?: string[];
-  error?: { code: string; message: string };
-  processingTimeMs: number;
-}
-
-interface MorphologyEntry {
-  word: string;
-  root: string;
-  case?: string;
-  number?: string;
-  gender?: string;
-  partOfSpeech?: string;
-}
-
-interface EntityEntry {
-  text: string;
-  type: 'DEITY' | 'PLACE' | 'PERSON' | 'TRIBE' | 'DYNASTY' | 'TEXT' | 'CONCEPT';
-  normalized?: string;
-  context?: string;
-}
-
-interface TranslationResult {
-  text: string;
-  evidence?: string[];
-  confidence?: number;
-}
-```
-
-### AI Prompt Strategy
-
-**System Prompt (Transliteration + Sandhi):**
-```
-You are a Sanskrit linguistics expert. Given Sanskrit text (Devanagari or romanized), provide:
-1. IAST transliteration with proper diacritics (ā, ī, ū, ṛ, ṝ, ḷ, ṃ, ḥ, ñ, ṅ, ṭ, ḍ, ṇ, ś, ṣ)
-2. Sandhi-split words as an array
-
-Example:
-Input: "नारायणं नमस्कृत्य"
-Output: {
-  "transliterated": "nārāyaṇaṃ namaskṛtya",
-  "sandhiSplit": ["nārāyaṇam", "namas", "kṛtya"]
-}
-```
-
-**System Prompt (Full Analysis):**
-Includes additional sections for morphology, entities, and translation with evidence-based citations.
+**Fix**: Create `public/brand/og-image.png` (a 1200x630 PNG rendering of the existing SVG design). Update all 6 file references from `.svg` to `.png`.
 
 ---
 
-## Dependencies
+### CRITICAL-2: Canonical URL Fragmentation -- 4 Different Domains
 
-| Dependency | Status |
-|------------|--------|
-| `LOVABLE_API_KEY` | Already configured (auto-provided) |
-| `SUPABASE_URL` | Auto-available in edge functions |
-| `SUPABASE_SERVICE_ROLE_KEY` | Auto-available for admin checks |
+**Evidence from codebase search**:
 
----
+| File | Canonical Domain Used |
+|------|-----------------------|
+| `index.html` | `srangam-db.lovable.app` (correct) |
+| `ArticleHead.tsx` | `srangam-db.lovable.app` (correct) |
+| `OceanicArticlePage.tsx` | `srangam-db.lovable.app` (correct) |
+| `SiteSchema.tsx` | `srangam-db.lovable.app` (correct) |
+| `Articles.tsx` (line 103) | `srangam.lovable.app` (WRONG) |
+| `JyotishHoroscope.tsx` (lines 44, 50) | `srangam.lovable.app` (WRONG) |
+| `SanskritTranslator.tsx` (lines 45, 51) | `srangam.lovable.app` (WRONG) |
+| `ReasessingRigvedaAntiquity.tsx` (line 33) | `srangam.com` (WRONG) |
+| `AsuraExilesIndoIranian.tsx` (line 41) | `srangam.in` (WRONG) |
+| `RishiGenealogiesVedicTradition.tsx` (line 39) | `srangam.in` (WRONG) |
+| `generate-article-seo/index.ts` (line 146) | `srangam.lovable.app` (WRONG) |
 
-## Security Model
+Google treats these as **separate properties**. Pages pointing to non-existent domains (`srangam.com`, `srangam.in`) are telling Google to index a domain that does not serve this app.
 
-1. **Auth Header Required**: Function extracts JWT from Authorization header
-2. **Admin Check**: Queries `user_roles` table for admin role
-3. **No User Data Storage**: Analysis results are not persisted
-4. **Rate Limiting**: Handled by Lovable AI gateway (429/402 errors surfaced)
-
----
-
-## Risk Assessment
-
-| Risk | Probability | Mitigation |
-|------|-------------|------------|
-| AI hallucination on morphology | Medium | Mark as "AI approximate" in warnings |
-| Rate limiting | Low | Surface 429 errors with retry guidance |
-| Long Sanskrit texts timeout | Medium | Truncate to 2000 characters |
+**Fix**: Replace all incorrect canonical domains with `https://srangam-db.lovable.app` in 7 files.
 
 ---
 
-## Success Criteria
+### CRITICAL-3: Sitemap URL in robots.txt Points to SPA Route
 
-After this sub-phase:
-- `POST /functions/v1/sanskrit-analyze` returns 403 for non-admins
-- Admin users receive AI-analyzed Sanskrit text
-- Response includes structured data with proper TypeScript types
-- Errors return structured codes (SANSKRIT-E001 through E006)
-- Console logs show "Using Lovable AI fallback"
+**Evidence**: `robots.txt` line 16 declares `Sitemap: https://srangam-db.lovable.app/sitemap.xml`. But `/sitemap.xml` is a React component (`SitemapXML.tsx`) that renders HTML wrapping the XML in a `<pre>` tag. Crawlers receive `<!DOCTYPE html>` not `<?xml version="1.0"?>`.
+
+The actual valid XML is served by the edge function at `/functions/v1/generate-sitemap`.
+
+**Fix**: Update `robots.txt` to point to the edge function URL.
 
 ---
 
-## Estimated Size
+### MODERATE-4: Home Page Has Zero SEO Tags
 
-- `index.ts`: ~280 lines
-- `config.toml` update: 3 lines added
+**Evidence**: `src/pages/Home.tsx` imports no `Helmet` component. No `<title>`, `<meta description>`, or OG tags are set for the homepage. It relies entirely on static `index.html` defaults, which is adequate for the root URL but means no dynamic metadata.
 
-This is a focused, low-risk change that creates the backend infrastructure for Sanskrit analysis.
+**Fix**: Add `Helmet` with homepage-specific title, description, and OG tags.
+
+---
+
+### MODERATE-5: Google Search Console Not Verified
+
+**Evidence**: `index.html` line 14 -- verification meta tag is commented out with placeholder text `YOUR_VERIFICATION_CODE`.
+
+**Fix**: Uncomment and prompt user for their verification code. (Requires user action.)
+
+---
+
+### MODERATE-6: Font Loading Blocks Rendering
+
+**Evidence**: `index.html` lines 23-37 load **12 font families** across 7 separate `<link>` requests. All are render-blocking. Lines 28-34 (Indian language fonts) and line 37 (ancient script fonts) are rarely needed on first paint.
+
+**Fix**: Add `&display=swap` to all font URLs. Move ancient script fonts (Brahmi, Grantha, Kawi, Cham) to lazy loading via `media="print" onload="this.media='all'"` pattern.
+
+---
+
+### LOW-7: generate-article-seo Uses Wrong Domain and Requires OpenAI Key
+
+**Evidence**: `supabase/functions/generate-article-seo/index.ts` line 146 uses `srangam.lovable.app` (wrong domain). Line 93 requires `OPENAI_API_KEY` which may not be configured, causing the `useDynamicSEO` hook to always fall back to static content.
+
+**Fix**: Update domain to `srangam-db.lovable.app`. Migrate from OpenAI to Lovable AI Gateway (no API key needed).
+
+---
+
+## Part 2: Implementation Plan
+
+### Phase A: Documentation Update (1 file, zero risk)
+
+Update `docs/SEO_CONFIGURATION.md` to reflect the actual current state, document all issues found, and record the canonical domain policy as an invariant.
+
+Update `docs/IMPLEMENTATION_STATUS.md` to add SEO repair as a tracked task.
+
+---
+
+### Phase B: Critical Canonical and OG Fixes (8 files, zero functional risk)
+
+These are pure string replacements with no logic changes.
+
+| File | Change |
+|------|--------|
+| `index.html` (lines 44, 47, 54) | `og-image.svg` to `og-image.png`, image type to `image/png` |
+| `src/pages/Articles.tsx` (line 103) | `srangam.lovable.app` to `srangam-db.lovable.app` |
+| `src/pages/JyotishHoroscope.tsx` (lines 44, 50) | `srangam.lovable.app` to `srangam-db.lovable.app` |
+| `src/pages/SanskritTranslator.tsx` (lines 45, 51) | `srangam.lovable.app` to `srangam-db.lovable.app` |
+| `src/pages/articles/ReasessingRigvedaAntiquity.tsx` (line 33) | `srangam.com` to `srangam-db.lovable.app` |
+| `src/pages/articles/AsuraExilesIndoIranian.tsx` (line 41) | `srangam.in` to `srangam-db.lovable.app` |
+| `src/pages/articles/RishiGenealogiesVedicTradition.tsx` (line 39) | `srangam.in` to `srangam-db.lovable.app` |
+| `public/robots.txt` (line 16) | Update sitemap URL to edge function endpoint |
+
+---
+
+### Phase C: OG Image PNG Creation (1 file)
+
+Create `public/brand/og-image.png` -- a 1200x630 PNG rendering of the existing SVG design using the same brand colors (Ocean Teal #2A9D8F, Epigraphy Maroon #7B2D26, Cream #F8F5F0).
+
+Since we cannot run image conversion tools, we will create a simple branded PNG using an SVG-to-canvas approach within an edge function, or provide a static fallback PNG with text-based branding.
+
+---
+
+### Phase D: Home Page SEO + Font Performance (2 files)
+
+| File | Change |
+|------|--------|
+| `src/pages/Home.tsx` | Add `Helmet` import and homepage-specific meta tags |
+| `index.html` (lines 28-37) | Add `&display=swap` to Indian language fonts; lazy-load ancient script fonts |
+
+---
+
+### Phase E: Edge Function Domain Fix (1 file)
+
+| File | Change |
+|------|--------|
+| `supabase/functions/generate-article-seo/index.ts` (line 146) | `srangam.lovable.app` to `srangam-db.lovable.app` |
+
+Optionally migrate from OpenAI API to Lovable AI Gateway to remove the API key dependency.
+
+---
+
+## Part 3: Execution Order
+
+| Step | Phase | Files | Risk |
+|------|-------|-------|------|
+| 1 | A: Documentation | 2 docs | None |
+| 2 | B: Canonical + OG refs | 8 files (string replacements only) | None |
+| 3 | C: PNG creation | 1 asset | None |
+| 4 | D: Home SEO + fonts | 2 files | Low |
+| 5 | E: Edge function fix | 1 edge function | Low |
+
+**Total files touched**: 14
+**Lines of logic changed**: 0 (all are config/string fixes)
+**New components created**: 0
+**Risk to existing functionality**: Zero
+
+---
+
+## Part 4: What This Plan Does NOT Do
+
+- Does not add SSR or pre-rendering (not available on this platform)
+- Does not expand the codebase with new features
+- Does not change routing, auth, or business logic
+- Does not touch database schema or RLS policies
+- Does not create new edge functions
+
+---
+
+## Part 5: User Actions Required
+
+1. **Google Search Console**: Register at search.google.com/search-console, get verification code, provide it so we can uncomment the meta tag
+2. **Submit sitemap**: After fixes, manually submit the edge function sitemap URL in Search Console
+3. **Request indexing**: Use URL Inspection tool for priority pages (/, /articles, /about)
+
+---
+
+## Part 6: Success Criteria
+
+After all phases:
+- Sharing any Srangam URL on Twitter/LinkedIn/Slack shows a branded preview image
+- All canonical URLs point to `srangam-db.lovable.app`
+- `robots.txt` sitemap URL returns valid XML (not HTML)
+- Home page has proper meta description and OG tags
+- Fonts load with `display=swap` (no render blocking)
+- Core Web Vitals improve (LCP reduction from fewer blocking requests)
+
