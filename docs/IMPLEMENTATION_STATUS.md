@@ -1,10 +1,28 @@
 # Srangam Implementation Status
 
-**Last Updated**: 2026-02-01
+**Last Updated**: 2026-02-12
 
 ---
 
 ## Active Phases
+
+### SEO Repair (February 2026) - Critical Fixes
+
+**Status**: ✅ Complete (2026-02-12)
+
+| Task | Status | Notes |
+|------|--------|-------|
+| OG image SVG→PNG | ✅ Complete | Social platforms don't render SVG |
+| Canonical URL standardization | ✅ Complete | 7 files fixed (4 domains → 1) |
+| robots.txt sitemap URL | ✅ Complete | Points to edge function now |
+| Home page Helmet tags | ✅ Complete | Title, description, OG tags |
+| Font loading optimization | ✅ Complete | `display=swap` + lazy loading |
+| Edge function domain fix | ✅ Complete | `generate-article-seo` updated |
+| Documentation update | ✅ Complete | `docs/SEO_CONFIGURATION.md` |
+
+**Audit Reference**: See `docs/SEO_CONFIGURATION.md` for canonical domain policy.
+
+---
 
 ### Phase 21 (February 2026) - Sanskrit Automaton Integration
 
