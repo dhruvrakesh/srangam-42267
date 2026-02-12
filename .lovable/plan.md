@@ -1,186 +1,125 @@
 
 
-# SEO Repair: Diagnostic Report and Surgical Fix Plan
+# SEO Completion: Documentation Update and GSC Activation
 
-**Last Audited**: 2026-02-12
-**Scope**: Fix broken SEO without expanding codebase or changing business logic
-
----
-
-## Part 1: Confirmed Issues (Evidence-Based)
-
-### CRITICAL-1: OG Image is SVG -- Social Previews Completely Broken
-
-**Files affected**: `index.html` (lines 44, 47, 54), `src/components/seo/SiteSchema.tsx` (line 27), `src/components/i18n/ArticleHead.tsx` (line 64), `src/components/oceanic/OceanicArticlePage.tsx` (lines 84, 107)
-
-**Evidence**: `public/brand/og-image.svg` is an SVG file. Twitter, Facebook, LinkedIn, iMessage, WhatsApp, Slack, and Discord **do not render SVG** for link previews. Every share of this site shows a blank or broken preview image.
-
-**Fix**: Create `public/brand/og-image.png` (a 1200x630 PNG rendering of the existing SVG design). Update all 6 file references from `.svg` to `.png`.
+**Scope**: Update project documentation to record current verified state, add the remaining blocker (GSC verification), and prepare for custom domain configuration if needed.
 
 ---
 
-### CRITICAL-2: Canonical URL Fragmentation -- 4 Different Domains
+## Part 1: Current State (Verified)
 
-**Evidence from codebase search**:
+All code-level SEO fixes from the previous repair cycle are confirmed working:
 
-| File | Canonical Domain Used |
-|------|-----------------------|
-| `index.html` | `srangam-db.lovable.app` (correct) |
-| `ArticleHead.tsx` | `srangam-db.lovable.app` (correct) |
-| `OceanicArticlePage.tsx` | `srangam-db.lovable.app` (correct) |
-| `SiteSchema.tsx` | `srangam-db.lovable.app` (correct) |
-| `Articles.tsx` (line 103) | `srangam.lovable.app` (WRONG) |
-| `JyotishHoroscope.tsx` (lines 44, 50) | `srangam.lovable.app` (WRONG) |
-| `SanskritTranslator.tsx` (lines 45, 51) | `srangam.lovable.app` (WRONG) |
-| `ReasessingRigvedaAntiquity.tsx` (line 33) | `srangam.com` (WRONG) |
-| `AsuraExilesIndoIranian.tsx` (line 41) | `srangam.in` (WRONG) |
-| `RishiGenealogiesVedicTradition.tsx` (line 39) | `srangam.in` (WRONG) |
-| `generate-article-seo/index.ts` (line 146) | `srangam.lovable.app` (WRONG) |
+| Fix | File(s) | Status |
+|-----|---------|--------|
+| OG image PNG (1200x630) | `public/brand/og-image.png` | Verified -- branded image renders correctly |
+| All canonical URLs use `srangam-db.lovable.app` | 7 files | Verified -- zero stale domain references found |
+| robots.txt sitemap points to edge function | `public/robots.txt` | Verified -- returns valid XML |
+| Home page has Helmet SEO tags | `src/pages/Home.tsx` | Verified -- title, description, OG tags present |
+| Font loading optimized | `index.html` | Verified -- display=swap, lazy loading for ancient scripts |
+| Edge function domain fixed | `generate-article-seo/index.ts` | Verified |
 
-Google treats these as **separate properties**. Pages pointing to non-existent domains (`srangam.com`, `srangam.in`) are telling Google to index a domain that does not serve this app.
-
-**Fix**: Replace all incorrect canonical domains with `https://srangam-db.lovable.app` in 7 files.
+**The only remaining blocker is not a code issue.** Your Google Search Console screenshots show the property is registered for `nartiang.org`, while the application is deployed at `srangam-db.lovable.app`. Google is looking at the wrong domain entirely.
 
 ---
 
-### CRITICAL-3: Sitemap URL in robots.txt Points to SPA Route
+## Part 2: Changes to Make
 
-**Evidence**: `robots.txt` line 16 declares `Sitemap: https://srangam-db.lovable.app/sitemap.xml`. But `/sitemap.xml` is a React component (`SitemapXML.tsx`) that renders HTML wrapping the XML in a `<pre>` tag. Crawlers receive `<!DOCTYPE html>` not `<?xml version="1.0"?>`.
+### 2A. Update `docs/IMPLEMENTATION_STATUS.md`
 
-The actual valid XML is served by the edge function at `/functions/v1/generate-sitemap`.
+Add a new "SEO Activation" section under Active Phases that tracks the remaining user actions:
 
-**Fix**: Update `robots.txt` to point to the edge function URL.
+- Add GSC property setup status (pending user action)
+- Add custom domain consideration (`nartiang.org` vs `srangam-db.lovable.app`)
+- Record the verified state of all code-level fixes
+- Add to Known Issues: "GSC registered for wrong domain"
 
----
+### 2B. Update `docs/SEO_CONFIGURATION.md`
 
-### MODERATE-4: Home Page Has Zero SEO Tags
+Add a new section documenting the domain strategy decision:
 
-**Evidence**: `src/pages/Home.tsx` imports no `Helmet` component. No `<title>`, `<meta description>`, or OG tags are set for the homepage. It relies entirely on static `index.html` defaults, which is adequate for the root URL but means no dynamic metadata.
+- If `nartiang.org` is the intended public domain: document the custom domain setup steps (A record pointing to 185.158.133.1, TXT verification record, add both root and www in Lovable project settings)
+- If `srangam-db.lovable.app` is the production domain: document that GSC must be re-registered for this domain
+- Add a "Current Blocker" callout at the top of the file
 
-**Fix**: Add `Helmet` with homepage-specific title, description, and OG tags.
+### 2C. Add GSC verification meta tag to `index.html`
 
----
-
-### MODERATE-5: Google Search Console Not Verified
-
-**Evidence**: `index.html` line 14 -- verification meta tag is commented out with placeholder text `YOUR_VERIFICATION_CODE`.
-
-**Fix**: Uncomment and prompt user for their verification code. (Requires user action.)
-
----
-
-### MODERATE-6: Font Loading Blocks Rendering
-
-**Evidence**: `index.html` lines 23-37 load **12 font families** across 7 separate `<link>` requests. All are render-blocking. Lines 28-34 (Indian language fonts) and line 37 (ancient script fonts) are rarely needed on first paint.
-
-**Fix**: Add `&display=swap` to all font URLs. Move ancient script fonts (Brahmi, Grantha, Kawi, Cham) to lazy loading via `media="print" onload="this.media='all'"` pattern.
+Once you provide the verification code from Google Search Console (for the correct domain property), uncomment line 14 and insert the actual code. This is a single-line edit.
 
 ---
 
-### LOW-7: generate-article-seo Uses Wrong Domain and Requires OpenAI Key
+## Part 3: User Decision Required
 
-**Evidence**: `supabase/functions/generate-article-seo/index.ts` line 146 uses `srangam.lovable.app` (wrong domain). Line 93 requires `OPENAI_API_KEY` which may not be configured, causing the `useDynamicSEO` hook to always fall back to static content.
+Before any implementation, one strategic decision is needed:
 
-**Fix**: Update domain to `srangam-db.lovable.app`. Migrate from OpenAI to Lovable AI Gateway (no API key needed).
+**Which domain is the production identity for Srangam?**
 
----
+- **Option A: `srangam-db.lovable.app`** (current deployment)
+  - Action: Create a new GSC property for this URL, get verification code, share it here
+  - No DNS changes needed
+  - All code already points here
 
-## Part 2: Implementation Plan
+- **Option B: `nartiang.org`** (your current GSC property)
+  - Action: Configure `nartiang.org` as a custom domain in Lovable project settings
+  - DNS: Add A records for `@` and `www` pointing to `185.158.133.1`, plus a TXT record for verification
+  - After domain is active: update all canonical URLs, OG tags, and sitemap base URL from `srangam-db.lovable.app` to `nartiang.org`
+  - This would be a second round of canonical standardization
 
-### Phase A: Documentation Update (1 file, zero risk)
-
-Update `docs/SEO_CONFIGURATION.md` to reflect the actual current state, document all issues found, and record the canonical domain policy as an invariant.
-
-Update `docs/IMPLEMENTATION_STATUS.md` to add SEO repair as a tracked task.
-
----
-
-### Phase B: Critical Canonical and OG Fixes (8 files, zero functional risk)
-
-These are pure string replacements with no logic changes.
-
-| File | Change |
-|------|--------|
-| `index.html` (lines 44, 47, 54) | `og-image.svg` to `og-image.png`, image type to `image/png` |
-| `src/pages/Articles.tsx` (line 103) | `srangam.lovable.app` to `srangam-db.lovable.app` |
-| `src/pages/JyotishHoroscope.tsx` (lines 44, 50) | `srangam.lovable.app` to `srangam-db.lovable.app` |
-| `src/pages/SanskritTranslator.tsx` (lines 45, 51) | `srangam.lovable.app` to `srangam-db.lovable.app` |
-| `src/pages/articles/ReasessingRigvedaAntiquity.tsx` (line 33) | `srangam.com` to `srangam-db.lovable.app` |
-| `src/pages/articles/AsuraExilesIndoIranian.tsx` (line 41) | `srangam.in` to `srangam-db.lovable.app` |
-| `src/pages/articles/RishiGenealogiesVedicTradition.tsx` (line 39) | `srangam.in` to `srangam-db.lovable.app` |
-| `public/robots.txt` (line 16) | Update sitemap URL to edge function endpoint |
+- **Option C: A different domain** (e.g., `srangam.com` or `srangam.in`)
+  - Same process as Option B but with a different domain
 
 ---
 
-### Phase C: OG Image PNG Creation (1 file)
+## Part 4: Implementation (After Decision)
 
-Create `public/brand/og-image.png` -- a 1200x630 PNG rendering of the existing SVG design using the same brand colors (Ocean Teal #2A9D8F, Epigraphy Maroon #7B2D26, Cream #F8F5F0).
+### If Option A (keep `srangam-db.lovable.app`):
 
-Since we cannot run image conversion tools, we will create a simple branded PNG using an SVG-to-canvas approach within an edge function, or provide a static fallback PNG with text-based branding.
+| Step | Action | Owner |
+|------|--------|-------|
+| 1 | Update documentation (2A, 2B above) | AI |
+| 2 | Register `srangam-db.lovable.app` in GSC (URL prefix method) | User |
+| 3 | Choose HTML tag verification, copy the code | User |
+| 4 | Share verification code in chat | User |
+| 5 | Uncomment meta tag in `index.html` with actual code | AI |
+| 6 | Publish the change | User |
+| 7 | Submit sitemap in GSC: the edge function URL shown in robots.txt | User |
+| 8 | Request indexing for priority pages (/, /articles, /about) | User |
 
----
+### If Option B (use `nartiang.org`):
 
-### Phase D: Home Page SEO + Font Performance (2 files)
-
-| File | Change |
-|------|--------|
-| `src/pages/Home.tsx` | Add `Helmet` import and homepage-specific meta tags |
-| `index.html` (lines 28-37) | Add `&display=swap` to Indian language fonts; lazy-load ancient script fonts |
-
----
-
-### Phase E: Edge Function Domain Fix (1 file)
-
-| File | Change |
-|------|--------|
-| `supabase/functions/generate-article-seo/index.ts` (line 146) | `srangam.lovable.app` to `srangam-db.lovable.app` |
-
-Optionally migrate from OpenAI API to Lovable AI Gateway to remove the API key dependency.
-
----
-
-## Part 3: Execution Order
-
-| Step | Phase | Files | Risk |
-|------|-------|-------|------|
-| 1 | A: Documentation | 2 docs | None |
-| 2 | B: Canonical + OG refs | 8 files (string replacements only) | None |
-| 3 | C: PNG creation | 1 asset | None |
-| 4 | D: Home SEO + fonts | 2 files | Low |
-| 5 | E: Edge function fix | 1 edge function | Low |
-
-**Total files touched**: 14
-**Lines of logic changed**: 0 (all are config/string fixes)
-**New components created**: 0
-**Risk to existing functionality**: Zero
+| Step | Action | Owner |
+|------|--------|-------|
+| 1 | Update documentation (2A, 2B above) | AI |
+| 2 | Add `nartiang.org` in Lovable project Settings > Domains | User |
+| 3 | Configure DNS: A records for @ and www to 185.158.133.1, TXT record | User |
+| 4 | Wait for DNS propagation and SSL provisioning | User |
+| 5 | Update all canonical URLs from `srangam-db.lovable.app` to `nartiang.org` (7 files) | AI |
+| 6 | Update sitemap base URL in edge function | AI |
+| 7 | Update OG tags in index.html | AI |
+| 8 | Get GSC verification code for `nartiang.org` | User |
+| 9 | Add verification meta tag | AI |
+| 10 | Submit sitemap and request indexing | User |
 
 ---
 
-## Part 4: What This Plan Does NOT Do
+## Part 5: Risk Assessment
 
-- Does not add SSR or pre-rendering (not available on this platform)
-- Does not expand the codebase with new features
+| Risk | Level | Notes |
+|------|-------|-------|
+| Documentation updates | Zero | Read-only changes to markdown files |
+| GSC meta tag addition | Zero | Single HTML attribute change |
+| Custom domain migration (Option B only) | Low | String replacements only, same pattern as previous canonical fix |
+| DNS propagation delay | N/A | Can take up to 72 hours, no code impact |
+
+---
+
+## Part 6: What This Plan Does NOT Do
+
+- Does not add SSR or pre-rendering
+- Does not expand the codebase
 - Does not change routing, auth, or business logic
 - Does not touch database schema or RLS policies
-- Does not create new edge functions
+- Does not create new components or edge functions
 
----
-
-## Part 5: User Actions Required
-
-1. **Google Search Console**: Register at search.google.com/search-console, get verification code, provide it so we can uncomment the meta tag
-2. **Submit sitemap**: After fixes, manually submit the edge function sitemap URL in Search Console
-3. **Request indexing**: Use URL Inspection tool for priority pages (/, /articles, /about)
-
----
-
-## Part 6: Success Criteria
-
-After all phases:
-- Sharing any Srangam URL on Twitter/LinkedIn/Slack shows a branded preview image
-- All canonical URLs point to `srangam-db.lovable.app`
-- `robots.txt` sitemap URL returns valid XML (not HTML)
-- Home page has proper meta description and OG tags
-- Fonts load with `display=swap` (no render blocking)
-- Core Web Vitals improve (LCP reduction from fewer blocking requests)
+The SEO infrastructure is complete. The remaining work is configuration (GSC setup) and a strategic domain decision.
 
