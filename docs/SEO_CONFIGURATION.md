@@ -7,11 +7,32 @@ This document outlines the SEO configuration for the Srangam platform.
 
 ---
 
+## 🚨 CURRENT BLOCKER: Domain Migration Pending
+
+**Current deployment**: `https://srangam-db.lovable.app`
+**Target production domain**: `https://srangam.nartiang.org`
+
+> **Status**: Custom domain setup is pending. Once `srangam.nartiang.org` DNS is active and SSL provisioned,
+> a canonical URL migration will update all references from `srangam-db.lovable.app` to `srangam.nartiang.org`.
+> See `docs/IMPLEMENTATION_STATUS.md` → "SEO Activation" for the step-by-step tracker.
+
+### User Actions Required
+
+1. **Lovable Settings → Domains**: Add `srangam.nartiang.org`
+2. **DNS at registrar**: Add A record `srangam` → `185.158.133.1` under `nartiang.org`
+3. **DNS at registrar**: Add TXT record `_lovable.srangam` for verification
+4. **Wait** for DNS propagation (up to 72h) and SSL provisioning
+5. **After domain is active**: Notify AI to run canonical migration (string replacements in ~10 files)
+6. **Google Search Console**: Register `https://srangam.nartiang.org` as URL prefix property
+7. **Share** GSC verification code so AI can add meta tag to `index.html`
+
+---
+
 ## 🚨 INVARIANT: Canonical Domain Policy
 
-**Production URL**: `https://srangam-db.lovable.app`
+**Current Production URL**: `https://srangam-db.lovable.app` (migrating to `https://srangam.nartiang.org`)
 
-> **ALL** canonical URLs, OG tags, sitemap references, and structured data MUST use this domain.
+> **ALL** canonical URLs, OG tags, sitemap references, and structured data MUST use a single domain.
 > Do NOT use `srangam.com`, `srangam.in`, `srangam.lovable.app`, or any other domain variant.
 > This policy was established after a 2026-02-12 audit found 4 different domains fragmenting SEO authority.
 

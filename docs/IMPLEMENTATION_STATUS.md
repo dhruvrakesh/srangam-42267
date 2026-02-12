@@ -22,6 +22,38 @@
 
 **Audit Reference**: See `docs/SEO_CONFIGURATION.md` for canonical domain policy.
 
+### SEO Activation (February 2026) - Domain & GSC Setup
+
+**Status**: 🔄 In Progress
+
+**Production Domain Decision**: `srangam.nartiang.org` (subdomain of `nartiang.org`)
+
+| Step | Action | Owner | Status |
+|------|--------|-------|--------|
+| 1 | Add `srangam.nartiang.org` in Lovable project Settings → Domains | User | 🔲 Pending |
+| 2 | Configure DNS: A record for `srangam.nartiang.org` → `185.158.133.1` | User | 🔲 Pending |
+| 3 | Add TXT record `_lovable` for domain verification | User | 🔲 Pending |
+| 4 | Wait for DNS propagation + SSL provisioning (up to 72h) | User | 🔲 Pending |
+| 5 | Update all canonical URLs from `srangam-db.lovable.app` → `srangam.nartiang.org` | AI | 🔲 Blocked on Step 4 |
+| 6 | Update sitemap base URL in edge function | AI | 🔲 Blocked on Step 4 |
+| 7 | Update OG tags in index.html | AI | 🔲 Blocked on Step 4 |
+| 8 | Register `srangam.nartiang.org` in Google Search Console (URL prefix) | User | 🔲 Blocked on Step 4 |
+| 9 | Add GSC verification meta tag to `index.html` | AI | 🔲 Blocked on Step 8 |
+| 10 | Submit sitemap URL in GSC | User | 🔲 Blocked on Step 9 |
+| 11 | Request indexing for priority pages | User | 🔲 Blocked on Step 10 |
+
+**Files to update in Step 5–7** (canonical migration):
+- `index.html` (canonical, OG URL, Twitter URL)
+- `src/components/seo/SiteSchema.tsx`
+- `src/components/i18n/ArticleHead.tsx`
+- `src/components/oceanic/OceanicArticlePage.tsx`
+- `src/pages/Articles.tsx`
+- `src/pages/JyotishHoroscope.tsx`
+- `src/pages/SanskritTranslator.tsx`
+- `supabase/functions/generate-sitemap/index.ts`
+- `supabase/functions/generate-article-seo/index.ts`
+- `public/robots.txt`
+
 ---
 
 ### Phase 21 (February 2026) - Sanskrit Automaton Integration
@@ -156,6 +188,8 @@
 
 | Issue | Priority | Status |
 |-------|----------|--------|
+| GSC registered for wrong domain (`nartiang.org` not `srangam-db.lovable.app`) | **Critical** | Pending domain migration to `srangam.nartiang.org` |
+| Canonical URLs need migration to `srangam.nartiang.org` after DNS active | High | Blocked on custom domain setup |
 | Large file writes can timeout | Medium | Mitigated with incremental phases |
 | Mobile Devanagari keyboard | Low | Pending Phase 21.4 |
 
