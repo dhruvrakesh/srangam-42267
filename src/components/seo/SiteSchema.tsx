@@ -24,7 +24,7 @@ export const SiteSchema: React.FC = () => {
     },
     image: {
       '@type': 'ImageObject',
-      url: `${BASE_URL}/brand/og-image.svg`,
+      url: `${BASE_URL}/brand/og-image.png`,
       width: 1200,
       height: 630
     },

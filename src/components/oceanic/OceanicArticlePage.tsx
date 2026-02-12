@@ -81,7 +81,7 @@ export const OceanicArticlePage: React.FC = () => {
   const articleTitle = getArticleTitle(article, currentLanguage);
   const articleSlug = article.slug_alias || article.slug;
   const canonicalUrl = `${BASE_URL}/${articleSlug}`;
-  const rawOgImageUrl = article.og_image_url || `${BASE_URL}/brand/og-image.svg`;
+  const rawOgImageUrl = article.og_image_url || `${BASE_URL}/brand/og-image.png`;
   const ogImageUrl = getProxiedImageUrl(rawOgImageUrl);
   const description = article.abstract.substring(0, 160);
 
@@ -104,7 +104,7 @@ export const OceanicArticlePage: React.FC = () => {
       url: BASE_URL,
       logo: {
         '@type': 'ImageObject',
-        url: `${BASE_URL}/brand/og-image.svg`
+        url: `${BASE_URL}/brand/og-image.png`
       }
     },
     mainEntityOfPage: canonicalUrl,

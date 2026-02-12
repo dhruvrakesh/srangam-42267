@@ -143,7 +143,7 @@ GUIDELINES:
             datePublished: article.published_date,
             about: article.theme,
             keywords: article.tags?.join(', ') || '',
-            url: `https://srangam.lovable.app/articles/${article.slug}`
+            url: `https://srangam-db.lovable.app/articles/${article.slug}`
           }
         };
       })

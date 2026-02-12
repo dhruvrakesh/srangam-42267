@@ -38,7 +38,7 @@ export default function AsuraExilesIndoIranian() {
         <meta property="og:title" content="The Asura Exiles: Indo-Iranian Origins and the Vedic-Zoroastrian Schism" />
         <meta property="og:description" content="Evidence for Indo-Iranian origins in ancient India through archaeology, linguistics, and mythology." />
         <meta property="og:type" content="article" />
-        <link rel="canonical" href="https://srangam.in/asura-exiles-indo-iranian" />
+        <link rel="canonical" href="https://srangam-db.lovable.app/asura-exiles-indo-iranian" />
       </Helmet>
       
       <ArticlePage

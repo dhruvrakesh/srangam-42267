@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { Helmet } from "react-helmet-async";
 import { useTranslation } from "react-i18next";
 import { ArticleCard } from "@/components/ui/ArticleCard";
 import { Button } from "@/components/ui/button";
@@ -108,6 +109,16 @@ export default function Home() {
 
   return (
     <div className="bg-background relative overflow-hidden">
+      <Helmet>
+        <title>Srangam — Histories of the Indian Ocean World</title>
+        <meta name="description" content="Dharmic Scholarship for the Digital Age. Explore interconnected histories of the Indian Ocean through archaeology, epigraphy, Sanskrit literature, and deep time." />
+        <link rel="canonical" href="https://srangam-db.lovable.app/" />
+        <meta property="og:title" content="Srangam — Histories of the Indian Ocean World" />
+        <meta property="og:description" content="Dharmic Scholarship for the Digital Age — Exploring the interconnected histories of the Indian Ocean through archaeology, epigraphy, and deep time" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://srangam-db.lovable.app/" />
+        <meta property="og:image" content="https://srangam-db.lovable.app/brand/og-image.png" />
+      </Helmet>
       {/* Ocean-inspired Background Patterns */}
       <div className="fixed inset-0 ocean-waves opacity-60 pointer-events-none" />
       <div className="fixed top-0 right-0 w-96 h-96 ancient-navigation rounded-full opacity-20 pointer-events-none" />

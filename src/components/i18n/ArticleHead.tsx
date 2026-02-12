@@ -61,7 +61,7 @@ export const ArticleHead: React.FC<ArticleHeadProps> = ({
   const canonicalUrl = `${BASE_URL}/${articleSlug}`;
   
   // Dynamic OG image with proxy for GDrive URLs and fallback to default branded image
-  const rawOgImageUrl = ogImageUrl || `${BASE_URL}/brand/og-image.svg`;
+  const rawOgImageUrl = ogImageUrl || `${BASE_URL}/brand/og-image.png`;
   const effectiveOgImageUrl = getProxiedImageUrl(rawOgImageUrl);
   
   // Generate breadcrumbs for this article

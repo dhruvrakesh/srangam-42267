@@ -36,7 +36,7 @@ export default function RishiGenealogiesVedicTradition() {
         <meta property="og:description" content="A source-led exploration of Vedic seer families through the Anukramaṇī tradition" />
         <meta property="og:type" content="article" />
         <meta name="keywords" content="Rigveda, Bhrigu, Angirasa, Kashyapa, Vedic seers, Anukramani, rishis, Vedic genealogy, Sanskrit, Vedic tradition" />
-        <link rel="canonical" href="https://srangam.in/rishi-genealogies-vedic-tradition" />
+        <link rel="canonical" href="https://srangam-db.lovable.app/rishi-genealogies-vedic-tradition" />
       </Helmet>
 
       <ArticlePage

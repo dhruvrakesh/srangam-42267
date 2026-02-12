@@ -42,13 +42,13 @@ export default function SanskritTranslator() {
           name="keywords" 
           content="Sanskrit translation, Pāṇinian grammar, sandhi splitting, morphological parsing, Sanskrit OCR, named entity recognition, Devanagari, IAST, critical editions, linguistic analysis, open source" 
         />
-        <link rel="canonical" href="https://srangam.lovable.app/sanskrit-translator" />
+        <link rel="canonical" href="https://srangam-db.lovable.app/sanskrit-translator" />
         
         {/* Open Graph */}
         <meta property="og:title" content="Sanskrit Translation & Analysis | Srangam" />
         <meta property="og:description" content="Deep linguistic processing for Sanskrit texts with explainable translations." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://srangam.lovable.app/sanskrit-translator" />
+        <meta property="og:url" content="https://srangam-db.lovable.app/sanskrit-translator" />
         
         {/* Structured Data */}
         <script type="application/ld+json">
