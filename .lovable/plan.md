@@ -68,10 +68,7 @@ All existing SELECT (public read) policies remain untouched. Edge functions usin
 - **Rollback**: Re-create the dropped policies with `USING (true)` / `WITH CHECK (true)`.
 - **Testing**: After migration, verify that the admin dashboard still functions (it uses service role via edge functions, so unaffected). The public portal is read-only and completely unaffected.
 
-## Documentation Updates
+## Status: ✅ COMPLETE (February 15, 2026)
 
-After the migration:
-- Update `docs/RELIABILITY_AUDIT.md` Phase B section to mark security hardening as complete
-- Note the PostGIS false positives (`spatial_ref_sys` RLS, `st_estimatedextent` search paths) as permanently acknowledged
-- Update `.lovable/plan.md` to mark Phase B complete
+Migration executed successfully. All 11 overly permissive policies replaced with admin-only. Linter re-run confirmed no new issues — remaining 7 warnings are all pre-existing PostGIS/platform false positives documented above. `docs/RELIABILITY_AUDIT.md` updated.
 

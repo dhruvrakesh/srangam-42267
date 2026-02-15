@@ -253,15 +253,20 @@ ALTER TABLE srangam_articles DROP COLUMN IF EXISTS tags_hash;
 | srangam_context_snapshots | Admin | Admin | — | — |
 | user_roles | Own/Admin | Admin | Admin | Admin |
 
-**⚠️ Phase B targets** (overly permissive write policies to tighten):
-- `srangam_cross_references`, `srangam_article_versions`, `srangam_article_chapters`, `srangam_markdown_sources`, `srangam_translation_queue`, `srangam_correlation_matrix`, `srangam_inscriptions`, `srangam_article_analytics` — currently allow any authenticated user to write; should require admin role. Edge functions using service role key are unaffected.
+**✅ Phase B complete (February 2026)**: Overly permissive write policies tightened to `has_role(auth.uid(), 'admin')` on 10 tables: `srangam_articles` (redundant ALL dropped), `srangam_article_analytics`, `srangam_article_evidence`, `srangam_article_metadata`, `srangam_article_versions`, `srangam_correlation_matrix`, `srangam_cultural_terms`, `srangam_inscriptions`, `srangam_purana_references`, `srangam_translation_queue`. Edge functions using service role key are unaffected.
 
-### False Positive Security Warnings
+**Deferred** (not flagged by linter, `auth.role() = 'authenticated'` — stricter than `true`):
+- `srangam_cross_references`, `srangam_markdown_sources`, `srangam_article_chapters`, `srangam_book_chapters`, `srangam_article_bibliography`, `srangam_bibliography_entries`
+
+### False Positive Security Warnings (Permanently Acknowledged)
 
 The following warnings are acknowledged and safe:
-- `geography_columns_no_rls` - PostGIS system view
-- `spatial_ref_sys_no_rls` - PostGIS system table
-- `user_roles_table_public_exposure` - Has proper RLS (3 policies)
+- `spatial_ref_sys` RLS disabled — PostGIS system catalog table, not user data
+- `st_estimatedextent` mutable search path (×3) — PostGIS C-language system functions, cannot be altered
+- `geography_columns` / `geometry_columns` no RLS — PostGIS system views
+- `user_roles` public exposure — Has proper RLS (3 policies verified)
+- Extensions in public schema (PostGIS) — Required by geospatial features
+- Leaked password protection disabled — Platform-level setting, not configurable via migration
 
 ---
 
