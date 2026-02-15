@@ -1,198 +1,77 @@
 
 
-# Backend Health Assessment Response: Enterprise Hardening Roadmap
+# Phase B: Security Hardening -- Precise Migration Plan
 
-## February 2026 -- Verified State from Live Database
+## Verified Findings from Live Linter (February 15, 2026)
 
-### Live Data Census (queried just now)
+### ERROR: RLS Disabled in Public
+- **Table**: `spatial_ref_sys` (PostGIS system table)
+- **Verdict**: False positive. This is a PostGIS internal catalog table, not user data. No action needed; will be documented as acknowledged.
 
-| Table | Rows | Documented | Delta |
-|-------|------|------------|-------|
-| srangam_articles | 49 (40 published, 9 draft) | 41 | +8 since Jan 2025 |
-| srangam_cultural_terms | 1,699 | 1,628 | +71 |
-| srangam_tags | 170 | 146 | +24 |
-| srangam_cross_references | 1,066 | 740 | +326 |
-| srangam_bibliography_entries | 30 | 25 | +5 |
-| srangam_article_bibliography | 30 | 63 (stale doc) | Docs overcounted |
-| srangam_article_evidence | 79 | 79 | Stable |
-| srangam_markdown_sources | 38 | -- | 11 articles missing MD |
-| srangam_audio_narrations | 1 | -- | Minimal usage |
-| srangam_book_chapters | 9 | -- | Not documented |
-| srangam_article_chapters | 13 | -- | Not documented |
-| srangam_context_snapshots | 4 | -- | Operational |
-| srangam_article_versions | 0 | -- | Never used |
-| srangam_article_analytics | 0 | -- | Never used |
-| srangam_correlation_matrix | 0 | -- | Never used |
-| srangam_inscriptions | 0 | -- | Never used |
-| srangam_purana_references | 0 | -- | Never used |
-| srangam_translation_queue | 0 | -- | Never used |
-| narration_analytics | 0 | -- | Never used |
+### WARN: Function Search Path Mutable (3 instances)
+- **Functions**: All three are `st_estimatedextent` -- PostGIS C-language system functions
+- **Verdict**: False positive. These are compiled library functions shipped with PostGIS; we cannot and should not alter them. Will be documented as acknowledged.
 
-**Key finding**: 9 of 19 tables have zero rows. These represent scaffolded-but-unused features. They are not harmful (no runtime cost) but inflate documentation and create false expectations.
+### WARN: Leaked Password Protection Disabled
+- **Verdict**: Platform-level setting. Cannot be changed via migration. Noted for documentation.
+
+### WARN: RLS Policy Always True (11 overly permissive write policies)
+
+These are the actionable findings. Each policy grants write access with `USING (true)` and/or `WITH CHECK (true)`, meaning any authenticated user (or in some cases, any request at all) can write to these tables. Since all legitimate writes go through edge functions using the service role key (which bypasses RLS entirely), tightening these to admin-only is safe and purely defensive.
 
 ---
 
-## Security Linter Results (queried just now)
+## Tables Requiring Policy Changes (11 policies across 10 tables)
 
-| Finding | Severity | Count | Action |
-|---------|----------|-------|--------|
-| RLS Disabled in Public | ERROR | 1 | Identify and fix the table |
-| RLS Policy Always True (write ops) | WARN | 9+ | Tighten to admin-only where appropriate |
-| Function Search Path Mutable | WARN | 3 | Add `SET search_path = 'public'` |
-| Extension in Public | WARN | 2 | PostGIS -- acknowledged, no action needed |
+| # | Table | Current Policy Name | Current Rule | New Rule |
+|---|-------|-------------------|--------------|----------|
+| 1 | `srangam_articles` | "Authenticated manage articles" (ALL) | `true` / `true` | DROP (redundant -- admin-only INSERT/UPDATE/DELETE policies already exist) |
+| 2 | `srangam_article_analytics` | "Authenticated manage analytics" (ALL) | `true` / `true` | Replace with admin-only |
+| 3 | `srangam_article_evidence` | "Service role can manage evidence" (ALL) | `true` / `true` | Replace with admin-only |
+| 4 | `srangam_article_metadata` | "Authenticated manage metadata" (ALL) | `true` / `true` | Replace with admin-only |
+| 5 | `srangam_article_versions` | "Authenticated manage versions" (ALL) | `true` / `true` | Replace with admin-only |
+| 6 | `srangam_correlation_matrix` | "Authenticated manage correlations" (ALL) | `true` / `true` | Replace with admin-only |
+| 7 | `srangam_cultural_terms` | "Authenticated manage cultural terms" (ALL) | `true` / `true` | Replace with admin-only |
+| 8 | `srangam_inscriptions` | "Authenticated manage inscriptions" (ALL) | `true` / `true` | Replace with admin-only |
+| 9 | `srangam_purana_references` | "Authenticated insert purana references" (INSERT) | `WITH CHECK (true)` | Replace with admin-only |
+| 10 | `srangam_purana_references` | "Authenticated update purana references" (UPDATE) | `true` / `true` | Replace with admin-only |
+| 11 | `srangam_translation_queue` | "Authenticated manage translation queue" (ALL) | `true` / `true` | Replace with admin-only |
 
-The ERROR-level finding (RLS disabled on a public table) is the only critical security gap and must be addressed in Phase 1.
+### Tables NOT changed (already correct)
+- `srangam_tags` -- already uses `has_role(auth.uid(), 'admin')` for all write ops
+- `srangam_context_snapshots` -- already admin-only INSERT, no UPDATE/DELETE
+- `user_roles` -- already admin-only
+- `srangam_audio_narrations` -- uses `auth.role() = 'authenticated'` for INSERT/UPDATE (acceptable: narration creation is a user-facing feature)
+- `narration_analytics` -- INSERT scoped to own `user_id` (correct for analytics)
 
----
+### Tables with `auth.role() = 'authenticated'` (not `true`, but still overly broad)
+These were not flagged by the linter (they check for role, not just `true`), but are noted for future tightening if needed:
+- `srangam_cross_references`, `srangam_markdown_sources`, `srangam_article_chapters`, `srangam_book_chapters`, `srangam_article_bibliography`, `srangam_bibliography_entries`
 
-## Documentation Decay Analysis
-
-The `docs/` directory contains 60+ files. Classification:
-
-| Category | Files | Action |
-|----------|-------|--------|
-| Canonical (schema, invariants, scalability) | 5 | Update with live data |
-| Supporting (workflows, architecture) | 8 | Consolidate into 2 |
-| Article manuscripts (.md/.docx) | ~25 | Should not be in docs/ |
-| Historical (implementation logs, test summaries) | 6 | Archive label |
-| Stale (outdated counts, wrong domains) | 4 | Update or remove |
-
-**Specific staleness**:
-- `CURRENT_STATUS.md`: Last updated 2025-01-21, says "41 articles" (now 49), "700+ cross-refs" (now 1,066), canonical URL still partially stale
-- `DATABASE_CONTEXT.md`: Says "30+ articles", "800+ terms" -- months out of date
-- `SCALABILITY_ROADMAP.md`: Says "January 2025", projections are now verifiable against actuals
-- `IMPLEMENTATION_STATUS.md`: Steps 1-4 of SEO Activation still marked pending (already done)
+These use `auth.role() = 'authenticated'` which is stricter than `true` but still allows any logged-in user to write. Since writes go through service-role edge functions, these could also be tightened to admin-only in a follow-up. However, to keep this migration minimal and focused on the linter ERRORs and WARNs, they are deferred.
 
 ---
 
-## Phased Enterprise Hardening Plan
+## Migration SQL
 
-### Phase A: Documentation Truth (no code changes) ✅ COMPLETE (2026-02-15)
+A single migration that:
+1. Drops each overly permissive policy
+2. Creates a replacement admin-only policy using `has_role(auth.uid(), 'admin')`
 
-All canonical docs updated to reflect verified February 2026 state.
-
-**Files updated:**
-
-| File | Changes |
-|------|---------|
-| `docs/CURRENT_STATUS.md` | ✅ Updated all data counts to Feb 2026 actuals; added scaffolded/unused table section; updated canonical URL references; documented book chapters and audio narrations |
-| `docs/DATABASE_CONTEXT.md` | ✅ Updated article count (49), term count (1,699), tag count (170); corrected "30+ articles" and "800+ terms"; marked correlation_matrix and inscriptions as scaffolded/unused |
-| `docs/SCALABILITY_ROADMAP.md` | ✅ Updated with Feb 2026 actuals vs Jan 2025 projections; growth is slower than projected; marked completed Phase 19 tasks; deferred items correctly documented |
-| `docs/IMPLEMENTATION_STATUS.md` | ✅ Marked SEO Activation steps 1-9 as complete; updated metrics to Feb 2026; resolved domain migration known issues; added canonical tag audit |
-| `docs/RELIABILITY_AUDIT.md` | ✅ Updated date; flagged srangam_article_versions (0 rows) as untested invariant; expanded RLS policy table; added Phase B targets |
-
-**Risk**: Zero. Documentation-only changes. ✅ Verified.
+All existing SELECT (public read) policies remain untouched. Edge functions using service role key bypass RLS entirely, so no backend functionality is affected.
 
 ---
 
-### Phase B: Security Hardening (surgical DB migrations)
+## Risk Assessment
 
-Address the linter findings. Each is a single SQL statement.
+- **Risk**: Low. All legitimate writes already go through edge functions with service role key, which bypasses RLS. These policy changes only affect direct client-side writes (which should not be happening for these internal tables).
+- **Rollback**: Re-create the dropped policies with `USING (true)` / `WITH CHECK (true)`.
+- **Testing**: After migration, verify that the admin dashboard still functions (it uses service role via edge functions, so unaffected). The public portal is read-only and completely unaffected.
 
-**B1. Fix RLS-disabled table**
-- Identify which public table lacks RLS (the linter flagged 1 ERROR)
-- Enable RLS and add appropriate policies
+## Documentation Updates
 
-**B2. Tighten overly-permissive RLS policies**
-- Tables with `USING (true)` on write operations that should require admin role:
-  - `srangam_cross_references` (currently: any authenticated user can write)
-  - `srangam_article_versions` (currently: any authenticated user can write)
-  - `srangam_article_chapters` (currently: any authenticated user can write)
-  - `srangam_markdown_sources` (currently: any authenticated user can write)
-  - `srangam_translation_queue` (currently: any authenticated user can write)
-  - `srangam_correlation_matrix` (currently: any authenticated user can write)
-  - `srangam_inscriptions` (currently: any authenticated user can write)
-  - `srangam_article_analytics` (currently: any authenticated user can write)
-- Change write policies from `auth.role() = 'authenticated'` or `true` to `has_role(auth.uid(), 'admin')` for INSERT/UPDATE/DELETE
-- Edge functions using service role key are unaffected (bypass RLS)
-
-**B3. Fix mutable search paths**
-- Add `SET search_path = 'public'` to the 3 remaining SECURITY DEFINER functions
-
-**Risk**: Low. All write operations currently go through edge functions using service role key. Tightening RLS on direct client access is purely defensive.
-
----
-
-### Phase C: Logic Hardening (non-breaking edge function improvements)
-
-These address the risks identified in your Backend Health Assessment.
-
-**C1. Structured error semantics** (already partially implemented per memory)
-- Audit all 23 edge functions for consistent error response format
-- Ensure all return `{ success, error?: { code, type, message, hint } }`
-- No behaviour change; only error format standardization
-
-**C2. Front-matter validation hardening**
-- Add pre-flight checks in `markdown-to-article-import` for:
-  - Required fields: title (mandatory)
-  - Language code validation (only known ISO codes accepted)
-  - Numeric bounds on word_count and read_time_minutes
-- Rejects invalid input earlier with clear E-codes
-
-**C3. Slug generation concurrency guard**
-- Replace current check-then-insert with `INSERT ... ON CONFLICT DO NOTHING`
-- On conflict, append `-2`, `-3` suffix deterministically
-- Eliminates the race condition identified in the assessment
-
-**Risk**: Low. All changes are additive validation; existing valid inputs unaffected.
-
----
-
-### Phase D: Observability (new table + logging, no behaviour change)
-
-**D1. Create `srangam_event_log` table**
-- Columns: id, event_type, entity_type, entity_id, status, details (jsonb), created_at
-- RLS: admin-only read, service-role write
-- Purpose: structured audit trail for import, tag generation, cross-ref jobs
-
-**D2. Instrument import pipeline**
-- Log events at: import_start, frontmatter_parsed, article_upserted, terms_extracted, crossrefs_calculated, import_complete/import_failed
-- Each event includes timing and entity counts
-- No change to success/failure paths
-
-**Risk**: Low-to-moderate. Adds ~6 INSERT calls per import. Rollback by dropping the table.
-
----
-
-### Phase E: Scalability Preparation (deferred, trigger-based)
-
-These items are from the existing SCALABILITY_ROADMAP.md and should only be implemented when thresholds are reached:
-
-| Item | Trigger | Current vs Threshold |
-|------|---------|---------------------|
-| Tag vector column + GIN index | Cross-ref calc > 1s | ~500ms at 49 articles -- not yet |
-| Async cross-reference queue | Import latency > 10s | ~3s -- not yet |
-| Article list pagination | > 100 articles | 49 -- not yet |
-| Idempotency token for imports | Concurrent operators | Single operator -- not yet |
-
-**Recommendation**: Do not implement these now. Document the triggers clearly and revisit when article count reaches 100.
-
----
-
-## Implementation Sequence
-
-```text
-Phase A (Documentation)     -- 1 session, zero risk
-  |
-Phase B (Security)          -- 1 session, low risk, DB migrations
-  |
-Phase C (Logic Hardening)   -- 1-2 sessions, low risk, edge function edits
-  |
-Phase D (Observability)     -- 1 session, low-moderate risk, new table + logging
-  |
-Phase E (Scalability)       -- deferred until thresholds met
-```
-
-## What This Plan Does NOT Do
-
-- Does not create new features or UI components
-- Does not expand the codebase with new pages or routes
-- Does not change routing, auth flows, or business logic
-- Does not touch the frontend beyond documentation
-- Does not add tests for expansion -- uses AI for curation (per your directive)
-- Does not implement Phase E items prematurely
-
-## Recommended Starting Point
-
-Phase A (documentation truth) should be implemented first. It costs nothing, breaks nothing, and ensures every future AI session starts with accurate context rather than hallucinating from stale numbers.
+After the migration:
+- Update `docs/RELIABILITY_AUDIT.md` Phase B section to mark security hardening as complete
+- Note the PostGIS false positives (`spatial_ref_sys` RLS, `st_estimatedextent` search paths) as permanently acknowledged
+- Update `.lovable/plan.md` to mark Phase B complete
 
