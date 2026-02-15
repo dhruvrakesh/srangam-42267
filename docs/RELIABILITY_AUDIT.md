@@ -1,6 +1,6 @@
 # Srangam Platform Reliability Audit
 
-**Last Updated**: 2025-01-31 (Phase 19)
+**Last Updated**: 2026-02-15 (Enterprise Hardening Roadmap — Phase A)
 
 ---
 
@@ -69,10 +69,12 @@ Cross-references must maintain referential integrity:
 ### 5. Immutability of Historical Data
 
 Version history must be preserved:
-- `srangam_article_versions` - Previous article states
-- `srangam_markdown_sources` - Original markdown content
+- `srangam_article_versions` - Previous article states (**⚠️ 0 rows as of Feb 2026 — this invariant is untested**)
+- `srangam_markdown_sources` - Original markdown content (38 rows; 11 articles missing markdown)
 
 **Violation Impact:** Lost audit trail, reproducibility failures
+
+**Known Gap:** `srangam_article_versions` has never been populated. The append-only invariant exists in policy but has never been exercised in production. This should be verified when the versioning feature is activated.
 
 ---
 
@@ -140,7 +142,7 @@ Version history must be preserved:
 2. For each article: compare tags (≥2 shared), check theme
 3. Insert bidirectional references
 
-**Performance Note:** With 32 articles, takes ~500ms. May degrade at 1000+ articles.
+**Performance Note:** With 49 articles (Feb 2026), takes ~500ms. Threshold for optimization is >1s. Well within capacity.
 
 **Future Optimization (Phase 19b):**
 - Add `tag_vector` column with GIN index
@@ -246,7 +248,13 @@ ALTER TABLE srangam_articles DROP COLUMN IF EXISTS tags_hash;
 | srangam_articles | Public (published) | Admin | Admin | Admin |
 | srangam_tags | Public | Admin | Admin | Admin |
 | srangam_cultural_terms | Public | Auth | Auth | Auth |
+| srangam_cross_references | Public | Auth | Auth | Auth |
+| srangam_article_metadata | Public (published) | Auth | Auth | Auth |
+| srangam_context_snapshots | Admin | Admin | — | — |
 | user_roles | Own/Admin | Admin | Admin | Admin |
+
+**⚠️ Phase B targets** (overly permissive write policies to tighten):
+- `srangam_cross_references`, `srangam_article_versions`, `srangam_article_chapters`, `srangam_markdown_sources`, `srangam_translation_queue`, `srangam_correlation_matrix`, `srangam_inscriptions`, `srangam_article_analytics` — currently allow any authenticated user to write; should require admin role. Edge functions using service role key are unaffected.
 
 ### False Positive Security Warnings
 

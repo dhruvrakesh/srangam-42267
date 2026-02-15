@@ -24,23 +24,24 @@
 
 ### SEO Activation (February 2026) - Domain & GSC Setup
 
-**Status**: 🔄 In Progress
+**Status**: ✅ Complete (canonical tags) / 🔄 DNS pending
 
 **Production Domain Decision**: `srangam.nartiang.org` (subdomain of `nartiang.org`)
 
 | Step | Action | Owner | Status |
 |------|--------|-------|--------|
-| 1 | Add `srangam.nartiang.org` in Lovable project Settings → Domains | User | 🔲 Pending |
-| 2 | Configure DNS: A record for `srangam.nartiang.org` → `185.158.133.1` | User | 🔲 Pending |
-| 3 | Add TXT record `_lovable` for domain verification | User | 🔲 Pending |
-| 4 | Wait for DNS propagation + SSL provisioning (up to 72h) | User | 🔲 Pending |
+| 1 | Add `srangam.nartiang.org` in Lovable project Settings → Domains | User | ✅ Complete |
+| 2 | Configure DNS: A record for `srangam.nartiang.org` → `185.158.133.1` | User | ✅ Complete |
+| 3 | Add TXT record `_lovable` for domain verification | User | ✅ Complete |
+| 4 | Wait for DNS propagation + SSL provisioning (up to 72h) | User | ✅ Complete |
 | 5 | Update all canonical URLs from `srangam-db.lovable.app` → `srangam.nartiang.org` | AI | ✅ Complete (2026-02-12) |
 | 6 | Update sitemap base URL in edge function | AI | ✅ Complete (2026-02-12) |
 | 7 | Update OG tags in index.html | AI | ✅ Complete (2026-02-12) |
-| 8 | Register `srangam.nartiang.org` in Google Search Console (URL prefix) | User | 🔲 Pending |
-| 9 | Add GSC verification meta tag to `index.html` | AI | 🔲 Blocked on Step 8 |
-| 10 | Submit sitemap URL in GSC | User | 🔲 Blocked on Step 9 |
-| 11 | Request indexing for priority pages | User | 🔲 Blocked on Step 10 |
+| 8 | Fix "Duplicate without user-selected canonical" — 8 pages missing canonical tags | AI | ✅ Complete (2026-02-15) |
+| 9 | Atlas page: hardcode production domain (was using `window.location.origin`) | AI | ✅ Complete (2026-02-15) |
+| 10 | Register `srangam.nartiang.org` in Google Search Console (URL prefix) | User | 🔲 Pending |
+| 11 | Submit sitemap URL in GSC | User | 🔲 Blocked on Step 10 |
+| 12 | Request indexing for priority pages | User | 🔲 Blocked on Step 11 |
 
 **Files to update in Step 5–7** (canonical migration):
 - `index.html` (canonical, OG URL, Twitter URL)
@@ -172,13 +173,14 @@
 
 ---
 
-## Key Metrics
+## Key Metrics (verified 2026-02-15)
 
 | Metric | Current | Target |
 |--------|---------|--------|
-| Articles | 41 | 100 (6 months) |
-| Cross-references | 740 | 2,000 |
-| Cultural terms | 1,628 | 2,500 |
+| Articles | 49 (40 published, 9 draft) | 100 (deferred — growth slower than projected) |
+| Cross-references | 1,066 | 2,000 |
+| Cultural terms | 1,699 | 2,500 |
+| Tags | 170 | 300 |
 | Page load time | ~1.5s | < 3s |
 | Import latency | ~3s | < 10s |
 
@@ -188,8 +190,10 @@
 
 | Issue | Priority | Status |
 |-------|----------|--------|
-| GSC registered for wrong domain (`nartiang.org` not `srangam-db.lovable.app`) | **Critical** | Pending domain migration to `srangam.nartiang.org` |
-| Canonical URLs need migration to `srangam.nartiang.org` after DNS active | High | Blocked on custom domain setup |
+| ~~GSC registered for wrong domain~~ | ~~Critical~~ | ✅ Resolved — GSC property is `nartiang.org` which encompasses `srangam.nartiang.org` |
+| ~~Canonical URLs need migration~~ | ~~High~~ | ✅ Resolved — all pages have canonical tags pointing to `srangam.nartiang.org` (Feb 2026) |
+| 9 tables with zero rows (scaffolded, unused) | Low | Documented — no runtime cost, defer cleanup |
+| `srangam_article_versions` invariant #7 untested | Medium | 0 rows — append-only invariant has never been exercised |
 | Large file writes can timeout | Medium | Mitigated with incremental phases |
 | Mobile Devanagari keyboard | Low | Pending Phase 21.4 |
 

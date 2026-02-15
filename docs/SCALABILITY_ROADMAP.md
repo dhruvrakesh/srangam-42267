@@ -1,18 +1,20 @@
 # Srangam Platform Scalability Roadmap
 
-**Last Updated**: 2025-01-31 (Phase 19)
+**Last Updated**: 2026-02-15 (Enterprise Hardening Roadmap — Phase A)
 
 ---
 
-## Current State (January 2025)
+## Current State (February 2026 — verified from live database)
 
-| Metric | Count | Growth Rate |
-|--------|-------|-------------|
-| Articles | 41 | ~10/month |
-| Cross-References | 740 | ~200/month |
-| Cultural Terms | 1,628 | ~100/month |
-| Tags | 146 | ~20/month |
-| Bibliography | 25 | ~5/month |
+| Metric | Jan 2025 | Feb 2026 | Actual Growth Rate |
+|--------|----------|----------|-------------------|
+| Articles | 41 | 49 | ~0.6/month (projected ~10/month — slower than expected) |
+| Cross-References | 740 | 1,066 | ~25/month (projected ~200/month — much slower, but ratio per article is higher) |
+| Cultural Terms | 1,628 | 1,699 | ~5/month (projected ~100/month — stabilized, most terms already extracted) |
+| Tags | 146 | 170 | ~2/month (projected ~20/month — taxonomy maturing) |
+| Bibliography | 25 | 30 | ~0.4/month |
+
+**Analysis**: Growth has been slower than the Jan 2025 projections assumed. At current rates, the 100-article threshold (Phase 20 trigger) is ~7 years away unless publication pace increases. The system is well within current capacity. Scalability preparations (Phases 20-23) remain correctly deferred.
 
 ---
 
@@ -86,17 +88,17 @@
 
 ### Phase 19: Reliability & Scalability Foundation ✅
 
-**Status:** In Progress
+**Status:** Complete (core tasks); remaining items deferred to Phase E triggers
 
 | Task | Priority | Status |
 |------|----------|--------|
 | 19a: Tag categorization context | HIGH | ✅ Complete |
 | 19c: Centralized slug resolver | HIGH | ✅ Complete |
 | 19.0: Documentation | HIGH | ✅ Complete |
-| 19b: Tag vector column | MEDIUM | 🔲 Pending migration |
-| 19c: Batch cultural term upsert | MEDIUM | 🔲 Pending |
-| 19d: Article pagination | MEDIUM | 🔲 Pending |
-| 19e: Structured error handling | MEDIUM | 🔲 Pending |
+| 19b: Tag vector column | MEDIUM | 🔲 Deferred — cross-ref calc ~500ms at 49 articles, threshold is >1s |
+| 19c: Batch cultural term upsert | MEDIUM | ✅ Implemented (per pipeline hardening) |
+| 19d: Article pagination | MEDIUM | 🔲 Deferred — 49 articles, threshold is >100 |
+| 19e: Structured error handling | MEDIUM | ✅ Partially complete — E-codes in import pipeline |
 
 ### Phase 20: Performance Optimization
 
