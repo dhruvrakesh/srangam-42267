@@ -1,6 +1,6 @@
 # Srangam Platform - Current Status
 
-**Last Updated**: 2025-01-21 (Phase 16: Article Loading Fix + Security Hardening)
+**Last Updated**: 2026-02-15 (Enterprise Hardening Roadmap — Phase A: Documentation Truth)
 
 ---
 
@@ -29,7 +29,7 @@
 - ✅ Self-improving tag registry with usage tracking
 
 ### **3. Cultural Terms Extraction**
-- ✅ **1,628+ AI-enhanced terms** in database (updated Jan 2025)
+- ✅ **1,699 AI-enhanced terms** in database (verified Feb 2026)
 - ✅ 217+ Sanskrit/diacritics pattern detection
 - ✅ Devanagari script recognition (U+0900-U+097F)
 - ✅ Italic text pattern matching (non-greedy across newlines)
@@ -47,7 +47,7 @@
 - ✅ Bidirectional linking for thematic/theme references
 - ✅ Context descriptions with detection method and reasoning
 - ✅ **Frontend integration complete** - Cross-references visible on all article pages
-- ✅ 700+ total connections (same_theme + thematic)
+- ✅ 1,066 total connections (same_theme + thematic) — verified Feb 2026
 - ✅ `useArticleId` hook for slug-to-ID resolution
 - ✅ `ArticleCrossReferences` component with grouped display
 - ✅ **Cross References Browser** at `/research-network` with force-directed graph
@@ -80,19 +80,21 @@
 - ⚠️ `TopNavigation.tsx` deprecated (kept for reference)
 
 ### **8. SEO & Discoverability** (updated Jan 2025)
-- ✅ Canonical URL: `https://srangam.nartiang.org`
+- ✅ Canonical URL: `https://srangam.nartiang.org` (all pages verified Feb 2026)
 - ✅ Sitemap generation with correct base URL
 - ✅ `robots.txt` with sitemap directive
 - ✅ Open Graph meta tags (branded image, description)
 - ✅ Twitter Card meta tags
 - ✅ Google Search Console ready (verification placeholder)
+- ✅ **Canonical tags on all pages** — 8 missing pages fixed Feb 2026 (BeginJourney, Sources, Atlas, etc.)
+- ✅ **Atlas page domain hardcoded** — replaced `window.location.origin` with production domain (Feb 2026)
 - ✅ **Schema.org Structured Data** (Phase 11-12)
   - ✅ `Organization` schema in `SiteSchema.tsx`
   - ✅ `WebSite` schema with `SearchAction` for sitelinks search box
   - ✅ `ScholarlyArticle` schema in `ArticleHead.tsx` and `OceanicArticlePage.tsx`
   - ✅ `BreadcrumbList` schema in `BreadcrumbSchema.tsx`
   - ✅ `WebApplication` schema on tool pages
-  - ✅ **wordCount field** populated for all 41 articles (Phase 12)
+  - ✅ **wordCount field** populated for all 49 articles
   - ✅ **citation field** wired from `useArticleBibliographyBySlug` hook (Phase 12)
 - ✅ **Dynamic OG Images** (Phase 12)
   - ✅ AI-generated article-specific OG images (OpenAI DALL-E 3)
@@ -114,31 +116,50 @@
 
 ## 📊 **Database State** (Current)
 
-### **Current Data** (as of 2025-01-20)
-- **Articles**: 41 total (32 published, 9 drafts)
-  - All in Supabase database with standardized slugs
+### **Current Data** (verified 2026-02-15 from live database)
+- **Articles**: 49 total (40 published, 9 drafts)
+  - All in database with standardized slugs
   - All have AI-generated tags (5-8 per article)
   - All have theme categorization
   - **Multilingual**: Multiple articles with EN + HI content
   
-- **Cross-references**: 700+
+- **Cross-references**: 1,066
   - Same-theme and thematic references
   - All integrated on article pages
   - Visible in Research Network visualization
   
-- **Cultural terms**: 1,628+
+- **Cultural terms**: 1,699
   - All terms have etymology and context (AI-enriched)
   - Module distribution: vedic, maritime, geology, other
   - Pagination implemented (bypasses 1000-row limit)
 
-- **Bibliography entries**: 25 (+2 new, 63 article links)
-  - **Backfill completed** (Jan 2025) - 30 articles processed
-  - 63 article-bibliography links created
+- **Bibliography entries**: 30 (30 article-bibliography links)
+  - **Backfill completed** (Jan 2025)
   - Data Health Dashboard available at `/admin/data-health`
 
-- **Tags**: 127 unique tags
-  - Average 6.2 tags per article
+- **Tags**: 170 unique tags
+  - Average ~6 tags per article
   - Categories: Historical Period, Concept, Location, Methodology
+
+- **Evidence entries**: 79 (stable since Phase 12)
+
+- **Markdown sources**: 38 (11 articles missing markdown)
+
+- **Audio narrations**: 1 (minimal usage — admin-only feature)
+
+- **Book chapters**: 9 chapters, 13 article-chapter links (not previously documented)
+
+- **Context snapshots**: 4 (operational)
+
+### **Scaffolded but Unused Tables** (0 rows each)
+These tables are structurally sound but have never been populated:
+- `srangam_article_versions` — version control (invariant #7 untested)
+- `srangam_article_analytics` — usage tracking
+- `srangam_correlation_matrix` — precomputed tag similarity
+- `srangam_inscriptions` — epigraphy data
+- `srangam_purana_references` — textual references
+- `srangam_translation_queue` — translation workflow
+- `narration_analytics` — playback analytics
 
 ---
 
@@ -605,8 +626,8 @@ Google Cloud (fallback for Indic languages)
 
 ### **Short Term**
 1. Google Search Console setup (manual)
-   - Add property: `https://srangam-db.lovable.app`
-   - Verify ownership via HTML meta tag
+   - Property registered for `nartiang.org` (encompasses `srangam.nartiang.org`)
+   - ✅ Canonical tags on all pages (Feb 2026)
    - Submit sitemap URL
    - Request indexing for key pages
 

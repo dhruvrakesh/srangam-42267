@@ -86,7 +86,7 @@ The `srangam_cultural_terms` table preserves dharmic concepts with:
 ### Content Management
 
 #### `srangam_articles` - Primary Content
-- **30+ research articles** (maritime studies, indigenous knowledge, civilizational history)
+- **49 research articles** (40 published, 9 draft — verified Feb 2026)
 - Stores both **JSONB multilingual content** and **markdown file paths**
 - Each article has `slug` (URL identifier), `theme`, `tags[]`, `status`
 - `series_id` + `part_number` enable multi-part articles (e.g., Sacred Ecology series)
@@ -113,22 +113,22 @@ The `srangam_cultural_terms` table preserves dharmic concepts with:
 ### Knowledge Database
 
 #### `srangam_cultural_terms` - Dharmic Concepts
-- **800+ terms** from across Indian Ocean cultures
+- **1,699 terms** from across Indian Ocean cultures (verified Feb 2026)
 - Organized by `module`: `core`, `vedic`, `maritime`, `indigenous`, etc.
 - `usage_count` tracks cross-article references
 - `related_terms[]` creates semantic network
 
 **Critical**: Terms are **protected during translation** (not translated, only explained)
 
-#### `srangam_correlation_matrix` - Evidence Links
-- **69-point correlation system** linking textual/archaeological/geographic evidence
+#### `srangam_correlation_matrix` - Evidence Links (0 rows — scaffolded, unused)
+- **Designed for** 69-point correlation system linking textual/archaeological/geographic evidence
 - Each correlation has `coordinates` (PostGIS geography point)
 - `confidence_level`: `high`, `medium`, `low`, `approximate`
 - Powers interactive map pins on theme pages
 
 **Example**: Linking Sangam literature references to actual port sites
 
-#### `srangam_inscriptions` - Epigraphy Specialization
+#### `srangam_inscriptions` - Epigraphy Specialization (0 rows — scaffolded, unused)
 - Detailed inscription data (scripts, translations, dating)
 - `script_types[]`: `brahmic`, `greek`, `aramaic`, `khmer`, etc.
 - Supports multi-script inscriptions (e.g., Kandahar edicts)
@@ -468,7 +468,7 @@ ON srangam_correlation_matrix USING GIST (coordinates);
 4. **Edge caching** - Cloudflare Workers for static content
 
 ### Scalability Considerations
-- **Current**: 30 articles, 800 terms → Well within Postgres limits
+- **Current**: 49 articles, 1,699 terms, 1,066 cross-refs → Well within Postgres limits
 - **Future**: 1000+ articles → Consider partitioning by `theme`
 - **Vector search**: IVFFlat index scales to 100K+ vectors
 
