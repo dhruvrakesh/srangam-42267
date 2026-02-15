@@ -72,6 +72,7 @@ export default function TradeDocs() {
         <meta name="description" content={t('sources.tradeDocs.description')} />
         <meta property="og:title" content={`${t('sources.tradeDocs.title')} | Srangam`} />
         <meta property="og:description" content={t('sources.tradeDocs.description')} />
+        <link rel="canonical" href="https://srangam.nartiang.org/sources/trade-docs" />
       </Helmet>
 
       <div className="min-h-screen bg-background">

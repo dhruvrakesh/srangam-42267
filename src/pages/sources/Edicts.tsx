@@ -44,6 +44,7 @@ export default function Edicts() {
         <meta name="description" content={t('sources.edicts.description')} />
         <meta property="og:title" content={`${t('sources.edicts.title')} | Srangam`} />
         <meta property="og:description" content={t('sources.edicts.description')} />
+        <link rel="canonical" href="https://srangam.nartiang.org/sources/edicts" />
       </Helmet>
 
       <div className="min-h-screen bg-background">

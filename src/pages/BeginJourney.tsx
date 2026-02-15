@@ -66,6 +66,7 @@ export default function BeginJourney() {
       <Helmet>
         <title>Begin Your Journey | Srangam — Histories of the Indian Ocean World</title>
         <meta name="description" content={`Explore ${totalArticles}+ research articles, 5 thematic pillars, and ${culturalTerms.toLocaleString()} cultural terms. Where sacred waters meet stone records — dharmic scholarship meets archaeological rigor.`} />
+        <link rel="canonical" href="https://srangam.nartiang.org/begin-journey" />
       </Helmet>
 
       {/* Mission Statement Hero */}
