@@ -315,19 +315,27 @@ slug: "${slug}"
         i === 0 ? { ...s, status: 'error' } : s
       ));
 
-      // Detect specific error types for better user guidance
-      const errorMessage = error.message || 'Unknown error occurred';
-      let userFriendlyMessage = errorMessage;
-      let actionableHint = '';
+      // Phase C: Read structured error from edge function first
+      const structuredError = error?.context?.body?.error || error?.error;
       
-      // Duplicate slug error detection
-      if (errorMessage.includes('duplicate key') && errorMessage.includes('slug')) {
-        userFriendlyMessage = `An article with slug "${extractedMetadata.slug || 'auto-generated'}" already exists.`;
-        actionableHint = 'Enable "Overwrite existing article" below, or change the slug in your frontmatter.';
-      }
-      // YAML parse errors
-      else if (errorMessage.includes('YAML') || errorMessage.includes('frontmatter')) {
-        actionableHint = 'Ensure all text values are wrapped in quotes, especially titles with special characters.';
+      let userFriendlyMessage: string;
+      let actionableHint = '';
+
+      if (structuredError?.code) {
+        // Structured error from edge function
+        userFriendlyMessage = structuredError.message;
+        actionableHint = structuredError.hint || '';
+      } else {
+        // Fallback: legacy string-matching (backward compat)
+        const errorMessage = error.message || 'Unknown error occurred';
+        userFriendlyMessage = errorMessage;
+        
+        if (errorMessage.includes('duplicate key') && errorMessage.includes('slug')) {
+          userFriendlyMessage = `An article with slug "${extractedMetadata.slug || 'auto-generated'}" already exists.`;
+          actionableHint = 'Enable "Overwrite existing article" below, or change the slug in your frontmatter.';
+        } else if (errorMessage.includes('YAML') || errorMessage.includes('frontmatter')) {
+          actionableHint = 'Ensure all text values are wrapped in quotes, especially titles with special characters.';
+        }
       }
 
       setImportResult({

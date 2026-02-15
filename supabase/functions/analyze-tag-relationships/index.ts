@@ -4,6 +4,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { classifyError } from '../_shared/error-response.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -130,12 +131,14 @@ serve(async (req) => {
   } catch (error) {
     console.error('❌ Tag relationship analysis error:', error);
     
+    const detail = classifyError(error);
     return new Response(
       JSON.stringify({
         success: false,
+        error: detail,
         tagsUpdated: 0,
         relationshipsFound: 0,
-        message: error instanceof Error ? error.message : 'Unknown error occurred'
+        message: detail.message,
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

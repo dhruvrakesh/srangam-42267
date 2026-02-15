@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { createErrorResponse, classifyError } from '../_shared/error-response.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,10 +17,12 @@ serve(async (req) => {
     const { termId, term, displayTerm } = await req.json();
 
     if (!termId || !term) {
-      return new Response(
-        JSON.stringify({ error: 'Term ID and term are required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return createErrorResponse(400, {
+        code: 'E_VALIDATION',
+        type: 'validation',
+        message: 'Term ID and term are required',
+        hint: 'Provide both termId and term in the request body.',
+      }, corsHeaders);
     }
 
     const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
@@ -185,15 +188,12 @@ Respond with a JSON object with this exact structure:
 
     if (updateError) {
       console.error(`❌ Database update error for term: ${term}`, updateError);
-      return new Response(
-        JSON.stringify({ 
-          error: "Failed to update database", 
-          term: term,
-          displayTerm: displayTerm,
-          details: updateError.message 
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return createErrorResponse(500, {
+        code: 'E_INTERNAL',
+        type: 'internal',
+        message: `Failed to update database for term "${displayTerm || term}"`,
+        hint: updateError.message,
+      }, corsHeaders);
     }
 
     console.log(`✅ Successfully enriched term: ${displayTerm || term}`);
@@ -209,9 +209,7 @@ Respond with a JSON object with this exact structure:
 
   } catch (error) {
     console.error('Error in enrich-cultural-term function:', error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    const detail = classifyError(error);
+    return createErrorResponse(500, detail, corsHeaders);
   }
 });

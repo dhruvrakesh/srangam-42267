@@ -1,6 +1,6 @@
 # Srangam Platform Reliability Audit
 
-**Last Updated**: 2026-02-15 (Enterprise Hardening Roadmap — Phase A)
+**Last Updated**: 2026-02-15 (Enterprise Hardening Roadmap — Phase C)
 
 ---
 
@@ -267,6 +267,46 @@ The following warnings are acknowledged and safe:
 - `user_roles` public exposure — Has proper RLS (3 policies verified)
 - Extensions in public schema (PostGIS) — Required by geospatial features
 - Leaked password protection disabled — Platform-level setting, not configurable via migration
+
+---
+
+## Phase C: Logic Hardening (February 2026) ✅
+
+### Structured Error Schema
+
+All 8 key edge functions now return standardized error responses via `_shared/error-response.ts`:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "E_VALIDATION | E_DUPLICATE | E_TIMEOUT | E_RATE_LIMIT | E_CONFIG | E_INTERNAL",
+    "type": "validation | conflict | timeout | external_service | config | internal",
+    "message": "Human-readable error message",
+    "hint": "Actionable guidance for the admin"
+  }
+}
+```
+
+**Functions updated**: `markdown-to-article-import`, `generate-article-tags`, `enrich-cultural-term`, `backfill-bibliography`, `detect-duplicate-articles`, `generate-article-seo`, `batch-import-from-github`, `analyze-tag-relationships`.
+
+**Backward compatibility**: Functions that return extra fields in errors (e.g., `tags: []`, `is_duplicate: false`, `metaDescription`) continue returning those fields alongside the new structured `error` object.
+
+### Front-matter Validation
+
+The import pipeline now validates before any database writes:
+- **Language code**: Must be one of `en`, `hi`, `pa`, `ta`, `te`, `ml`, `kn`, `bn`, `gu`, `mr`, `sa`
+- **Title**: Required, max 500 characters
+- Invalid input returns `E_VALIDATION` with actionable hint
+
+### Slug Concurrency Guard
+
+- **Overwrite mode**: Uses atomic `.upsert({ onConflict: 'slug' })` — eliminates race window
+- **Non-overwrite mode**: Catches Postgres `23505` specifically and returns `E_DUPLICATE` with HTTP 409 — no raw database errors leak to frontend
+
+### Frontend Error Handler
+
+`MarkdownImport.tsx` reads structured `error.code` first, falling back to legacy string-matching for backward compatibility.
 
 ---
 

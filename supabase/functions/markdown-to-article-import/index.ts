@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
+import { createErrorResponse, classifyError } from '../_shared/error-response.ts';
 import { parse as parseYaml } from 'https://deno.land/std@0.208.0/yaml/mod.ts';
 import { Marked } from 'https://esm.sh/marked@11.1.1';
 
@@ -437,10 +438,12 @@ Deno.serve(async (req) => {
     const { markdownContent, overwriteExisting = false, assignToChapter, githubFilePath, githubCommitHash, lang, mergeIntoArticle }: ImportRequest = await req.json();
 
     if (!markdownContent) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'markdownContent is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return createErrorResponse(400, {
+        code: 'E_VALIDATION',
+        type: 'validation',
+        message: 'markdownContent is required',
+        hint: 'Provide markdown content in the request body.',
+      }, corsHeaders);
     }
 
     console.log('Starting markdown import...');
@@ -476,11 +479,40 @@ Deno.serve(async (req) => {
     // Step 6: Prepare article data
     // Determine target language (from parameter, frontmatter, or default to 'en')
     const targetLang = lang || frontmatter.lang || 'en';
+
+    // Phase C: Validate language code
+    const VALID_LANGUAGES = ['en', 'hi', 'pa', 'ta', 'te', 'ml', 'kn', 'bn', 'gu', 'mr', 'sa'];
+    if (!VALID_LANGUAGES.includes(targetLang)) {
+      return createErrorResponse(400, {
+        code: 'E_VALIDATION',
+        type: 'validation',
+        message: `Invalid language code: "${targetLang}"`,
+        hint: `Supported languages: ${VALID_LANGUAGES.join(', ')}`,
+      }, corsHeaders);
+    }
     console.log('Target language:', targetLang);
-    
+
     const titleText = typeof frontmatter.title === 'string' 
       ? frontmatter.title 
       : frontmatter.title?.en || 'Untitled';
+
+    // Phase C: Validate title
+    if (!titleText || titleText.trim().length === 0 || titleText === 'Untitled') {
+      return createErrorResponse(400, {
+        code: 'E_VALIDATION',
+        type: 'validation',
+        message: 'Article title is required',
+        hint: 'Add a title field in your YAML frontmatter or ensure the markdown has an H1 heading.',
+      }, corsHeaders);
+    }
+    if (titleText.length > 500) {
+      return createErrorResponse(400, {
+        code: 'E_VALIDATION',
+        type: 'validation',
+        message: `Title too long (${titleText.length} chars, max 500)`,
+        hint: 'Shorten the title in your frontmatter.',
+      }, corsHeaders);
+    }
     
     const slug = frontmatter.slug || (mergeIntoArticle ? mergeIntoArticle : generateSlug(titleText));
     
@@ -629,47 +661,40 @@ Deno.serve(async (req) => {
 
     console.log('Article data prepared:', { slug, title: articleData.title });
 
-    // Step 7: Check if article exists
+    // Step 7: Insert or update article (Phase C: atomic conflict handling)
     let articleId: string;
     
     if (overwriteExisting) {
-      const { data: existing } = await supabase
+      // Atomic upsert eliminates race window between SELECT and UPDATE
+      const { data: upsertedArticle, error: upsertError } = await supabase
         .from('srangam_articles')
+        .upsert(articleData, { onConflict: 'slug' })
         .select('id')
-        .eq('slug', slug)
         .single();
 
-      if (existing) {
-        // Update existing article
-        const { error: updateError } = await supabase
-          .from('srangam_articles')
-          .update(articleData)
-          .eq('id', existing.id);
-
-        if (updateError) throw updateError;
-        articleId = existing.id;
-        console.log('Updated existing article:', articleId);
-      } else {
-        // Insert new article
-        const { data: newArticle, error: insertError } = await supabase
-          .from('srangam_articles')
-          .insert(articleData)
-          .select('id')
-          .single();
-
-        if (insertError) throw insertError;
-        articleId = newArticle.id;
-        console.log('Inserted new article:', articleId);
-      }
+      if (upsertError) throw upsertError;
+      articleId = upsertedArticle.id;
+      console.log('Upserted article:', articleId);
     } else {
-      // Insert new article
+      // Non-overwrite: INSERT with structured duplicate error
       const { data: newArticle, error: insertError } = await supabase
         .from('srangam_articles')
         .insert(articleData)
         .select('id')
         .single();
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        // Catch Postgres unique violation specifically
+        if (insertError.code === '23505') {
+          return createErrorResponse(409, {
+            code: 'E_DUPLICATE',
+            type: 'conflict',
+            message: `An article with slug "${slug}" already exists.`,
+            hint: 'Enable "Overwrite existing article" or change the slug in your frontmatter.',
+          }, corsHeaders);
+        }
+        throw insertError;
+      }
       articleId = newArticle.id;
       console.log('Inserted new article:', articleId);
     }
@@ -948,13 +973,7 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Error in markdown import:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: errorMessage
-      }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    const detail = classifyError(error);
+    return createErrorResponse(500, detail, corsHeaders);
   }
 });
