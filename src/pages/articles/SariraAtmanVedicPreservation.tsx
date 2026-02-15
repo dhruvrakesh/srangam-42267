@@ -37,6 +37,7 @@ export default function SariraAtmanVedicPreservation() {
         <meta property="og:description" content="The technology of Vedic preservation: Anukramaṇīs as śarīra (body) and Sāyaṇa's commentary as ātman (soul)" />
         <meta property="og:type" content="article" />
         <meta name="keywords" content="Vedas, Anukramani, Sayanacharya, Vijayanagara, Sanskrit, oral tradition, manuscript culture, preservation" />
+        <link rel="canonical" href="https://srangam.nartiang.org/sarira-atman-vedic-preservation" />
       </Helmet>
 
       <ArticlePage

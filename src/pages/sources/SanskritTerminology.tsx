@@ -93,6 +93,7 @@ export default function SanskritTerminology() {
       <Helmet>
         <title>{`Sanskrit & Dharmic Terminology - ${allTerms.length}+ AI-Enhanced Terms | Srangam`}</title>
         <meta name="description" content={`Explore ${allTerms.length}+ Sanskrit and Dharmic terms with AI-enhanced etymology, translations, and cultural context across multiple languages.`} />
+        <link rel="canonical" href="https://srangam.nartiang.org/sources/sanskrit-terminology" />
       </Helmet>
 
       <div className="min-h-screen bg-background">

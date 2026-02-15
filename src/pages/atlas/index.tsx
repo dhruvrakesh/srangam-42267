@@ -65,18 +65,18 @@ const AtlasPage: React.FC = () => {
         <meta property="og:title" content={getCurrentTitle()} />
         <meta property="og:description" content={getCurrentDescription()} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={`${window.location.origin}/atlas`} />
+        <meta property="og:url" content="https://srangam.nartiang.org/atlas" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={getCurrentTitle()} />
         <meta name="twitter:description" content={getCurrentDescription()} />
         
         {/* Canonical URL */}
-        <link rel="canonical" href={`${window.location.origin}/atlas`} />
+        <link rel="canonical" href="https://srangam.nartiang.org/atlas" />
         
         {/* Language alternates */}
-        <link rel="alternate" hrefLang="en" href={`${window.location.origin}/atlas?lang=en`} />
-        <link rel="alternate" hrefLang="hi" href={`${window.location.origin}/atlas?lang=hi`} />
-        <link rel="alternate" hrefLang="ta" href={`${window.location.origin}/atlas?lang=ta`} />
+        <link rel="alternate" hrefLang="en" href="https://srangam.nartiang.org/atlas?lang=en" />
+        <link rel="alternate" hrefLang="hi" href="https://srangam.nartiang.org/atlas?lang=hi" />
+        <link rel="alternate" hrefLang="ta" href="https://srangam.nartiang.org/atlas?lang=ta" />
         
         {/* Schema.org structured data */}
         <script type="application/ld+json">
@@ -85,7 +85,7 @@ const AtlasPage: React.FC = () => {
             "@type": "WebApplication",
             "name": getCurrentTitle(),
             "description": getCurrentDescription(),
-            "url": `${window.location.origin}/atlas`,
+            "url": "https://srangam.nartiang.org/atlas",
             "applicationCategory": "EducationalApplication",
             "operatingSystem": "Web",
             "offers": {

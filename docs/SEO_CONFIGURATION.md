@@ -1,7 +1,7 @@
 # SEO Configuration Guide
 
-**Last Updated**: 2026-02-12
-**Last Audit**: 2026-02-12
+**Last Updated**: 2026-02-15
+**Last Audit**: 2026-02-15
 
 This document outlines the SEO configuration for the Srangam platform.
 
@@ -13,6 +13,7 @@ This document outlines the SEO configuration for the Srangam platform.
 
 > All canonical URLs, OG tags, sitemap base URL, and structured data now point to `srangam.nartiang.org`.
 > Migration completed 2026-02-12: 18 string replacements across 13 code files + 2 edge functions.
+> Canonical gap fix 2026-02-15: Added missing `<link rel="canonical">` to 7 pages + hardcoded atlas domain (was using `window.location.origin`). All pages now have canonical tags.
 
 ### Remaining User Actions
 

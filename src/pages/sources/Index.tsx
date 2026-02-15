@@ -73,6 +73,7 @@ export default function SourcesIndex() {
         <meta name="description" content="Comprehensive collection of primary sources, inscriptions, and scholarly references documenting ancient India's cultural and commercial networks." />
         <meta property="og:title" content="Sources & References | Srangam" />
         <meta property="og:description" content="Multilingual primary sources and scholarly references for ancient Indian history." />
+        <link rel="canonical" href="https://srangam.nartiang.org/sources-method" />
       </Helmet>
 
       <div className="min-h-screen bg-background">

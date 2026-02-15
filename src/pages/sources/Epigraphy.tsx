@@ -58,6 +58,7 @@ export default function Epigraphy() {
         <meta name="description" content={t('sources.epigraphy.description')} />
         <meta property="og:title" content={`${t('sources.epigraphy.title')} | Srangam`} />
         <meta property="og:description" content={t('sources.epigraphy.description')} />
+        <link rel="canonical" href="https://srangam.nartiang.org/sources/epigraphy" />
       </Helmet>
 
       <div className="min-h-screen bg-background">
