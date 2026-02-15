@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 import { Marked } from 'https://esm.sh/marked@11.1.1';
+import { classifyError } from '../_shared/error-response.ts';
 
 const marked = new Marked({ async: false, gfm: true, breaks: false });
 
@@ -362,9 +363,10 @@ Deno.serve(async (req) => {
     
   } catch (error) {
     console.error('Backfill error:', error);
+    const detail = classifyError(error);
     return new Response(JSON.stringify({
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: detail,
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

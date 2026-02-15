@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { classifyError } from '../_shared/error-response.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -167,10 +168,11 @@ GUIDELINES:
 
   } catch (error) {
     console.error('SEO generation error:', error);
+    const detail = classifyError(error);
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: detail,
         metaDescription: 'Browse scholarly articles on Ancient India, Maritime Trade, Sanskrit Literature, and Cultural Continuity.',
         articleCount: 56
       }),

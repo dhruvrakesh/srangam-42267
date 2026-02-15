@@ -98,6 +98,19 @@
 | Documentation updates | ✅ Complete |
 | RLS policy hardening | ✅ Complete |
 
+### Enterprise Hardening — Phase C (February 2026) - Logic Hardening
+
+**Status**: ✅ Complete (2026-02-15)
+
+| Task | Status | Notes |
+|------|--------|-------|
+| C1: Shared error-response utility | ✅ Complete | `_shared/error-response.ts` — standardized `ErrorDetail` schema |
+| C2: Update 8 edge function catch blocks | ✅ Complete | Backward-compatible structured errors |
+| C3: Front-matter validation | ✅ Complete | Language code + title validation before DB writes |
+| C4: Slug concurrency guard | ✅ Complete | Atomic upsert + Postgres 23505 → E_DUPLICATE |
+| C5: Frontend error handler | ✅ Complete | Reads structured errors, falls back to string-matching |
+| C6: Documentation | ✅ Complete | RELIABILITY_AUDIT.md, IMPLEMENTATION_STATUS.md |
+
 ### Phase 18 (December 2025) - Context Snapshots
 
 | Feature | Status |
