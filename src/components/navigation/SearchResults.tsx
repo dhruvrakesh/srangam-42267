@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { ARTICLES } from "@/data/siteData";
 import { Card, CardContent } from "@/components/ui/card";
 import { TagChip } from "@/components/ui/TagChip";
+import { useAllArticles } from "@/hooks/useArticles";
+import { useLanguage } from "@/components/language/LanguageProvider";
 
 interface SearchResultsProps {
   query: string;
@@ -10,17 +12,57 @@ interface SearchResultsProps {
 }
 
 export function SearchResults({ query, onClose }: SearchResultsProps) {
+  const { currentLanguage } = useLanguage();
+  const { data: dbArticles } = useAllArticles(currentLanguage);
+
   const results = useMemo(() => {
     if (!query.trim()) return [];
     
     const searchTerm = query.toLowerCase();
-    return ARTICLES.filter(article => 
+
+    // Extract text helper for multilingual JSONB fields
+    const extractText = (content: any): string => {
+      if (typeof content === 'string') return content;
+      if (typeof content === 'object' && content !== null) {
+        return content[currentLanguage] || content['en'] || Object.values(content)[0] as string || '';
+      }
+      return '';
+    };
+
+    // 1. JSON articles (existing)
+    const jsonResults = ARTICLES.filter(article => 
       article.title.toLowerCase().includes(searchTerm) ||
       article.excerpt.toLowerCase().includes(searchTerm) ||
       article.tags.some(tag => tag.toLowerCase().includes(searchTerm)) ||
       article.theme.toLowerCase().includes(searchTerm)
-    ).slice(0, 5);
-  }, [query]);
+    ).map(a => ({ ...a, _source: 'json' as const }));
+
+    const jsonSlugs = new Set(jsonResults.map(a => String(a.id)));
+
+    // 2. DB articles (additive)
+    const dbResults = (dbArticles || [])
+      .filter(article => !jsonSlugs.has(String(article.id)))
+      .filter(article => {
+        const title = extractText(article.title).toLowerCase();
+        const excerpt = extractText(article.excerpt).toLowerCase();
+        const tags = (article.tags || []).map(t => extractText(t).toLowerCase());
+        const theme = (article.theme || '').toLowerCase();
+        const slug = (article.slug || '').toLowerCase();
+        return title.includes(searchTerm) || excerpt.includes(searchTerm) ||
+          tags.some(t => t.includes(searchTerm)) || theme.includes(searchTerm) || slug.includes(searchTerm);
+      })
+      .map(article => ({
+        id: article.id,
+        title: extractText(article.title),
+        excerpt: extractText(article.excerpt),
+        slug: article.slug, // already "/articles/..."
+        theme: article.theme,
+        tags: (article.tags || []).map(t => extractText(t)),
+        _source: 'database' as const
+      }));
+
+    return [...jsonResults, ...dbResults].slice(0, 8);
+  }, [query, dbArticles, currentLanguage]);
 
   if (results.length === 0) {
     return (
