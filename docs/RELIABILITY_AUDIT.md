@@ -310,6 +310,35 @@ The import pipeline now validates before any database writes:
 
 ---
 
+## Phase D: Unified Search (February 2026) ✅
+
+### Problem Fixed
+
+Search page (`/search`) and navigation bar search dropdown only queried hardcoded JSON data (`MULTILINGUAL_ARTICLES` / `ARTICLES`), missing 41 published database articles (e.g., "Patiala", "Hinglaj"). The Articles browse page already worked correctly using `useAllArticles` + `mergeArticleSources`.
+
+### Solution
+
+Both search surfaces now merge JSON articles with database articles via `useAllArticles` hook:
+
+- **`src/pages/Search.tsx`**: After existing `searchArticles()` call for JSON results, DB articles are filtered client-side with relevance scoring (title: 80, slug: 60, tags: 30, excerpt: 20, theme: 10). Results are deduplicated by ID and merged.
+- **`src/components/navigation/SearchResults.tsx`**: Merges `ARTICLES` (JSON) with `useAllArticles()` (DB) before filtering. Increased result limit from 5 to 8.
+
+### Deduplication
+
+A `Set` of JSON result IDs is built first; DB articles with matching IDs are skipped. This prevents duplicate entries when an article exists in both sources.
+
+### Performance
+
+- `useAllArticles` has 5-minute `staleTime` via TanStack Query -- no redundant DB hits
+- Client-side filtering of 41 articles is negligible overhead
+- No new API calls, edge functions, or schema changes
+
+### Future (Phase E)
+
+Server-side full-text search using Postgres `tsvector` when article count exceeds 200.
+
+---
+
 ## Monitoring Checklist
 
 - [ ] Edge function error rate < 1%
@@ -318,3 +347,4 @@ The import pipeline now validates before any database writes:
 - [ ] Tag categorization rate > 90%
 - [ ] Cross-reference orphan count = 0
 - [ ] Usage count accuracy = 100%
+- [ ] Search covers both JSON and DB articles
