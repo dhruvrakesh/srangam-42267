@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useLocation } from "react-router-dom";
 import { Search as SearchIcon, Filter, Download, BookOpen, Highlighter, Settings, Brain, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,15 +12,13 @@ import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { searchArticles, getAvailableThemes, getSearchSuggestions, exportSearchResults } from "@/lib/searchEngine";
 import { isSanskritTerm, getSanskritContext } from "@/lib/sanskritUtils";
-import { getDisplayArticles } from "@/lib/multilingualArticleUtils";
 import { useLanguage } from "@/components/language/LanguageProvider";
-import { useAllArticles } from "@/hooks/useArticles";
+import { useSearchArticles } from "@/hooks/useSearchArticles";
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
   const { currentLanguage } = useLanguage();
-  const { data: dbArticles, isLoading: isLoadingDb } = useAllArticles(currentLanguage);
   const [query, setQuery] = useState(searchParams.get("query") || "");
   const [selectedTheme, setSelectedTheme] = useState<string>("all");
   const [activeTab, setActiveTab] = useState("articles");
@@ -47,103 +45,14 @@ export default function Search() {
     }
   };
 
-  // Helper function to safely extract text from multilingual content
-  const extractText = (content: any): string => {
-    if (typeof content === 'string') return content;
-    if (typeof content === 'object' && content !== null) {
-      return content[currentLanguage] as string || 
-             content['en'] as string || 
-             Object.values(content)[0] as string || '';
-    }
-    return '';
-  };
-
-  // Enhanced search results using full content search + database articles
-  const searchResults = useMemo(() => {
-    if (!query.trim()) return [];
-    
-    // 1. JSON-based search results (existing logic, untouched)
-    const jsonResults = searchArticles(query, {
-      language: currentLanguage,
-      theme: selectedTheme,
-      searchInContent: true,
-      searchCulturalTerms: true,
-      minScore,
-      useBoolean,
-      searchField
-    });
-
-    const displayArticles = getDisplayArticles(currentLanguage);
-
-    // Convert JSON search results to display format
-    const formattedJsonResults = jsonResults.map(result => {
-      const displayArticle = displayArticles.find(da => da.id === result.article.id);
-      
-      return {
-        ...displayArticle,
-        id: result.article.id,
-        title: extractText(result.article.title),
-        excerpt: extractText(result.article.dek),
-        slug: `/${result.article.id}`,
-        theme: result.metadata.theme,
-        tags: result.article.tags.map(tag => extractText(tag)).filter(Boolean),
-        readTime: result.metadata.readTime,
-        author: result.metadata.author,
-        date: result.metadata.date,
-        score: result.score,
-        matchedContent: result.matchedContent,
-        matchType: result.matchType
-      };
-    });
-
-    // 2. Database article search (additive -- does not touch JSON path)
-    const jsonResultIds = new Set(formattedJsonResults.map(r => r.id));
-    const searchTerm = query.toLowerCase();
-
-    const dbResults = (dbArticles || [])
-      .filter(article => !jsonResultIds.has(article.id))
-      .map(article => {
-        const title = extractText(article.title);
-        const excerpt = extractText(article.excerpt);
-        const slug = article.slug; // already "/articles/..."
-        const tags = (article.tags || []).map(t => extractText(t));
-        const theme = article.theme || '';
-
-        // Score by match quality
-        let score = 0;
-        let matchType = 'content';
-        if (title.toLowerCase().includes(searchTerm)) { score += 80; matchType = 'title'; }
-        if (slug.toLowerCase().includes(searchTerm)) { score += 60; }
-        if (tags.some(t => t.toLowerCase().includes(searchTerm))) { score += 30; if (!score) matchType = 'tag'; }
-        if (excerpt.toLowerCase().includes(searchTerm)) { score += 20; }
-        if (theme.toLowerCase().includes(searchTerm)) { score += 10; }
-
-        if (score === 0) return null;
-
-        // Apply theme filter
-        if (selectedTheme !== 'all' && theme !== selectedTheme) return null;
-
-        return {
-          id: article.id,
-          title,
-          excerpt,
-          slug,
-          theme,
-          tags,
-          readTime: article.readTime,
-          author: article.author,
-          date: article.date,
-          score,
-          matchedContent: [],
-          matchType,
-          source: 'database' as const
-        };
-      })
-      .filter(Boolean);
-
-    // 3. Merge and sort by score descending
-    return [...formattedJsonResults, ...dbResults].sort((a: any, b: any) => (b.score || 0) - (a.score || 0));
-  }, [query, selectedTheme, currentLanguage, dbArticles, minScore, useBoolean, searchField]);
+  // Server-side full-text search + JSON merge via unified hook
+  const { results: searchResults, isLoading: isLoadingDb } = useSearchArticles(query, {
+    theme: selectedTheme,
+    minScore,
+    useBoolean,
+    searchField,
+    enabled: !!query.trim(),
+  });
 
   // Available themes for filtering
   const themes = useMemo(() => {

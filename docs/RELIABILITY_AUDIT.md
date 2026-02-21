@@ -333,9 +333,59 @@ A `Set` of JSON result IDs is built first; DB articles with matching IDs are ski
 - Client-side filtering of 41 articles is negligible overhead
 - No new API calls, edge functions, or schema changes
 
-### Future (Phase E)
+### Future (Phase E2)
 
-Server-side full-text search using Postgres `tsvector` when article count exceeds 200.
+Semantic/vector search using existing `srangam_search_articles_semantic` RPC and embeddings column.
+
+---
+
+## Phase E1: Server-Side Full-Text Search (February 2026) ✅
+
+### Problem Fixed
+
+Phase D's unified search downloaded ALL articles (including full `content` JSONB) to the client for filtering. Navigation bar had no live search dropdown — users had to submit and wait for page load.
+
+### Solution
+
+Server-side full-text search using Postgres `tsvector` + GIN index via `srangam_search_articles_fulltext` RPC function:
+
+- **`search_vector` column**: Trigger-maintained tsvector combining title (A), tags (A), dek (B), theme (B), slug (B), author (C)
+- **GIN index**: `idx_srangam_articles_search_vector` for sub-millisecond lookups
+- **RPC function**: `srangam_search_articles_fulltext(search_query, result_limit)` using `websearch_to_tsquery` with ILIKE fallback on title/slug
+- **`SECURITY DEFINER`** with `SET search_path = 'public'` and internal `status = 'published'` filter
+- Returns only metadata fields (no `content` JSONB) — major bandwidth reduction
+
+### Architecture
+
+```
+Search page / Nav dropdown
+  → useSearchArticles hook
+    → srangam_search_articles_fulltext RPC (server-side, GIN-indexed)
+    → searchArticles() JSON (client-side, legacy)
+    → Deduplicate + merge + sort by rank
+```
+
+### Performance
+
+| Metric | Before (Phase D) | After (Phase E1) |
+|--------|------------------|-------------------|
+| Data transferred per search | ~200KB+ (all articles) | ~2-10KB (matching rows only) |
+| Query time at 500 articles | ~50ms+ client-side | ~2ms server-side (GIN) |
+| Nav bar feedback | None (page navigation) | Live dropdown as you type |
+
+### Nav Bar Live Dropdown
+
+`HeaderNav.tsx` now renders `SearchResults` as a positioned dropdown when input has ≥2 characters. Closes on submit (navigates to `/search`), on blur (200ms delay for click), or when a result is clicked.
+
+### Rollback
+
+```sql
+DROP INDEX IF EXISTS idx_srangam_articles_search_vector;
+DROP TRIGGER IF EXISTS trg_srangam_articles_search_vector ON srangam_articles;
+DROP FUNCTION IF EXISTS srangam_update_search_vector();
+DROP FUNCTION IF EXISTS srangam_search_articles_fulltext(text, integer);
+ALTER TABLE srangam_articles DROP COLUMN IF EXISTS search_vector;
+```
 
 ---
 
