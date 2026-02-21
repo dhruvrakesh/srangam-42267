@@ -374,6 +374,7 @@ export type Database = {
           part_number: number | null
           published_date: string
           read_time_minutes: number | null
+          search_vector: unknown
           series_id: string | null
           slug: string
           slug_alias: string | null
@@ -396,6 +397,7 @@ export type Database = {
           part_number?: number | null
           published_date?: string
           read_time_minutes?: number | null
+          search_vector?: unknown
           series_id?: string | null
           slug: string
           slug_alias?: string | null
@@ -418,6 +420,7 @@ export type Database = {
           part_number?: number | null
           published_date?: string
           read_time_minutes?: number | null
+          search_vector?: unknown
           series_id?: string | null
           slug?: string
           slug_alias?: string | null
@@ -1537,6 +1540,22 @@ export type Database = {
       srangam_increment_term_usage: {
         Args: { term_key: string }
         Returns: undefined
+      }
+      srangam_search_articles_fulltext: {
+        Args: { result_limit?: number; search_query: string }
+        Returns: {
+          author: string
+          dek: Json
+          id: string
+          og_image_url: string
+          published_date: string
+          rank: number
+          read_time_minutes: number
+          slug: string
+          tags: string[]
+          theme: string
+          title: Json
+        }[]
       }
       srangam_search_articles_semantic: {
         Args: {

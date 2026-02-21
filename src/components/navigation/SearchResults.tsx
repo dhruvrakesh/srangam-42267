@@ -1,10 +1,8 @@
-import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ARTICLES } from "@/data/siteData";
 import { Card, CardContent } from "@/components/ui/card";
 import { TagChip } from "@/components/ui/TagChip";
-import { useAllArticles } from "@/hooks/useArticles";
-import { useLanguage } from "@/components/language/LanguageProvider";
+import { useSearchArticles } from "@/hooks/useSearchArticles";
+import { Loader2 } from "lucide-react";
 
 interface SearchResultsProps {
   query: string;
@@ -12,59 +10,26 @@ interface SearchResultsProps {
 }
 
 export function SearchResults({ query, onClose }: SearchResultsProps) {
-  const { currentLanguage } = useLanguage();
-  const { data: dbArticles } = useAllArticles(currentLanguage);
+  const { results, isLoading } = useSearchArticles(query, { limit: 8 });
 
-  const results = useMemo(() => {
-    if (!query.trim()) return [];
-    
-    const searchTerm = query.toLowerCase();
+  const displayResults = results.slice(0, 8);
 
-    // Extract text helper for multilingual JSONB fields
-    const extractText = (content: any): string => {
-      if (typeof content === 'string') return content;
-      if (typeof content === 'object' && content !== null) {
-        return content[currentLanguage] || content['en'] || Object.values(content)[0] as string || '';
-      }
-      return '';
-    };
+  if (isLoading && displayResults.length === 0) {
+    return (
+      <div className="absolute top-full left-0 right-0 mt-1 z-50">
+        <Card className="bg-background border-border shadow-lg">
+          <CardContent className="p-4 flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">Searching...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
-    // 1. JSON articles (existing)
-    const jsonResults = ARTICLES.filter(article => 
-      article.title.toLowerCase().includes(searchTerm) ||
-      article.excerpt.toLowerCase().includes(searchTerm) ||
-      article.tags.some(tag => tag.toLowerCase().includes(searchTerm)) ||
-      article.theme.toLowerCase().includes(searchTerm)
-    ).map(a => ({ ...a, _source: 'json' as const }));
+  if (!query.trim() || query.trim().length < 2) return null;
 
-    const jsonSlugs = new Set(jsonResults.map(a => String(a.id)));
-
-    // 2. DB articles (additive)
-    const dbResults = (dbArticles || [])
-      .filter(article => !jsonSlugs.has(String(article.id)))
-      .filter(article => {
-        const title = extractText(article.title).toLowerCase();
-        const excerpt = extractText(article.excerpt).toLowerCase();
-        const tags = (article.tags || []).map(t => extractText(t).toLowerCase());
-        const theme = (article.theme || '').toLowerCase();
-        const slug = (article.slug || '').toLowerCase();
-        return title.includes(searchTerm) || excerpt.includes(searchTerm) ||
-          tags.some(t => t.includes(searchTerm)) || theme.includes(searchTerm) || slug.includes(searchTerm);
-      })
-      .map(article => ({
-        id: article.id,
-        title: extractText(article.title),
-        excerpt: extractText(article.excerpt),
-        slug: article.slug, // already "/articles/..."
-        theme: article.theme,
-        tags: (article.tags || []).map(t => extractText(t)),
-        _source: 'database' as const
-      }));
-
-    return [...jsonResults, ...dbResults].slice(0, 8);
-  }, [query, dbArticles, currentLanguage]);
-
-  if (results.length === 0) {
+  if (displayResults.length === 0) {
     return (
       <div className="absolute top-full left-0 right-0 mt-1 z-50">
         <Card className="bg-background border-border shadow-lg">
@@ -80,7 +45,7 @@ export function SearchResults({ query, onClose }: SearchResultsProps) {
     <div className="absolute top-full left-0 right-0 mt-1 z-50">
       <Card className="bg-background border-border shadow-lg">
         <CardContent className="p-2">
-          {results.map((article) => (
+          {displayResults.map((article) => (
             <Link
               key={article.id}
               to={article.slug}

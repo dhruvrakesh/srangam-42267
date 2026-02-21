@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { SearchResults } from "@/components/navigation/SearchResults";
 
 type NavItem = { 
   label: string; 
@@ -41,7 +42,9 @@ export function HeaderNav() {
   const [cfg, setCfg] = useState<NavConfig | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
   const [combo, setCombo] = useState<string[]>([]);
   const navigate = useNavigate();
 
@@ -101,6 +104,7 @@ export function HeaderNav() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setShowSearchDropdown(false);
     if (searchQuery.trim()) {
       navigate(`/search?query=${encodeURIComponent(searchQuery.trim())}`);
       window.dispatchEvent(new CustomEvent("search_submit", { 
@@ -185,21 +189,42 @@ export function HeaderNav() {
           <div className="flex-1" />
 
           {/* Search */}
-          <form 
-            className="relative hidden md:flex w-80"
-            onSubmit={handleSearch}
+          <div 
+            ref={searchContainerRef}
+            className="relative hidden md:block w-80"
           >
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              ref={searchRef}
-              type="search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-              placeholder={cfg.utilities.searchPlaceholder}
-              aria-label="Search"
-            />
-          </form>
+            <form onSubmit={handleSearch}>
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground z-10" />
+              <Input
+                ref={searchRef}
+                type="search"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowSearchDropdown(e.target.value.trim().length >= 2);
+                }}
+                onFocus={() => {
+                  if (searchQuery.trim().length >= 2) setShowSearchDropdown(true);
+                }}
+                onBlur={() => {
+                  // Delay to allow click on dropdown results
+                  setTimeout(() => setShowSearchDropdown(false), 200);
+                }}
+                className="pl-9"
+                placeholder={cfg.utilities.searchPlaceholder}
+                aria-label="Search"
+              />
+            </form>
+            {showSearchDropdown && searchQuery.trim().length >= 2 && (
+              <SearchResults 
+                query={searchQuery} 
+                onClose={() => {
+                  setShowSearchDropdown(false);
+                  setSearchQuery("");
+                }} 
+              />
+            )}
+          </div>
 
           {/* Theme toggle */}
           <ThemeToggle />
