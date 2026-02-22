@@ -210,6 +210,12 @@ export function HeaderNav() {
                   // Delay to allow click on dropdown results
                   setTimeout(() => setShowSearchDropdown(false), 200);
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    setShowSearchDropdown(false);
+                    searchRef.current?.blur();
+                  }
+                }}
                 className="pl-9"
                 placeholder={cfg.utilities.searchPlaceholder}
                 aria-label="Search"
