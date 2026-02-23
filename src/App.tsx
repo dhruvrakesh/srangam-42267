@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LanguageProvider } from "@/components/language/LanguageProvider";
@@ -44,35 +44,7 @@ const SupportResearch = lazy(() => import("./pages/SupportResearch"));
 const DataVisualization = lazy(() => import("./pages/DataVisualization"));
 const ResearchNetwork = lazy(() => import("./pages/ResearchNetwork"));
 
-// Lazy load article pages
-const MonsoonTradeClock = lazy(() => import("./pages/articles/MonsoonTradeClock"));
-const ScriptsThatSailed = lazy(() => import("./pages/articles/ScriptsThatSailed"));
-const ScriptsThatSailedII = lazy(() => import("./pages/articles/ScriptsThatSailedII"));
-const GondwanaToHimalaya = lazy(() => import("./pages/articles/GondwanaToHimalaya"));
-const IndianOceanPowerNetworks = lazy(() => import("./pages/articles/IndianOceanPowerNetworks"));
-const AshokaKandaharEdicts = lazy(() => import("./pages/articles/AshokaKandaharEdicts"));
-const ReasessingAshokaLegacy = lazy(() => import("./pages/articles/ReasessingAshokaLegacy"));
-const KutaiYupaBorneo = lazy(() => import("./pages/articles/KutaiYupaBorneo"));
-const MaritimeMemoriesSouthIndia = lazy(() => import("./pages/articles/MaritimeMemoriesSouthIndia"));
-const RidersOnMonsoon = lazy(() => import("./pages/articles/RidersOnMonsoon"));
-const PepperAndBullion = lazy(() => import("./pages/articles/PepperAndBullion"));
-const EarthSeaSangam = lazy(() => import("./pages/articles/EarthSeaSangam"));
-const JambudvipaConnected = lazy(() => import("./pages/articles/JambudvipaConnected"));
-const CosmicIslandSacredLand = lazy(() => import("./pages/articles/CosmicIslandSacredLand"));
-const StonePurana = lazy(() => import("./pages/articles/StonePurana"));
-const JanajatiOralTraditions = lazy(() => import("./pages/articles/JanajatiOralTraditions"));
-const SacredTreeHarvestRhythms = lazy(() => import("./pages/articles/SacredTreeHarvestRhythms"));
-const StoneSongAndSea = lazy(() => import("./pages/articles/StoneSongAndSea"));
-const CholaNavalRaid = lazy(() => import("./pages/articles/CholaNavalRaid"));
-const AsuraExilesIndoIranian = lazy(() => import("./pages/articles/AsuraExilesIndoIranian"));
-const SariraAtmanVedicPreservation = lazy(() => import("./pages/articles/SariraAtmanVedicPreservation"));
-const RishiGenealogiesVedicTradition = lazy(() => import("./pages/articles/RishiGenealogiesVedicTradition"));
-const ReasessingRigvedaAntiquity = lazy(() => import("./pages/articles/ReasessingRigvedaAntiquity"));
-const GeomythologyLandReclamation = lazy(() => import("./pages/GeomythologyLandReclamation"));
-const DashanamiAsceticsSacredGeography = lazy(() => import("./pages/articles/DashanamiAsceticsSacredGeography"));
-const ContinuousHabitationUttarapatha = lazy(() => import("./pages/articles/ContinuousHabitationUttarapatha"));
-const SomnathaPrabhasaItihasa = lazy(() => import("./pages/articles/SomnathaPrabhasaItihasa"));
-const RingingRocksRhythmicCosmology = lazy(() => import("./pages/articles/RingingRocksRhythmicCosmology"));
+// Batch pages (still used directly)
 const BatchBujangNagapattinamOcean = lazy(() => import("./pages/BatchBujangNagapattinamOcean"));
 const BatchMuzirisKutaiAshoka = lazy(() => import("./pages/BatchMuzirisKutaiAshoka"));
 const Sitemap = lazy(() => import("./pages/Sitemap"));
@@ -174,37 +146,36 @@ const App = () => (
                   <Route path="/search" element={<Search />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/brand" element={<Brand />} />
-                  <Route path="/monsoon-trade-clock" element={<MonsoonTradeClock />} />
-                  <Route path="/scripts-that-sailed" element={<ScriptsThatSailed />} />
-                  <Route path="/scripts-that-sailed-ii" element={<ScriptsThatSailedII />} />
-                  <Route path="/gondwana-to-himalaya" element={<GondwanaToHimalaya />} />
-                  <Route path="/indian-ocean-power-networks" element={<IndianOceanPowerNetworks />} />
-          <Route path="/ashoka-kandahar-edicts" element={<AshokaKandaharEdicts />} />
-          <Route path="/reassessing-ashoka-legacy" element={<ReasessingAshokaLegacy />} />
-                  <Route path="/kutai-yupa-borneo" element={<KutaiYupaBorneo />} />
-                  <Route path="/maritime-memories-south-india" element={<MaritimeMemoriesSouthIndia />} />
-                  <Route path="/riders-on-monsoon" element={<RidersOnMonsoon />} />
-                  <Route path="/pepper-and-bullion" element={<PepperAndBullion />} />
-                  <Route path="/earth-sea-sangam" element={<EarthSeaSangam />} />
-                  <Route path="/jambudvipa-connected" element={<JambudvipaConnected />} />
-                  <Route path="/cosmic-island-sacred-land" element={<CosmicIslandSacredLand />} />
-                  <Route path="/stone-purana" element={<StonePurana />} />
-              <Route path="/janajati-oral-traditions" element={<JanajatiOralTraditions />} />
-              <Route path="/sacred-tree-harvest-rhythms" element={<SacredTreeHarvestRhythms />} />
-              <Route path="/stone-song-and-sea" element={<StoneSongAndSea />} />
-              <Route path="/chola-naval-raid" element={<CholaNavalRaid />} />
-              <Route path="/asura-exiles-indo-iranian" element={<AsuraExilesIndoIranian />} />
-              <Route path="/sarira-and-atman-vedic-preservation" element={<SariraAtmanVedicPreservation />} />
-            <Route path="/rishi-genealogies-vedic-tradition" element={<RishiGenealogiesVedicTradition />} />
-            <Route path="/reassessing-rigveda-antiquity" element={<ReasessingRigvedaAntiquity />} />
-            <Route path="/geomythology-land-reclamation" element={<GeomythologyLandReclamation />} />
-            <Route path="/dashanami-ascetics-sacred-geography" element={<DashanamiAsceticsSacredGeography />} />
-            <Route path="/continuous-habitation-uttarapatha" element={<ContinuousHabitationUttarapatha />} />
-            <Route path="/somnatha-prabhasa-itihasa" element={<SomnathaPrabhasaItihasa />} />
-            <Route path="/ringing-rocks-rhythmic-cosmology" element={<RingingRocksRhythmicCosmology />} />
-            <Route path="/articles/somnatha-prabhasa-itihasa" element={<SomnathaPrabhasaItihasa />} />
-            <Route path="/articles/ringing-rocks-rhythmic-cosmology" element={<RingingRocksRhythmicCosmology />} />
-                  
+                  {/* Legacy root-level article routes → redirect to canonical /articles/:slug */}
+                  <Route path="/monsoon-trade-clock" element={<Navigate to="/articles/monsoon-trade-clock" replace />} />
+                  <Route path="/scripts-that-sailed" element={<Navigate to="/articles/scripts-that-sailed" replace />} />
+                  <Route path="/scripts-that-sailed-ii" element={<Navigate to="/articles/scripts-that-sailed-ii" replace />} />
+                  <Route path="/gondwana-to-himalaya" element={<Navigate to="/articles/gondwana-to-himalaya" replace />} />
+                  <Route path="/indian-ocean-power-networks" element={<Navigate to="/articles/indian-ocean-power-networks" replace />} />
+                  <Route path="/ashoka-kandahar-edicts" element={<Navigate to="/articles/ashoka-kandahar-edicts" replace />} />
+                  <Route path="/reassessing-ashoka-legacy" element={<Navigate to="/articles/reassessing-ashoka-legacy" replace />} />
+                  <Route path="/kutai-yupa-borneo" element={<Navigate to="/articles/kutai-yupa-borneo" replace />} />
+                  <Route path="/maritime-memories-south-india" element={<Navigate to="/articles/maritime-memories-south-india" replace />} />
+                  <Route path="/riders-on-monsoon" element={<Navigate to="/articles/riders-on-monsoon" replace />} />
+                  <Route path="/pepper-and-bullion" element={<Navigate to="/articles/pepper-and-bullion" replace />} />
+                  <Route path="/earth-sea-sangam" element={<Navigate to="/articles/earth-sea-sangam" replace />} />
+                  <Route path="/jambudvipa-connected" element={<Navigate to="/articles/jambudvipa-connected" replace />} />
+                  <Route path="/cosmic-island-sacred-land" element={<Navigate to="/articles/cosmic-island-sacred-land" replace />} />
+                  <Route path="/stone-purana" element={<Navigate to="/articles/stone-purana" replace />} />
+                  <Route path="/janajati-oral-traditions" element={<Navigate to="/articles/janajati-oral-traditions" replace />} />
+                  <Route path="/sacred-tree-harvest-rhythms" element={<Navigate to="/articles/sacred-tree-harvest-rhythms" replace />} />
+                  <Route path="/stone-song-and-sea" element={<Navigate to="/articles/stone-song-and-sea" replace />} />
+                  <Route path="/chola-naval-raid" element={<Navigate to="/articles/chola-naval-raid" replace />} />
+                  <Route path="/asura-exiles-indo-iranian" element={<Navigate to="/articles/asura-exiles-indo-iranian" replace />} />
+                  <Route path="/sarira-and-atman-vedic-preservation" element={<Navigate to="/articles/sarira-and-atman-vedic-preservation" replace />} />
+                  <Route path="/rishi-genealogies-vedic-tradition" element={<Navigate to="/articles/rishi-genealogies-vedic-tradition" replace />} />
+                  <Route path="/reassessing-rigveda-antiquity" element={<Navigate to="/articles/reassessing-rigveda-antiquity" replace />} />
+                  <Route path="/geomythology-land-reclamation" element={<Navigate to="/articles/geomythology-land-reclamation" replace />} />
+                  <Route path="/dashanami-ascetics-sacred-geography" element={<Navigate to="/articles/dashanami-ascetics-sacred-geography" replace />} />
+                  <Route path="/continuous-habitation-uttarapatha" element={<Navigate to="/articles/continuous-habitation-uttarapatha" replace />} />
+                  <Route path="/somnatha-prabhasa-itihasa" element={<Navigate to="/articles/somnatha-prabhasa-itihasa" replace />} />
+                  <Route path="/ringing-rocks-rhythmic-cosmology" element={<Navigate to="/articles/ringing-rocks-rhythmic-cosmology" replace />} />
+
                   {/* Articles browse page + dynamic article routes */}
                   <Route path="/articles/*" element={<ArticlesRouter />} />
                   
@@ -215,8 +186,8 @@ const App = () => (
                   <Route path="/sanskrit-translator" element={<SanskritTranslator />} />
                   <Route path="/jyotish-horoscope" element={<JyotishHoroscope />} />
 
-                  <Route path="/themes/geology-deep-time/stone-purana" element={<StonePurana />} />
-                  <Route path="/themes/ancient-india/pepper-routes" element={<IndianOceanPowerNetworks />} />
+<Route path="/themes/geology-deep-time/stone-purana" element={<Navigate to="/articles/stone-purana" replace />} />
+                  <Route path="/themes/ancient-india/pepper-routes" element={<Navigate to="/articles/indian-ocean-power-networks" replace />} />
                   <Route path="/batch/bujang-nagapattinam-ocean" element={<BatchBujangNagapattinamOcean />} />
                   <Route path="/batch/muziris-kutai-ashoka" element={<BatchMuzirisKutaiAshoka />} />
                   <Route path="/research-submission" element={<ResearchSubmission />} />
@@ -227,10 +198,7 @@ const App = () => (
                   
                   {/* Oceanic Bharat Landing Page */}
                   <Route path="/oceanic" element={<OceanicBharat />} />
-                  
-                  {/* Oceanic Bharat article system */}
-                  <Route path="/oceanic/*" element={<OceanicRouter />} />
-                  
+
                   {/* Auth Route */}
                   <Route path="/auth" element={<Auth />} />
                   

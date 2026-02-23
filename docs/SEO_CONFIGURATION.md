@@ -258,9 +258,49 @@ Google's JavaScript rendering can take days/weeks. Social crawlers (Twitter, Fac
   - [x] WebApplication schema (tool pages)
 - [x] Font loading optimized (display=swap, lazy loading)
 - [x] Home page Helmet meta tags
+- [x] Route deduplication (Phase F — Feb 2026)
+  - [x] ~27 root-level article routes → `<Navigate replace>` to `/articles/:slug`
+  - [x] Duplicate `/oceanic/*` route removed
+  - [x] Hardcoded `/articles/somnatha-*` and `/articles/ringing-rocks-*` removed (handled by ArticlesRouter)
+  - [x] Theme sub-routes (`/themes/geology-deep-time/stone-purana`, `/themes/ancient-india/pepper-routes`) → redirect
+  - [x] Sitemap aligned: missing routes added, root-level article paths removed
 - [ ] Google Search Console verification (requires user action)
 
 ---
+
+## 🔀 Route Deduplication (Phase F — February 2026)
+
+### Policy
+
+**Every article MUST have exactly one canonical URL at `/articles/:slug`.**
+
+Root-level routes (e.g. `/monsoon-trade-clock`) that previously rendered article components directly are now `<Navigate to="/articles/monsoon-trade-clock" replace />` redirects. This ensures:
+
+1. Old bookmarks and external links still work (client-side redirect)
+2. Google follows the redirect and consolidates to the canonical URL
+3. Only one URL per article exists in the sitemap
+
+### Routes Redirected (~30)
+
+All legacy root-level article slugs now redirect to `/articles/:slug`:
+- `/monsoon-trade-clock` → `/articles/monsoon-trade-clock`
+- `/scripts-that-sailed` → `/articles/scripts-that-sailed`
+- (and ~26 more — see `App.tsx` for full list)
+
+Also:
+- `/themes/geology-deep-time/stone-purana` → `/articles/stone-purana`
+- `/themes/ancient-india/pepper-routes` → `/articles/indian-ocean-power-networks`
+
+### Lazy Import Cleanup
+
+The ~27 lazy article page imports were removed from `App.tsx` since redirects use `Navigate` (no component needed). Articles render via `ArticlesRouter` → `OceanicArticlePage`.
+
+### Sitemap Alignment
+
+The `generate-sitemap` edge function was updated to:
+- Remove root-level article paths from static routes
+- Add missing pages: `/search`, `/sources`, `/sources/trade-docs`, `/oceanic`, `/brand`, `/research-submission`, `/partnership`, `/support-research`
+- Articles from the database only appear under `/articles/:slug`
 
 ## 🔄 Maintenance
 
