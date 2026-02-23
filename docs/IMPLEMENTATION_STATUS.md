@@ -55,7 +55,25 @@
 - `supabase/functions/generate-article-seo/index.ts`
 - `public/robots.txt`
 
+### Phase F: SEO Remediation — GSC Indexing Fixes (February 2026)
+
+**Status**: ✅ Complete (2026-02-23)
+
+Addressed 5 active GSC indexing issues (page redirects, duplicate content, not-indexed pages).
+
+| Task | Status | Notes |
+|------|--------|-------|
+| F1: Route deduplication | ✅ Complete | ~27 root routes → `<Navigate replace>` to `/articles/:slug` |
+| F1b: Remove duplicate registrations | ✅ Complete | Duplicate `/oceanic/*`, hardcoded `/articles/somnatha-*` removed |
+| F1c: Remove unused lazy imports | ✅ Complete | ~27 article page imports pruned from App.tsx |
+| F2: Canonical tag consistency | ✅ Verified | `OceanicArticlePage` already emits correct canonical |
+| F3: Sitemap alignment | ✅ Complete | Added 8 missing routes, removed root-level article paths |
+| F4: Documentation | ✅ Complete | SEO_CONFIGURATION, RELIABILITY_AUDIT, plan.md updated |
+
+**Expected GSC Impact**: Duplicate-without-canonical → 0. Discovered-not-indexed should decrease over 2-4 weeks.
+
 ---
+
 
 ### Phase 21 (February 2026) - Sanskrit Automaton Integration
 
@@ -205,6 +223,9 @@
 |-------|----------|--------|
 | ~~GSC registered for wrong domain~~ | ~~Critical~~ | ✅ Resolved — GSC property is `nartiang.org` which encompasses `srangam.nartiang.org` |
 | ~~Canonical URLs need migration~~ | ~~High~~ | ✅ Resolved — all pages have canonical tags pointing to `srangam.nartiang.org` (Feb 2026) |
+| ~~Route duplication (27 root-level + /articles/)~~ | ~~High~~ | ✅ Resolved — Phase F redirects (Feb 2026) |
+| ~~Duplicate /oceanic/* route~~ | ~~Medium~~ | ✅ Resolved — removed duplicate registration (Feb 2026) |
+| ~~Sitemap missing routes~~ | ~~Medium~~ | ✅ Resolved — added /search, /sources, /oceanic, /brand, etc. (Feb 2026) |
 | 9 tables with zero rows (scaffolded, unused) | Low | Documented — no runtime cost, defer cleanup |
 | `srangam_article_versions` invariant #7 untested | Medium | 0 rows — append-only invariant has never been exercised |
 | Large file writes can timeout | Medium | Mitigated with incremental phases |

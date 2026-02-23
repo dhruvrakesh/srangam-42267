@@ -76,7 +76,17 @@ Version history must be preserved:
 
 **Known Gap:** `srangam_article_versions` has never been populated. The append-only invariant exists in policy but has never been exercised in production. This should be verified when the versioning feature is activated.
 
----
+### 6. Canonical URL Uniqueness (Phase F — February 2026)
+
+Every article MUST have exactly one canonical URL at `/articles/:slug`. Root-level routes (e.g. `/monsoon-trade-clock`) MUST redirect to the canonical path using `<Navigate to="/articles/:slug" replace />`. No article content may be rendered at two different URLs.
+
+**Enforcement:**
+- All ~27 legacy root-level article routes in `App.tsx` are `Navigate` redirects
+- `ArticlesRouter` handles all `/articles/*` routing
+- `OceanicArticlePage` emits `<link rel="canonical" href="https://srangam.nartiang.org/articles/{slug}" />`
+- Sitemap edge function only includes `/articles/:slug` paths for articles
+
+**Violation Impact:** Google flags duplicate content, splits page authority, reduces indexing
 
 ## Critical Paths
 
