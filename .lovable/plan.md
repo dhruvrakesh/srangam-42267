@@ -141,3 +141,19 @@ Update the following files to preserve institutional context:
 | Alternate page with canonical | 1 | 0 |
 | Discovered not indexed | 16 | Should decrease as duplicate signals are eliminated |
 | Crawled not indexed | 6 | Should decrease over 2-4 weeks |
+
+---
+
+# Phase G: Broken Article Links Remediation — ✅ COMPLETE (2026-03-04)
+
+## Problem
+Phase F converted ~27 root-level article routes to redirects targeting `/articles/:slug`, but `resolveOceanicArticle` only knew about 8 oceanic JSON cards and published DB articles. ~22 articles in `MULTILINGUAL_ARTICLES` were unreachable.
+
+## Fixes Applied
+1. **articleResolver.ts**: Added `MULTILINGUAL_ARTICLES` as 2nd fallback source (between oceanic cards and DB)
+2. **multilingualArticleUtils.ts**: Fixed slug generation from `/${id}` to `/articles/${id}`
+3. **OceanicArticlePage.tsx**: Fixed canonical URL to include `/articles/` prefix
+4. **useArticles.ts**: Use `slug_alias` over raw slug for DB article URLs
+5. **unifiedArticleUtils.ts**: Added slug-based deduplication in merge (DB preferred over JSON)
+6. **OceanicBharat.tsx**: Use `slug_alias || slug` in links
+7. **RELIABILITY_AUDIT.md**: Added Invariants #7 (resolver chain) and #8 (dedup)
