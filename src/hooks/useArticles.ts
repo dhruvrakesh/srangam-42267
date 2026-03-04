@@ -57,7 +57,7 @@ export const useAllArticles = (language: SupportedLanguage = 'en') => {
         
         return {
           id: article.id,
-          slug: `/articles/${article.slug}`,
+          slug: `/articles/${(article as any).slug_alias || article.slug}`,
           title,
           excerpt,
           theme: article.theme,

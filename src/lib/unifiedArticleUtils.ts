@@ -2,26 +2,43 @@ import { getDisplayArticles } from './multilingualArticleUtils';
 import type { DisplayArticle } from '@/hooks/useArticles';
 import type { SupportedLanguage } from '@/types/multilingual';
 
+/**
+ * Extracts a normalized key from a slug for deduplication.
+ * Strips `/articles/` and `/` prefixes to get the raw article ID.
+ */
+const normalizeSlugKey = (slug: string): string => {
+  return slug.replace(/^\/articles\//, '').replace(/^\//, '');
+};
+
 export const mergeArticleSources = (
   jsonArticles: ReturnType<typeof getDisplayArticles>,
   dbArticles?: DisplayArticle[]
 ): DisplayArticle[] => {
   const unified: DisplayArticle[] = [];
+  const seen = new Set<string>();
   
-  // Add JSON articles with source flag
-  jsonArticles.forEach(article => {
-    unified.push({
-      ...article,
-      source: 'json' as const
-    } as DisplayArticle);
-  });
-  
-  // Add database articles (already have source flag)
+  // Add database articles first (preferred source — fresher, richer metadata)
   if (dbArticles) {
     dbArticles.forEach(article => {
-      unified.push(article);
+      const key = normalizeSlugKey(article.slug);
+      if (!seen.has(key)) {
+        seen.add(key);
+        unified.push(article);
+      }
     });
   }
+  
+  // Add JSON articles only if not already present from DB
+  jsonArticles.forEach(article => {
+    const key = article.id || normalizeSlugKey(article.slug);
+    if (!seen.has(key)) {
+      seen.add(key);
+      unified.push({
+        ...article,
+        source: 'json' as const
+      } as DisplayArticle);
+    }
+  });
   
   return unified;
 };

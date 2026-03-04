@@ -80,7 +80,7 @@ export const OceanicArticlePage: React.FC = () => {
   // Build SEO metadata
   const articleTitle = getArticleTitle(article, currentLanguage);
   const articleSlug = article.slug_alias || article.slug;
-  const canonicalUrl = `${BASE_URL}/${articleSlug}`;
+  const canonicalUrl = `${BASE_URL}/articles/${articleSlug}`;
   const rawOgImageUrl = article.og_image_url || `${BASE_URL}/brand/og-image.png`;
   const ogImageUrl = getProxiedImageUrl(rawOgImageUrl);
   const description = article.abstract.substring(0, 160);
