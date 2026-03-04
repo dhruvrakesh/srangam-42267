@@ -88,6 +88,30 @@ Every article MUST have exactly one canonical URL at `/articles/:slug`. Root-lev
 
 **Violation Impact:** Google flags duplicate content, splits page authority, reduces indexing
 
+### 7. Article Resolver Source Chain (Phase G — March 2026)
+
+`resolveOceanicArticle(slug)` MUST check three sources in order:
+1. `oceanic_cards_8.json` — 8 oceanic card articles (fast, local)
+2. `MULTILINGUAL_ARTICLES` registry — 28 full multilingual articles (fast, local)
+3. Database `srangam_articles` with `status=published` (async, network)
+
+**Enforcement:**
+- `src/lib/articleResolver.ts` contains the ordered lookup chain
+- `MULTILINGUAL_ARTICLES` fallback prevents Phase F redirect regressions
+- Database query uses `.or()` to match both `slug` and `slug_alias`
+
+**Violation Impact:** Articles return "not found" despite having full content in the codebase
+
+### 8. Slug Deduplication in Article Listings (Phase G — March 2026)
+
+`mergeArticleSources()` MUST deduplicate articles when the same content exists in both JSON and database sources. Database version is preferred. Slug keys are normalized by stripping `/articles/` prefix.
+
+**Enforcement:**
+- `src/lib/unifiedArticleUtils.ts` uses `Set`-based deduplication
+- DB articles are added first (preferred), JSON articles only if not already seen
+
+**Violation Impact:** Duplicate article cards on listing/browse pages
+
 ## Critical Paths
 
 ### 1. Markdown Import Pipeline

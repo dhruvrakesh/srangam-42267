@@ -116,7 +116,7 @@ export default function OceanicBharat() {
                 >
                   <CardHeader>
                     <CardTitle className="font-serif text-xl leading-tight text-foreground group-hover:text-ocean transition-colors">
-                      <Link to={`/oceanic/${article.slug}`}>
+                      <Link to={`/oceanic/${article.slug_alias || article.slug}`}>
                         {article.title}
                       </Link>
                     </CardTitle>
@@ -136,7 +136,7 @@ export default function OceanicBharat() {
                       </span>
                     </div>
                     <Link 
-                      to={`/oceanic/${article.slug}`}
+                      to={`/oceanic/${article.slug_alias || article.slug}`}
                       className="text-ocean hover:text-ocean/80 font-medium text-sm"
                     >
                       Read article →

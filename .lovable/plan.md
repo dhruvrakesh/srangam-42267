@@ -1,168 +1,159 @@
 
+# Phase F: SEO Remediation — ✅ COMPLETE (2026-02-23)
 
-# Phase G: Broken Article Links -- Verified Fix Plan
 
-## Verified Diagnosis
+## Diagnosis from Google Search Console Screenshot
 
-After exhaustive review of all source files and the live database, here is the exact state:
+The screenshot shows 5 active indexing problems for `nartiang.org`:
 
-### Data Source Inventory
+| GSC Issue | Count | Root Cause in Codebase |
+|-----------|-------|----------------------|
+| Page with redirect | 2 | Duplicate `/oceanic/*` route registered twice (App.tsx lines 212 and 232). Likely also `/articles/somnatha-prabhasa-itihasa` duplicating `/somnatha-prabhasa-itihasa` |
+| Duplicate without user-selected canonical | 1 | ~27 legacy root-level article routes (e.g. `/monsoon-trade-clock`) serve the same content as `/articles/monsoon-trade-clock` via ArticlesRouter. The root-level pages have hardcoded canonical to the root path, while the `/articles/` version has no explicit canonical or a different one |
+| Alternate page with proper canonical tag | 1 | Related to above -- one of the duplicate pair has canonical, the other is the "alternate" |
+| Discovered - currently not indexed | 16 | Combination of: thin pages without unique content signals, duplicate content confusion, and SPA rendering delays |
+| Crawled - currently not indexed | 6 | Google crawled but declined to index -- likely pages with duplicate content or weak signals |
 
-| Source | Count | Articles |
-|--------|-------|----------|
-| `oceanic_cards_8.json` | 8 | maritime-memories-south-india, bharats-ancient-heritage, pepper-and-bullion, indian-ocean-power-networks, chola-naval-raid, riders-on-monsoon, dharmic-heritage-maritime-trade, samudra-manthan |
-| `MULTILINGUAL_ARTICLES` (JSON) | 28 | All 28 listed in `src/data/articles/index.ts` |
-| DB `status=published` | ~30 | jambudvipa-connected, ringing-rocks-rhythmic-cosmology, reassessing-ashoka, rishi-genealogies, etc. |
-| DB `status=draft` | 9 | chola-naval-raid, earth-sea-sangam, geomythology-land-reclamation, indian-ocean-power-networks, kutai-yupa-borneo, monsoon-trade-clock, riders-on-monsoon, scripts-that-sailed, stone-purana |
+## Root Cause Analysis
 
-### Bug 1: Resolver Gap (CRITICAL)
+### Problem 1: Massive Route Duplication in App.tsx
 
-`resolveOceanicArticle(slug)` checks only:
-1. `oceanic_cards_8.json` (8 articles)
-2. DB with `status=published`
+There are ~27 legacy article routes at root level (`/monsoon-trade-clock`, `/scripts-that-sailed`, etc.) AND the same articles are accessible via `/articles/:slug` through ArticlesRouter. This means every article has at least 2 URLs, and some have 3 (root + `/articles/` + `/oceanic/`).
 
-The following MULTILINGUAL_ARTICLES have NO path to resolution because they are NOT in oceanic_cards_8 AND are either absent from DB or in draft status:
+Additionally:
+- `/oceanic/*` route is registered TWICE (lines 212 and 232)
+- `/articles/somnatha-prabhasa-itihasa` is hardcoded (line 205) AND handled by ArticlesRouter wildcard (line 209)
+- `/articles/ringing-rocks-rhythmic-cosmology` same issue (line 206)
 
-**Confirmed broken:** gondwana-to-himalaya, ashoka-kandahar-edicts, scripts-that-sailed-ii, cosmic-island-sacred-land, janajati-oral-traditions, sacred-tree-harvest-rhythms, stone-song-and-sea, asura-exiles-indo-iranian, sarira-and-atman-vedic-preservation, reassessing-rigveda-antiquity, dashanami-ascetics-sacred-geography, continuous-habitation-uttarapatha, somnatha-prabhasa-itihasa
+### Problem 2: Canonical Tags on Legacy Pages Point to Wrong Path
 
-**Broken (in DB as draft):** monsoon-trade-clock, scripts-that-sailed, earth-sea-sangam, geomythology-land-reclamation, kutai-yupa-borneo, stone-purana, chola-naval-raid, riders-on-monsoon, indian-ocean-power-networks
+`SariraAtmanVedicPreservation.tsx` has canonical `https://srangam.nartiang.org/sarira-atman-vedic-preservation` (root-level), but the same article is also served at `/articles/sarira-atman-vedic-preservation` via ArticlesRouter. Google sees two pages with different canonicals.
 
-**Note:** Some articles like `jambudvipa-connected` exist in BOTH MULTILINGUAL_ARTICLES and DB (published), causing **duplicates** on listing pages.
+### Problem 3: robots.txt Exposes Internal Infrastructure URL
 
-### Bug 2: Slug Prefix Missing
+The sitemap URL in `robots.txt` is the raw backend function URL. While functional, it exposes internal infrastructure and is not the canonical domain.
 
-`multilingualArticleUtils.ts` lines 29, 42, 146: generates `slug: /${article.id}`. ArticleCard uses `<Link to={article.slug}>` directly. This sends users to root path which redirects to `/articles/:slug`, adding an unnecessary hop. If the redirect exists, it works -- but adds latency and confuses analytics.
+### Problem 4: NotFound Page Returns HTTP 200
 
-### Bug 3: Canonical URL Wrong
-
-`OceanicArticlePage.tsx` line 83: `const canonicalUrl = ${BASE_URL}/${articleSlug}` produces `https://srangam.nartiang.org/monsoon-trade-clock` instead of `https://srangam.nartiang.org/articles/monsoon-trade-clock`. Violates Phase F invariant.
-
-### Bug 4: DB Article Slugs Use Raw Slug
-
-`useArticles.ts` line 60: `slug: /articles/${article.slug}` uses the raw database slug (often very long like `jambudvipa-connected-weaving-the-threads-of-civilization-from-the-vaigai-to-the-ganga`) instead of the short `slug_alias`. The query on line 39 does `select('*')` which includes `slug_alias`, but it is not used.
-
-### Bug 5: No Deduplication in Merge
-
-`unifiedArticleUtils.ts` `mergeArticleSources` blindly appends DB articles to JSON articles. Articles existing in both (e.g., jambudvipa-connected) appear twice.
-
-### Bug 6: OceanicBharat Links Use Raw Slug
-
-`OceanicBharat.tsx` line 119/139: links to `/oceanic/${article.slug}` using the raw DB slug. Should use `slug_alias || slug`.
-
----
+The `NotFound.tsx` component renders a 404 page but the SPA always returns HTTP 200 (since all routes are handled client-side). This causes "Soft 404" signals for Google.
 
 ## Implementation Plan
 
-### Fix 1: Add MULTILINGUAL_ARTICLES Fallback to Resolver
+### Phase F1: Route Deduplication (High Impact, Low Risk)
 
-**File:** `src/lib/articleResolver.ts`
+**Goal**: Eliminate duplicate URLs so Google sees exactly one URL per page.
 
-Between the oceanic_cards check (line 65-71) and the database query (line 74), add a lookup into `MULTILINGUAL_ARTICLES` and `ARTICLE_METADATA`:
+**Step 1: Remove duplicate route registrations in App.tsx**
+- Remove the second `/oceanic/*` route (line 232 -- exact duplicate of line 212)
+- Remove hardcoded `/articles/somnatha-prabhasa-itihasa` (line 205) and `/articles/ringing-rocks-rhythmic-cosmology` (line 206) -- already handled by `ArticlesRouter` wildcard
 
-```
-import { MULTILINGUAL_ARTICLES, ARTICLE_METADATA } from '@/data/articles';
+**Step 2: Convert ~27 root-level article routes to redirects**
 
-// After oceanic cards check, before DB query:
-const multilingualArticle = MULTILINGUAL_ARTICLES.find(a => a.id === slug);
-if (multilingualArticle) {
-  const metadata = ARTICLE_METADATA[slug];
-  return {
-    source: 'json',
-    slug: slug,
-    title: getLocalizedTitle(multilingualArticle.title, 'en'),
-    title_hi: getLocalizedTitle(multilingualArticle.title, 'hi'),
-    title_pa: getLocalizedTitle(multilingualArticle.title, 'pa'),
-    title_ta: getLocalizedTitle(multilingualArticle.title, 'ta'),
-    abstract: getLocalizedTitle(multilingualArticle.dek, 'en'),
-    dek: multilingualArticle.dek,
-    content: multilingualArticle.content,
-    read_time_min: metadata?.readTime || 10,
-    tags: /* extract EN tags from multilingual tags */,
-    pins: [],
-    mla_refs: [],
-    theme: metadata?.theme,
-    published_date: metadata?.date,
-  };
-}
-```
+Replace each root-level article route with a `Navigate` redirect to the canonical `/articles/:slug` path. This is the surgical approach -- no component deletion, just route changes.
 
-This immediately unbreaks all ~22 broken articles.
+For example:
+- `<Route path="/monsoon-trade-clock" element={<MonsoonTradeClock />} />` becomes
+- `<Route path="/monsoon-trade-clock" element={<Navigate to="/articles/monsoon-trade-clock" replace />} />` 
 
-### Fix 2: Fix Slug Prefix in multilingualArticleUtils
+This ensures:
+- Old bookmarks and external links still work (redirect, not 404)
+- Google follows the redirect to the canonical URL
+- Only one URL serves each article's content
 
-**File:** `src/lib/multilingualArticleUtils.ts`
+The full list of routes to redirect (~27):
+`/monsoon-trade-clock`, `/scripts-that-sailed`, `/scripts-that-sailed-ii`, `/gondwana-to-himalaya`, `/indian-ocean-power-networks`, `/ashoka-kandahar-edicts`, `/reassessing-ashoka-legacy`, `/kutai-yupa-borneo`, `/maritime-memories-south-india`, `/riders-on-monsoon`, `/pepper-and-bullion`, `/earth-sea-sangam`, `/jambudvipa-connected`, `/cosmic-island-sacred-land`, `/stone-purana`, `/janajati-oral-traditions`, `/sacred-tree-harvest-rhythms`, `/stone-song-and-sea`, `/chola-naval-raid`, `/asura-exiles-indo-iranian`, `/sarira-and-atman-vedic-preservation`, `/rishi-genealogies-vedic-tradition`, `/reassessing-rigveda-antiquity`, `/geomythology-land-reclamation`, `/dashanami-ascetics-sacred-geography`, `/continuous-habitation-uttarapatha`, `/somnatha-prabhasa-itihasa`, `/ringing-rocks-rhythmic-cosmology`
 
-Lines 29, 42, 146: change `/${article.id}` to `/articles/${article.id}`.
+Also redirect `/themes/geology-deep-time/stone-purana` and `/themes/ancient-india/pepper-routes` to their canonical `/articles/` paths.
 
-### Fix 3: Fix Canonical URL
+**Step 3: Remove unused lazy imports**
 
-**File:** `src/components/oceanic/OceanicArticlePage.tsx`
+After converting to `Navigate` redirects, the ~27 lazy article page imports (lines 48-77) are no longer needed. Remove them to reduce bundle size. The articles are rendered by `OceanicArticlePage` via `ArticlesRouter`.
 
-Line 83: change `${BASE_URL}/${articleSlug}` to `${BASE_URL}/articles/${articleSlug}`.
+### Phase F2: Canonical Tag Consistency
 
-### Fix 4: Use slug_alias in useArticles
+**Step 1: Ensure OceanicArticlePage always emits canonical**
 
-**File:** `src/hooks/useArticles.ts`
+Verify `OceanicArticlePage.tsx` line 137 generates canonical as `https://srangam.nartiang.org/articles/{slug}`. This is already the case (line 21 + line 137). Confirmed correct.
 
-Line 60: change to `slug: /articles/${(article as any).slug_alias || article.slug}`.
+**Step 2: Remove canonical tags from legacy article page files**
 
-### Fix 5: Deduplicate in mergeArticleSources
+Since legacy pages will now redirect (Phase F1), their Helmet canonical tags become irrelevant. But if we keep the files for any reason, their canonical should match `/articles/:slug`.
 
-**File:** `src/lib/unifiedArticleUtils.ts`
+### Phase F3: Sitemap Alignment
 
-Add slug-based deduplication, preferring DB version over JSON when both exist:
+**Step 1: Update generate-sitemap edge function**
 
-```typescript
-const seen = new Set<string>();
-// Add DB articles first (preferred)
-dbArticles?.forEach(article => {
-  const key = article.slug.replace('/articles/', '');
-  if (!seen.has(key)) {
-    seen.add(key);
-    unified.push(article);
-  }
-});
-// Add JSON articles only if not already present
-jsonArticles.forEach(article => {
-  const key = article.id || article.slug.replace('/', '').replace('/articles/', '');
-  if (!seen.has(key)) {
-    seen.add(key);
-    unified.push({ ...article, source: 'json' } as DisplayArticle);
-  }
-});
-```
+- Remove any root-level article paths from static routes (they are now redirects)
+- Ensure only `/articles/:slug` paths appear for articles
+- Add missing routes that ARE in App.tsx but NOT in the sitemap: `/search`, `/sources`, `/sources/trade-docs`, `/oceanic`, `/brand`, `/research-submission`, `/partnership`, `/support-research`
 
-### Fix 6: Fix OceanicBharat Links
+**Step 2: Update robots.txt**
 
-**File:** `src/pages/oceanic/OceanicBharat.tsx`
+The sitemap URL should remain the edge function URL (this is correct -- Google needs direct XML access, not a React-rendered page). No change needed here.
 
-Lines 119, 139: change `/oceanic/${article.slug}` to `/oceanic/${article.slug_alias || article.slug}`.
+### Phase F4: Documentation Updates
 
-### Fix 7: Update Documentation
+Update the following files to preserve institutional context:
 
-**File:** `docs/RELIABILITY_AUDIT.md` -- Add resolver invariant: "resolveOceanicArticle MUST check oceanic_cards_8.json, MULTILINGUAL_ARTICLES, and database in that order."
+1. **`docs/SEO_CONFIGURATION.md`**: Add "Route Deduplication" section documenting the redirect strategy and canonical URL policy for articles
+2. **`docs/IMPLEMENTATION_STATUS.md`**: Add Phase F section, update Known Issues to reflect GSC findings
+3. **`.lovable/plan.md`**: Update with Phase F status
+4. **`docs/RELIABILITY_AUDIT.md`**: Add routing invariant: "Every article MUST have exactly one canonical URL at `/articles/:slug`"
 
-**File:** `.lovable/plan.md` -- Update Phase G status.
+## Technical Details
+
+### Files Changed Summary
+
+| # | File | Change Type | Risk |
+|---|------|------------|------|
+| 1 | `src/App.tsx` | EDIT: Remove duplicate routes, convert ~27 root routes to Navigate redirects, remove unused imports | Medium -- core routing file, but changes are mechanical |
+| 2 | `supabase/functions/generate-sitemap/index.ts` | EDIT: Add missing routes, ensure article URLs use `/articles/` prefix | Low |
+| 3 | `docs/SEO_CONFIGURATION.md` | EDIT: Add route deduplication section | Zero |
+| 4 | `docs/IMPLEMENTATION_STATUS.md` | EDIT: Add Phase F, update known issues | Zero |
+| 5 | `.lovable/plan.md` | EDIT: Update with Phase F | Zero |
+| 6 | `docs/RELIABILITY_AUDIT.md` | EDIT: Add routing invariant | Zero |
+
+### What This Does NOT Do
+
+- Does not delete any article page component files (they remain for potential future direct use)
+- Does not change ArticlesRouter, OceanicRouter, or OceanicArticlePage
+- Does not modify any article content or database
+- Does not add SSR or pre-rendering (platform limitation)
+- Does not touch authentication, RLS, or edge functions (except sitemap)
+
+### Risk Assessment
+
+- **Risk**: Medium-Low. The redirects are standard `<Navigate replace />` components. If an article slug doesn't match in ArticlesRouter, OceanicArticlePage will show its error state.
+- **Rollback**: Revert App.tsx to restore root-level routes.
+- **Testing**: After deployment, verify:
+  1. Visiting `/monsoon-trade-clock` redirects to `/articles/monsoon-trade-clock`
+  2. `/articles/monsoon-trade-clock` renders the article correctly
+  3. No 404s for any legacy bookmarked URL
+  4. Sitemap XML includes all published articles under `/articles/` prefix
+  5. Google Search Console re-crawl shows reduced duplication warnings
+
+### Expected GSC Impact
+
+| Issue | Before | After |
+|-------|--------|-------|
+| Page with redirect | 2 (confusing redirects) | ~30 (intentional, clean 301-equivalent redirects -- GSC will show these temporarily then consolidate) |
+| Duplicate without canonical | 1 | 0 (only one URL per article exists) |
+| Alternate page with canonical | 1 | 0 |
+| Discovered not indexed | 16 | Should decrease as duplicate signals are eliminated |
+| Crawled not indexed | 6 | Should decrease over 2-4 weeks |
 
 ---
 
-## Files Changed Summary
+# Phase G: Broken Article Links Remediation — ✅ COMPLETE (2026-03-04)
 
-| File | Change | Risk |
-|------|--------|------|
-| `src/lib/articleResolver.ts` | Add MULTILINGUAL_ARTICLES as 2nd fallback source | Low |
-| `src/lib/multilingualArticleUtils.ts` | Fix slug prefix `/${id}` → `/articles/${id}` | Low |
-| `src/components/oceanic/OceanicArticlePage.tsx` | Fix canonical URL to include `/articles/` | Low |
-| `src/hooks/useArticles.ts` | Use `slug_alias` for DB article URLs | Low |
-| `src/lib/unifiedArticleUtils.ts` | Deduplicate merged articles | Low |
-| `src/pages/oceanic/OceanicBharat.tsx` | Use `slug_alias` in links | Low |
-| `docs/RELIABILITY_AUDIT.md` | Document resolver invariant | Zero |
-| `.lovable/plan.md` | Phase G status | Zero |
+## Problem
+Phase F converted ~27 root-level article routes to redirects targeting `/articles/:slug`, but `resolveOceanicArticle` only knew about 8 oceanic JSON cards and published DB articles. ~22 articles in `MULTILINGUAL_ARTICLES` were unreachable.
 
-## What This Does NOT Do
-
-- Does not change any database content, status, or schema
-- Does not modify App.tsx routes or ArticlesRouter
-- Does not delete any component files
-- Does not touch authentication, RLS, or edge functions
-
+## Fixes Applied
+1. **articleResolver.ts**: Added `MULTILINGUAL_ARTICLES` as 2nd fallback source (between oceanic cards and DB)
+2. **multilingualArticleUtils.ts**: Fixed slug generation from `/${id}` to `/articles/${id}`
+3. **OceanicArticlePage.tsx**: Fixed canonical URL to include `/articles/` prefix
+4. **useArticles.ts**: Use `slug_alias` over raw slug for DB article URLs
+5. **unifiedArticleUtils.ts**: Added slug-based deduplication in merge (DB preferred over JSON)
+6. **OceanicBharat.tsx**: Use `slug_alias || slug` in links
+7. **RELIABILITY_AUDIT.md**: Added Invariants #7 (resolver chain) and #8 (dedup)
