@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { getOceanicCardBySlug, type OceanicCard } from './oceanicCardsLoader';
+import { MULTILINGUAL_ARTICLES, ARTICLE_METADATA } from '@/data/articles';
 
 export interface ResolvedArticle {
   source: 'json' | 'database';
@@ -61,7 +62,7 @@ export function getArticleTitle(article: ResolvedArticle, lang: string): string 
 const QUERY_TIMEOUT_MS = 10000; // 10 second timeout
 
 export async function resolveOceanicArticle(slug: string): Promise<ResolvedArticle | null> {
-  // First, try to get from JSON (fast, local)
+  // 1. Try oceanic_cards_8.json (fast, local — 8 articles)
   const jsonArticle = getOceanicCardBySlug(slug);
   if (jsonArticle) {
     return {
@@ -70,7 +71,43 @@ export async function resolveOceanicArticle(slug: string): Promise<ResolvedArtic
     };
   }
 
-  // If not in JSON, query the database with timeout
+  // 2. Try MULTILINGUAL_ARTICLES registry (28 articles with full content)
+  const multilingualArticle = MULTILINGUAL_ARTICLES.find(a => a.id === slug);
+  if (multilingualArticle) {
+    const metadata = ARTICLE_METADATA[slug];
+    const titleEn = typeof multilingualArticle.title === 'object' ? (multilingualArticle.title as any).en || '' : String(multilingualArticle.title);
+    const titleHi = typeof multilingualArticle.title === 'object' ? (multilingualArticle.title as any).hi : undefined;
+    const titlePa = typeof multilingualArticle.title === 'object' ? (multilingualArticle.title as any).pa : undefined;
+    const titleTa = typeof multilingualArticle.title === 'object' ? (multilingualArticle.title as any).ta : undefined;
+    const dekEn = typeof multilingualArticle.dek === 'object' ? (multilingualArticle.dek as any).en || '' : String(multilingualArticle.dek);
+    
+    // Extract English tags from multilingual tag objects
+    const tags = (multilingualArticle.tags || []).map(tag => {
+      if (typeof tag === 'string') return tag;
+      if (typeof tag === 'object' && tag !== null) return (tag as any).en || Object.values(tag)[0] || '';
+      return String(tag);
+    });
+
+    return {
+      source: 'json',
+      slug: slug,
+      title: titleEn,
+      title_hi: titleHi,
+      title_pa: titlePa,
+      title_ta: titleTa,
+      abstract: dekEn,
+      dek: multilingualArticle.dek,
+      content: multilingualArticle.content,
+      read_time_min: metadata?.readTime || 10,
+      tags,
+      pins: [],
+      mla_refs: [],
+      theme: metadata?.theme,
+      published_date: metadata?.date,
+    };
+  }
+
+  // 3. Query the database with timeout
   try {
     const startTime = Date.now();
     
