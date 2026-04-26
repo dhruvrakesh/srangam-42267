@@ -87,6 +87,11 @@ export default function MapsData() {
   const [enabledLayers, setEnabledLayers] = useState(layerConfig?.layers || ['ports', 'monsoon']);
   const { i18n } = useTranslation();
 
+  // Phase H.3 — Public Article Atlas: every published article's pinned places
+  const { rows: geoRows, loading: geoLoading, error: geoError } = useArticleGeography();
+  const [atlasStyle, setAtlasStyle] = useMapStyle('outdoors-v12');
+  const [atlasPlaceCount, setAtlasPlaceCount] = useState<number | null>(null);
+
   // Update filters and layers when URL param changes
   useEffect(() => {
     if (layerConfig) {
