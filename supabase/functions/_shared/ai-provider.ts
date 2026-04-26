@@ -29,12 +29,21 @@
 
 const DEFAULT_TIMEOUT_MS = 15_000;
 
-// Public list-price snapshot, USD per 1M tokens.
-// Update here only — no caller knows about pricing.
+// Public list-price snapshot, USD per 1M tokens (text models)
+// or USD per generated image (image models). Update here only — no caller
+// knows about pricing.
 const PRICING = {
   'gemini-2.5-flash': { in: 0.075, out: 0.30 },
   'gpt-4o-mini':      { in: 0.15,  out: 0.60 },
 } as const;
+
+// Per-image flat-rate pricing snapshot, USD per image (1024x1024 / std).
+const IMAGE_PRICING: Record<string, number> = {
+  'gemini-2.5-flash-image':         0.039,
+  'gemini-3-pro-image-preview':     0.06,
+  'gpt-image-1':                    0.04,
+  'dall-e-3':                       0.04,
+};
 
 export class NoAIProviderError extends Error {
   constructor() {
@@ -300,4 +309,148 @@ export async function aiExtractPlaces(
 
   // Should be unreachable.
   throw new NoAIProviderError();
+}
+
+// =============================================================================
+// Phase H.3 — Image generation (Gemini-first, OpenAI fallback)
+// =============================================================================
+
+export interface AIImageResult {
+  bytes: Uint8Array;
+  mime: string;
+  provider: 'gemini' | 'openai';
+  model: string;
+  latency_ms: number;
+  cost_usd_estimate: number;
+  revised_prompt?: string;
+}
+
+export interface ImageOpts {
+  /** 'landscape' (1792x1024 / 16:9) or 'square'. Default landscape. */
+  shape?: 'landscape' | 'square';
+  timeoutMs?: number;
+}
+
+function decodeB64ToBytes(b64: string): Uint8Array {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+async function callGeminiImage(
+  prompt: string,
+  apiKey: string,
+  opts: ImageOpts,
+): Promise<AIImageResult> {
+  const model = 'gemini-2.5-flash-image';
+  const t0 = performance.now();
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), opts.timeoutMs ?? 60_000);
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: ctrl.signal,
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: { responseModalities: ['IMAGE'] },
+      }),
+    });
+    if (!res.ok) {
+      const detail = await res.text();
+      throw new Error(`gemini-image ${res.status}: ${detail.slice(0, 300)}`);
+    }
+    const data = await res.json();
+    const parts = data?.candidates?.[0]?.content?.parts ?? [];
+    const imgPart = parts.find((p: any) => p?.inlineData?.data);
+    if (!imgPart) throw new Error('gemini-image: no inlineData in response');
+    const bytes = decodeB64ToBytes(imgPart.inlineData.data);
+    return {
+      bytes,
+      mime: imgPart.inlineData.mimeType ?? 'image/png',
+      provider: 'gemini',
+      model,
+      latency_ms: Math.round(performance.now() - t0),
+      cost_usd_estimate: IMAGE_PRICING[model] ?? 0.04,
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function callOpenAIImage(
+  prompt: string,
+  apiKey: string,
+  opts: ImageOpts,
+): Promise<AIImageResult> {
+  const model = 'gpt-image-1';
+  const size = opts.shape === 'square' ? '1024x1024' : '1536x1024';
+  const t0 = performance.now();
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), opts.timeoutMs ?? 90_000);
+
+  try {
+    const res = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      signal: ctrl.signal,
+      body: JSON.stringify({
+        model,
+        prompt,
+        n: 1,
+        size,
+        quality: 'medium',
+      }),
+    });
+    if (!res.ok) {
+      const detail = await res.text();
+      throw new Error(`openai-image ${res.status}: ${detail.slice(0, 300)}`);
+    }
+    const data = await res.json();
+    const b64 = data?.data?.[0]?.b64_json;
+    if (!b64) throw new Error('openai-image: no b64_json in response');
+    const bytes = decodeB64ToBytes(b64);
+    return {
+      bytes,
+      mime: 'image/png',
+      provider: 'openai',
+      model,
+      latency_ms: Math.round(performance.now() - t0),
+      cost_usd_estimate: IMAGE_PRICING[model] ?? 0.04,
+      revised_prompt: data?.data?.[0]?.revised_prompt,
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Generate one image. Tries Gemini (Nano Banana) first, falls back to OpenAI
+ * (gpt-image-1). Returns raw PNG bytes plus provider telemetry. Caller is
+ * responsible for storage (e.g. GDrive upload).
+ */
+export async function callImage(
+  prompt: string,
+  opts: ImageOpts = {},
+): Promise<AIImageResult> {
+  const gemini = Deno.env.get('GEMINI_API_KEY');
+  const openai = Deno.env.get('OPENAI_API_KEY');
+  if (!gemini && !openai) throw new NoAIProviderError();
+
+  if (gemini) {
+    try {
+      return await callGeminiImage(prompt, gemini, opts);
+    } catch (e) {
+      console.warn('[ai-provider] gemini-image failed:', e instanceof Error ? e.message : e);
+      if (!openai) throw e;
+      // fall through to OpenAI
+    }
+  }
+  return await callOpenAIImage(prompt, openai!, opts);
 }
