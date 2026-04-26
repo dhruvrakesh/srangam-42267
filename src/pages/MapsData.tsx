@@ -23,6 +23,7 @@ import cosmicOceanI18n from '@/data/cosmic_ocean/i18n.json';
 import { useArticleGeography } from '@/hooks/useArticleGeography';
 import { MapStyleSwitcher, useMapStyle } from '@/components/maps/MapStyleSwitcher';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ImagingHubCallout } from '@/components/imaging/ImagingHubCallout';
 
 // Lazy-load Leaflet-based atlas to keep initial bundle small.
 const ArticleAtlasMap = lazy(() =>
@@ -204,6 +205,9 @@ export default function MapsData() {
             onLayerToggle={handleLayerToggle}
           />
         </div>
+
+        {/* Phase J — Imaging Lab cross-app bridge (auth-aware) */}
+        <ImagingHubCallout />
 
         {/* Phase H.3 — Article Atlas (every published article's pinned places) */}
         <Card className="bg-card border-border mb-8">
