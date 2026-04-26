@@ -333,3 +333,59 @@ if (!bibliography?.length && !evidence?.length) {
 2. **Citation Verification**: Link to DOI/ISBN databases
 3. **Export**: Bibliography export in BibTeX format
 4. **Collaboration**: Manual bibliography curation UI
+
+---
+
+## Phase H.2 — Gazetteer-Backed Article Pins
+
+The "Geographical Context" card on each article is no longer hard-coded.
+It is populated end-to-end from a canonical gazetteer.
+
+### Tables
+
+- **`srangam_gazetteer`** — one row per real-world place.
+  Fields: `canonical_name`, `name_variants[]`, `latitude`, `longitude`,
+  `precision` (`'point' | 'centroid' | 'approximate'`), `country`,
+  `era_tags[]`, `feature_type`, `notes`, `external_refs` (jsonb;
+  e.g. `{"wikidata":"Q...","pleiades":12345}`).
+- **`srangam_article_pins`** — join table.
+  Composite PK `(article_id, gazetteer_id)`. Stores `confidence`
+  (`'A' | 'B' | 'C'`), `source` (`'manual' | 'evidence' | 'content_scan' | 'ai_ner'`),
+  and `display_order`.
+
+### Resolver
+
+`src/lib/articlePins.ts` does a single join query and returns
+`ArticlePin[]` with `confidence` preserved. Bounded at 4 s; always
+returns an array. Plugged into `articleResolver.ts` for any
+`source: 'database'` article.
+
+### Backfill
+
+`supabase/functions/backfill-article-pins/index.ts` (admin-only):
+
+1. Pull seeds from `srangam_article_evidence` (confidence `A`).
+2. Regex-scan article content against gazetteer canonical names +
+   variants (confidence `B`).
+3. Optional AI NER via `_shared/ai-provider.ts`
+   (Gemini primary, OpenAI fallback) for additional toponyms;
+   matched back to gazetteer (confidence `C`).
+4. `upsert` rows on `(article_id, gazetteer_id)` — fully idempotent.
+
+Request body: `{ article_id?, slug?, all_published?, limit?, skip_ai? }`.
+
+### Frontend
+
+- `ArticleMiniMap` (`src/components/articles/ArticleMiniMap.tsx`)
+  dynamically imports `leaflet` + its CSS only when the user clicks
+  "View Interactive Map". Markers are coloured by confidence:
+  green `A`, blue `B`, amber `C`. Approximate pins use a smaller radius.
+- `OceanicArticlePage` hides the entire Geographical Context and
+  Bibliography cards when their respective arrays are empty — no more
+  empty-state placeholders polluting the layout.
+
+### Comparable enterprise references
+
+- **Pelagios / Pleiades** — gazetteer-driven historical place network.
+- **World-Historical Gazetteer (Pittsburgh)** — variant + era tagging model.
+- **Recogito** — confidence-tiered annotation workflow we mirror with `A/B/C`.
