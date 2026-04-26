@@ -324,6 +324,10 @@ Deno.serve(async (req) => {
 
     // Resolve target article(s).
     let articles: { id: string; slug: string; content: unknown }[] = [];
+    let totalCandidates = 0;          // population size for chunked mode
+    let chunkOffset = body.offset ?? 0;
+    const chunkSize = Math.min(Math.max(body.chunk_size ?? 5, 1), 10);
+
     if (body.article_id) {
       const { data } = await admin
         .from('srangam_articles')
@@ -331,6 +335,7 @@ Deno.serve(async (req) => {
         .eq('id', body.article_id)
         .maybeSingle();
       if (data) articles = [data as any];
+      totalCandidates = articles.length;
     } else if (body.slug) {
       const { data } = await admin
         .from('srangam_articles')
@@ -338,29 +343,75 @@ Deno.serve(async (req) => {
         .or(`slug.eq.${body.slug},slug_alias.eq.${body.slug}`)
         .maybeSingle();
       if (data) articles = [data as any];
+      totalCandidates = articles.length;
     } else if (body.all_published) {
       const limit = Math.min(Math.max(body.limit ?? 25, 1), 200);
-      const { data } = await admin
+
+      // Cheap exact count (RLS already cleared by service role).
+      const { count } = await admin
         .from('srangam_articles')
-        .select('id,slug,content')
-        .eq('status', 'published')
-        .order('updated_at', { ascending: false })
-        .limit(limit);
-      articles = (data ?? []) as any;
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'published');
+      totalCandidates = Math.min(count ?? 0, limit);
+
+      // Pull only the slice we will process THIS invocation.
+      const sliceEnd = Math.min(chunkOffset + chunkSize, totalCandidates);
+      if (chunkOffset < totalCandidates) {
+        const { data } = await admin
+          .from('srangam_articles')
+          .select('id,slug,content')
+          .eq('status', 'published')
+          .order('updated_at', { ascending: false })
+          .range(chunkOffset, sliceEnd - 1);
+        articles = (data ?? []) as any;
+      }
     }
 
-    if (articles.length === 0) {
+    if (totalCandidates === 0) {
       return new Response(JSON.stringify({ error: 'no articles matched' }), {
         status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
+    // ---- Chunked-job cancellation check -----------------------------------
+    if (body.job_id && (await isCancelled(admin, body.job_id))) {
+      return new Response(JSON.stringify({
+        ok: true, cancelled: true, done: true,
+        next_offset: chunkOffset, total: totalCandidates,
+      }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
     const results: any[] = [];
     let total_cost = 0;
     for (const a of articles) {
-      const r = await backfillOne(admin, a, gaz as GazetteerRow[], gazIdx, skipAi);
-      if (r.ai) total_cost += r.ai.cost_usd_estimate;
-      results.push({ slug: a.slug, ...r });
+      try {
+        const r = await backfillOne(admin, a, gaz as GazetteerRow[], gazIdx, skipAi);
+        if (r.ai) total_cost += r.ai.cost_usd_estimate;
+        results.push({ slug: a.slug, ...r });
+
+        if (body.job_id) {
+          await reportItem(admin, body.job_id, {
+            ok: true,
+            item: a.slug,
+            cost_delta_usd: r.ai?.cost_usd_estimate ?? 0,
+          });
+        }
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        console.error(`[backfill-article-pins] ${a.slug} failed:`, msg);
+        results.push({ slug: a.slug, error: msg });
+        if (body.job_id) {
+          await reportItem(admin, body.job_id, { ok: false, item: a.slug, error: msg });
+        }
+        // continue — never fail the whole chunk on one bad article
+      }
+    }
+
+    const nextOffset = chunkOffset + articles.length;
+    const done = nextOffset >= totalCandidates;
+
+    if (body.job_id && done) {
+      await finishJob(admin, body.job_id, 'succeeded');
     }
 
     return new Response(JSON.stringify({
@@ -369,6 +420,10 @@ Deno.serve(async (req) => {
       gazetteer_size: gaz.length,
       total_cost_usd_estimate: Number(total_cost.toFixed(6)),
       results,
+      // Chunked-mode fields (also harmless in single-shot mode):
+      total: totalCandidates,
+      next_offset: nextOffset,
+      done,
     }), {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
