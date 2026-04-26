@@ -129,3 +129,34 @@ session credential. Concretely:
 
 The `ref` param is opaque to the imaging app — used for cross-app
 analytics (e.g. `srangam:article-slug`, `srangam:atlas:<place_id>`).
+
+---
+
+## Per-article launcher contract (Phase J.1, 2026-04-26)
+
+`ImagingLabLauncher` is mounted unconditionally on every article page in
+`OceanicArticlePage.tsx`. Layout invariants:
+
+| Surface | Trigger | Behaviour |
+|---|---|---|
+| Pin → satellite | `pins[0]` exists | `kind: 'viewer'` with `lat/lon/zoom=12/ref` |
+| Astronomy seed challenge | `matchChallenge(...)` ≠ null | `kind: 'astronomy-lab'` with `challenge/ref` |
+| Internal Atlas | always | `<Link to="/maps-data?focus=<slug>">` — same tab, no token |
+| External Map Explorer | always | `kind: 'viewer'` with `ref` only — public-URL fallback if anonymous |
+| Dating Lab hub | always (ghost) | `kind: 'dating-lab'` with `ref` |
+| Add geo-pins | `isAdmin && pins.length === 0` | `<Link to="/admin/geography-media?article=<slug>">` |
+
+The admin CTA is **purely a UX shortcut** to the existing authoring
+surface — RLS on `srangam_article_pins` (policy "Admin manage article
+pins") already enforces `has_role(auth.uid(), 'admin')` for writes, and
+the `backfill-article-pins` edge function re-checks the role server-side.
+Hiding the button for non-admins is a presentation concern, not a
+security boundary.
+
+`ref` is always `srangam:<slug>` and is run through `sanitiseRef()` in
+`src/lib/imaging/handoff.ts` before being placed into the signed `next`
+URL — even on the new universal buttons that omit coordinates.
+
+Anonymous visitors still see the entire card. The "Sign-in required for
+external lab" badge replaces "Single sign-on", and external buttons fall
+back to the public URL on failure (handled inside `useImagingDeepLink`).

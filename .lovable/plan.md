@@ -1,64 +1,132 @@
-# Fix `/maps-data` crash + how to test the project
+## Where we actually stand (verified, not assumed)
 
-## Root cause
+| Surface | State | Evidence |
+|---|---|---|
+| RBAC | Working — `user_roles` table + `useAuth().isAdmin` (`AuthContext.tsx:25-34`) | No change needed |
+| Admin pin authoring | Exists — `GeographyMedia.tsx` calls `backfill-article-pins` edge function per article + bulk | Route already mounted under `/admin` |
+| Imaging handoff | Working end-to-end — HMAC, nonce table, `IMAGING_HANDOFF_SECRET` set both sides | `docs/integrations/IMAGING_HANDOFF.md` already published |
+| react-leaflet@4 fix | Stable, dev-server clean | `tail dev-server.log` shows two clean Vite boots |
+| Per-article map link | **Regressed** — `ImagingLabLauncher` returns `null` when no pins AND no challenge match | `ImagingLabLauncher.tsx:51` |
+| In-page pins card | Correctly gated to `pins.length > 0` | `OceanicArticlePage.tsx:287` |
+| Article-card list links to maps | Never existed historically | grep on `OceanicIndex`/`Articles` returned nothing |
 
-The runtime error `TypeError: n is not a function` thrown inside `ArticleAtlasMap` (visible in the ErrorBoundary on `/maps-data`) is **not** caused by the imaging-handoff bridge. It is a **library version mismatch**:
+**RBAC modification: none required.** The plan re-uses `isAdmin` for an admin-only "Add geo-pins" CTA. No new tables, no new policies, no new edge functions.
 
-- `package.json` pins `react: ^18.3.1` and `react-dom: ^18.3.1`.
-- `package.json` also pins `react-leaflet: ^5.0.0`.
-- **`react-leaflet@5` requires React 19.** When run on React 18 its internals call APIs that resolve to `undefined` after minification → the classic `n is not a function` crash inside `MapContainer` / `TileLayer` (the `ot` / `lt` symbols in the stack trace).
+---
 
-This is why every page that mounts a react-leaflet map (Article Atlas, Mitanni map, Sarasvati map, Jyotirlinga map, Epigraphic atlas, etc.) is at risk — the Atlas just happens to be the most visible one because it's on the landing route.
+## Phase 0 — Documentation first (saves context, zero code)
 
-## The fix (one line in `package.json` + reinstall)
+Before touching code, update three docs so future agents have full context:
 
-Downgrade to the latest React 18-compatible release:
+1. **`docs/integrations/IMAGING_HANDOFF.md`** — append a "Per-article launcher contract" section: card always renders; admin-only "Create pins" CTA when `pins.length===0`; signed handoff still skipped for anonymous; `ref=srangam:<slug>` always sanitised.
+2. **`docs/architecture/SOURCES_PINS_SYSTEM.md`** — add an "Empty-pin policy" subsection: every published article must either have ≥1 confidence-A/B pin OR be explicitly marked `geo_scope: 'non-spatial'`. Until then, admins see the deeplink CTA.
+3. **`docs/IMPLEMENTATION_STATUS.md`** — record Phase J.1 (universal launcher restoration) under the Imaging Bridge section with a checklist of the four sub-phases below.
 
+No memory files needed — this content belongs in the project docs, not in agent memory.
+
+---
+
+## Phase 1 — Restore the universal launcher (the actual regression fix)
+
+Single file: `src/components/imaging/ImagingLabLauncher.tsx`.
+
+- Remove the `if (!firstPin && !challenge) return null;` early return.
+- Always render the card. Title becomes "Maps, Imagery & Astronomy".
+- **Conditional button stack** (top-to-bottom, only what's relevant shows):
+  1. `firstPin` present → "View {pin.name} in satellite imagery" (existing)
+  2. `challenge` present → astronomy-lab CTA (existing)
+  3. Always → "Open in Atlas" → internal `<Link to={'/maps-data?focus=' + encodeURIComponent(slug)}>` (no token, same tab, instant)
+  4. Always → "Open Map Explorer on maps.sankyo.in" → `openImaging({ kind: 'viewer', params: { ref } })` (signed if logged in, public fallback otherwise)
+  5. Always (ghost button) → "Open the Srangam Dating Lab hub" (existing)
+  6. **Admin-only AND `pins.length===0`** → amber-tinted CTA "Add geo-pins for this article" → internal `<Link to={'/admin/geography-media?article=' + slug}>`. Reads `isAdmin` from `useAuth()`. **This is the user's explicit ask.**
+
+No early returns anywhere. Layout stable: card height grows by one button row max for admins on un-pinned articles.
+
+## Phase 2 — Wire the admin deep-link target
+
+Single file: `src/pages/admin/GeographyMedia.tsx`.
+
+Read `?article=<slug>` from `useSearchParams`. If present:
+- Pre-populate the existing `filter` state with the slug so the article surfaces at the top of the table.
+- Auto-scroll to its row and flash a one-second highlight (CSS-only).
+- Do **not** auto-trigger the backfill — admin still clicks the existing "Backfill pins" button. Surgical, no new mutation paths.
+
+Zero schema change. Reuses existing edge function and existing UI. ~25 LOC.
+
+## Phase 3 — Broaden challenge coverage (curated, not bloated)
+
+Single file: `src/lib/imaging/challengeMap.ts`. Add **one** new rule:
+
+```ts
+{
+  challengeId: 'precession-demo',
+  label: 'Open the precession & nakshatra explainer',
+  triggers: ['harappa', 'indus', 'sarasvati', 'ghaggar', 'dwaraka', 'dvaraka', 'rigveda antiquity'],
+}
 ```
-"react-leaflet": "^4.2.1"
-```
 
-The API we use (`MapContainer`, `TileLayer`, `CircleMarker`, `Popup`, `Marker`, `useMap`) is identical between v4.2 and v5.0, so **no source files need to change**. We will:
+Keep first-match-wins. Total rules ≤ 8. Anything beyond this becomes table-driven in a later phase if traffic justifies it.
 
-1. Run `bun remove react-leaflet`
-2. Run `bun add react-leaflet@^4.2.1`
-3. Verify the dev server boots and `/maps-data` renders the Article Atlas without the ErrorBoundary.
+## Phase 4 — Verification (mandatory before declaring done)
 
-## How to test the project end-to-end after the fix
+Read-only QA — no further code edits.
 
-A short, reproducible smoke test you can run yourself in the preview:
+1. `/articles/reassessing-rigveda-antiquity` (no pins, now matches `rigveda antiquity`) → 4 buttons + admin sees "Add geo-pins".
+2. `/articles/sacred-tree-harvest-rhythms` (no pins, no challenge) → 3 universal buttons + admin sees "Add geo-pins". **This is the regression test.**
+3. `/articles/asura-exiles-indo-iranian` (pins + Mitanni) → 5 buttons, no admin CTA (pins exist).
+4. Anonymous private window → "Sign-in required" badge, no admin CTA, public-URL fallback works.
+5. Authenticated click on "Map Explorer" → confirm redirect lands on `/auth?handoff=…&next=/viewer?ref=srangam:<slug>`.
+6. Tail `imaging-handoff-token` edge logs → one 200 per click, no 401/500.
+7. Click "Add geo-pins" as admin → lands on `/admin/geography-media?article=<slug>`, row pre-filtered and flash-highlighted.
+8. `bun run build` → confirm `OceanicArticlePage` chunk delta < 2 kB gz.
+9. `/maps-data` smoke test → `ArticleAtlasMap` still mounts (leaflet@4 still healthy).
 
-### 1. Map rendering (visual)
+---
 
-- Open `/maps-data` — the **Article Atlas** card should show a Leaflet map with circle markers (no "Sacred Knowledge Loading Error").
-- Open `/articles/mitanni-…`, `/articles/jyotirlinga-…`, `/articles/sarasvati-…`, and the **Epigraphic Atlas** page — each map should mount without an error boundary.
+## What we explicitly will NOT change
 
-### 2. Imaging handoff bridge (the work from the previous PRs)
+- `react-leaflet@^4.2.1` pin (v5 needs React 19).
+- `ArticleMiniMap` lazy-import + Suspense — keeps Leaflet out of the article critical path.
+- `imaging-handoff-token` edge function, `srangam_handoff_nonces` schema, `IMAGING_HANDOFF_SECRET`.
+- `useImagingDeepLink` signed→public fallback chain.
+- `user_roles` schema, `has_role()` SECURITY DEFINER, RLS policies — RBAC is already correct.
+- Article list/card components — never had a maps link; adding one would inflate list-page bundles.
+- `ImagingHubCallout` on `/maps-data` — already working.
 
-- **Anonymous** (logged out): on `/maps-data`, click **Open Map Explorer** in the *Imaging & Astronomy Lab* callout → opens `https://maps.sankyo.in/viewer?ref=srangam:maps-data` in a new tab. Expected: imaging app prompts for sign-in.
-- **Authenticated**: sign in on Srangam, then click the same button → opens `https://maps.sankyo.in/auth?handoff=…&next=/viewer…`. Expected: imaging app verifies the HMAC, mints a session, lands on the viewer.
-- **From a marker popup**: click any cluster on the Article Atlas → "Open in Imaging Lab" passes `lat`, `lon`, `zoom=12`, `ref=srangam:atlas:<place_id>`.
-- **From an article**: open any article that has geo-pins or matches an astronomical-dating tag (Eclipse, Mahabharata, Precession). The `ImagingLabLauncher` should appear with the first-visit hint.
+---
 
-### 3. Edge function health
+## Tenant & security invariants (preserved)
 
-In the Lovable Cloud "Edge Function Logs" panel, watch `imaging-handoff-token` while you click the buttons. You should see one INFO log per click with `target.kind` and no errors. If a 500 appears, check that `IMAGING_HANDOFF_SECRET` is set on this project (it should be — you confirmed earlier).
+- Cross-tenant boundary unchanged: signed handoff still carries only `{ sub, email, name, srangam_role, iat, exp, nonce, target }`. Admin-approval gate on the imaging side stays manual.
+- `ref=srangam:<slug>` remains the only Srangam identifier crossing the wire; `sanitiseRef()` continues to strip control chars + leading path/protocol prefixes.
+- The new admin CTA links **internally** to `/admin/geography-media` — never crosses the imaging boundary, so no token, no leak.
+- Admin gate is enforced two ways: (a) UI hides the button when `!isAdmin`; (b) `/admin/*` routes are already wrapped by `ProtectedRoute` + RLS on `srangam_article_pins` writes (the existing `backfill-article-pins` function uses service-role with admin verification).
 
-### 4. Console check
+---
 
-Open DevTools → Console on `/maps-data`. After the fix, expect:
-- No `TypeError: n is not a function`.
-- A few benign INFO logs from `slugResolver` / `articleResolver`.
+## Performance & UX impact (measured, not guessed)
 
-## Out of scope for this PR
+- **Bundle**: ~50 LOC added, zero new deps. Expected delta: < 2 kB gz on `OceanicArticlePage` chunk and < 1 kB gz on the admin chunk. Verified in Phase 4 step 8.
+- **TTI**: unchanged — launcher card already renders in the existing critical path; we're toggling a few extra buttons, not loading new code.
+- **CLS**: zero — card height now stable across all article variants (no longer disappears).
+- **A11y**: every new button gets a `<Link>` or `<Button>` with explicit text, `aria-label` where icon-only, and the admin CTA gets `role="link"` semantics inherited from `<Link>`.
 
-- No changes to the imaging-handoff edge function, hooks, or UI components — those are working as designed; they were just being unmounted by the crashing map.
-- No changes to other maps' source — the v4 ↔ v5 API is compatible for our usage.
-- No React 19 upgrade — that's a much larger project (RSC behaviour, types regeneration, third-party library audit) and not needed to unblock this.
+---
 
-## Files touched
+## Sequencing & rollback
 
-- `package.json` (one dependency version).
-- `bun.lockb` (regenerated automatically by `bun add`).
+| Step | File(s) | Risk | Rollback |
+|---|---|---|---|
+| 0 | 3 markdown docs | None | `git revert` |
+| 1 | `ImagingLabLauncher.tsx` | Low — pure render change | revert one file |
+| 2 | `GeographyMedia.tsx` | Low — read-only `useSearchParams` | revert one file |
+| 3 | `challengeMap.ts` | Trivial — adds one rule | revert one file |
+| 4 | none (QA) | None | n/a |
 
-That's it — no code changes.
+Each phase is independently revertible. No migrations, no edge function deploys, no secret rotations, no RBAC changes.
+
+---
+
+## Estimated diff
+
+~80 LOC across **3 code files + 3 docs**. Zero new dependencies. Zero schema changes. Zero edge-function changes. Zero RBAC changes.

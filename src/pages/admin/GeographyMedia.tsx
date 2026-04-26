@@ -12,7 +12,8 @@
  * The page is admin-only (mounted under /admin via ProtectedRoute) and is
  * lazy-loaded, so it adds 0kB to the public bundle.
  */
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -44,12 +45,15 @@ function getEnglishTitle(t: ArticleRow['title']): string {
 export default function GeographyMedia() {
   const { toast } = useToast();
   const qc = useQueryClient();
-  const [filter, setFilter] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const focusSlug = searchParams.get('article');
+  const [filter, setFilter] = useState(focusSlug ?? '');
   const [busyArticleId, setBusyArticleId] = useState<string | null>(null);
   const [bulkBusy, setBulkBusy] = useState<null | 'pins' | 'og_missing' | 'og_force'>(null);
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
   const cancelledJobRef = useRef<Set<string>>(new Set());
   const [logs, setLogs] = useState<string[]>([]);
+  const [flashedRowId, setFlashedRowId] = useState<string | null>(null);
 
   function log(s: string) {
     setLogs((prev) => [`[${new Date().toLocaleTimeString()}] ${s}`, ...prev].slice(0, 200));
@@ -115,6 +119,30 @@ export default function GeographyMedia() {
     const withOg = articles.filter((a) => !!a.og_image_url).length;
     return { total, withPins, totalPins, withOg, withoutOg: total - withOg, withoutPins: total - withPins };
   }, [articles]);
+
+  // Phase J.1 — deep-link from per-article ImagingLabLauncher CTA.
+  // Surfaces the requested article at the top of the table, scrolls to it,
+  // and flashes its row briefly so the admin's eye lands on the right line.
+  useEffect(() => {
+    if (!focusSlug || isLoading) return;
+    const target = articles.find(
+      (a) => a.slug === focusSlug || a.slug_alias === focusSlug,
+    );
+    if (!target) return;
+    setFlashedRowId(target.id);
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`gm-row-${target.id}`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    const t = setTimeout(() => {
+      setFlashedRowId(null);
+      const next = new URLSearchParams(searchParams);
+      next.delete('article');
+      setSearchParams(next, { replace: true });
+    }, 2000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusSlug, isLoading, articles.length]);
 
   // ---- pin backfill (single article — unchanged single-shot path) ----
   async function backfillPinsSingle(articleId: string) {
@@ -446,7 +474,13 @@ export default function GeographyMedia() {
                   {filtered.map((a) => {
                     const busy = busyArticleId === a.id;
                     return (
-                      <tr key={a.id} className="border-b border-border/40 align-top">
+                      <tr
+                        key={a.id}
+                        id={`gm-row-${a.id}`}
+                        className={`border-b border-border/40 align-top transition-colors duration-700 ${
+                          flashedRowId === a.id ? 'bg-primary/10' : ''
+                        }`}
+                      >
                         <td className="py-2 pr-3">
                           <div className="font-medium">{getEnglishTitle(a.title)}</div>
                           <div className="text-xs text-muted-foreground">{a.slug_alias || a.slug}</div>
