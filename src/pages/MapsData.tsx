@@ -88,7 +88,7 @@ export default function MapsData() {
   const { i18n } = useTranslation();
 
   // Phase H.3 — Public Article Atlas: every published article's pinned places
-  const { rows: geoRows, loading: geoLoading, error: geoError } = useArticleGeography();
+  const { data: geoRows = [], isLoading: geoLoading, error: geoError } = useArticleGeography();
   const [atlasStyle, setAtlasStyle] = useMapStyle('outdoors-v12');
   const [atlasPlaceCount, setAtlasPlaceCount] = useState<number | null>(null);
 
