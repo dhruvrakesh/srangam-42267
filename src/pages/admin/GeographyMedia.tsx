@@ -12,7 +12,7 @@
  * The page is admin-only (mounted under /admin via ProtectedRoute) and is
  * lazy-loaded, so it adds 0kB to the public bundle.
  */
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Loader2, MapPin, Image as ImageIcon, RotateCcw, Trash2, Sparkles, RefreshCcw } from 'lucide-react';
+import { JobProgressCard } from '@/components/admin/JobProgressCard';
 
 interface ArticleRow {
   id: string;
@@ -46,10 +47,28 @@ export default function GeographyMedia() {
   const [filter, setFilter] = useState('');
   const [busyArticleId, setBusyArticleId] = useState<string | null>(null);
   const [bulkBusy, setBulkBusy] = useState<null | 'pins' | 'og_missing' | 'og_force'>(null);
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
+  const cancelledJobRef = useRef<Set<string>>(new Set());
   const [logs, setLogs] = useState<string[]>([]);
 
   function log(s: string) {
     setLogs((prev) => [`[${new Date().toLocaleTimeString()}] ${s}`, ...prev].slice(0, 200));
+  }
+
+  // Helper: poll the job row to learn whether the operator clicked Cancel
+  // between chunks. Cheap (single indexed PK lookup).
+  async function jobIsCancelled(jobId: string): Promise<boolean> {
+    if (cancelledJobRef.current.has(jobId)) return true;
+    const { data } = await supabase
+      .from('srangam_admin_jobs')
+      .select('status')
+      .eq('id', jobId)
+      .maybeSingle();
+    if (data?.status === 'cancelled') {
+      cancelledJobRef.current.add(jobId);
+      return true;
+    }
+    return false;
   }
 
   const { data: articles = [], isLoading, refetch } = useQuery({
