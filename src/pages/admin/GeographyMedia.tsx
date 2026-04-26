@@ -395,6 +395,11 @@ export default function GeographyMedia() {
         </Card>
       </div>
 
+      {/* Live job progress (Realtime-driven) */}
+      {activeJobId && (
+        <JobProgressCard jobId={activeJobId} onDismiss={() => setActiveJobId(null)} />
+      )}
+
       {/* Logs */}
       {logs.length > 0 && (
         <Card>
