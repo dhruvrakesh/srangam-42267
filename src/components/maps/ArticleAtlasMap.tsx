@@ -69,6 +69,7 @@ export const ArticleAtlasMap: React.FC<ArticleAtlasMapProps> = ({
 }) => {
   const tiles = useMemo(() => getTileLayer(mapStyle), [mapStyle]);
   const [openPlaceId, setOpenPlaceId] = useState<string | null>(null);
+  const { openImaging, isLaunching, isAuthenticated } = useImagingDeepLink();
 
   const clusters = useMemo<PlaceCluster[]>(() => {
     const filtered = rows.filter((r) => {
@@ -183,6 +184,31 @@ export const ArticleAtlasMap: React.FC<ArticleAtlasMapProps> = ({
                       </li>
                     ))}
                   </ul>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full mt-2 h-8 text-xs gap-1.5"
+                    disabled={isLaunching}
+                    onClick={() =>
+                      openImaging({
+                        kind: 'viewer',
+                        params: {
+                          lat: c.latitude,
+                          lon: c.longitude,
+                          zoom: 12,
+                          ref: `srangam:atlas:${c.place_id}`,
+                        },
+                      })
+                    }
+                    title={
+                      isAuthenticated
+                        ? 'Opens with single sign-on'
+                        : 'Sign-in required on the imaging app'
+                    }
+                  >
+                    <Satellite className="h-3.5 w-3.5" />
+                    Open in Imaging Lab
+                  </Button>
                 </div>
               </Popup>
             </CircleMarker>
