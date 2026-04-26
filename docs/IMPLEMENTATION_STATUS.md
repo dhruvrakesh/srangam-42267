@@ -238,3 +238,51 @@ Addressed 5 active GSC indexing issues (page redirects, duplicate content, not-i
 - [SANSKRIT_AUTOMATON.md](./SANSKRIT_AUTOMATON.md) - Sanskrit pipeline docs
 - [SCALABILITY_ROADMAP.md](./SCALABILITY_ROADMAP.md) - Performance planning
 - [CURRENT_STATUS.md](./CURRENT_STATUS.md) - Quick reference
+
+---
+
+## Phase J — Imaging Bridge
+
+### J.0 — Cross-app HMAC handoff (shipped, 2026-04)
+
+- Edge function `imaging-handoff-token` mints HMAC-signed tokens using
+  shared `IMAGING_HANDOFF_SECRET`.
+- Receiver (`maps.sankyo.in`) verifies + records replay nonce in
+  `srangam_handoff_nonces`.
+- Frontend: `useImagingDeepLink` (signed → public-URL fallback),
+  `ImagingHubCallout` on `/maps-data`, per-article `ImagingLabLauncher`.
+- Docs: `docs/integrations/IMAGING_HANDOFF.md`.
+
+### J.0a — react-leaflet React-18 compatibility fix (shipped, 2026-04)
+
+- Pinned `react-leaflet@^4.2.1`. v5 requires React 19; v4 has the same
+  API surface for the components we use (`MapContainer`, `TileLayer`,
+  `CircleMarker`, `useMap`).
+- Resolved `TypeError: n is not a function` on `/maps-data`.
+
+### J.1 — Universal launcher restoration (shipped, 2026-04-26)
+
+- **Symptom**: per-article map link disappeared for any article without
+  geo-pins AND without a curated challenge match.
+- **Root cause**: `ImagingLabLauncher` returned `null` early when both
+  signals were absent.
+- **Fix (3 files, ~80 LOC, zero schema/RBAC changes)**:
+  - `ImagingLabLauncher.tsx` — removed early return; card always
+    renders; added internal `/maps-data?focus=` Atlas button, always-on
+    external Map Explorer button, and admin-only "Add geo-pins" deep-link
+    when `isAdmin && pins.length === 0`.
+  - `GeographyMedia.tsx` — reads `?article=<slug>`, pre-fills filter,
+    scrolls to + flash-highlights the matching row for 2 s.
+  - `challengeMap.ts` — added `precession-demo` rule covering harappa /
+    indus / sarasvati / ghaggar / dwaraka / "rigveda antiquity" /
+    "vedic chronology". First-match-wins, total rules = 7.
+- Docs: this file, `docs/integrations/IMAGING_HANDOFF.md`,
+  `docs/architecture/SOURCES_PINS_SYSTEM.md` all updated in lockstep.
+
+### J.2 — Pending (future)
+
+- `geo_scope: 'non-spatial'` article-level flag to suppress the admin
+  CTA on genuinely placeless articles.
+- Cron cleanup of `srangam_handoff_nonces` (5-minute TTL leaves
+  short-lived junk; not urgent).
+- Dashboard card for handoff issuance metrics (read from edge logs).

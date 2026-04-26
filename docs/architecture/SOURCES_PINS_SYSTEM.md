@@ -389,3 +389,30 @@ Request body: `{ article_id?, slug?, all_published?, limit?, skip_ai? }`.
 - **Pelagios / Pleiades** — gazetteer-driven historical place network.
 - **World-Historical Gazetteer (Pittsburgh)** — variant + era tagging model.
 - **Recogito** — confidence-tiered annotation workflow we mirror with `A/B/C`.
+
+---
+
+## Empty-pin policy (Phase J.1, 2026-04-26)
+
+Every published article should reach one of two terminal states:
+
+1. **Geo-located** — at least one `srangam_article_pins` row of confidence
+   `A` or `B`, surfaced through `loadArticlePins()` and rendered in the
+   "Geographical Context" card.
+2. **Explicitly non-spatial** — articles whose subject is genuinely
+   placeless (e.g. abstract methodology pieces). For now, this is implicit
+   (no pins + no admin action expected); a future `geo_scope: 'non-spatial'`
+   article-level flag is tracked in `IMPLEMENTATION_STATUS.md` under J.2.
+
+Until an article reaches one of those states, the per-article
+`ImagingLabLauncher` renders an admin-only "Add geo-pins for this
+article" CTA that deep-links to
+`/admin/geography-media?article=<slug>`. The Geography & Media admin
+page reads that query param, pre-fills its filter, scrolls to the
+matching row, and flashes it for ~2 s. The admin then runs the existing
+`backfill-article-pins` edge function on that row.
+
+This closes the historical regression where articles without pins had
+zero outbound link to maps — readers still get the universal Atlas + Map
+Explorer + Dating Lab CTAs, and admins get a one-click path to fix the
+data gap.
