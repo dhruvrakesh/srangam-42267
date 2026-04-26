@@ -474,7 +474,13 @@ export default function GeographyMedia() {
                   {filtered.map((a) => {
                     const busy = busyArticleId === a.id;
                     return (
-                      <tr key={a.id} className="border-b border-border/40 align-top">
+                      <tr
+                        key={a.id}
+                        id={`gm-row-${a.id}`}
+                        className={`border-b border-border/40 align-top transition-colors duration-700 ${
+                          flashedRowId === a.id ? 'bg-primary/10' : ''
+                        }`}
+                      >
                         <td className="py-2 pr-3">
                           <div className="font-medium">{getEnglishTitle(a.title)}</div>
                           <div className="text-xs text-muted-foreground">{a.slug_alias || a.slug}</div>
