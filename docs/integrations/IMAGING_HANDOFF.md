@@ -62,20 +62,43 @@ Wire format: `base64url(JSON(payload)) + "." + base64url(HMAC_SHA256(payload_b64
 
 Caller helper: `useImagingDeepLink()` in `src/hooks/useImagingDeepLink.ts`.
 
-## Imaging-side counterpart (to implement in `ima-imaging`)
+## Imaging-side counterpart (shipped in `ima-imaging` v0.10.77)
 
-1. **New env var**: `IMAGING_HANDOFF_SECRET` — must be byte-identical to
-   the one set in this project.
-2. **Edge function** `verify-srangam-handoff` (or inline in `/auth`):
-   - Re-compute HMAC over the payload, compare in constant time.
-   - Reject if `aud !== "maps.sankyo.in"`, `exp < now`, or `nonce` was
-     seen in the last 10 minutes (use a tiny `srangam_handoffs(nonce, used_at)`
-     table with a 10-minute pruning index).
-   - Look up `auth.users` by email; create if missing (admin API).
-   - Issue a one-time magic link or admin-generated session for that user
-     and redirect to `?next=` (validated against an allow-list of
-     internal paths only — never an absolute URL).
-3. **Optional UI**: small "Signed in via Srangam" toast on first redirect.
+The imaging team verified and shipped the receiving half. The trust anchor
+on their side is **managed Google OAuth** (the same provider Srangam uses),
+so the handoff token is treated as a *signed hint + audit record*, not as a
+session credential. Concretely:
+
+1. **Shared env**: `IMAGING_HANDOFF_SECRET` set byte-identical on both projects.
+2. **Edge function** `verify-srangam-handoff` (public, `verify_jwt = false`):
+   - Re-computes HMAC-SHA-256 over the payload, constant-time compare.
+   - Rejects on `aud !== "maps.sankyo.in"`, `exp < now`, future `iat`, or
+     a replayed `nonce`.
+3. **Replay table** `public.srangam_handoff_nonces` (admin-readable,
+   service-role insert only):
+   ```sql
+   create table public.srangam_handoff_nonces (
+     nonce text primary key,
+     email text not null,
+     consumed_at timestamptz not null default now(),
+     target jsonb
+   );
+   ```
+4. **`/auth?handoff=…&next=…`** UX:
+   - Verifies the token, then shows a "Welcome from Srangam, signing you in
+     as `<email>`…" card with a single **Continue with Google as `<email>`**
+     button.
+   - The actual Supabase session is minted by Google OAuth — never by the
+     handoff token directly. Final identity = Google, audit trail = handoff.
+   - `next` is sanitised: must start with `/`, rejects `//evil.com` and
+     `javascript:` schemes.
+5. **Approval gate (preserved)**: new imaging users land in
+   `profiles.status = 'pending'` until the imaging super-admin approves —
+   even after a valid handoff. The launcher UI in Srangam warns first-time
+   visitors so this isn't surprising.
+6. **Observability**: every verify attempt (`ok`, `expired`, `bad_signature`,
+   `replay`) is written to the imaging-side `provider_request_log` ledger
+   under `provider='srangam'`.
 
 ## Security notes
 
@@ -84,10 +107,16 @@ Caller helper: `useImagingDeepLink()` in `src/hooks/useImagingDeepLink.ts`.
 - Tokens expire in 5 minutes and carry a single-use nonce.
 - `target.kind` is validated server-side before signing on the Srangam
   side and again before redirecting on the imaging side.
-- `next` must be path-only (`/viewer?...`); the imaging-side verifier
-  must reject anything that parses as an absolute URL.
+- `next` is path-only (`/viewer?...`); both sides reject anything that
+  parses as an absolute URL. Pass-through `ref` values are stripped of
+  control characters and leading `/`, `\`, `:` on the Srangam side
+  (`sanitiseRef` in `src/lib/imaging/handoff.ts`).
+- Final identity is always **Google OAuth** — Google's 2FA, account
+  recovery, and revocation remain authoritative. The handoff cannot be
+  used to bypass the imaging-side admin approval.
 - All issuances are logged with `evt: "imaging.handoff.issue"` for
-  future ingestion into `srangam_event_log`.
+  future ingestion into `srangam_event_log`; the imaging side mirrors
+  every verify into its own audit ledger.
 
 ## Targets supported in v1
 
