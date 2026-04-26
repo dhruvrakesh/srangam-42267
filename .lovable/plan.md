@@ -1,72 +1,64 @@
-# PR-Srangam-Side: Finalize Imaging Handoff Bridge (v1.0)
+# Fix `/maps-data` crash + how to test the project
 
-The imaging team (`maps.sankyo.in`) has approved our handoff design and shipped their counterpart spec (PR-8 / v0.10.77). The shared `IMAGING_HANDOFF_SECRET` is already set on **both** projects.
+## Root cause
 
-This plan covers the **small alignment tweaks** needed on the Srangam side so our token is byte-perfect against their verifier, plus an optional UX polish so the bridge feels production-ready end-to-end.
+The runtime error `TypeError: n is not a function` thrown inside `ArticleAtlasMap` (visible in the ErrorBoundary on `/maps-data`) is **not** caused by the imaging-handoff bridge. It is a **library version mismatch**:
 
-## What's already in place (no changes needed)
+- `package.json` pins `react: ^18.3.1` and `react-dom: ^18.3.1`.
+- `package.json` also pins `react-leaflet: ^5.0.0`.
+- **`react-leaflet@5` requires React 19.** When run on React 18 its internals call APIs that resolve to `undefined` after minification → the classic `n is not a function` crash inside `MapContainer` / `TileLayer` (the `ot` / `lt` symbols in the stack trace).
 
-- Edge function `imaging-handoff-token` — issues HMAC-SHA-256 tokens with the exact field set their verifier expects (`iss`, `aud`, `sub`, `email`, `srangam_role`, `iat`, `exp`, `nonce`, `target`).
-- 5-minute TTL, UUID nonce, structured `evt: "imaging.handoff.issue"` log line.
-- Client helpers: `useImagingDeepLink`, `buildImagingHandoffUrl`, `buildImagingPublicUrl`.
-- UI surfaces: `ImagingLabLauncher` on article pages, `ImagingHubCallout` on Maps & Data, "Open in Imaging Lab" buttons in Article Atlas popups.
-- Documentation: `docs/integrations/IMAGING_HANDOFF.md`.
+This is why every page that mounts a react-leaflet map (Article Atlas, Mitanni map, Sarasvati map, Jyotirlinga map, Epigraphic atlas, etc.) is at risk — the Atlas just happens to be the most visible one because it's on the landing route.
 
-## Alignment tweaks (small, surgical)
+## The fix (one line in `package.json` + reinstall)
 
-### 1. Add `name` to the token payload
+Downgrade to the latest React 18-compatible release:
 
-Their welcome card says: _"Welcome from Srangam, signing you in as `<email>`…"_ and they pull `name` from the claims. Our function currently omits it. We'll fetch the display name (best-effort) from the Supabase user metadata and include it.
+```
+"react-leaflet": "^4.2.1"
+```
 
-- **File**: `supabase/functions/imaging-handoff-token/index.ts`
-- Add: `const name = claimsData.claims.name ?? claimsData.claims.user_metadata?.full_name ?? null;`
-- Include `name` in the signed payload.
-- Falls back to `null` cleanly — their verifier already treats it as optional.
+The API we use (`MapContainer`, `TileLayer`, `CircleMarker`, `Popup`, `Marker`, `useMap`) is identical between v4.2 and v5.0, so **no source files need to change**. We will:
 
-### 2. Document their `srangam_handoff_nonces` table & approval gate
+1. Run `bun remove react-leaflet`
+2. Run `bun add react-leaflet@^4.2.1`
+3. Verify the dev server boots and `/maps-data` renders the Article Atlas without the ErrorBoundary.
 
-Update `docs/integrations/IMAGING_HANDOFF.md` to reflect what they actually built:
+## How to test the project end-to-end after the fix
 
-- Replace our speculative "magic link or admin-issued session" wording with their **Google OAuth-anchored** flow — the handoff is a hint + audit trail, the real session comes from Google.
-- Note the imaging-side **approval gate**: new users land in `profiles.status='pending'` until the imaging super-admin approves. We should warn first-time Srangam visitors so they don't think the link is broken.
+A short, reproducible smoke test you can run yourself in the preview:
 
-### 3. Add a "first-time visit" hint to `ImagingLabLauncher`
+### 1. Map rendering (visual)
 
-When a user clicks "Open in Imaging Lab" we already open in a new tab. Add a one-line subtitle under the button:
+- Open `/maps-data` — the **Article Atlas** card should show a Leaflet map with circle markers (no "Sacred Knowledge Loading Error").
+- Open `/articles/mitanni-…`, `/articles/jyotirlinga-…`, `/articles/sarasvati-…`, and the **Epigraphic Atlas** page — each map should mount without an error boundary.
 
-> _First visit? Imaging will ask for Google sign-in and may queue your account for admin approval._
+### 2. Imaging handoff bridge (the work from the previous PRs)
 
-This sets correct expectations and matches what the imaging side actually does. Quiet, non-blocking.
+- **Anonymous** (logged out): on `/maps-data`, click **Open Map Explorer** in the *Imaging & Astronomy Lab* callout → opens `https://maps.sankyo.in/viewer?ref=srangam:maps-data` in a new tab. Expected: imaging app prompts for sign-in.
+- **Authenticated**: sign in on Srangam, then click the same button → opens `https://maps.sankyo.in/auth?handoff=…&next=/viewer…`. Expected: imaging app verifies the HMAC, mints a session, lands on the viewer.
+- **From a marker popup**: click any cluster on the Article Atlas → "Open in Imaging Lab" passes `lat`, `lon`, `zoom=12`, `ref=srangam:atlas:<place_id>`.
+- **From an article**: open any article that has geo-pins or matches an astronomical-dating tag (Eclipse, Mahabharata, Precession). The `ImagingLabLauncher` should appear with the first-visit hint.
 
-### 4. Sanitise `target.params` before signing
+### 3. Edge function health
 
-Their security note: _"`next` URL sanitised — must start with `/`, rejects `//evil.com` and `javascript:`"._ Our side already builds `next` from a typed `kind` enum, but if we ever pass an arbitrary `ref` param we should drop control characters. One-liner guard in `buildImagingPath`.
+In the Lovable Cloud "Edge Function Logs" panel, watch `imaging-handoff-token` while you click the buttons. You should see one INFO log per click with `target.kind` and no errors. If a 500 appears, check that `IMAGING_HANDOFF_SECRET` is set on this project (it should be — you confirmed earlier).
 
-## Files
+### 4. Console check
 
-### Edited
-- `supabase/functions/imaging-handoff-token/index.ts` — add `name` to payload.
-- `src/lib/imaging/handoff.ts` — sanitise `ref` (strip non-printable + leading `/` `\` `:`).
-- `src/components/imaging/ImagingLabLauncher.tsx` — add first-visit hint copy.
-- `docs/integrations/IMAGING_HANDOFF.md` — sync with their actual verifier (Google OAuth anchor, pending-approval gate, nonce table name `srangam_handoff_nonces`).
+Open DevTools → Console on `/maps-data`. After the fix, expect:
+- No `TypeError: n is not a function`.
+- A few benign INFO logs from `slugResolver` / `articleResolver`.
 
-### Unchanged (deliberately)
-- All map / atlas / article rendering code.
-- RLS policies and database schema.
-- Edge function CORS, JWT validation, signing crypto.
-- All other handoff helpers and routes.
+## Out of scope for this PR
 
-## Why this is enterprise-grade
+- No changes to the imaging-handoff edge function, hooks, or UI components — those are working as designed; they were just being unmounted by the crashing map.
+- No changes to other maps' source — the v4 ↔ v5 API is compatible for our usage.
+- No React 19 upgrade — that's a much larger project (RSC behaviour, types regeneration, third-party library audit) and not needed to unblock this.
 
-- **No DB migrations** on our side — the imaging side owns the nonce table.
-- **Fully reversible** — every change is additive copy or one optional field.
-- **Token shape stays byte-compatible** with their verifier even if `name` is null.
-- **Zero risk to current production traffic** — handoff flow is opt-in via UI buttons that already exist.
+## Files touched
 
-## Out of scope
+- `package.json` (one dependency version).
+- `bun.lockb` (regenerated automatically by `bun add`).
 
-- Returning users to Srangam after they finish in the imaging app (would need a reverse handoff — defer to v2 once we see real usage).
-- Pushing Srangam roles into imaging RBAC automatically (they explicitly chose manual approval for v1; we honour that).
-- Cron cleanup of nonces (their side, deferred to their v0.10.78).
-
-After approval I'll ship all four edits in one pass — no migrations, no secrets, just code.
+That's it — no code changes.
