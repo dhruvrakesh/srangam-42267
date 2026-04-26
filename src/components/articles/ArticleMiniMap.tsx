@@ -121,7 +121,7 @@ export const ArticleMiniMap: React.FC<Props> = ({ slug, pins, mapStyle = 'light-
         /* noop */
       }
     };
-  }, [slug, pins]);
+  }, [slug, pins, mapStyle]);
 
   if (pins.length === 0) {
     return (
