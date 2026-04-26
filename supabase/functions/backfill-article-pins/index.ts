@@ -26,6 +26,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 import { stage } from '../_shared/observability.ts';
 import { aiExtractPlaces, NoAIProviderError } from '../_shared/ai-provider.ts';
+import { reportItem, isCancelled, finishJob } from '../_shared/jobs.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -43,6 +44,16 @@ interface RequestBody {
   limit?: number;
   /** Skip the AI NER pass (deterministic-only run). Default false. */
   skip_ai?: boolean;
+
+  // ---- Phase H.4 chunked-job mode ----
+  /** Existing job row id from `srangam_admin_jobs`. When set, the worker
+   *  reports per-item progress to that row and respects cancellation. */
+  job_id?: string;
+  /** Where in the candidate list to start (default 0). */
+  offset?: number;
+  /** Articles to process in THIS invocation. Default 5, max 10 — sized to
+   *  stay well under the 150 s edge-function wall-clock. */
+  chunk_size?: number;
 }
 
 interface GazetteerRow {
