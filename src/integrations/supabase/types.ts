@@ -83,6 +83,63 @@ export type Database = {
         }
         Relationships: []
       }
+      srangam_admin_jobs: {
+        Row: {
+          cost_usd: number
+          created_at: string
+          created_by: string | null
+          failed: number
+          finished_at: string | null
+          id: string
+          kind: string
+          last_error: string | null
+          last_item: string | null
+          params: Json
+          processed: number
+          started_at: string | null
+          status: string
+          succeeded: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          cost_usd?: number
+          created_at?: string
+          created_by?: string | null
+          failed?: number
+          finished_at?: string | null
+          id?: string
+          kind: string
+          last_error?: string | null
+          last_item?: string | null
+          params?: Json
+          processed?: number
+          started_at?: string | null
+          status?: string
+          succeeded?: number
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          cost_usd?: number
+          created_at?: string
+          created_by?: string | null
+          failed?: number
+          finished_at?: string | null
+          id?: string
+          kind?: string
+          last_error?: string | null
+          last_item?: string | null
+          params?: Json
+          processed?: number
+          started_at?: string | null
+          status?: string
+          succeeded?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       srangam_article_analytics: {
         Row: {
           article_id: string
