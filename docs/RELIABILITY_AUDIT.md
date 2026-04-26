@@ -520,3 +520,68 @@ tests) is the canonical regression suite for the import pipeline. It
 runs without network or DB access via `supabase--test_edge_functions`.
 Any change to `markdown-pipeline.ts` or either `text-sanitizer.ts` MUST
 keep this suite green.
+
+---
+
+## Phase H.2 — Geographical Context (Gazetteer + Pins)
+
+### Invariants (DO NOT BREAK)
+
+1. **Gazetteer is canonical.** All article ↔ place links MUST go through
+   `srangam_gazetteer` (one row per real-world place, with diacritic-correct
+   `canonical_name`, `name_variants[]`, lat/lon, `precision`).
+   Free-text place strings on `srangam_article_evidence` remain for
+   provenance but MUST NOT be rendered on maps.
+2. **Pin storage is idempotent.** `srangam_article_pins` uses the composite
+   PK `(article_id, gazetteer_id)`. The backfill function MUST upsert with
+   `onConflict: 'article_id,gazetteer_id'` so re-running is safe.
+3. **Confidence is a closed enum.** `'A' | 'B' | 'C'` only.
+   - `A` — direct evidence row (`srangam_article_evidence.place` matched).
+   - `B` — deterministic gazetteer regex matched in article content.
+   - `C` — AI NER (`_shared/ai-provider.ts`) suggested + matched.
+   Adding a new tier requires a migration and a docs update here first.
+4. **Tenant-aware AI only.** `_shared/ai-provider.ts` MUST call the user's
+   `GEMINI_API_KEY` (primary, `gemini-2.5-flash`) and `OPENAI_API_KEY`
+   (fallback, `gpt-4o-mini`) directly. The Lovable AI Gateway MUST NOT be
+   used for pin extraction — billing and observability already live on the
+   user's own provider accounts.
+5. **Backfill is admin-only.** `backfill-article-pins` validates the caller's
+   JWT and checks `user_roles.role = 'admin'` server-side. Never expose to
+   anonymous traffic.
+6. **Map is lazy.** Leaflet (~150 kB gz) MUST stay behind a `React.lazy`
+   boundary (`ArticleMiniMap`) and the user MUST opt in via the
+   "View Interactive Map" toggle. Articles without pins MUST NOT mount the
+   component or render the card at all.
+
+### Performance budgets
+
+- Article-page critical path bundle MUST NOT include `leaflet` or
+  `leaflet/dist/leaflet.css`. Verify with `bun run build` — both belong
+  to a separate chunk.
+- Pin loader (`src/lib/articlePins.ts`) does **one** Supabase round-trip
+  per article (join `srangam_article_pins` → `srangam_gazetteer`),
+  hard-bounded at 4 s. On timeout it returns `[]` so the article still
+  renders.
+- `ArticleMiniMap` emits `performance.measure('article-map:<slug>', …)`,
+  parallel to Phase H.1's `mermaid:<id>` measure, so DevTools / RUM see
+  map render cost natively.
+
+### Observability log shape (extends Phase H.1)
+
+`backfill-article-pins` emits the same `stage()` lines as the importer,
+plus a per-article summary:
+
+```json
+{ "evt": "pin_stage", "stage": "pin_evidence|pin_scan|pin_ai|pin_upsert",
+  "article_id": "...", "ms": 12, "ok": true, "ts": "<ISO>" }
+
+{ "evt": "pin_complete", "article_id": "...", "slug": "...",
+  "inserted": 7, "pins_a": 2, "pins_b": 4, "pins_c": 1,
+  "total_ms": 1820, "ts": "<ISO>",
+  "ai": { "provider": "gemini", "model": "gemini-2.5-flash",
+          "prompt_tokens": 512, "completion_tokens": 128,
+          "latency_ms": 940, "cost_usd_estimate": 0.000077 } }
+```
+
+Renaming `evt`, `stage`, or top-level field names is a breaking change
+for cost dashboards and log queries.

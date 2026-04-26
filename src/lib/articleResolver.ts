@@ -23,6 +23,7 @@ export interface ResolvedArticle {
     lat: number;
     lon: number;
     approximate?: boolean;
+    confidence?: 'A' | 'B' | 'C';
   }>;
   mla_refs: string[];
   theme?: string;

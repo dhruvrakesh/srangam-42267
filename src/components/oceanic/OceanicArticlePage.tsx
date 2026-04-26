@@ -34,6 +34,12 @@ function normalizeSlug(rawSlug: string | undefined): string | null {
   return slug || null;
 }
 
+// Phase H.2c — lazy Leaflet map. Keeps ~150kB out of the article-page
+// critical path; only fetched when the user clicks "View Interactive Map".
+const ArticleMiniMap = React.lazy(() =>
+  import('@/components/articles/ArticleMiniMap').then((m) => ({ default: m.ArticleMiniMap })),
+);
+
 export const OceanicArticlePage: React.FC = () => {
   const { slug: rawSlug } = useParams<{ slug: string }>();
   const slug = normalizeSlug(rawSlug);
@@ -41,6 +47,7 @@ export const OceanicArticlePage: React.FC = () => {
   const { currentLanguage } = useLanguage();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showMethodsDialog, setShowMethodsDialog] = useState(false);
+  const [showInteractiveMap, setShowInteractiveMap] = useState(false);
 
   // Phase 1.4: Unified data hook (parallel fetching)
   const { 
@@ -197,10 +204,12 @@ export const OceanicArticlePage: React.FC = () => {
                   <Clock className="h-4 w-4" />
                   <span className="text-sm">{article.read_time_min} min</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-4 w-4" />
-                  <span className="text-sm">{article.pins.length} pins</span>
-                </div>
+                {article.pins.length > 0 && (
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4" />
+                    <span className="text-sm">{article.pins.length} pins</span>
+                  </div>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -273,65 +282,85 @@ export const OceanicArticlePage: React.FC = () => {
                 </CardContent>
               </Card>
 
-              {/* Pins Map */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5" />
-                    Geographical Context
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid sm:grid-cols-2 gap-3 mb-4">
-                    {article.pins.map((pin, index) => (
-                      <Button
-                        key={index}
-                        variant="outline"
-                        className="justify-start gap-2 h-auto p-3"
-                        onClick={() => handlePinClick(pin)}
-                      >
-                        <MapPin className="h-4 w-4 text-primary" />
-                        <div className="text-left">
-                          <div className="font-medium">{pin.name}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {pin.lat.toFixed(2)}°, {pin.lon.toFixed(2)}°
-                            {pin.approximate && (
-                              <Badge variant="secondary" className="ml-1 text-xs">
-                                Approx.
-                              </Badge>
-                            )}
+              {/* Pins Map — Phase H.2: hide entirely when no pins, lazy-load Leaflet on demand */}
+              {article.pins.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MapPin className="h-5 w-5" />
+                      Geographical Context
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid sm:grid-cols-2 gap-3 mb-4">
+                      {article.pins.map((pin, index) => (
+                        <Button
+                          key={index}
+                          variant="outline"
+                          className="justify-start gap-2 h-auto p-3"
+                          onClick={() => handlePinClick(pin)}
+                        >
+                          <MapPin className="h-4 w-4 text-primary" />
+                          <div className="text-left">
+                            <div className="font-medium">{pin.name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {pin.lat.toFixed(2)}°, {pin.lon.toFixed(2)}°
+                              {pin.approximate && (
+                                <Badge variant="secondary" className="ml-1 text-xs">
+                                  Approx.
+                                </Badge>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </Button>
-                    ))}
-                  </div>
-                  <Button variant="secondary" className="w-full gap-2">
-                    <ExternalLink className="h-4 w-4" />
-                    View Interactive Map
-                  </Button>
-                </CardContent>
-              </Card>
+                        </Button>
+                      ))}
+                    </div>
+                    <Button
+                      variant="secondary"
+                      className="w-full gap-2"
+                      onClick={() => setShowInteractiveMap((v) => !v)}
+                      aria-expanded={showInteractiveMap}
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      {showInteractiveMap ? 'Hide Interactive Map' : 'View Interactive Map'}
+                    </Button>
+                    {showInteractiveMap && (
+                      <div className="mt-4">
+                        <React.Suspense
+                          fallback={
+                            <div className="w-full h-[360px] rounded-md border border-border bg-muted/20 animate-pulse" />
+                          }
+                        >
+                          <ArticleMiniMap slug={article.slug} pins={article.pins} />
+                        </React.Suspense>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
 
-              {/* MLA References */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BookOpen className="h-5 w-5" />
-                    Bibliography
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-sm font-mono bg-muted/20 p-4 rounded border">
-                    {article.mla_refs.map((ref, index) => (
-                      <p key={index} className="leading-relaxed">{ref}</p>
-                    ))}
-                  </div>
-                  <Button variant="outline" className="mt-4 gap-2" onClick={handleOpenReadingRoom}>
-                    <ExternalLink className="h-4 w-4" />
-                    Open in Reading Room
-                  </Button>
-                </CardContent>
-              </Card>
+              {/* MLA References — Phase H.2: hide when empty (DB articles still pull from sidebar) */}
+              {article.mla_refs.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BookOpen className="h-5 w-5" />
+                      Bibliography
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2 text-sm font-mono bg-muted/20 p-4 rounded border">
+                      {article.mla_refs.map((ref, index) => (
+                        <p key={index} className="leading-relaxed">{ref}</p>
+                      ))}
+                    </div>
+                    <Button variant="outline" className="mt-4 gap-2" onClick={handleOpenReadingRoom}>
+                      <ExternalLink className="h-4 w-4" />
+                      Open in Reading Room
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             {/* Sidebar - Collapsible */}
