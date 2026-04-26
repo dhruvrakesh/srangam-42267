@@ -17,6 +17,7 @@ import {
   GitBranch,
   Database,
   HeartPulse,
+  Map as MapIcon,
 } from "lucide-react";
 import {
   Sidebar,
@@ -87,6 +88,11 @@ const adminNavItems = [
     title: "Data Health",
     url: "/admin/data-health",
     icon: HeartPulse,
+  },
+  {
+    title: "Geography & Media",
+    url: "/admin/geography-media",
+    icon: MapIcon,
   },
 ];
 
