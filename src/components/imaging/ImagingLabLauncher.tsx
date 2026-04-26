@@ -138,6 +138,12 @@ export const ImagingLabLauncher: React.FC<Props> = ({
         >
           Or open the Srangam Dating Lab hub <ExternalLink className="h-3 w-3 ml-1" />
         </Button>
+
+        <p className="text-[11px] leading-snug text-muted-foreground/80 pt-1 border-t border-border/40">
+          First visit? The imaging app will ask for Google sign-in and may
+          queue your account for a one-time admin approval before unlocking
+          the labs.
+        </p>
       </CardContent>
     </Card>
   );
