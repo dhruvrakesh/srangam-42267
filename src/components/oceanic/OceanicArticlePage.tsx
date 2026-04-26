@@ -34,6 +34,12 @@ function normalizeSlug(rawSlug: string | undefined): string | null {
   return slug || null;
 }
 
+// Phase H.2c — lazy Leaflet map. Keeps ~150kB out of the article-page
+// critical path; only fetched when the user clicks "View Interactive Map".
+const ArticleMiniMap = React.lazy(() =>
+  import('@/components/articles/ArticleMiniMap').then((m) => ({ default: m.ArticleMiniMap })),
+);
+
 export const OceanicArticlePage: React.FC = () => {
   const { slug: rawSlug } = useParams<{ slug: string }>();
   const slug = normalizeSlug(rawSlug);
@@ -41,6 +47,7 @@ export const OceanicArticlePage: React.FC = () => {
   const { currentLanguage } = useLanguage();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showMethodsDialog, setShowMethodsDialog] = useState(false);
+  const [showInteractiveMap, setShowInteractiveMap] = useState(false);
 
   // Phase 1.4: Unified data hook (parallel fetching)
   const { 
