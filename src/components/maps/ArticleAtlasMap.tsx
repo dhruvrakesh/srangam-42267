@@ -17,9 +17,11 @@ import { Link } from 'react-router-dom';
 import { ensureLeafletIcons } from '@/lib/leafletIcons';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Satellite } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import type { GeographyRow } from '@/hooks/useArticleGeography';
 import { getTileLayer, type MapStyle } from '@/lib/mapTiles';
+import { useImagingDeepLink } from '@/hooks/useImagingDeepLink';
 
 ensureLeafletIcons();
 
