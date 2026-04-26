@@ -430,6 +430,14 @@ Deno.serve(async (req) => {
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error('[backfill-article-pins] fatal:', msg);
+    // Best-effort: mark a chunked job as failed so the UI stops "running".
+    try {
+      const body = await req.clone().json().catch(() => ({} as RequestBody));
+      if (body?.job_id) {
+        const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+        await finishJob(admin, body.job_id, 'failed', msg);
+      }
+    } catch { /* swallow */ }
     return new Response(JSON.stringify({ error: msg }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
