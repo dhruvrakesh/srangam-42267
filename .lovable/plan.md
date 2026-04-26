@@ -1,134 +1,86 @@
-## You are exactly right — current behavior is not enterprise-grade
+## Goal
 
-What you saw on `/admin/geography-media` is a **fire-and-forget** pattern:
+Add Mapbox as the **primary** tile/style provider for the two new public atlas surfaces (Maps & Data page + per-article mini-map) while keeping OpenStreetMap/Leaflet as a zero-cost fallback. Stay inside Mapbox's free tier (50k map loads/month) and change nothing about article content, RLS, edge functions, or the admin job system.
 
-- Click "Backfill all published (50 max)" → frontend opens **one** HTTP call to the edge function and waits.
-- Edge function loops 50 articles **serially**, doing 1 evidence query + 1 content scan + 1 AI call per article (~3–8s each with Gemini NER).
-- 50 articles × ~5s ≈ **4+ minutes**, while:
-  - Supabase edge functions hard-cap at **150s** wall-clock — your batch will be **killed mid-run** with no partial-progress signal.
-  - The browser request hangs for the whole duration, no progress, no ETA, no cancel.
-  - "Bulk OG" has the same shape — 42 articles × ~10s Gemini image gen + 1.2s pacing ≈ **8 minutes** of pure spinner.
+This is surgical: no library swap, no route changes, no schema changes. We add a tiny token-aware "tiles provider" layer and let the existing Leaflet components consume Mapbox raster tiles when a token is present. Existing dedicated `MapboxPortMap` / `MapboxBujangNetwork` components already work with `VITE_MAPBOX_TOKEN` — we standardize on the same secret name so everything lights up at once.
 
-You also asked specifically: *"Are we taking care of timeouts, edge function limits, etc.?"* — **no, not yet**. That's the gap this plan closes.
+## Why not rip out Leaflet?
 
----
+- `react-leaflet` is already wired into ~12 article components and the new `ArticleAtlasMap` / `ArticleMiniMap`. Replacing them with `mapbox-gl` would be invasive and risk regressions on live article maps.
+- Mapbox sells **raster tile endpoints** (`styles/v1/.../tiles/{z}/{x}/{y}`) that drop straight into Leaflet's `TileLayer`. We get Mapbox cartography (Streets, Outdoors, Satellite Streets, Light, Dark) without changing the rendering engine.
+- Free tier covers raster tile requests generously and the token is restricted to the publishable scope.
 
-## Enterprise pattern: durable jobs + chunked workers + live progress
+## Token strategy (free-tier safe)
 
-Modelled on patterns from Recogito/Pelagios, Arches HIP, and the way Supabase itself runs long imports. Three small primitives, surgically added — no rewrite.
+1. Use Mapbox **public token** (`pk.…`) — safe to ship in the bundle, scope-limited to `styles:tiles`, `styles:read`, `fonts:read`, `datasets:read`, `vision:read`.
+2. Store it as `VITE_MAPBOX_PUBLIC_TOKEN` (Lovable secret, exposed to the client because of the `VITE_` prefix). Keep the existing `VITE_MAPBOX_TOKEN` as an alias so `MapboxPortMap` / `MapboxBujangNetwork` keep working.
+3. Add a Mapbox URL-restriction (preview + custom domain + `*.lovable.app`) — documented in the README, not enforced in code.
+4. If the token is missing, every map silently falls back to OSM tiles. No broken UI.
 
-### 1. Persist the job (single source of truth)
+## Files to add / change
 
-New table `srangam_admin_jobs`:
+### New
+- `src/lib/mapTiles.ts` — single source of truth that returns `{ url, attribution, maxZoom, provider: 'mapbox' | 'osm' }` based on token availability and a `style` argument (`streets-v12`, `outdoors-v12`, `light-v11`, `satellite-streets-v12`).
+- `src/components/maps/MapStyleSwitcher.tsx` — small segmented control (Streets / Outdoors / Satellite / Light) used on the Maps & Data page only. Persists choice in `localStorage`.
 
-```text
-id            uuid PK
-kind          text  ('pin_backfill' | 'og_generate' | 'og_force')
-status        text  ('queued' | 'running' | 'succeeded' | 'failed' | 'cancelled')
-total         int        -- planned items (e.g. 50)
-processed     int        -- finished items
-succeeded     int
-failed        int
-cost_usd      numeric    -- running total
-last_item     text       -- e.g. "jakhbar-mercury-networks"
-last_error    text
-started_at    timestamptz
-updated_at    timestamptz
-finished_at   timestamptz
-created_by    uuid (auth.users)
-params        jsonb      -- original request body
-```
+### Edited (surgical, single-line `TileLayer.url` swap + props)
+- `src/components/maps/ArticleAtlasMap.tsx` — read tiles from `mapTiles.ts`, accept a `style` prop, default to `outdoors-v12` (best for historical/geographic context).
+- `src/components/articles/ArticleMiniMap.tsx` — same swap; default to `light-v11` (clean backdrop for pin clusters on article pages).
+- `src/pages/MapsAndData.tsx` (or wherever `ArticleAtlasMap` is mounted) — mount `MapStyleSwitcher` above the map.
+- `README.md` (or `docs/architecture/SOURCES_PINS_SYSTEM.md`) — note the env var + URL restriction step.
 
-RLS: admin-only read/write via existing `has_role(auth.uid(),'admin')`. Realtime publication enabled on this table only.
+### Untouched (intentionally)
+- All `src/components/articles/maps/*` and `src/components/interactive/*` — they already render correctly. We can migrate them in a later phase if the user wants.
+- Edge functions, RLS, admin jobs, OG image pipeline, narration — none of it touches tile providers.
 
-### 2. Chunked worker (respects the 150s wall-clock)
-
-The `backfill-article-pins` and `generate-article-og` functions get a `job_id` + `chunk` mode:
-
-- Frontend calls the function with `{ job_id, offset: 0, chunk_size: 5 }`.
-- Function processes **5 articles** (well under 150s even with worst-case AI), updates `srangam_admin_jobs` after **every article** (not just at the end), then returns `{ next_offset, done }`.
-- Frontend (or a tiny driver function) immediately re-invokes for the next chunk until `done=true`.
-- On any per-article failure → increment `failed`, write `last_error`, **continue** (no all-or-nothing loss).
-- Cancellation: frontend writes `status='cancelled'` to the row; worker checks at the top of every chunk and exits cleanly.
-
-This eliminates the 150s ceiling without needing background workers or queues.
-
-### 3. Live progress via Supabase Realtime (no polling)
-
-The admin page subscribes to its job row:
+## Technical detail (for the curious)
 
 ```ts
-supabase.channel(`job:${jobId}`)
-  .on('postgres_changes',
-    { event: 'UPDATE', schema: 'public', table: 'srangam_admin_jobs', filter: `id=eq.${jobId}` },
-    (payload) => setJob(payload.new))
-  .subscribe();
+// src/lib/mapTiles.ts
+const TOKEN = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN
+           ?? import.meta.env.VITE_MAPBOX_TOKEN;
+
+export type MapStyle = 'streets-v12' | 'outdoors-v12' | 'light-v11'
+                     | 'dark-v11' | 'satellite-streets-v12';
+
+export function getTileLayer(style: MapStyle = 'outdoors-v12') {
+  if (TOKEN) {
+    return {
+      provider: 'mapbox' as const,
+      url: `https://api.mapbox.com/styles/v1/mapbox/${style}/tiles/256/{z}/{x}/{y}@2x?access_token=${TOKEN}`,
+      attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+      maxZoom: 19,
+      tileSize: 256,
+    };
+  }
+  return {
+    provider: 'osm' as const,
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '© <a href="https://osm.org/copyright">OpenStreetMap</a>',
+    maxZoom: 18,
+    tileSize: 256,
+  };
+}
 ```
 
-UI gets sub-second progress updates. No polling, no hanging fetch.
+`ArticleAtlasMap` and `ArticleMiniMap` both replace their hard-coded OSM URL with `getTileLayer(style)` — about 4 changed lines per file. Performance is unchanged (still 1 tile request per pan/zoom step). Bundle size is unchanged (no new imports — `mapbox-gl` stays untouched, we use Mapbox's raster tiles via Leaflet).
 
----
+## Free-tier guard rails
 
-## What the user will see
+- `@2x` retina tiles double cost per load on HiDPI; documented but kept on because cartography is the whole point.
+- No autoplay / no animated style changes — every map load is user-initiated.
+- `MapStyleSwitcher` debounces style changes via `localStorage` so refreshes don't re-request the previous style.
+- Telemetry stays inside the existing `srangam_event_log` if we later want to count `map.tile.fetch` events (out of scope for this PR).
 
-A real progress card replaces the single grey log line:
+## Rollout
 
-```text
-┌─ Pin Backfill — running ──────────────────────────┐
-│ 17 / 50 articles                                  │
-│ ████████░░░░░░░░░░░░░░░░░░░░  34%                │
-│ Last: "jakhbar-mercury-networks"  ✓               │
-│ Succeeded 16  ·  Failed 1  ·  Cost $0.0042        │
-│ Started 7:39:36 PM  ·  ETA ~2m 10s                │
-│                              [ View log ] [Cancel]│
-└───────────────────────────────────────────────────┘
-```
+1. You add the secret `VITE_MAPBOX_PUBLIC_TOKEN` (Lovable will prompt).
+2. Code changes ship behind the token check, so even if the secret is empty the site keeps working on OSM.
+3. Verify on `/maps-and-data` and one article page that tiles look like Mapbox.
+4. Later (separate task): migrate the legacy `src/components/articles/maps/*` family to `getTileLayer()` for consistent cartography.
 
-ETA = `(elapsed_ms / processed) * (total - processed)`, recomputed every update.
-On completion the card collapses to a green/red summary with a "Run again" / "Retry failed only" button.
-Activity log keeps its current line-by-line stream but is now **secondary** to the progress card.
+## What this does NOT do
 
-The same component is reused for "Generate missing", "Force regenerate", and per-article jobs (per-article jobs just have `total=1` so the bar fills in one step, but still reports cost + provider).
-
----
-
-## Files to add / change (surgical)
-
-**New (3):**
-- `supabase/migrations/<ts>_admin_jobs.sql` — table + RLS + realtime publication.
-- `supabase/functions/_shared/jobs.ts` — `createJob`, `updateJob`, `checkCancelled`, `finishJob` helpers.
-- `src/hooks/useAdminJob.ts` — subscribes to a job row, returns `{job, progress, etaMs, cancel()}`.
-- `src/components/admin/JobProgressCard.tsx` — the visual card above.
-
-**Edited (3, surgical):**
-- `supabase/functions/backfill-article-pins/index.ts` — add `job_id` + `offset` + `chunk_size` params; per-article job updates; cancellation check; return `next_offset`. Existing single-article path unchanged.
-- `supabase/functions/generate-article-og/index.ts` — same pattern (chunkable bulk mode, single-article path unchanged).
-- `src/pages/admin/GeographyMedia.tsx` — replace bulk handlers with: `createJob → loop invoke chunks until done`, render `<JobProgressCard jobId=…/>`. Per-article handlers unchanged.
-
-**Documentation (2):**
-- `docs/RELIABILITY_AUDIT.md` — add "Long-running admin jobs" invariant section.
-- `docs/architecture/SOURCES_PINS_SYSTEM.md` — note chunking contract + cancellation semantics.
-
----
-
-## Provider strategy (per your earlier instruction)
-
-Already in place from H.3: `_shared/ai-provider.ts` selects **your Gemini key first, your OpenAI key as fallback** — Lovable AI Gateway is **not** used. This plan does not change that. Cost continues to be tracked per article and rolled into `srangam_admin_jobs.cost_usd`.
-
----
-
-## Why this is safe for the running site
-
-- Zero changes to public read paths (article page, mini-map, Atlas).
-- New table is admin-only; no RLS impact on existing tables.
-- Edge functions remain backward-compatible: calling them **without** `job_id` keeps the old single-shot behaviour, so any existing automation keeps working.
-- Each chunk is its own short-lived edge invocation — well under the 150s ceiling, and a crashed chunk only loses ≤5 articles, never the batch.
-- Idempotent upserts (already in place) mean retrying a failed chunk is free.
-
----
-
-## Out of scope (call out explicitly)
-
-- No queue service (pg_cron / pg_boss / external worker). The chunked self-driving frontend pattern is sufficient for current volumes (~50–500 articles); we can graduate to pg_cron later without changing the table shape.
-- No email-on-completion. Toast + persistent job row is enough; can add later.
-- Atlas page (`/maps`) wiring is already done in H.3 — not touched here.
+- Does not switch Leaflet → mapbox-gl GL JS (vector tiles). That's a bigger refactor; not needed for free-tier basemap upgrade.
+- Does not change pin data, confidence colours, popups, or admin job flow.
+- Does not add Mapbox Geocoding / Directions / Isochrone APIs (those eat free-tier quota fast).
