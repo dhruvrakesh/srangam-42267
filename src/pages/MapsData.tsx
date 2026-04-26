@@ -205,6 +205,51 @@ export default function MapsData() {
           />
         </div>
 
+        {/* Phase H.3 — Article Atlas (every published article's pinned places) */}
+        <Card className="bg-card border-border mb-8">
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <CardTitle className="font-serif text-xl text-foreground flex items-center gap-2">
+                  <Map size={20} className="text-ocean" />
+                  Article Atlas
+                </CardTitle>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  Every place referenced in our published articles, plotted on one map.
+                  Click a marker to jump straight to the articles that cite it.
+                  {atlasPlaceCount !== null && (
+                    <span className="ml-1 text-foreground font-medium">
+                      {atlasPlaceCount} place{atlasPlaceCount === 1 ? '' : 's'} mapped.
+                    </span>
+                  )}
+                </p>
+              </div>
+              <MapStyleSwitcher value={atlasStyle} onChange={setAtlasStyle} />
+            </div>
+          </CardHeader>
+          <CardContent>
+            {geoError ? (
+              <div className="text-sm text-destructive">
+                Could not load article geography. Please refresh.
+              </div>
+            ) : geoLoading ? (
+              <Skeleton className="w-full h-[520px] rounded-md" />
+            ) : geoRows.length === 0 ? (
+              <div className="w-full h-[200px] rounded-md border border-border bg-muted/20 flex items-center justify-center text-muted-foreground text-sm">
+                No geo-located articles yet — admins can backfill pins from Geography &amp; Media.
+              </div>
+            ) : (
+              <Suspense fallback={<Skeleton className="w-full h-[520px] rounded-md" />}>
+                <ArticleAtlasMap
+                  rows={geoRows}
+                  mapStyle={atlasStyle}
+                  onPlaceCount={setAtlasPlaceCount}
+                />
+              </Suspense>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Enhanced Data Visualizations */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
           {/* Historical Ports - Enhanced */}
