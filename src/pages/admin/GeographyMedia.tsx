@@ -361,17 +361,13 @@ export default function GeographyMedia() {
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2">
             <Button
-              onClick={async () => {
-                setBulkBusy('pins');
-                await backfillPins({ all: true });
-                setBulkBusy(null);
-              }}
+              onClick={() => backfillPinsBulk(50, 5)}
               disabled={bulkBusy !== null}
             >
               {bulkBusy === 'pins' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
               Backfill all published (50 max)
             </Button>
-            <Button variant="outline" onClick={() => refetch()}>
+            <Button variant="outline" onClick={() => refetch()} disabled={bulkBusy !== null}>
               <RefreshCcw className="h-4 w-4 mr-2" /> Refresh stats
             </Button>
           </CardContent>
