@@ -116,28 +116,89 @@ export default function GeographyMedia() {
     return { total, withPins, totalPins, withOg, withoutOg: total - withOg, withoutPins: total - withPins };
   }, [articles]);
 
-  // ---- pin backfill ----
-  async function backfillPins(opts: { articleId?: string; all?: boolean }) {
+  // ---- pin backfill (single article — unchanged single-shot path) ----
+  async function backfillPinsSingle(articleId: string) {
+    log(`Backfilling pins for article…`);
+    const { data, error } = await supabase.functions.invoke('backfill-article-pins', {
+      body: { article_id: articleId },
+    });
+    if (error) throw error;
+    const summary = `processed=${data?.processed ?? 0} cost=$${data?.total_cost_usd_estimate ?? 0}`;
+    log(`✓ Pin backfill done: ${summary}`);
+    toast({ title: 'Pin backfill complete', description: summary });
+    await qc.invalidateQueries({ queryKey: ['admin', 'geography-media'] });
+  }
+
+  // ---- pin backfill (bulk — chunked, durable, cancellable) ----
+  async function backfillPinsBulk(limit = 50, chunkSize = 5) {
+    setBulkBusy('pins');
     try {
-      const body = opts.articleId
-        ? { article_id: opts.articleId }
-        : { all_published: true, limit: 50 };
-      log(opts.articleId ? `Backfilling pins for article…` : `Backfilling pins for up to 50 articles…`);
-      const { data, error } = await supabase.functions.invoke('backfill-article-pins', { body });
-      if (error) throw error;
-      const summary = data?.processed
-        ? `processed=${data.processed} cost=$${data.total_cost_usd_estimate ?? 0}`
-        : JSON.stringify(data).slice(0, 200);
-      log(`✓ Pin backfill done: ${summary}`);
-      toast({ title: 'Pin backfill complete', description: summary });
+      // 1. Pre-create the durable job row so the UI can subscribe immediately.
+      const { data: { user } } = await supabase.auth.getUser();
+      // We don't yet know the exact total (the function will count published
+      // rows on first invocation), so seed with `limit` and let the worker
+      // correct it via the first chunk's `total` response.
+      const { data: jobRow, error: jobErr } = await supabase
+        .from('srangam_admin_jobs')
+        .insert({
+          kind: 'pin_backfill',
+          status: 'running',
+          total: limit,
+          started_at: new Date().toISOString(),
+          created_by: user?.id ?? null,
+          params: { all_published: true, limit, chunk_size: chunkSize },
+        })
+        .select('id')
+        .single();
+      if (jobErr || !jobRow) throw jobErr ?? new Error('failed to create job');
+
+      const jobId = jobRow.id as string;
+      setActiveJobId(jobId);
+      log(`▶ Started pin backfill job ${jobId.slice(0, 8)} (chunks of ${chunkSize})`);
+
+      // 2. Drive chunks until done / cancelled / fatal.
+      let offset = 0;
+      let actualTotal = limit;
+      while (true) {
+        if (await jobIsCancelled(jobId)) {
+          log(`■ Cancelled by operator at offset ${offset}/${actualTotal}`);
+          break;
+        }
+        const { data, error } = await supabase.functions.invoke('backfill-article-pins', {
+          body: { all_published: true, limit, offset, chunk_size: chunkSize, job_id: jobId },
+        });
+        if (error) throw error;
+
+        // Sync the real total back into the job row on first response.
+        if (typeof data?.total === 'number' && data.total !== actualTotal) {
+          actualTotal = data.total;
+          await supabase.from('srangam_admin_jobs').update({ total: actualTotal }).eq('id', jobId);
+        }
+
+        if (data?.cancelled || data?.done) break;
+        if (typeof data?.next_offset !== 'number' || data.next_offset <= offset) {
+          // Safety: avoid infinite loop on a misbehaving worker.
+          log(`⚠ Worker returned non-advancing offset; stopping.`);
+          await supabase
+            .from('srangam_admin_jobs')
+            .update({ status: 'failed', last_error: 'non-advancing offset', finished_at: new Date().toISOString() })
+            .eq('id', jobId);
+          break;
+        }
+        offset = data.next_offset;
+      }
+
       await qc.invalidateQueries({ queryKey: ['admin', 'geography-media'] });
+      toast({ title: 'Pin backfill finished', description: 'See the progress card for details.' });
     } catch (e: any) {
       log(`✗ Pin backfill failed: ${e?.message ?? e}`);
       toast({ title: 'Pin backfill failed', description: e?.message ?? 'Unknown error', variant: 'destructive' });
+    } finally {
+      setBulkBusy(null);
     }
   }
 
-  // ---- OG generation ----
+  // ---- OG generation (single article) ----
   async function generateOg(article: ArticleRow, force: boolean) {
     const title = getEnglishTitle(article.title) || 'Untitled';
     const slug = article.slug_alias || article.slug;
@@ -151,6 +212,7 @@ export default function GeographyMedia() {
       ? `skipped (${data.reason})`
       : `${data.provider} v${data.version} $${data.cost_usd}`;
     log(`✓ OG ${tag} — ${title}`);
+    return { ok: true, cost: Number(data?.cost_usd ?? 0) };
   }
 
   async function retireOg(article: ArticleRow) {
@@ -166,7 +228,7 @@ export default function GeographyMedia() {
   async function runOnRow(action: 'pins' | 'og_gen' | 'og_force' | 'og_retire', article: ArticleRow) {
     setBusyArticleId(article.id);
     try {
-      if (action === 'pins') await backfillPins({ articleId: article.id });
+      if (action === 'pins') await backfillPinsSingle(article.id);
       else if (action === 'og_gen') await generateOg(article, false);
       else if (action === 'og_force') await generateOg(article, true);
       else if (action === 'og_retire') await retireOg(article);
@@ -179,6 +241,7 @@ export default function GeographyMedia() {
     }
   }
 
+  // ---- OG bulk (chunked, durable, cancellable) ----
   async function bulkOg(force: boolean) {
     const targets = force ? articles : articles.filter((a) => !a.og_image_url);
     if (targets.length === 0) {
@@ -186,23 +249,84 @@ export default function GeographyMedia() {
       return;
     }
     setBulkBusy(force ? 'og_force' : 'og_missing');
-    log(`${force ? 'Force-regenerating' : 'Generating missing'} OG for ${targets.length} article(s)…`);
-    let ok = 0;
-    let fail = 0;
-    for (const a of targets) {
-      try {
-        await generateOg(a, force);
-        ok++;
-      } catch (e: any) {
-        log(`  ✗ ${getEnglishTitle(a.title)}: ${e?.message ?? e}`);
-        fail++;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: jobRow, error: jobErr } = await supabase
+        .from('srangam_admin_jobs')
+        .insert({
+          kind: force ? 'og_force' : 'og_generate',
+          status: 'running',
+          total: targets.length,
+          started_at: new Date().toISOString(),
+          created_by: user?.id ?? null,
+          params: { force, count: targets.length },
+        })
+        .select('id')
+        .single();
+      if (jobErr || !jobRow) throw jobErr ?? new Error('failed to create job');
+      const jobId = jobRow.id as string;
+      setActiveJobId(jobId);
+      log(`▶ ${force ? 'Force-regenerating' : 'Generating missing'} OG for ${targets.length} article(s) — job ${jobId.slice(0, 8)}`);
+
+      // Drive one article at a time. Each call is short (~10 s for Gemini)
+      // so we never approach the 150 s edge-function ceiling. Cancellation
+      // is checked between every article.
+      for (const a of targets) {
+        if (await jobIsCancelled(jobId)) {
+          log(`■ Cancelled by operator.`);
+          break;
+        }
+        let ok = false;
+        let cost = 0;
+        let errMsg: string | null = null;
+        try {
+          const r = await generateOg(a, force);
+          ok = true;
+          cost = r.cost;
+        } catch (e: any) {
+          errMsg = e?.message ?? String(e);
+          log(`  ✗ ${getEnglishTitle(a.title)}: ${errMsg}`);
+        }
+
+        // Per-item update on the job row → realtime push to the progress card.
+        const { data: cur } = await supabase
+          .from('srangam_admin_jobs')
+          .select('processed,succeeded,failed,cost_usd,last_error')
+          .eq('id', jobId)
+          .maybeSingle();
+        if (cur) {
+          await supabase
+            .from('srangam_admin_jobs')
+            .update({
+              processed: cur.processed + 1,
+              succeeded: cur.succeeded + (ok ? 1 : 0),
+              failed: cur.failed + (ok ? 0 : 1),
+              cost_usd: Number(cur.cost_usd) + cost,
+              last_item: a.slug_alias || a.slug,
+              last_error: ok ? cur.last_error : errMsg,
+            })
+            .eq('id', jobId);
+        }
+
+        await new Promise((r) => setTimeout(r, 600)); // gentle pacing for image API
       }
-      await new Promise((r) => setTimeout(r, 1200)); // gentle pacing
+
+      // Mark terminal (unless cancelled mid-loop, which already set status).
+      const finalCancelled = await jobIsCancelled(jobId);
+      if (!finalCancelled) {
+        await supabase
+          .from('srangam_admin_jobs')
+          .update({ status: 'succeeded', finished_at: new Date().toISOString() })
+          .eq('id', jobId);
+      }
+      await qc.invalidateQueries({ queryKey: ['admin', 'geography-media'] });
+      toast({ title: 'Bulk OG finished', description: 'See the progress card for details.' });
+    } catch (e: any) {
+      log(`✗ Bulk OG failed: ${e?.message ?? e}`);
+      toast({ title: 'Bulk OG failed', description: e?.message ?? 'Unknown error', variant: 'destructive' });
+    } finally {
+      setBulkBusy(null);
     }
-    log(`✓ Bulk OG complete: ${ok} ok / ${fail} failed`);
-    toast({ title: 'Bulk OG complete', description: `${ok} ok / ${fail} failed` });
-    await qc.invalidateQueries({ queryKey: ['admin', 'geography-media'] });
-    setBulkBusy(null);
   }
 
   return (
