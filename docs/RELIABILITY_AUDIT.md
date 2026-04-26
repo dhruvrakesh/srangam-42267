@@ -455,3 +455,68 @@ re-implement sanitisation.
 through `<MermaidBlock>` (`src/components/articles/enhanced/MermaidBlock.tsx`),
 which lazy-imports `mermaid`, runs with `securityLevel: 'strict'`, reserves
 height to eliminate CLS, and re-renders on light/dark theme changes.
+
+---
+
+## Phase H.1 Invariants — Defence-in-Depth, Observability, Performance
+
+### Sanitiser invariants (defence-in-depth)
+
+PUA / `citeturn…` artefacts MUST be stripped at **two** independent layers:
+
+1. **Ingest layer** — `runImportPipeline` (shared edge module) is invoked
+   by every importer (`markdown-to-article-import`,
+   `batch-import-from-github`). New importers MUST call it; never
+   re-implement sanitisation.
+2. **Render layer** — `sanitizeSnippet` / `stripExportArtifacts` are
+   called wherever article text crosses a presentation surface:
+   - `src/components/oceanic/OceanicArticlePage.tsx` (`<Helmet>` title /
+     description / OG tags)
+   - `src/hooks/useSearchArticles.ts` (search snippets + highlighted hits)
+   - `supabase/functions/generate-article-og` (image-prompt construction)
+   - `supabase/functions/generate-article-seo` (meta description fallback)
+
+Either layer is sufficient on its own; both are required so a regression
+in one cannot reach end users. Frontend (`src/lib/textSanitizer.ts`) and
+edge (`supabase/functions/_shared/text-sanitizer.ts`) implementations are
+**string-identical regex pairs**, kept in sync by Deno test
+`text-sanitizer: edge re-export matches pipeline impl`.
+
+### Observability log shape (OpenTelemetry-aligned)
+
+Every importer stage emits **exactly one** structured JSON line via
+`stage()` from `supabase/functions/_shared/observability.ts`:
+
+```json
+{ "evt": "import_stage", "stage": "<name>", "ms": 12, "ts": "<ISO>", "...": "..." }
+```
+
+Each import run terminates with a single `import_complete` summary line
+carrying total duration and per-stage timings. Free-form `console.log`
+for per-import events is forbidden — query stability depends on the
+shape above. Stage names are stable identifiers
+(`pipeline_clean`, `frontmatter`, `marked_parse`, `metadata_extract`,
+`db_upsert`); renaming is a breaking change for log queries.
+
+### Performance invariants
+
+- **`mermaid` (~600 KB)** MUST remain a **dynamic import** inside
+  `MermaidBlock`. Articles without diagrams MUST NOT pay its bundle cost.
+  Verify with `bun run build` — `mermaid` should appear in its own chunk,
+  never in the main entry.
+- **Mermaid render timing** is exposed via `performance.measure('mermaid:<id>')`
+  so DevTools / Lighthouse / RUM tools see it natively. In dev
+  (`import.meta.env.DEV`) a `[mermaid]` console line reports
+  `{ importMs, renderMs, totalMs }`.
+- The shared pipeline (`runImportPipeline`) is O(n) on text length and
+  runs once per import. Adding new regex stages MUST preserve linearity
+  and idempotency (`pipeline(pipeline(x)) === pipeline(x)`), enforced by
+  Deno test `runImportPipeline: idempotent`.
+
+### Test coverage contract
+
+`supabase/functions/markdown-to-article-import/pipeline_test.ts` (18
+tests) is the canonical regression suite for the import pipeline. It
+runs without network or DB access via `supabase--test_edge_functions`.
+Any change to `markdown-pipeline.ts` or either `text-sanitizer.ts` MUST
+keep this suite green.
