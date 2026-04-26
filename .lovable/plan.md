@@ -223,3 +223,29 @@ No CI gate added in this phase — the value of the documentation is to make a f
 - **Standard observability primitives** (`performance.measure`, OTel-shaped JSON log lines) — interoperable with any future RUM/APM/log-aggregator without rework.
 - **Tests live in the runtime that runs the code** (Deno) — no parallel JS test stack to maintain for one regex file.
 - **Documentation** (log-shape contract, bundle budget, defence-in-depth invariant) so a future engineer cannot accidentally regress without a code-review challenge.
+
+---
+
+## Phase H.1 — Status: ✅ COMPLETE (verified)
+
+- TypeScript: `bunx tsc --noEmit` → clean.
+- Deno test suite: **18/18 passing** via `supabase--test_edge_functions`
+  (3 added beyond the originally-planned 15 — edge re-export equality,
+  `sanitizeSnippet` truncation, and `sanitizeEscapes` round-trip).
+- Importer instrumented: `pipeline_clean`, `frontmatter`, `marked_parse`,
+  `metadata_extract` stages emit OTel-shaped `import_stage` lines plus a
+  terminating `import_complete` summary.
+- Render-time sanitiser wired into `OceanicArticlePage.tsx` (`<Helmet>`),
+  `useSearchArticles.ts`, `generate-article-og`, `generate-article-seo`.
+- `MermaidBlock` emits `performance.measure('mermaid:<id>')` and dev-only
+  `[mermaid] { importMs, renderMs, totalMs }` console line.
+- Reliability invariants (sanitiser defence-in-depth, OTel log shape,
+  bundle budget for `mermaid`, idempotency contract) recorded in
+  `docs/RELIABILITY_AUDIT.md` § "Phase H.1 Invariants".
+
+**Operator next steps** (no code required):
+1. Re-import the affected `.md` source(s) with `overwrite=true`.
+2. Tail edge logs filtered to `import_stage` + `import_complete` to confirm
+   `mermaid_blocks ≥ 1` on the Jakhbar article.
+3. Spot-check the rendered article: diagram appears via `<MermaidBlock>`,
+   search snippet is clean, `<meta name="description">` is clean.
