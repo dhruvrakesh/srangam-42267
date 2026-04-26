@@ -227,3 +227,30 @@ Why this helper, not the Lovable AI Gateway:
 ## Tools available in default mode for this work
 
 `supabase` migrations (gazetteer + article_pins tables, seed), edge-function deploy + Deno tests, `code--write` / `code--line_replace` for the three frontend edits + the new shared `ai-provider.ts`, `bunx tsc`. No new secrets requested — `GEMINI_API_KEY` and `OPENAI_API_KEY` are already present.
+
+---
+
+## H.2 — Execution log (completed)
+
+- ✅ **H.2a** — `srangam_gazetteer` + `srangam_article_pins` tables created with RLS (public read, admin write), seeded with 32 places from `oceanGisData`, `inscriptionRegistry`, and `atlas_nodes.json`.
+- ✅ **H.2c (resolver)** — `src/lib/articlePins.ts` joins pins ↔ gazetteer in one round-trip with a 4 s timeout. `src/lib/articleResolver.ts` calls `loadArticlePins(data.id)` for `source: 'database'` articles. `ResolvedArticle.pins[]` now carries `confidence`. Marker icon shim extracted into `src/lib/leafletIcons.ts`.
+- ✅ **H.2c (UI)** — `src/components/articles/ArticleMiniMap.tsx` lazy-loads `leaflet` + its CSS via dynamic imports. `OceanicArticlePage.tsx`:
+  - Hides the Geographical Context card entirely when `pins.length === 0`.
+  - Hides the Bibliography card entirely when `mla_refs.length === 0`.
+  - Hides the "X pins" header chip when there are zero pins.
+  - "View Interactive Map" now toggles an inline Suspense-wrapped `ArticleMiniMap`.
+  - `performance.measure('article-map:<slug>', …)` emitted from the map.
+- ✅ **H.2d** — `supabase/functions/_shared/ai-provider.ts` is the single tenant-aware entry point (Gemini primary → OpenAI fallback, with one transient retry, 15 s timeout, normalised tokens + cost). No Lovable Gateway use.
+- ✅ **H.2b** — `supabase/functions/backfill-article-pins/index.ts` is admin-only (JWT + `user_roles` check), reads gazetteer once, processes by `article_id` / `slug` / `all_published+limit`, runs the 3 stages (`pin_evidence` A, `pin_scan` B, `pin_ai` C), upserts on `(article_id, gazetteer_id)`. Emits `pin_stage` and `pin_complete` log lines (extends Phase H.1 observability shape).
+- ✅ **Docs** — `docs/RELIABILITY_AUDIT.md` and `docs/architecture/SOURCES_PINS_SYSTEM.md` updated with H.2 invariants, performance budgets, and the new log shape. Cited Pelagios / WHG / Recogito as enterprise references for the model.
+
+### Verification
+
+- `bunx tsc --noEmit` → clean.
+- No changes to JSON-source articles, no Lovable Gateway calls, no new request-path dependencies for articles without pins.
+
+### Operator runbook
+
+- Admin → call `backfill-article-pins` with `{ "all_published": true, "limit": 25 }` to seed pins for the most recent 25 published articles. Tail edge-function logs for `pin_complete` lines; `cost_usd_estimate` aggregates over `total_cost_usd_estimate` in the response body.
+- To force deterministic-only (no AI cost), pass `{ "skip_ai": true }`.
+- Re-running on the same article is safe (composite-PK upsert).
