@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { getOceanicCardBySlug, type OceanicCard } from './oceanicCardsLoader';
 import { MULTILINGUAL_ARTICLES, ARTICLE_METADATA } from '@/data/articles';
+import { loadArticlePins } from './articlePins';
 
 export interface ResolvedArticle {
   source: 'json' | 'database';
