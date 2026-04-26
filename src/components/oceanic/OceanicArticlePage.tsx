@@ -18,6 +18,7 @@ import { getProxiedImageUrl } from '@/lib/gdriveProxy';
 import { useArticle } from '@/hooks/useArticle';
 import { ArticleFullSkeleton, ArticleError } from '@/components/oceanic/article';
 import { sanitizeSnippet } from '@/lib/textSanitizer';
+import { ImagingLabLauncher } from '@/components/imaging/ImagingLabLauncher';
 
 const BASE_URL = 'https://srangam.nartiang.org';
 
@@ -338,6 +339,15 @@ export const OceanicArticlePage: React.FC = () => {
                   </CardContent>
                 </Card>
               )}
+
+              {/* Phase J — cross-app bridge to maps.sankyo.in (imaging + astronomy lab) */}
+              <ImagingLabLauncher
+                articleSlug={article.slug}
+                articleTitle={articleTitle}
+                pins={article.pins}
+                tags={article.tags}
+                theme={article.theme}
+              />
 
               {/* MLA References — Phase H.2: hide when empty (DB articles still pull from sidebar) */}
               {article.mla_refs.length > 0 && (
