@@ -323,6 +323,48 @@ export type Database = {
           },
         ]
       }
+      srangam_article_pins: {
+        Row: {
+          article_id: string
+          confidence: string
+          created_at: string
+          display_order: number
+          gazetteer_id: string
+          source: string
+        }
+        Insert: {
+          article_id: string
+          confidence?: string
+          created_at?: string
+          display_order?: number
+          gazetteer_id: string
+          source?: string
+        }
+        Update: {
+          article_id?: string
+          confidence?: string
+          created_at?: string
+          display_order?: number
+          gazetteer_id?: string
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_article_pins_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "srangam_article_pins_gazetteer_id_fkey"
+            columns: ["gazetteer_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_gazetteer"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       srangam_article_versions: {
         Row: {
           article_id: string
@@ -847,6 +889,54 @@ export type Database = {
           translations?: Json
           transliteration?: string | null
           usage_count?: number | null
+        }
+        Relationships: []
+      }
+      srangam_gazetteer: {
+        Row: {
+          canonical_name: string
+          country: string | null
+          created_at: string
+          era_tags: string[]
+          external_refs: Json
+          feature_type: string | null
+          id: string
+          latitude: number
+          longitude: number
+          name_variants: string[]
+          notes: string | null
+          precision: string
+          updated_at: string
+        }
+        Insert: {
+          canonical_name: string
+          country?: string | null
+          created_at?: string
+          era_tags?: string[]
+          external_refs?: Json
+          feature_type?: string | null
+          id?: string
+          latitude: number
+          longitude: number
+          name_variants?: string[]
+          notes?: string | null
+          precision?: string
+          updated_at?: string
+        }
+        Update: {
+          canonical_name?: string
+          country?: string | null
+          created_at?: string
+          era_tags?: string[]
+          external_refs?: Json
+          feature_type?: string | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          name_variants?: string[]
+          notes?: string | null
+          precision?: string
+          updated_at?: string
         }
         Relationships: []
       }

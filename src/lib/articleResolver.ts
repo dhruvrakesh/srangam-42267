@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { getOceanicCardBySlug, type OceanicCard } from './oceanicCardsLoader';
 import { MULTILINGUAL_ARTICLES, ARTICLE_METADATA } from '@/data/articles';
+import { loadArticlePins } from './articlePins';
 
 export interface ResolvedArticle {
   source: 'json' | 'database';
@@ -144,6 +145,11 @@ export async function resolveOceanicArticle(slug: string): Promise<ResolvedArtic
     const title_ta = typeof data.title === 'object' ? (data.title as any).ta : undefined;
     const abstract = typeof data.content === 'object' ? (data.content as any).en : String(data.content);
 
+    // Phase H.2c: load gazetteer-resolved pins for this article.
+    // Always-an-array, internally timeout-bounded (4 s), never throws —
+    // safe to await without changing the existing 10 s outer timeout.
+    const pins = await loadArticlePins(data.id);
+
     return {
       source: 'database',
       slug: data.slug,
@@ -159,7 +165,7 @@ export async function resolveOceanicArticle(slug: string): Promise<ResolvedArtic
       read_time_min: data.read_time_minutes || 10,
       word_count: data.word_count || undefined,
       tags: data.tags || [],
-      pins: [], // Database articles don't have pins by default
+      pins,
       mla_refs: [], // Would need to join with bibliography table
       theme: data.theme,
       published_date: data.published_date,
