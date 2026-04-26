@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { OceanMap } from "@/components/interactive/OceanMap";
 import { LazyMonsoonAnimation } from "@/components/interactive/LazyMonsoonAnimation";
 import { PlateTimeline } from "@/components/interactive/PlateTimeline";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, lazy, Suspense } from "react";
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from "react-router-dom";
 import { IconConch, IconDharmaChakra } from "@/components/icons";
@@ -20,6 +20,14 @@ import {
 import portsData from '@/data/cosmic_ocean/ports.json';
 import monsoonData from '@/data/cosmic_ocean/monsoon.json';
 import cosmicOceanI18n from '@/data/cosmic_ocean/i18n.json';
+import { useArticleGeography } from '@/hooks/useArticleGeography';
+import { MapStyleSwitcher, useMapStyle } from '@/components/maps/MapStyleSwitcher';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Lazy-load Leaflet-based atlas to keep initial bundle small.
+const ArticleAtlasMap = lazy(() =>
+  import('@/components/maps/ArticleAtlasMap').then((m) => ({ default: m.ArticleAtlasMap }))
+);
 
 // Layer configuration for different map views
 const LAYER_CONFIGS: Record<string, { title: string; description: string; filters: string[]; layers: string[] }> = {
