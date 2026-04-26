@@ -72,7 +72,7 @@ export function buildImagingPath(target: ImagingTarget): string {
       if (p.lat != null) qs.set('lat', p.lat.toFixed(5));
       if (p.lon != null) qs.set('lon', p.lon.toFixed(5));
       if (p.zoom != null) qs.set('zoom', String(p.zoom));
-      if (p.ref) qs.set('ref', p.ref);
+      if (safeRef) qs.set("ref", safeRef);
       const q = qs.toString();
       return q ? `/viewer?${q}` : '/viewer';
     }
@@ -80,13 +80,13 @@ export function buildImagingPath(target: ImagingTarget): string {
       if (p.lat != null) qs.set('lat', p.lat.toFixed(5));
       if (p.lon != null) qs.set('lon', p.lon.toFixed(5));
       if (p.date) qs.set('date', p.date);
-      if (p.ref) qs.set('ref', p.ref);
+      if (safeRef) qs.set("ref", safeRef);
       const q = qs.toString();
       return q ? `/sky?${q}` : '/sky';
     }
     case 'astronomy-lab': {
       if (p.challenge) qs.set('challenge', p.challenge);
-      if (p.ref) qs.set('ref', p.ref);
+      if (safeRef) qs.set("ref", safeRef);
       const q = qs.toString();
       return q ? `/astronomy-lab?${q}` : '/astronomy-lab';
     }
