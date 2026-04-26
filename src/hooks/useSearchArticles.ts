@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { searchArticles } from "@/lib/searchEngine";
 import { useLanguage } from "@/components/language/LanguageProvider";
+import { stripExportArtifacts } from "@/lib/textSanitizer";
 
 interface SearchResultItem {
   id: string;
@@ -84,8 +85,8 @@ export function useSearchArticles(query: string, options: UseSearchArticlesOptio
 
     const formattedJson: SearchResultItem[] = jsonResults.map(result => ({
       id: result.article.id,
-      title: extractText(result.article.title),
-      excerpt: extractText(result.article.dek),
+      title: stripExportArtifacts(extractText(result.article.title)),
+      excerpt: stripExportArtifacts(extractText(result.article.dek)),
       slug: `/${result.article.id}`,
       theme: result.metadata.theme,
       tags: result.article.tags.map(tag => extractText(tag)).filter(Boolean),
@@ -107,8 +108,8 @@ export function useSearchArticles(query: string, options: UseSearchArticlesOptio
       .filter(a => theme === 'all' || a.theme === theme)
       .map(a => ({
         id: a.id,
-        title: extractText(a.title),
-        excerpt: extractText(a.dek),
+        title: stripExportArtifacts(extractText(a.title)),
+        excerpt: stripExportArtifacts(extractText(a.dek)),
         slug: `/articles/${a.slug}`,
         theme: a.theme,
         tags: a.tags || [],

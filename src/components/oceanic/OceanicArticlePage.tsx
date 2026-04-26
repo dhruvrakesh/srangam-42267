@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { getProxiedImageUrl } from '@/lib/gdriveProxy';
 import { useArticle } from '@/hooks/useArticle';
 import { ArticleFullSkeleton, ArticleError } from '@/components/oceanic/article';
+import { sanitizeSnippet } from '@/lib/textSanitizer';
 
 const BASE_URL = 'https://srangam.nartiang.org';
 
@@ -83,7 +84,9 @@ export const OceanicArticlePage: React.FC = () => {
   const canonicalUrl = `${BASE_URL}/articles/${articleSlug}`;
   const rawOgImageUrl = article.og_image_url || `${BASE_URL}/brand/og-image.png`;
   const ogImageUrl = getProxiedImageUrl(rawOgImageUrl);
-  const description = article.abstract.substring(0, 160);
+  // Phase H.1 — defence-in-depth: strip ChatGPT export artefacts before
+  // the abstract is injected into <meta>, OG, Twitter, and JSON-LD.
+  const description = sanitizeSnippet(article.abstract, 160);
 
   // Build ScholarlyArticle structured data
   const scholarlyArticleSchema = article.source === 'database' ? {

@@ -2,6 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 import { classifyError } from '../_shared/error-response.ts';
+import { sanitizeSnippet } from '../_shared/text-sanitizer.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -139,7 +140,7 @@ GUIDELINES:
           position: index + 1,
           item: {
             '@type': 'ScholarlyArticle',
-            headline: title,
+            headline: sanitizeSnippet(title, 200),
             author: { '@type': 'Person', name: article.author },
             datePublished: article.published_date,
             about: article.theme,
@@ -153,7 +154,7 @@ GUIDELINES:
     return new Response(
       JSON.stringify({
         success: true,
-        metaDescription: generatedDescription,
+        metaDescription: sanitizeSnippet(generatedDescription, 320),
         structuredData,
         articleCount: filteredCount,
         generatedAt: new Date().toISOString(),

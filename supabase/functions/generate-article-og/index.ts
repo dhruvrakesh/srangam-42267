@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
+import { sanitizeSnippet } from '../_shared/text-sanitizer.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -194,8 +195,11 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { articleId, title, theme, slug } = await req.json();
-    
+    const { articleId, title: rawTitle, theme, slug } = await req.json();
+    // Phase H.1 — strip ChatGPT export artefacts before the title is
+    // baked into the OG image prompt (DALL-E renders box-glyphs literally).
+    const title = sanitizeSnippet(rawTitle ?? '', 200);
+
     console.log(`Generating OG image for: ${title} (theme: ${theme})`);
     
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');

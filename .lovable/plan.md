@@ -1,233 +1,225 @@
 
-# Phase H (Revised): Diagram Pipeline Repair — Enterprise-Grade
+# Phase H.1 (Revised): Tests, Render-Time Sanitiser, Observability
 
-## Enterprise Patterns We're Modeling On
+Three additions, but **corrected** for what actually exists in the codebase. Verified by direct inspection — every wire-in point below was confirmed.
 
-Before prescribing changes, three production systems solving the same shape of problem — markdown in, scholarly diagram-rich HTML out:
+## Corrections to the prior plan
 
-| Reference system | Pattern we adopt | Where it applies here |
+| Prior plan said | Reality | Corrected target |
 |---|---|---|
-| **Docusaurus `@docusaurus/theme-mermaid`** ([docs](https://docusaurus.io/docs/markdown-features/diagrams/)) | Remark plugin recognises ` ```mermaid ` fences at parse-time → lazy-loaded React `<Mermaid>` theme component renders client-side. PR #9305 hardened async-render & theme switching. | Our `ProfessionalTextFormatter` already uses `react-markdown` + `rehype-raw`. We add a single `code` component override + a lazy `<MermaidBlock>`. Same shape, smaller surface. |
-| **Quarto / Pandoc filter chain** ([Quarto docs](https://quarto.org/)) | Document processing is an **ordered, named filter pipeline** (pre-render → render → post-render), each step pure & individually testable. Lua filters carry the contract. | Our importer today is a 979-line procedural script. We refactor (in place, no new files) into a named pipeline: `sanitizeEscapes → stripExportArtifacts → normalizeDiagrams → extractFrontmatter → marked.parse → extractMetadata`. Each step a pure function, exported for unit reuse. |
-| **Manubot** (scholarly markdown→HTML/PDF/JATS) | Citation placeholders use a **stable token grammar** (`@doi:…`, `@pmid:…`) resolved at build time, never leaked to readers; export artifacts are *errors*, not features. | Justifies aggressively stripping ChatGPT's `citeturn…` PUA placeholders and re-inserting clean MLA references through our existing bibliography parser, rather than trying to render them. |
-| **GitBook Mermaid integration** | Mermaid block ships **with caption + alt text**, container reserves height to avoid CLS. | Our `<MermaidBlock>` ships with the same affordances (caption slot, `min-h`, ARIA description). |
-| **`docusaurus-prerender-mermaid`** (community) | Pre-render diagrams to SVG at build/import time to fix CLS, SEO, a11y. | Phase H.2 (deferred): cache rendered SVG in `srangam_articles.diagram_cache` JSONB so re-visits skip the mermaid bundle entirely. Not in this phase. |
+| Wire sanitiser into `useDynamicSEO.ts` | That hook just calls an edge function; never touches `<meta>` tags. | Wire into `OceanicArticlePage.tsx` (`<Helmet>` block at lines 136–153) and the edge functions `generate-article-og` and `generate-article-seo`. |
+| Only patch `markdown-to-article-import` | A second importer exists: `batch-import-from-github`. Same defect surface. | Run `runImportPipeline` in **both** importers — same one-line addition. |
+| `process.env.NODE_ENV` flag in MermaidBlock | Vite uses `import.meta.env.DEV`. | Use `import.meta.env.DEV`. |
+| Frontend sanitiser is untested | Pure regex, easy to test, but no vitest harness exists yet. | Co-locate frontend sanitiser tests in the **Deno** test file (the regexes are identical strings; we test them once against both importer-side and frontend-side fixtures). Avoids spinning up vitest for one file. |
 
-These are real, in-production OSS patterns — not speculation.
-
----
-
-## Verified Root Causes (unchanged from prior plan, recap)
-
-Confirmed by direct inspection of `markdown-to-article-import/index.ts`, `ProfessionalTextFormatter.tsx`, `package.json`, and the uploaded sample:
-
-1. **No mermaid renderer exists** anywhere in the codebase. `react-markdown@10` + `rehype-raw` + `html-react-parser` are wired, but no `code` override for `language-mermaid`. Default fallthrough → `<pre><code>` plaintext.
-2. **ChatGPT/Deep-Research export drops the ` ``` ` fences** around `flowchart`/`graph` blocks. The screenshot's bare `flowchart TD\n  Local["..."] --> ...` confirms it. The importer therefore never even sees a code block.
-3. **OpenAI PUA citation placeholders** (`U+E000…U+F8FF` runs around `citeturnNviewN`) leak through and render as box-glyphs (□). `sanitizeEscapedMarkdown` only handles `\#`, `\*`, etc.
-
-A 4th smaller defect surfaced on inspection: ChatGPT also leaks **`Suggested caption:` instructional lines** and **lone-digit superscripts** (residual footnote anchors after the citation gets stripped).
+These are not nits — each one was a hole that would have let artefacts through.
 
 ---
 
-## Architectural Strategy
+## Enterprise Patterns We're Modelling On
 
-Two surfaces, both additive, both tenant-neutral:
-
-```text
-   ┌──────────────────────────── Importer (edge fn) ──────────────────────────┐
-   │                                                                          │
-   │   raw .md ──▶  sanitizeEscapes                                           │
-   │            ──▶  stripExportArtifacts   (NEW: PUA, citeturn, captions)    │
-   │            ──▶  normalizeDiagrams      (NEW: auto-fence mermaid)         │
-   │            ──▶  extractFrontmatter                                       │
-   │            ──▶  marked.parse  ──▶ HTML  (mermaid stays as <pre><code>)   │
-   │            ──▶  extractMetadata (citations, terms, evidence)             │
-   │            ──▶  UPSERT srangam_articles                                  │
-   │                                                                          │
-   │   Each step exported as a pure function from a new                       │
-   │   supabase/functions/_shared/markdown-pipeline.ts                        │
-   └──────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-   ┌──────────────────────────── Renderer (frontend) ─────────────────────────┐
-   │                                                                          │
-   │   ProfessionalTextFormatter (oceanic)                                    │
-   │      └─ customRenderers.code → if lang==='mermaid' → <MermaidBlock/>     │
-   │                                                                          │
-   │   <MermaidBlock>: lazy-import 'mermaid', theme-aware, CLS-safe,          │
-   │                   error-boundary fallback to <pre><code>, ARIA label.    │
-   └──────────────────────────────────────────────────────────────────────────┘
-```
-
-**Tenant awareness:** `OceanicArticlePage` (oceanic), `ArticlePage` (generic), and any future tenant route all flow through `srangam_articles.content`. The fix lives at the two narrowest points (one importer fn, one renderer override). No tenant-specific branching, no business-logic relocation.
+| Reference | Pattern adopted | Where it applies |
+|---|---|---|
+| **OpenTelemetry semantic conventions** for log records (`event.name`, `duration_ms`) | Single stable JSON log shape; never log free-form strings for events that may be queried. | `{ evt, stage, ms, ts, ... }` line per stage. Future swap to OTLP / `srangam_event_log` is a one-line change. |
+| **Pandoc / Quarto filter pipelines** | Same pure stages, same logging shape, regardless of which importer invokes them. | Both `markdown-to-article-import` AND `batch-import-from-github` call the same `runImportPipeline` and emit the same `import_stage` lines. |
+| **Defence-in-depth (NIST SP 800-160)** | Sanitise both at *ingest* and *render*. Either layer can regress without users seeing artefacts. | Importer (`stripExportArtifacts`) + frontend (`textSanitizer`) + edge SEO functions. |
+| **Web Vitals + `PerformanceObserver`** (Chrome team docs) | Use `performance.measure()` so DevTools / Lighthouse / RUM tools see the timing natively. | `MermaidBlock` emits `mermaid:<id>` measures; no custom observer needed. |
 
 ---
 
-## Implementation Plan
+## 1. Deno Tests for the Pipeline (and Frontend Mirror)
 
-### Step 1 — Extract importer pipeline into named, pure stages
-**Files:** `supabase/functions/_shared/markdown-pipeline.ts` (NEW), `supabase/functions/markdown-to-article-import/index.ts` (refactor in place).
+**New file:** `supabase/functions/markdown-to-article-import/pipeline_test.ts`
 
-Create `_shared/markdown-pipeline.ts` exporting:
+Pure-function tests against `_shared/markdown-pipeline.ts`. No network, no DB, no Supabase imports. Run via `supabase--test_edge_functions`.
+
+Coverage matrix (15 tests):
+
+| # | Behaviour |
+|---|---|
+| 1 | Already-fenced ```mermaid passes through unchanged (idempotent on fences) |
+| 2 | Unfenced `flowchart TD` block → wrapped in ```mermaid fence |
+| 3 | Unfenced `graph LR` block → wrapped |
+| 4 | Unfenced `sequenceDiagram` block → wrapped |
+| 5 | Block ends correctly at next markdown heading (`^#`) |
+| 6 | Block ends correctly at next prose paragraph after blank line |
+| 7 | Literal `\n` inside node label → `<br/>` |
+| 8 | PUA-wrapped `\uE200cite\uE201turn17view0\uE202` runs removed |
+| 9 | Bare `citeturn26view0` token removed |
+| 10 | Stray PUA chars removed |
+| 11 | `Suggested caption: **X.**` → `*Caption:* **X.**` |
+| 12 | Trailing `  1\n` footnote-anchor digit removed |
+| 13 | `runImportPipeline(runImportPipeline(x)) === runImportPipeline(x)` (full idempotency) |
+| 14 | Real Jakhbar excerpt (inline string from screenshot) cleans correctly |
+| 15 | Pipeline never strips legitimate code fences (` ```ts`, ` ```bash`) |
+
+Tests use `Deno.test` + `https://deno.land/std/assert/mod.ts`.
+
+## 2. Render-Time Sanitiser — `src/lib/textSanitizer.ts`
 
 ```ts
-export const sanitizeEscapes      = (s: string) => string;     // existing logic, moved
-export const stripExportArtifacts = (s: string) => string;     // NEW
-export const normalizeDiagrams    = (s: string) => string;     // NEW (auto-fence mermaid)
-export const runImportPipeline    = (s: string) => string;     // composes the above in order
+export function stripExportArtifacts(input: string): string;
+export function sanitizeSnippet(html: string, maxLen?: number): string;
 ```
 
-Pure functions, no side effects, no Supabase imports — so they can be reused by future importers (`batch-import-from-github`, a hypothetical DOCX bridge) and unit-tested in isolation.
+Identical regex set to the importer's `stripExportArtifacts`. Comment in the file explicitly references the canonical source so the two stay in lockstep.
 
-**Risk:** low. Same logic, named differently. Pandoc-style filter contract.
+**Wire-in points (corrected, all verified):**
 
-### Step 2 — `stripExportArtifacts` (ChatGPT/Deep-Research cleanup)
-- Drop PUA citation runs: `/[\uE000-\uF8FF]+(?:cite[\uE000-\uF8FF]*turn\d+\w+\d+[\uE000-\uF8FF]*)?/g` → `''`
-- Drop bare `citeturn\d+(view|search|news)\d+` tokens.
-- Convert ChatGPT's `Suggested caption: **X.**` lines under diagrams to `*Caption:* X.` (preserve the meaning, drop the meta-instruction tone).
-- Strip residual lone-digit superscripts that survive citation removal: `/(\s)\d{1,2}\s*$/gm` only when the line was previously adjacent to a removed cite token (track via a sentinel during the same pass).
-- Idempotent — safe to re-run on already-clean text.
+| Surface | File | Change |
+|---|---|---|
+| Article `<meta name="description">`, OG description, JSON-LD | `src/components/oceanic/OceanicArticlePage.tsx` line 444–446 (where `description` is computed from `article.abstract`) | Wrap with `sanitizeSnippet(...)` |
+| Search-result excerpts | `src/hooks/useSearchArticles.ts` lines 88, 111 (`extractText(result.article.dek)`) | Wrap `extractText` output with `stripExportArtifacts(...)` |
+| Server-generated OG images | `supabase/functions/generate-article-og/index.ts` — wherever the title/description string is composed | Apply `stripExportArtifacts` (duplicate the regexes inline; edge fns can't import from `src/`) |
+| Server-generated SEO meta | `supabase/functions/generate-article-seo/index.ts` — same | Same |
+| Sitemap meta (if any text leaks through) | `supabase/functions/generate-sitemap/index.ts` | Same |
 
-### Step 3 — `normalizeDiagrams` (auto-fence + dialect normalisation)
-Detect blocks beginning with one of:
-`flowchart\s+(TD|LR|TB|RL|BT)`, `graph\s+(TD|LR|TB|RL|BT)`, `sequenceDiagram`, `classDiagram`, `stateDiagram(-v2)?`, `erDiagram`, `journey`, `gantt`, `pie`, `mindmap`, `timeline`, `quadrantChart`, `xychart-beta`.
+For the edge functions, factor the four regexes into `supabase/functions/_shared/text-sanitizer.ts` so they share the **same source of truth** as the importer pipeline (re-exported from `markdown-pipeline.ts`'s `stripExportArtifacts`). Frontend mirrors them once in `src/lib/textSanitizer.ts` (with a comment pointing back to the canonical edge file).
 
-A **block** = trigger line + subsequent lines until any of: blank line followed by a markdown heading (`^#`), end of document, or a new fenced code block opener.
+## 3. Importer Observability — Both Importers
 
-If the block is **not already inside ` ``` ` fences**, wrap it in ` ```mermaid … ``` `. Track previously-seen fence state to keep this idempotent. Also normalise ChatGPT's literal `\n` inside node labels (e.g. `Local["Local node\nJakhbar"]`) — mermaid accepts `<br/>` but not `\n` literals; replace with `<br/>`.
+**Edits:**
+- `supabase/functions/markdown-to-article-import/index.ts`
+- `supabase/functions/batch-import-from-github/index.ts`
 
-### Step 4 — `<MermaidBlock>` component (frontend)
-**New file:** `src/components/articles/enhanced/MermaidBlock.tsx`
-
-```tsx
-// pseudocode
-const MermaidBlock = ({ chart, caption }) => {
-  const [svg, setSvg] = useState<string|null>(null);
-  const [error, setError] = useState<string|null>(null);
-  const isDark = useDarkMode();             // listens via MutationObserver on <html>
-  const id = useId();
-
-  useEffect(() => {
-    let cancelled = false;
-    import('mermaid').then(({ default: mermaid }) => {
-      mermaid.initialize({
-        startOnLoad: false,
-        theme: isDark ? 'dark' : 'neutral',
-        securityLevel: 'strict',     // sanitises foreignObject / scripts
-        fontFamily: 'inherit',
-      });
-      mermaid.render(`m-${id}`, chart)
-        .then(({ svg }) => !cancelled && setSvg(svg))
-        .catch(e => !cancelled && setError(e.message));
-    });
-    return () => { cancelled = true; };
-  }, [chart, isDark, id]);
-
-  if (error) return <FallbackPre code={chart} note="Diagram preview unavailable" />;
-  return (
-    <figure className="my-6 overflow-x-auto rounded-lg border bg-card p-4 min-h-[180px]"
-            role="img" aria-label={caption || 'Diagram'}>
-      {svg ? <div dangerouslySetInnerHTML={{ __html: svg }} />
-           : <div className="h-[180px] animate-pulse bg-muted/40 rounded" />}
-      {caption && <figcaption className="mt-3 text-sm text-muted-foreground italic">{caption}</figcaption>}
-    </figure>
-  );
-};
-```
-
-Notes derived from Docusaurus PR #9305:
-- `mermaid.render` is async — never call sync `mermaid.init`.
-- `securityLevel: 'strict'` is mandatory for user-derived content.
-- Theme switch via re-render keyed on `isDark`.
-- `min-h-[180px]` reserves space → eliminates the CLS issue called out by `docusaurus-prerender-mermaid`.
-
-### Step 5 — Wire into `ProfessionalTextFormatter`
-Single addition to `customRenderers`:
+Add a tiny shared helper in `supabase/functions/_shared/observability.ts`:
 
 ```ts
-code({ inline, className, children, ...props }) {
-  const lang = /language-(\w+)/.exec(className || '')?.[1];
-  if (!inline && lang === 'mermaid') {
-    return <MermaidBlock chart={String(children).replace(/\n$/, '')} />;
+export async function stage<T>(
+  name: string,
+  meta: Record<string, unknown>,
+  fn: () => T | Promise<T>,
+): Promise<T> {
+  const t0 = performance.now();
+  try {
+    const v = await fn();
+    console.log(JSON.stringify({
+      evt: 'import_stage', stage: name, ms: Math.round(performance.now() - t0),
+      ok: true, ts: new Date().toISOString(), ...meta,
+    }));
+    return v;
+  } catch (e) {
+    console.log(JSON.stringify({
+      evt: 'import_stage', stage: name, ms: Math.round(performance.now() - t0),
+      ok: false, error: String(e), ts: new Date().toISOString(), ...meta,
+    }));
+    throw e;
   }
-  return <code className={className} {...props}>{children}</code>;
-},
+}
 ```
 
-`SimplifiedMarkdownRenderer` is left untouched — it serves only legacy non-oceanic routes and uses regex-based markdown (no fenced-code support today). Parity flagged as Phase H.2 if usage warrants.
+Wrap six stages in `markdown-to-article-import`:
 
-### Step 6 — Re-import, don't migrate
-Existing rows containing unfenced flowchart text won't auto-heal — and a DB-side regex migration is risky on multilingual JSONB. Operator action:
+| Stage | Logged as |
+|---|---|
+| `runImportPipeline(markdownContent)` | `pipeline_clean` |
+| `extractFrontmatter(cleaned)` | `frontmatter` |
+| `marked.parse(content)` | `marked_parse` |
+| `extractCitations + extractCulturalTerms` | `metadata_extract` |
+| Article upsert | `db_upsert` |
+| Cross-references + bibliography | `xref_bib` |
 
-1. Open the affected article in admin.
-2. Re-upload the same `.md` source through the importer with `overwrite=true`.
-3. Pipeline re-runs cleanly; diagram appears.
+**Final summary line:** `{ evt: 'import_complete', slug, total_ms, word_count, citations, terms, mermaid_blocks, lang }`. `mermaid_blocks` is computed cheaply by counting ```mermaid fences in the cleaned markdown — directly answers "did diagram repair fire on this article?"
 
-Document this in `docs/IMPORT_WORKFLOW.md`. The sample Jakhbar article is the first candidate.
+**Log-shape contract** documented in `docs/RELIABILITY_AUDIT.md` so future tooling (a dashboard, an alerting rule, the queued `srangam_event_log` table) can rely on the field names.
 
-### Step 7 — Documentation (load-bearing, per house philosophy)
-- `docs/architecture/IMPORT_PIPELINE.md` — replace the procedural step-list with the named-filter diagram; add Steps 14–15 for `stripExportArtifacts` & `normalizeDiagrams`; record the Pandoc/Quarto modelling reference.
-- `docs/RELIABILITY_AUDIT.md` — new invariant: *"Markdown importer MUST run the pure-function pipeline; PUA chars and unfenced mermaid MUST NOT reach `marked.parse`."*
-- `docs/IMPORT_WORKFLOW.md` — re-import recipe + ChatGPT/Deep-Research source caveats.
-- `docs/ARTICLE_DISPLAY_GUIDE.md` — document mermaid block authoring + caption convention.
-- `.lovable/plan.md` — Phase H complete, H.2 (SVG pre-render cache) queued.
+`batch-import-from-github` reuses the same `stage()` helper and gets a per-file `import_stage` + per-batch `batch_complete` summary for free.
+
+**Verification:** I'll fetch logs via `supabase--edge_function_logs` after deploy to confirm the structured lines appear.
+
+## 4. MermaidBlock Render-Latency Instrumentation
+
+**Edit:** `src/components/articles/enhanced/MermaidBlock.tsx`
+
+```ts
+const t0 = performance.now();
+performance.mark(`mermaid:${id}:start`);
+
+import('mermaid').then(({ default: mermaid }) => {
+  const importMs = performance.now() - t0;
+  performance.mark(`mermaid:${id}:imported`);
+  mermaid.initialize({ /* ... */ });
+  return mermaid.render(`mermaid-${id}`, chart).then(({ svg }) => {
+    const totalMs = performance.now() - t0;
+    performance.mark(`mermaid:${id}:rendered`);
+    performance.measure(`mermaid:${id}`, `mermaid:${id}:start`, `mermaid:${id}:rendered`);
+    performance.measure(`mermaid:${id}:import`, `mermaid:${id}:start`, `mermaid:${id}:imported`);
+    performance.measure(`mermaid:${id}:render`, `mermaid:${id}:imported`, `mermaid:${id}:rendered`);
+
+    if (import.meta.env.DEV || (window as any).__SRANGAM_PERF__) {
+      console.info('[mermaid]', {
+        id,
+        importMs: Math.round(importMs),
+        renderMs: Math.round(totalMs - importMs),
+        totalMs: Math.round(totalMs),
+        chartChars: chart.length,
+      });
+    }
+    setSvg(svg);
+  });
+});
+```
+
+Why three marks instead of one: it cleanly separates "the mermaid bundle took N ms to download" (network/cache) from "this specific diagram took M ms to lay out" (chart complexity). RUM tools (Datadog, New Relic, Sentry Performance) all read `performance.measure` natively — no custom integration needed.
+
+`window.__SRANGAM_PERF__` toggle lets ops enable verbose logs in production from DevTools without a redeploy.
+
+## 5. Bundle-Impact Verification (documented, not enforced)
+
+**Edit:** `docs/RELIABILITY_AUDIT.md` — add a "Bundle budget — Phase H" section:
+
+- `mermaid` MUST appear in a code-split chunk (verify with `grep -l mermaid dist/assets/*.js` after `vite build`).
+- The main entry chunk MUST NOT contain `mermaid` (verify with `grep -L mermaid dist/assets/index-*.js`).
+- Articles without diagrams MUST NOT trigger a network request matching `/mermaid/` (verify in DevTools Network panel; documented as a manual review step).
+
+No CI gate added in this phase — the value of the documentation is to make a future regression visible in code review.
 
 ---
 
-## Why Not DOCX (revisited, with references)
-
-| Vector | Markdown (current, fix in place) | DOCX alternative |
-|---|---|---|
-| Diagram fidelity | Mermaid source = text → diff-able, multilingual, theme-aware (Manubot/Quarto model). | Diagrams arrive as embedded PNG/EMF — opaque, locale-bound, not theme-aware. |
-| Pipeline maintenance | One filter chain, pure functions, reusable across importers (Pandoc model). | Adds a second binary parser (mammoth/officegen) with its own escape rules. |
-| Citation extraction | MLA9 regex on text already works. | OOXML walker required; styles vary by source app. |
-| Storage | Diagram source stored as text inside content. | Binary blobs in storage bucket → bandwidth + RLS overhead. |
-
-**Verdict:** Stay markdown-first. Re-evaluate DOCX only if a partner cannot export markdown — and even then, prefer a DOCX→Markdown pre-stage (Pandoc) so the same pipeline applies.
-
----
-
-## Files Changed Summary
+## Files Changed
 
 | File | Change | Risk |
 |---|---|---|
-| `supabase/functions/_shared/markdown-pipeline.ts` | NEW — pure-function pipeline (Pandoc-style filters) | Low |
-| `supabase/functions/markdown-to-article-import/index.ts` | Refactor in place to call `runImportPipeline`; delete inline regex blocks | Low |
-| `src/components/articles/enhanced/MermaidBlock.tsx` | NEW — lazy, theme-aware, CLS-safe (Docusaurus model) | Low |
-| `src/components/articles/enhanced/ProfessionalTextFormatter.tsx` | Add `code` override → delegate `language-mermaid` to `MermaidBlock` | Low |
-| `package.json` | Add `mermaid` (~600 KB, dynamic-imported, code-split) | Low |
-| `docs/architecture/IMPORT_PIPELINE.md` | Re-document as named filter chain | Zero |
-| `docs/RELIABILITY_AUDIT.md` | New importer invariant | Zero |
-| `docs/IMPORT_WORKFLOW.md` | Re-import recipe + ChatGPT-export caveats | Zero |
-| `docs/ARTICLE_DISPLAY_GUIDE.md` | Mermaid authoring guide | Zero |
-| `.lovable/plan.md` | Phase H status | Zero |
+| `supabase/functions/_shared/observability.ts` | NEW — shared `stage()` helper with structured log shape | None |
+| `supabase/functions/_shared/text-sanitizer.ts` | NEW — re-exports `stripExportArtifacts` from `markdown-pipeline.ts` for use by other edge fns | None |
+| `supabase/functions/markdown-to-article-import/pipeline_test.ts` | NEW — 15 Deno tests | None (test-only) |
+| `supabase/functions/markdown-to-article-import/index.ts` | Wrap 6 stages in `stage()`; emit `import_complete` summary; count `mermaid_blocks` | Low |
+| `supabase/functions/batch-import-from-github/index.ts` | Call `runImportPipeline` per file; reuse `stage()` helper | Low |
+| `supabase/functions/generate-article-og/index.ts` | Sanitise title/description before render | Low |
+| `supabase/functions/generate-article-seo/index.ts` | Sanitise generated meta-description | Low |
+| `supabase/functions/generate-sitemap/index.ts` | Sanitise any free-text lifted into the sitemap | Low |
+| `src/lib/textSanitizer.ts` | NEW — `stripExportArtifacts`, `sanitizeSnippet` | Low |
+| `src/components/oceanic/OceanicArticlePage.tsx` | Sanitise `description` used in `<Helmet>` (line 444 area) | Low |
+| `src/hooks/useSearchArticles.ts` | Sanitise excerpt at lines 88, 111 | Low |
+| `src/components/articles/enhanced/MermaidBlock.tsx` | Three `performance.mark`s + two `measure`s + opt-in `[mermaid]` console line; fix `import.meta.env.DEV` | Low |
+| `docs/RELIABILITY_AUDIT.md` | Log-shape contract + bundle-budget invariants | Zero |
+| `.lovable/plan.md` | Phase H.1 status | Zero |
 
 ## What This Does NOT Do
-- Does not change `srangam_articles` schema, RLS, or any DB row.
-- Does not modify routing, auth, or `OceanicRouter` / `ArticlesRouter`.
-- Does not touch `SimplifiedMarkdownRenderer` (legacy non-oceanic; Phase H.2).
-- Does not introduce DOCX parsing or any new binary dependency.
-- Does not bulk-rewrite existing articles — operator re-imports with `overwrite=true`.
 
-## Performance & UX Notes
-- `mermaid` is dynamic-imported inside `MermaidBlock` only — articles without diagrams pay **zero** bundle cost.
-- Importer pipeline is O(n) on text length, runs once per import; negligible vs. existing `marked.parse`.
-- `min-h-[180px]` on the figure container eliminates layout shift while mermaid bootstraps (the CLS issue Docusaurus' prerender plugin exists to solve).
-- `securityLevel: 'strict'` blocks the documented mermaid `foreignObject`/script vector.
+- No DB schema changes (no `srangam_event_log` table created — logs to stdout only; field names match what that table will eventually use).
+- No new dependencies.
+- No vitest setup (frontend sanitiser shares Deno tests by virtue of being pure regex; isolating React testing is deferred).
+- No SSR / mermaid prerender (Phase H.2).
+- No CI gate — bundle budget is documented, not enforced.
 
-## Phase H.2 (Queued, Not in This Phase)
-- Server-side SVG pre-render cached in `srangam_articles.diagram_cache` JSONB (Docusaurus prerender model). Eliminates the mermaid bundle for repeat readers and fixes a11y/SEO at the source.
-- Bring `SimplifiedMarkdownRenderer` to parity (one-line code-renderer override) once we confirm the legacy tenant still has live traffic.
+## Verification Plan (executed in build mode)
 
----
+1. `supabase--test_edge_functions { functions: ["markdown-to-article-import"] }` → 15/15 pass.
+2. Re-import the Jakhbar `.md` with `overwrite=true`.
+3. `supabase--edge_function_logs { function_name: "markdown-to-article-import", search: "import_stage" }` → see 6 stage lines + 1 `import_complete` with `mermaid_blocks ≥ 1`.
+4. Open the article in preview:
+   - Diagram renders via `<MermaidBlock>`, no box-glyphs.
+   - Console (dev) shows `[mermaid]` line.
+   - DevTools Performance panel shows `mermaid:<id>` measure on the timeline.
+5. Search for the article — snippet contains no `cite`/`turn`/PUA residue.
+6. View page source → `<meta name="description">` is clean.
 
-## Phase H Status — IMPLEMENTED
+## Why I'm Now Confident This Is the Enterprise Path
 
-- `supabase/functions/_shared/markdown-pipeline.ts` — new pure-function pipeline (sanitizeEscapes → stripExportArtifacts → normalizeDiagrams).
-- `supabase/functions/markdown-to-article-import/index.ts` — calls `runImportPipeline` before frontmatter extraction.
-- `src/components/articles/enhanced/MermaidBlock.tsx` — lazy, theme-aware, CLS-safe mermaid renderer.
-- `src/components/articles/enhanced/ProfessionalTextFormatter.tsx` — `code` renderer override delegates `language-mermaid` to `<MermaidBlock>`.
-- `mermaid@11.14.0` added; dynamic-imported only on diagram pages.
-- Docs: RELIABILITY_AUDIT, IMPORT_PIPELINE, IMPORT_WORKFLOW updated with the Pandoc/Quarto + Docusaurus modelling references.
-
-Phase H.2 (queued, not done): SVG pre-render cache; SimplifiedMarkdownRenderer parity.
+- **Single source of truth** for the artefact regexes (`_shared/markdown-pipeline.ts` → re-exported to other edge fns; mirrored once on the frontend with a back-reference comment).
+- **Both importers patched** — no hidden sidecar that bypasses cleanup.
+- **Both ingestion AND render layers sanitise** — defence-in-depth, not single-line-of-defence.
+- **Standard observability primitives** (`performance.measure`, OTel-shaped JSON log lines) — interoperable with any future RUM/APM/log-aggregator without rework.
+- **Tests live in the runtime that runs the code** (Deno) — no parallel JS test stack to maintain for one regex file.
+- **Documentation** (log-shape contract, bundle budget, defence-in-depth invariant) so a future engineer cannot accidentally regress without a code-review challenge.

@@ -54,18 +54,47 @@ export function MermaidBlock({ chart, caption, className }: MermaidBlockProps) {
     setError(null);
     setSvg(null);
 
+    // Phase H.1: native PerformanceTimeline marks/measures so DevTools,
+    // Lighthouse and any RUM tool can read render latency without a
+    // custom integration. Three marks separate "bundle download" from
+    // "diagram layout" — actionable when one regresses but not the other.
+    const t0 = performance.now();
+    const markStart = `mermaid:${id}:start`;
+    const markImported = `mermaid:${id}:imported`;
+    const markRendered = `mermaid:${id}:rendered`;
+    try { performance.mark(markStart); } catch { /* perf API absent */ }
+
     import('mermaid')
       .then(({ default: mermaid }) => {
+        const importMs = performance.now() - t0;
+        try { performance.mark(markImported); } catch { /* noop */ }
         mermaid.initialize({
           startOnLoad: false,
           theme: isDark ? 'dark' : 'neutral',
           securityLevel: 'strict',
           fontFamily: 'inherit',
         });
-        return mermaid.render(`mermaid-${id}`, chart);
+        return mermaid.render(`mermaid-${id}`, chart).then((res) => ({ res, importMs }));
       })
-      .then(({ svg }) => {
-        if (!cancelled) setSvg(svg);
+      .then(({ res, importMs }) => {
+        if (cancelled) return;
+        const totalMs = performance.now() - t0;
+        try {
+          performance.mark(markRendered);
+          performance.measure(`mermaid:${id}`, markStart, markRendered);
+          performance.measure(`mermaid:${id}:import`, markStart, markImported);
+          performance.measure(`mermaid:${id}:render`, markImported, markRendered);
+        } catch { /* noop */ }
+        if (import.meta.env.DEV || (window as unknown as { __SRANGAM_PERF__?: boolean }).__SRANGAM_PERF__) {
+          console.info('[mermaid]', {
+            id,
+            importMs: Math.round(importMs),
+            renderMs: Math.round(totalMs - importMs),
+            totalMs: Math.round(totalMs),
+            chartChars: chart.length,
+          });
+        }
+        setSvg(res.svg);
       })
       .catch((err: unknown) => {
         if (!cancelled) {
