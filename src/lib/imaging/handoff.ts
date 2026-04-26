@@ -44,6 +44,20 @@ export interface ImagingTarget {
 }
 
 /**
+ * Strip control characters and any leading path/protocol-like prefix from a
+ * pass-through `ref` value before it lands in the signed `next` URL. The
+ * imaging-side verifier rejects anything resembling an absolute URL, so we
+ * scrub on this side too as defence in depth.
+ */
+function sanitiseRef(ref: string): string {
+  return ref
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u001F\u007F]/g, '')
+    .replace(/^[\s/\\:]+/, '')
+    .slice(0, 120);
+}
+
+/**
  * Build the path + query for a given target on the imaging app, without the
  * handoff token. Used both for signed handoffs (we append `?handoff=`) and
  * for the unauthenticated fallback link.
@@ -51,6 +65,7 @@ export interface ImagingTarget {
 export function buildImagingPath(target: ImagingTarget): string {
   const p = target.params ?? {};
   const qs = new URLSearchParams();
+  const safeRef = p.ref ? sanitiseRef(p.ref) : undefined;
 
   switch (target.kind) {
     case 'viewer': {

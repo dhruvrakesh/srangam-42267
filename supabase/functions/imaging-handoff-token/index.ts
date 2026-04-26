@@ -124,6 +124,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   const userId = claimsData.claims.sub as string;
   const email = (claimsData.claims.email as string | undefined) ?? null;
+  // Best-effort display name — the imaging-side welcome card uses this to
+  // greet returning users by name. Falls back to null cleanly.
+  const claims = claimsData.claims as Record<string, unknown>;
+  const userMeta = (claims.user_metadata ?? {}) as Record<string, unknown>;
+  const name =
+    (claims.name as string | undefined) ??
+    (userMeta.full_name as string | undefined) ??
+    (userMeta.name as string | undefined) ??
+    null;
 
   let body: { target?: unknown } = {};
   try {
@@ -158,6 +167,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     aud: 'maps.sankyo.in',
     sub: userId,
     email,
+    name,
     srangam_role: srangamRole,
     iat: now,
     exp: now + TOKEN_TTL_SECONDS,
