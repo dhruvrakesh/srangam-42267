@@ -12,7 +12,8 @@
  * The page is admin-only (mounted under /admin via ProtectedRoute) and is
  * lazy-loaded, so it adds 0kB to the public bundle.
  */
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';

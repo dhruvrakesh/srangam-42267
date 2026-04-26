@@ -49,6 +49,25 @@ const RULES: ChallengeMatch[] = [
     label: 'Open the moon-phase / monsoon challenge',
     triggers: ['monsoon', 'amavasya', 'new moon'],
   },
+  {
+    // Catch-all for palaeo-astronomy-adjacent civilisational topics where a
+    // precession/nakshatra explainer is the most useful imaging-side hook.
+    // Keep this rule LAST — first-match-wins, more specific rules above.
+    challengeId: 'precession-demo',
+    label: 'Open the precession & nakshatra explainer',
+    triggers: [
+      'harappa',
+      'indus',
+      'sarasvati',
+      'sarasvatī',
+      'ghaggar',
+      'dwaraka',
+      'dvaraka',
+      'dvārakā',
+      'rigveda antiquity',
+      'vedic chronology',
+    ],
+  },
 ];
 
 /**
