@@ -45,12 +45,15 @@ function getEnglishTitle(t: ArticleRow['title']): string {
 export default function GeographyMedia() {
   const { toast } = useToast();
   const qc = useQueryClient();
-  const [filter, setFilter] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const focusSlug = searchParams.get('article');
+  const [filter, setFilter] = useState(focusSlug ?? '');
   const [busyArticleId, setBusyArticleId] = useState<string | null>(null);
   const [bulkBusy, setBulkBusy] = useState<null | 'pins' | 'og_missing' | 'og_force'>(null);
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
   const cancelledJobRef = useRef<Set<string>>(new Set());
   const [logs, setLogs] = useState<string[]>([]);
+  const [flashedRowId, setFlashedRowId] = useState<string | null>(null);
 
   function log(s: string) {
     setLogs((prev) => [`[${new Date().toLocaleTimeString()}] ${s}`, ...prev].slice(0, 200));
