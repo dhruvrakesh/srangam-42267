@@ -981,6 +981,17 @@ Deno.serve(async (req) => {
 
     console.log('Import complete:', response);
 
+    // Phase H.1: structured summary line for greppable observability.
+    logComplete({
+      slug,
+      total_ms: Math.round(performance.now() - importStart),
+      word_count: wordCount,
+      citations: citations.length,
+      terms: culturalTerms.length,
+      mermaid_blocks: mermaidBlocks,
+      lang: targetLang,
+    });
+
     return new Response(
       JSON.stringify(response),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
