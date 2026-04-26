@@ -3,6 +3,7 @@ import { createErrorResponse, classifyError } from '../_shared/error-response.ts
 import { parse as parseYaml } from 'https://deno.land/std@0.208.0/yaml/mod.ts';
 import { Marked } from 'https://esm.sh/marked@11.1.1';
 import { runImportPipeline } from '../_shared/markdown-pipeline.ts';
+import { stage, logComplete, countMermaidBlocks } from '../_shared/observability.ts';
 
 // Configure marked for synchronous parsing
 const marked = new Marked({
@@ -448,15 +449,20 @@ Deno.serve(async (req) => {
     }
 
     console.log('Starting markdown import...');
+    const importStart = performance.now();
 
-    // Phase H: run the named filter pipeline (sanitiseEscapes →
-    // stripExportArtifacts → normalizeDiagrams) BEFORE any parsing so
+    // Phase H: run the named filter pipeline BEFORE any parsing so
     // PUA chars and unfenced mermaid never reach `marked.parse`.
-    const cleanedMarkdown = runImportPipeline(markdownContent);
+    const cleanedMarkdown = await stage('pipeline_clean', { bytes: markdownContent.length }, () =>
+      runImportPipeline(markdownContent),
+    );
+    const mermaidBlocks = countMermaidBlocks(cleanedMarkdown);
 
     // Step 1: Extract frontmatter (or generate fallback)
-    let { frontmatter, content } = extractFrontmatter(cleanedMarkdown);
-    
+    let { frontmatter, content } = await stage('frontmatter', {}, () =>
+      extractFrontmatter(cleanedMarkdown),
+    );
+
     if (!frontmatter) {
       console.log('⚠️ No frontmatter detected, generating fallback from content...');
       frontmatter = generateFallbackFrontmatter(content, githubFilePath);
@@ -465,22 +471,25 @@ Deno.serve(async (req) => {
       console.log('✓ Frontmatter extracted from YAML');
     }
 
-    console.log('Frontmatter:', frontmatter);
-
     // Step 2: Convert markdown to HTML
-    const htmlContent = marked.parse(content) as string;
-    
+    const htmlContent = await stage('marked_parse', { html_in_chars: content.length }, () =>
+      marked.parse(content) as string,
+    );
+
     // Step 3: Calculate metadata
     const wordCount = calculateWordCount(content);
     const readTimeMinutes = Math.ceil(wordCount / 200);
 
-    // Step 4: Extract citations
-    const citations = extractCitations(content);
-    console.log(`Extracted ${citations.length} citations`);
-
-    // Step 5: Extract cultural terms
-    const culturalTerms = extractCulturalTerms(content);
-    console.log(`Extracted ${culturalTerms.length} cultural terms:`, culturalTerms);
+    // Steps 4 & 5: Extract citations + cultural terms (single observability span)
+    const { citations, culturalTerms } = await stage(
+      'metadata_extract',
+      { word_count: wordCount },
+      () => ({
+        citations: extractCitations(content),
+        culturalTerms: extractCulturalTerms(content),
+      }),
+    );
+    console.log(`Extracted ${citations.length} citations, ${culturalTerms.length} cultural terms`);
 
     // Step 6: Prepare article data
     // Determine target language (from parameter, frontmatter, or default to 'en')
