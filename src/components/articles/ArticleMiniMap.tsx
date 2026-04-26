@@ -15,14 +15,14 @@
  */
 import React, { useEffect, useRef, useState } from 'react';
 import type { ArticlePin, PinConfidence } from '@/lib/articlePins';
+import { getTileLayer, type MapStyle } from '@/lib/mapTiles';
 
 interface Props {
   slug: string;
   pins: ArticlePin[];
+  /** Mapbox style id; defaults to clean light backdrop. */
+  mapStyle?: MapStyle;
 }
-
-const TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-const ATTRIBUTION = '&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>';
 
 const CONFIDENCE_COLOR: Record<PinConfidence, string> = {
   A: 'hsl(142 71% 45%)', // green   — direct evidence
@@ -40,7 +40,7 @@ function fitBoundsFromPins(pins: ArticlePin[]) {
   };
 }
 
-export const ArticleMiniMap: React.FC<Props> = ({ slug, pins }) => {
+export const ArticleMiniMap: React.FC<Props> = ({ slug, pins, mapStyle = 'light-v11' }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,7 +69,12 @@ export const ArticleMiniMap: React.FC<Props> = ({ slug, pins }) => {
           scrollWheelZoom: false,
           attributionControl: true,
         });
-        L.tileLayer(TILE_URL, { attribution: ATTRIBUTION, maxZoom: 18 }).addTo(map);
+        const tiles = getTileLayer(mapStyle);
+        L.tileLayer(tiles.url, {
+          attribution: tiles.attribution,
+          maxZoom: tiles.maxZoom,
+          tileSize: tiles.tileSize,
+        }).addTo(map);
 
         for (const p of pins) {
           const colour = p.confidence ? CONFIDENCE_COLOR[p.confidence] : 'hsl(217 91% 60%)';
@@ -116,7 +121,7 @@ export const ArticleMiniMap: React.FC<Props> = ({ slug, pins }) => {
         /* noop */
       }
     };
-  }, [slug, pins]);
+  }, [slug, pins, mapStyle]);
 
   if (pins.length === 0) {
     return (
