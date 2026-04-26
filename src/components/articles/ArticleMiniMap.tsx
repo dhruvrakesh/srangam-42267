@@ -15,14 +15,14 @@
  */
 import React, { useEffect, useRef, useState } from 'react';
 import type { ArticlePin, PinConfidence } from '@/lib/articlePins';
+import { getTileLayer, type MapStyle } from '@/lib/mapTiles';
 
 interface Props {
   slug: string;
   pins: ArticlePin[];
+  /** Mapbox style id; defaults to clean light backdrop. */
+  mapStyle?: MapStyle;
 }
-
-const TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-const ATTRIBUTION = '&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>';
 
 const CONFIDENCE_COLOR: Record<PinConfidence, string> = {
   A: 'hsl(142 71% 45%)', // green   — direct evidence
