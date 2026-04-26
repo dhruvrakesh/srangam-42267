@@ -140,7 +140,7 @@ GUIDELINES:
           position: index + 1,
           item: {
             '@type': 'ScholarlyArticle',
-            headline: title,
+            headline: sanitizeSnippet(title, 200),
             author: { '@type': 'Person', name: article.author },
             datePublished: article.published_date,
             about: article.theme,
@@ -154,7 +154,7 @@ GUIDELINES:
     return new Response(
       JSON.stringify({
         success: true,
-        metaDescription: generatedDescription,
+        metaDescription: sanitizeSnippet(generatedDescription, 320),
         structuredData,
         articleCount: filteredCount,
         generatedAt: new Date().toISOString(),
