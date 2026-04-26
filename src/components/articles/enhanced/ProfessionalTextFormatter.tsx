@@ -11,6 +11,7 @@ import { normalizeLanguageCode, getScriptFont } from '@/lib/languageUtils';
 import { cn } from '@/lib/utils';
 import { enhanceTextWithCulturalTerms } from '@/lib/culturalTermEnhancer';
 import { EvidenceTable, isEvidenceTable } from './EvidenceTable';
+import { MermaidBlock } from './MermaidBlock';
 
 interface ProfessionalTextFormatterProps {
   content: MultilingualContent;
@@ -428,7 +429,22 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
         className="my-12 border-0 h-px bg-gradient-to-r from-transparent via-burgundy/30 to-transparent" 
         {...props}
       />
-    )
+    ),
+
+    // Phase H — render fenced ```mermaid blocks via the lazy MermaidBlock.
+    // Non-mermaid code blocks/inline code fall through to the default <code>.
+    code: ({ inline, className: codeClass, children, ...props }: any) => {
+      const lang = /language-(\w+)/.exec(codeClass || '')?.[1];
+      const codeText = String(children ?? '').replace(/\n$/, '');
+      if (!inline && lang === 'mermaid' && codeText.trim()) {
+        return <MermaidBlock chart={codeText} />;
+      }
+      return (
+        <code className={codeClass} {...props}>
+          {children}
+        </code>
+      );
+    },
   };
 
   // Helper to extract table data from React children for evidence table detection

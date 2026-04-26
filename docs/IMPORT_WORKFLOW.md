@@ -484,3 +484,44 @@ marked a turning point in Mauryan policy.
 - [AI Tag Generation System](./AI_TAG_GENERATION.md)
 - [Current Status](./CURRENT_STATUS.md)
 - [Cross-Reference System](./CROSS_REFERENCE_SYSTEM.md) *(to be created)*
+
+---
+
+## Re-importing Articles Affected by ChatGPT-Export Artefacts (Phase H)
+
+If an article was imported before Phase H and contains box-glyphs (□),
+unrendered `flowchart TD …` text, or visible `citeturn…` tokens, re-run
+the importer with the **same source markdown** and `overwrite=true`. The
+new pipeline will sanitise PUA chars, strip cite placeholders, and
+auto-fence mermaid diagrams.
+
+Procedure:
+
+1. Open Admin → Markdown Import.
+2. Paste or upload the original `.md` source.
+3. Tick **Overwrite existing**.
+4. Submit. The pipeline runs `sanitizeEscapes → stripExportArtifacts →
+   normalizeDiagrams` before `marked.parse`.
+5. Reload the article page; diagrams now render through `<MermaidBlock>`.
+
+### Authoring Mermaid Diagrams
+
+Wrap diagrams in a fenced code block tagged `mermaid`:
+
+    ```mermaid
+    flowchart TD
+      A[Start] --> B[Process]
+      B --> C[End]
+    ```
+
+Supported diagram types: `flowchart`, `graph`, `sequenceDiagram`,
+`classDiagram`, `stateDiagram(-v2)`, `erDiagram`, `journey`, `gantt`,
+`pie`, `mindmap`, `timeline`, `quadrantChart`, `xychart-beta`.
+
+Use `<br/>` (not `\n`) for line breaks inside node labels.
+
+### ChatGPT / Deep-Research Source Caveats
+
+Sources copied directly from ChatGPT may arrive **without** the ` ``` `
+fences around diagrams. The Phase H pipeline auto-fences them, but you
+can also restore fences manually before import for a cleaner audit trail.

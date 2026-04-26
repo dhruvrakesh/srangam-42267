@@ -2,6 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 import { createErrorResponse, classifyError } from '../_shared/error-response.ts';
 import { parse as parseYaml } from 'https://deno.land/std@0.208.0/yaml/mod.ts';
 import { Marked } from 'https://esm.sh/marked@11.1.1';
+import { runImportPipeline } from '../_shared/markdown-pipeline.ts';
 
 // Configure marked for synchronous parsing
 const marked = new Marked({
@@ -448,8 +449,13 @@ Deno.serve(async (req) => {
 
     console.log('Starting markdown import...');
 
+    // Phase H: run the named filter pipeline (sanitiseEscapes →
+    // stripExportArtifacts → normalizeDiagrams) BEFORE any parsing so
+    // PUA chars and unfenced mermaid never reach `marked.parse`.
+    const cleanedMarkdown = runImportPipeline(markdownContent);
+
     // Step 1: Extract frontmatter (or generate fallback)
-    let { frontmatter, content } = extractFrontmatter(markdownContent);
+    let { frontmatter, content } = extractFrontmatter(cleanedMarkdown);
     
     if (!frontmatter) {
       console.log('⚠️ No frontmatter detected, generating fallback from content...');

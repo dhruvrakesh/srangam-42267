@@ -1,159 +1,233 @@
 
-# Phase F: SEO Remediation — ✅ COMPLETE (2026-02-23)
+# Phase H (Revised): Diagram Pipeline Repair — Enterprise-Grade
 
+## Enterprise Patterns We're Modeling On
 
-## Diagnosis from Google Search Console Screenshot
+Before prescribing changes, three production systems solving the same shape of problem — markdown in, scholarly diagram-rich HTML out:
 
-The screenshot shows 5 active indexing problems for `nartiang.org`:
+| Reference system | Pattern we adopt | Where it applies here |
+|---|---|---|
+| **Docusaurus `@docusaurus/theme-mermaid`** ([docs](https://docusaurus.io/docs/markdown-features/diagrams/)) | Remark plugin recognises ` ```mermaid ` fences at parse-time → lazy-loaded React `<Mermaid>` theme component renders client-side. PR #9305 hardened async-render & theme switching. | Our `ProfessionalTextFormatter` already uses `react-markdown` + `rehype-raw`. We add a single `code` component override + a lazy `<MermaidBlock>`. Same shape, smaller surface. |
+| **Quarto / Pandoc filter chain** ([Quarto docs](https://quarto.org/)) | Document processing is an **ordered, named filter pipeline** (pre-render → render → post-render), each step pure & individually testable. Lua filters carry the contract. | Our importer today is a 979-line procedural script. We refactor (in place, no new files) into a named pipeline: `sanitizeEscapes → stripExportArtifacts → normalizeDiagrams → extractFrontmatter → marked.parse → extractMetadata`. Each step a pure function, exported for unit reuse. |
+| **Manubot** (scholarly markdown→HTML/PDF/JATS) | Citation placeholders use a **stable token grammar** (`@doi:…`, `@pmid:…`) resolved at build time, never leaked to readers; export artifacts are *errors*, not features. | Justifies aggressively stripping ChatGPT's `citeturn…` PUA placeholders and re-inserting clean MLA references through our existing bibliography parser, rather than trying to render them. |
+| **GitBook Mermaid integration** | Mermaid block ships **with caption + alt text**, container reserves height to avoid CLS. | Our `<MermaidBlock>` ships with the same affordances (caption slot, `min-h`, ARIA description). |
+| **`docusaurus-prerender-mermaid`** (community) | Pre-render diagrams to SVG at build/import time to fix CLS, SEO, a11y. | Phase H.2 (deferred): cache rendered SVG in `srangam_articles.diagram_cache` JSONB so re-visits skip the mermaid bundle entirely. Not in this phase. |
 
-| GSC Issue | Count | Root Cause in Codebase |
-|-----------|-------|----------------------|
-| Page with redirect | 2 | Duplicate `/oceanic/*` route registered twice (App.tsx lines 212 and 232). Likely also `/articles/somnatha-prabhasa-itihasa` duplicating `/somnatha-prabhasa-itihasa` |
-| Duplicate without user-selected canonical | 1 | ~27 legacy root-level article routes (e.g. `/monsoon-trade-clock`) serve the same content as `/articles/monsoon-trade-clock` via ArticlesRouter. The root-level pages have hardcoded canonical to the root path, while the `/articles/` version has no explicit canonical or a different one |
-| Alternate page with proper canonical tag | 1 | Related to above -- one of the duplicate pair has canonical, the other is the "alternate" |
-| Discovered - currently not indexed | 16 | Combination of: thin pages without unique content signals, duplicate content confusion, and SPA rendering delays |
-| Crawled - currently not indexed | 6 | Google crawled but declined to index -- likely pages with duplicate content or weak signals |
-
-## Root Cause Analysis
-
-### Problem 1: Massive Route Duplication in App.tsx
-
-There are ~27 legacy article routes at root level (`/monsoon-trade-clock`, `/scripts-that-sailed`, etc.) AND the same articles are accessible via `/articles/:slug` through ArticlesRouter. This means every article has at least 2 URLs, and some have 3 (root + `/articles/` + `/oceanic/`).
-
-Additionally:
-- `/oceanic/*` route is registered TWICE (lines 212 and 232)
-- `/articles/somnatha-prabhasa-itihasa` is hardcoded (line 205) AND handled by ArticlesRouter wildcard (line 209)
-- `/articles/ringing-rocks-rhythmic-cosmology` same issue (line 206)
-
-### Problem 2: Canonical Tags on Legacy Pages Point to Wrong Path
-
-`SariraAtmanVedicPreservation.tsx` has canonical `https://srangam.nartiang.org/sarira-atman-vedic-preservation` (root-level), but the same article is also served at `/articles/sarira-atman-vedic-preservation` via ArticlesRouter. Google sees two pages with different canonicals.
-
-### Problem 3: robots.txt Exposes Internal Infrastructure URL
-
-The sitemap URL in `robots.txt` is the raw backend function URL. While functional, it exposes internal infrastructure and is not the canonical domain.
-
-### Problem 4: NotFound Page Returns HTTP 200
-
-The `NotFound.tsx` component renders a 404 page but the SPA always returns HTTP 200 (since all routes are handled client-side). This causes "Soft 404" signals for Google.
-
-## Implementation Plan
-
-### Phase F1: Route Deduplication (High Impact, Low Risk)
-
-**Goal**: Eliminate duplicate URLs so Google sees exactly one URL per page.
-
-**Step 1: Remove duplicate route registrations in App.tsx**
-- Remove the second `/oceanic/*` route (line 232 -- exact duplicate of line 212)
-- Remove hardcoded `/articles/somnatha-prabhasa-itihasa` (line 205) and `/articles/ringing-rocks-rhythmic-cosmology` (line 206) -- already handled by `ArticlesRouter` wildcard
-
-**Step 2: Convert ~27 root-level article routes to redirects**
-
-Replace each root-level article route with a `Navigate` redirect to the canonical `/articles/:slug` path. This is the surgical approach -- no component deletion, just route changes.
-
-For example:
-- `<Route path="/monsoon-trade-clock" element={<MonsoonTradeClock />} />` becomes
-- `<Route path="/monsoon-trade-clock" element={<Navigate to="/articles/monsoon-trade-clock" replace />} />` 
-
-This ensures:
-- Old bookmarks and external links still work (redirect, not 404)
-- Google follows the redirect to the canonical URL
-- Only one URL serves each article's content
-
-The full list of routes to redirect (~27):
-`/monsoon-trade-clock`, `/scripts-that-sailed`, `/scripts-that-sailed-ii`, `/gondwana-to-himalaya`, `/indian-ocean-power-networks`, `/ashoka-kandahar-edicts`, `/reassessing-ashoka-legacy`, `/kutai-yupa-borneo`, `/maritime-memories-south-india`, `/riders-on-monsoon`, `/pepper-and-bullion`, `/earth-sea-sangam`, `/jambudvipa-connected`, `/cosmic-island-sacred-land`, `/stone-purana`, `/janajati-oral-traditions`, `/sacred-tree-harvest-rhythms`, `/stone-song-and-sea`, `/chola-naval-raid`, `/asura-exiles-indo-iranian`, `/sarira-and-atman-vedic-preservation`, `/rishi-genealogies-vedic-tradition`, `/reassessing-rigveda-antiquity`, `/geomythology-land-reclamation`, `/dashanami-ascetics-sacred-geography`, `/continuous-habitation-uttarapatha`, `/somnatha-prabhasa-itihasa`, `/ringing-rocks-rhythmic-cosmology`
-
-Also redirect `/themes/geology-deep-time/stone-purana` and `/themes/ancient-india/pepper-routes` to their canonical `/articles/` paths.
-
-**Step 3: Remove unused lazy imports**
-
-After converting to `Navigate` redirects, the ~27 lazy article page imports (lines 48-77) are no longer needed. Remove them to reduce bundle size. The articles are rendered by `OceanicArticlePage` via `ArticlesRouter`.
-
-### Phase F2: Canonical Tag Consistency
-
-**Step 1: Ensure OceanicArticlePage always emits canonical**
-
-Verify `OceanicArticlePage.tsx` line 137 generates canonical as `https://srangam.nartiang.org/articles/{slug}`. This is already the case (line 21 + line 137). Confirmed correct.
-
-**Step 2: Remove canonical tags from legacy article page files**
-
-Since legacy pages will now redirect (Phase F1), their Helmet canonical tags become irrelevant. But if we keep the files for any reason, their canonical should match `/articles/:slug`.
-
-### Phase F3: Sitemap Alignment
-
-**Step 1: Update generate-sitemap edge function**
-
-- Remove any root-level article paths from static routes (they are now redirects)
-- Ensure only `/articles/:slug` paths appear for articles
-- Add missing routes that ARE in App.tsx but NOT in the sitemap: `/search`, `/sources`, `/sources/trade-docs`, `/oceanic`, `/brand`, `/research-submission`, `/partnership`, `/support-research`
-
-**Step 2: Update robots.txt**
-
-The sitemap URL should remain the edge function URL (this is correct -- Google needs direct XML access, not a React-rendered page). No change needed here.
-
-### Phase F4: Documentation Updates
-
-Update the following files to preserve institutional context:
-
-1. **`docs/SEO_CONFIGURATION.md`**: Add "Route Deduplication" section documenting the redirect strategy and canonical URL policy for articles
-2. **`docs/IMPLEMENTATION_STATUS.md`**: Add Phase F section, update Known Issues to reflect GSC findings
-3. **`.lovable/plan.md`**: Update with Phase F status
-4. **`docs/RELIABILITY_AUDIT.md`**: Add routing invariant: "Every article MUST have exactly one canonical URL at `/articles/:slug`"
-
-## Technical Details
-
-### Files Changed Summary
-
-| # | File | Change Type | Risk |
-|---|------|------------|------|
-| 1 | `src/App.tsx` | EDIT: Remove duplicate routes, convert ~27 root routes to Navigate redirects, remove unused imports | Medium -- core routing file, but changes are mechanical |
-| 2 | `supabase/functions/generate-sitemap/index.ts` | EDIT: Add missing routes, ensure article URLs use `/articles/` prefix | Low |
-| 3 | `docs/SEO_CONFIGURATION.md` | EDIT: Add route deduplication section | Zero |
-| 4 | `docs/IMPLEMENTATION_STATUS.md` | EDIT: Add Phase F, update known issues | Zero |
-| 5 | `.lovable/plan.md` | EDIT: Update with Phase F | Zero |
-| 6 | `docs/RELIABILITY_AUDIT.md` | EDIT: Add routing invariant | Zero |
-
-### What This Does NOT Do
-
-- Does not delete any article page component files (they remain for potential future direct use)
-- Does not change ArticlesRouter, OceanicRouter, or OceanicArticlePage
-- Does not modify any article content or database
-- Does not add SSR or pre-rendering (platform limitation)
-- Does not touch authentication, RLS, or edge functions (except sitemap)
-
-### Risk Assessment
-
-- **Risk**: Medium-Low. The redirects are standard `<Navigate replace />` components. If an article slug doesn't match in ArticlesRouter, OceanicArticlePage will show its error state.
-- **Rollback**: Revert App.tsx to restore root-level routes.
-- **Testing**: After deployment, verify:
-  1. Visiting `/monsoon-trade-clock` redirects to `/articles/monsoon-trade-clock`
-  2. `/articles/monsoon-trade-clock` renders the article correctly
-  3. No 404s for any legacy bookmarked URL
-  4. Sitemap XML includes all published articles under `/articles/` prefix
-  5. Google Search Console re-crawl shows reduced duplication warnings
-
-### Expected GSC Impact
-
-| Issue | Before | After |
-|-------|--------|-------|
-| Page with redirect | 2 (confusing redirects) | ~30 (intentional, clean 301-equivalent redirects -- GSC will show these temporarily then consolidate) |
-| Duplicate without canonical | 1 | 0 (only one URL per article exists) |
-| Alternate page with canonical | 1 | 0 |
-| Discovered not indexed | 16 | Should decrease as duplicate signals are eliminated |
-| Crawled not indexed | 6 | Should decrease over 2-4 weeks |
+These are real, in-production OSS patterns — not speculation.
 
 ---
 
-# Phase G: Broken Article Links Remediation — ✅ COMPLETE (2026-03-04)
+## Verified Root Causes (unchanged from prior plan, recap)
 
-## Problem
-Phase F converted ~27 root-level article routes to redirects targeting `/articles/:slug`, but `resolveOceanicArticle` only knew about 8 oceanic JSON cards and published DB articles. ~22 articles in `MULTILINGUAL_ARTICLES` were unreachable.
+Confirmed by direct inspection of `markdown-to-article-import/index.ts`, `ProfessionalTextFormatter.tsx`, `package.json`, and the uploaded sample:
 
-## Fixes Applied
-1. **articleResolver.ts**: Added `MULTILINGUAL_ARTICLES` as 2nd fallback source (between oceanic cards and DB)
-2. **multilingualArticleUtils.ts**: Fixed slug generation from `/${id}` to `/articles/${id}`
-3. **OceanicArticlePage.tsx**: Fixed canonical URL to include `/articles/` prefix
-4. **useArticles.ts**: Use `slug_alias` over raw slug for DB article URLs
-5. **unifiedArticleUtils.ts**: Added slug-based deduplication in merge (DB preferred over JSON)
-6. **OceanicBharat.tsx**: Use `slug_alias || slug` in links
-7. **RELIABILITY_AUDIT.md**: Added Invariants #7 (resolver chain) and #8 (dedup)
+1. **No mermaid renderer exists** anywhere in the codebase. `react-markdown@10` + `rehype-raw` + `html-react-parser` are wired, but no `code` override for `language-mermaid`. Default fallthrough → `<pre><code>` plaintext.
+2. **ChatGPT/Deep-Research export drops the ` ``` ` fences** around `flowchart`/`graph` blocks. The screenshot's bare `flowchart TD\n  Local["..."] --> ...` confirms it. The importer therefore never even sees a code block.
+3. **OpenAI PUA citation placeholders** (`U+E000…U+F8FF` runs around `citeturnNviewN`) leak through and render as box-glyphs (□). `sanitizeEscapedMarkdown` only handles `\#`, `\*`, etc.
+
+A 4th smaller defect surfaced on inspection: ChatGPT also leaks **`Suggested caption:` instructional lines** and **lone-digit superscripts** (residual footnote anchors after the citation gets stripped).
+
+---
+
+## Architectural Strategy
+
+Two surfaces, both additive, both tenant-neutral:
+
+```text
+   ┌──────────────────────────── Importer (edge fn) ──────────────────────────┐
+   │                                                                          │
+   │   raw .md ──▶  sanitizeEscapes                                           │
+   │            ──▶  stripExportArtifacts   (NEW: PUA, citeturn, captions)    │
+   │            ──▶  normalizeDiagrams      (NEW: auto-fence mermaid)         │
+   │            ──▶  extractFrontmatter                                       │
+   │            ──▶  marked.parse  ──▶ HTML  (mermaid stays as <pre><code>)   │
+   │            ──▶  extractMetadata (citations, terms, evidence)             │
+   │            ──▶  UPSERT srangam_articles                                  │
+   │                                                                          │
+   │   Each step exported as a pure function from a new                       │
+   │   supabase/functions/_shared/markdown-pipeline.ts                        │
+   └──────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+   ┌──────────────────────────── Renderer (frontend) ─────────────────────────┐
+   │                                                                          │
+   │   ProfessionalTextFormatter (oceanic)                                    │
+   │      └─ customRenderers.code → if lang==='mermaid' → <MermaidBlock/>     │
+   │                                                                          │
+   │   <MermaidBlock>: lazy-import 'mermaid', theme-aware, CLS-safe,          │
+   │                   error-boundary fallback to <pre><code>, ARIA label.    │
+   └──────────────────────────────────────────────────────────────────────────┘
+```
+
+**Tenant awareness:** `OceanicArticlePage` (oceanic), `ArticlePage` (generic), and any future tenant route all flow through `srangam_articles.content`. The fix lives at the two narrowest points (one importer fn, one renderer override). No tenant-specific branching, no business-logic relocation.
+
+---
+
+## Implementation Plan
+
+### Step 1 — Extract importer pipeline into named, pure stages
+**Files:** `supabase/functions/_shared/markdown-pipeline.ts` (NEW), `supabase/functions/markdown-to-article-import/index.ts` (refactor in place).
+
+Create `_shared/markdown-pipeline.ts` exporting:
+
+```ts
+export const sanitizeEscapes      = (s: string) => string;     // existing logic, moved
+export const stripExportArtifacts = (s: string) => string;     // NEW
+export const normalizeDiagrams    = (s: string) => string;     // NEW (auto-fence mermaid)
+export const runImportPipeline    = (s: string) => string;     // composes the above in order
+```
+
+Pure functions, no side effects, no Supabase imports — so they can be reused by future importers (`batch-import-from-github`, a hypothetical DOCX bridge) and unit-tested in isolation.
+
+**Risk:** low. Same logic, named differently. Pandoc-style filter contract.
+
+### Step 2 — `stripExportArtifacts` (ChatGPT/Deep-Research cleanup)
+- Drop PUA citation runs: `/[\uE000-\uF8FF]+(?:cite[\uE000-\uF8FF]*turn\d+\w+\d+[\uE000-\uF8FF]*)?/g` → `''`
+- Drop bare `citeturn\d+(view|search|news)\d+` tokens.
+- Convert ChatGPT's `Suggested caption: **X.**` lines under diagrams to `*Caption:* X.` (preserve the meaning, drop the meta-instruction tone).
+- Strip residual lone-digit superscripts that survive citation removal: `/(\s)\d{1,2}\s*$/gm` only when the line was previously adjacent to a removed cite token (track via a sentinel during the same pass).
+- Idempotent — safe to re-run on already-clean text.
+
+### Step 3 — `normalizeDiagrams` (auto-fence + dialect normalisation)
+Detect blocks beginning with one of:
+`flowchart\s+(TD|LR|TB|RL|BT)`, `graph\s+(TD|LR|TB|RL|BT)`, `sequenceDiagram`, `classDiagram`, `stateDiagram(-v2)?`, `erDiagram`, `journey`, `gantt`, `pie`, `mindmap`, `timeline`, `quadrantChart`, `xychart-beta`.
+
+A **block** = trigger line + subsequent lines until any of: blank line followed by a markdown heading (`^#`), end of document, or a new fenced code block opener.
+
+If the block is **not already inside ` ``` ` fences**, wrap it in ` ```mermaid … ``` `. Track previously-seen fence state to keep this idempotent. Also normalise ChatGPT's literal `\n` inside node labels (e.g. `Local["Local node\nJakhbar"]`) — mermaid accepts `<br/>` but not `\n` literals; replace with `<br/>`.
+
+### Step 4 — `<MermaidBlock>` component (frontend)
+**New file:** `src/components/articles/enhanced/MermaidBlock.tsx`
+
+```tsx
+// pseudocode
+const MermaidBlock = ({ chart, caption }) => {
+  const [svg, setSvg] = useState<string|null>(null);
+  const [error, setError] = useState<string|null>(null);
+  const isDark = useDarkMode();             // listens via MutationObserver on <html>
+  const id = useId();
+
+  useEffect(() => {
+    let cancelled = false;
+    import('mermaid').then(({ default: mermaid }) => {
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: isDark ? 'dark' : 'neutral',
+        securityLevel: 'strict',     // sanitises foreignObject / scripts
+        fontFamily: 'inherit',
+      });
+      mermaid.render(`m-${id}`, chart)
+        .then(({ svg }) => !cancelled && setSvg(svg))
+        .catch(e => !cancelled && setError(e.message));
+    });
+    return () => { cancelled = true; };
+  }, [chart, isDark, id]);
+
+  if (error) return <FallbackPre code={chart} note="Diagram preview unavailable" />;
+  return (
+    <figure className="my-6 overflow-x-auto rounded-lg border bg-card p-4 min-h-[180px]"
+            role="img" aria-label={caption || 'Diagram'}>
+      {svg ? <div dangerouslySetInnerHTML={{ __html: svg }} />
+           : <div className="h-[180px] animate-pulse bg-muted/40 rounded" />}
+      {caption && <figcaption className="mt-3 text-sm text-muted-foreground italic">{caption}</figcaption>}
+    </figure>
+  );
+};
+```
+
+Notes derived from Docusaurus PR #9305:
+- `mermaid.render` is async — never call sync `mermaid.init`.
+- `securityLevel: 'strict'` is mandatory for user-derived content.
+- Theme switch via re-render keyed on `isDark`.
+- `min-h-[180px]` reserves space → eliminates the CLS issue called out by `docusaurus-prerender-mermaid`.
+
+### Step 5 — Wire into `ProfessionalTextFormatter`
+Single addition to `customRenderers`:
+
+```ts
+code({ inline, className, children, ...props }) {
+  const lang = /language-(\w+)/.exec(className || '')?.[1];
+  if (!inline && lang === 'mermaid') {
+    return <MermaidBlock chart={String(children).replace(/\n$/, '')} />;
+  }
+  return <code className={className} {...props}>{children}</code>;
+},
+```
+
+`SimplifiedMarkdownRenderer` is left untouched — it serves only legacy non-oceanic routes and uses regex-based markdown (no fenced-code support today). Parity flagged as Phase H.2 if usage warrants.
+
+### Step 6 — Re-import, don't migrate
+Existing rows containing unfenced flowchart text won't auto-heal — and a DB-side regex migration is risky on multilingual JSONB. Operator action:
+
+1. Open the affected article in admin.
+2. Re-upload the same `.md` source through the importer with `overwrite=true`.
+3. Pipeline re-runs cleanly; diagram appears.
+
+Document this in `docs/IMPORT_WORKFLOW.md`. The sample Jakhbar article is the first candidate.
+
+### Step 7 — Documentation (load-bearing, per house philosophy)
+- `docs/architecture/IMPORT_PIPELINE.md` — replace the procedural step-list with the named-filter diagram; add Steps 14–15 for `stripExportArtifacts` & `normalizeDiagrams`; record the Pandoc/Quarto modelling reference.
+- `docs/RELIABILITY_AUDIT.md` — new invariant: *"Markdown importer MUST run the pure-function pipeline; PUA chars and unfenced mermaid MUST NOT reach `marked.parse`."*
+- `docs/IMPORT_WORKFLOW.md` — re-import recipe + ChatGPT/Deep-Research source caveats.
+- `docs/ARTICLE_DISPLAY_GUIDE.md` — document mermaid block authoring + caption convention.
+- `.lovable/plan.md` — Phase H complete, H.2 (SVG pre-render cache) queued.
+
+---
+
+## Why Not DOCX (revisited, with references)
+
+| Vector | Markdown (current, fix in place) | DOCX alternative |
+|---|---|---|
+| Diagram fidelity | Mermaid source = text → diff-able, multilingual, theme-aware (Manubot/Quarto model). | Diagrams arrive as embedded PNG/EMF — opaque, locale-bound, not theme-aware. |
+| Pipeline maintenance | One filter chain, pure functions, reusable across importers (Pandoc model). | Adds a second binary parser (mammoth/officegen) with its own escape rules. |
+| Citation extraction | MLA9 regex on text already works. | OOXML walker required; styles vary by source app. |
+| Storage | Diagram source stored as text inside content. | Binary blobs in storage bucket → bandwidth + RLS overhead. |
+
+**Verdict:** Stay markdown-first. Re-evaluate DOCX only if a partner cannot export markdown — and even then, prefer a DOCX→Markdown pre-stage (Pandoc) so the same pipeline applies.
+
+---
+
+## Files Changed Summary
+
+| File | Change | Risk |
+|---|---|---|
+| `supabase/functions/_shared/markdown-pipeline.ts` | NEW — pure-function pipeline (Pandoc-style filters) | Low |
+| `supabase/functions/markdown-to-article-import/index.ts` | Refactor in place to call `runImportPipeline`; delete inline regex blocks | Low |
+| `src/components/articles/enhanced/MermaidBlock.tsx` | NEW — lazy, theme-aware, CLS-safe (Docusaurus model) | Low |
+| `src/components/articles/enhanced/ProfessionalTextFormatter.tsx` | Add `code` override → delegate `language-mermaid` to `MermaidBlock` | Low |
+| `package.json` | Add `mermaid` (~600 KB, dynamic-imported, code-split) | Low |
+| `docs/architecture/IMPORT_PIPELINE.md` | Re-document as named filter chain | Zero |
+| `docs/RELIABILITY_AUDIT.md` | New importer invariant | Zero |
+| `docs/IMPORT_WORKFLOW.md` | Re-import recipe + ChatGPT-export caveats | Zero |
+| `docs/ARTICLE_DISPLAY_GUIDE.md` | Mermaid authoring guide | Zero |
+| `.lovable/plan.md` | Phase H status | Zero |
+
+## What This Does NOT Do
+- Does not change `srangam_articles` schema, RLS, or any DB row.
+- Does not modify routing, auth, or `OceanicRouter` / `ArticlesRouter`.
+- Does not touch `SimplifiedMarkdownRenderer` (legacy non-oceanic; Phase H.2).
+- Does not introduce DOCX parsing or any new binary dependency.
+- Does not bulk-rewrite existing articles — operator re-imports with `overwrite=true`.
+
+## Performance & UX Notes
+- `mermaid` is dynamic-imported inside `MermaidBlock` only — articles without diagrams pay **zero** bundle cost.
+- Importer pipeline is O(n) on text length, runs once per import; negligible vs. existing `marked.parse`.
+- `min-h-[180px]` on the figure container eliminates layout shift while mermaid bootstraps (the CLS issue Docusaurus' prerender plugin exists to solve).
+- `securityLevel: 'strict'` blocks the documented mermaid `foreignObject`/script vector.
+
+## Phase H.2 (Queued, Not in This Phase)
+- Server-side SVG pre-render cached in `srangam_articles.diagram_cache` JSONB (Docusaurus prerender model). Eliminates the mermaid bundle for repeat readers and fixes a11y/SEO at the source.
+- Bring `SimplifiedMarkdownRenderer` to parity (one-line code-renderer override) once we confirm the legacy tenant still has live traffic.
+
+---
+
+## Phase H Status — IMPLEMENTED
+
+- `supabase/functions/_shared/markdown-pipeline.ts` — new pure-function pipeline (sanitizeEscapes → stripExportArtifacts → normalizeDiagrams).
+- `supabase/functions/markdown-to-article-import/index.ts` — calls `runImportPipeline` before frontmatter extraction.
+- `src/components/articles/enhanced/MermaidBlock.tsx` — lazy, theme-aware, CLS-safe mermaid renderer.
+- `src/components/articles/enhanced/ProfessionalTextFormatter.tsx` — `code` renderer override delegates `language-mermaid` to `<MermaidBlock>`.
+- `mermaid@11.14.0` added; dynamic-imported only on diagram pages.
+- Docs: RELIABILITY_AUDIT, IMPORT_PIPELINE, IMPORT_WORKFLOW updated with the Pandoc/Quarto + Docusaurus modelling references.
+
+Phase H.2 (queued, not done): SVG pre-render cache; SimplifiedMarkdownRenderer parity.

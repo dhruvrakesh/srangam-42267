@@ -242,3 +242,41 @@ flowchart TD
 5. **Conflict Resolution**: UI for resolving duplicate slug conflicts
 6. **Geocoding**: Auto-geocode place names from evidence tables
 7. **Bibliography Export**: BibTeX/RIS export for citation managers
+
+---
+
+## Step 14: Export-Artifact Sanitation (Phase H)
+
+ChatGPT / OpenAI Deep-Research exports leak Private-Use-Area glyphs
+wrapped around `citeturnNviewN` placeholder tokens, plus instructional
+"Suggested caption:" lines and orphan footnote-anchor digits. These render
+as box-glyphs (□) in the UI and pollute search/SEO output.
+
+`stripExportArtifacts` (in `_shared/markdown-pipeline.ts`) removes:
+
+- PUA-wrapped cite runs: `[\uE000-\uF8FF]*cite…turnNviewN[\uE000-\uF8FF]*`
+- Bare `citeturn…` tokens
+- Stray PUA chars (defensive sweep)
+- "Suggested caption:" lines downgraded to `*Caption:* …`
+- Lone-digit superscripts left dangling at end of line
+
+## Step 15: Diagram Normalisation (Phase H)
+
+`normalizeDiagrams` walks the markdown line-by-line, detects unfenced
+diagram blocks (mermaid `flowchart`, `graph`, `sequenceDiagram`, etc.),
+and wraps them in ```mermaid fences so `marked.parse` produces a
+`<pre><code class="language-mermaid">` element that the frontend
+`<MermaidBlock>` can render. Already-fenced blocks are preserved.
+
+Literal `\n` inside mermaid node labels is converted to mermaid's
+accepted `<br/>` break form.
+
+## Pipeline Composition
+
+```
+runImportPipeline(raw)
+  = normalizeDiagrams(stripExportArtifacts(sanitizeEscapes(raw)))
+```
+
+Modelled on Pandoc / Quarto Lua filter chains. Each function is pure,
+idempotent, and reusable across future importers.
