@@ -29,12 +29,21 @@
 
 const DEFAULT_TIMEOUT_MS = 15_000;
 
-// Public list-price snapshot, USD per 1M tokens.
-// Update here only — no caller knows about pricing.
+// Public list-price snapshot, USD per 1M tokens (text models)
+// or USD per generated image (image models). Update here only — no caller
+// knows about pricing.
 const PRICING = {
   'gemini-2.5-flash': { in: 0.075, out: 0.30 },
   'gpt-4o-mini':      { in: 0.15,  out: 0.60 },
 } as const;
+
+// Per-image flat-rate pricing snapshot, USD per image (1024x1024 / std).
+const IMAGE_PRICING: Record<string, number> = {
+  'gemini-2.5-flash-image':         0.039,
+  'gemini-3-pro-image-preview':     0.06,
+  'gpt-image-1':                    0.04,
+  'dall-e-3':                       0.04,
+};
 
 export class NoAIProviderError extends Error {
   constructor() {
