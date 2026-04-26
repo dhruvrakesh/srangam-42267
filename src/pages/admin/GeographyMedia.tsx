@@ -120,6 +120,30 @@ export default function GeographyMedia() {
     return { total, withPins, totalPins, withOg, withoutOg: total - withOg, withoutPins: total - withPins };
   }, [articles]);
 
+  // Phase J.1 — deep-link from per-article ImagingLabLauncher CTA.
+  // Surfaces the requested article at the top of the table, scrolls to it,
+  // and flashes its row briefly so the admin's eye lands on the right line.
+  useEffect(() => {
+    if (!focusSlug || isLoading) return;
+    const target = articles.find(
+      (a) => a.slug === focusSlug || a.slug_alias === focusSlug,
+    );
+    if (!target) return;
+    setFlashedRowId(target.id);
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`gm-row-${target.id}`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    const t = setTimeout(() => {
+      setFlashedRowId(null);
+      const next = new URLSearchParams(searchParams);
+      next.delete('article');
+      setSearchParams(next, { replace: true });
+    }, 2000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusSlug, isLoading, articles.length]);
+
   // ---- pin backfill (single article — unchanged single-shot path) ----
   async function backfillPinsSingle(articleId: string) {
     log(`Backfilling pins for article…`);
