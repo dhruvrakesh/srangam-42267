@@ -218,3 +218,16 @@ Document this in `docs/IMPORT_WORKFLOW.md`. The sample Jakhbar article is the fi
 ## Phase H.2 (Queued, Not in This Phase)
 - Server-side SVG pre-render cached in `srangam_articles.diagram_cache` JSONB (Docusaurus prerender model). Eliminates the mermaid bundle for repeat readers and fixes a11y/SEO at the source.
 - Bring `SimplifiedMarkdownRenderer` to parity (one-line code-renderer override) once we confirm the legacy tenant still has live traffic.
+
+---
+
+## Phase H Status — IMPLEMENTED
+
+- `supabase/functions/_shared/markdown-pipeline.ts` — new pure-function pipeline (sanitizeEscapes → stripExportArtifacts → normalizeDiagrams).
+- `supabase/functions/markdown-to-article-import/index.ts` — calls `runImportPipeline` before frontmatter extraction.
+- `src/components/articles/enhanced/MermaidBlock.tsx` — lazy, theme-aware, CLS-safe mermaid renderer.
+- `src/components/articles/enhanced/ProfessionalTextFormatter.tsx` — `code` renderer override delegates `language-mermaid` to `<MermaidBlock>`.
+- `mermaid@11.14.0` added; dynamic-imported only on diagram pages.
+- Docs: RELIABILITY_AUDIT, IMPORT_PIPELINE, IMPORT_WORKFLOW updated with the Pandoc/Quarto + Docusaurus modelling references.
+
+Phase H.2 (queued, not done): SVG pre-render cache; SimplifiedMarkdownRenderer parity.

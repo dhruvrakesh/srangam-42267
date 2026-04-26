@@ -432,3 +432,26 @@ ALTER TABLE srangam_articles DROP COLUMN IF EXISTS search_vector;
 - [ ] Cross-reference orphan count = 0
 - [ ] Usage count accuracy = 100%
 - [ ] Search covers both JSON and DB articles
+
+---
+
+## Phase H Invariant — Markdown Import Pipeline
+
+**Invariant:** PUA characters (U+E000–U+F8FF), `citeturn…` placeholder
+tokens, and unfenced mermaid blocks **MUST NOT** reach `marked.parse`.
+The importer enforces this by composing a pure-function pipeline
+(`supabase/functions/_shared/markdown-pipeline.ts`):
+
+```
+sanitizeEscapes  →  stripExportArtifacts  →  normalizeDiagrams  →  marked.parse
+```
+
+Modelled on Pandoc / Quarto Lua filter chains. Each step is independently
+testable, idempotent, and side-effect free. Future importers (DOCX bridge,
+GitHub batch import) MUST reuse `runImportPipeline` rather than
+re-implement sanitisation.
+
+**Frontend invariant:** fenced ```mermaid blocks are rendered exclusively
+through `<MermaidBlock>` (`src/components/articles/enhanced/MermaidBlock.tsx`),
+which lazy-imports `mermaid`, runs with `securityLevel: 'strict'`, reserves
+height to eliminate CLS, and re-renders on light/dark theme changes.
