@@ -40,7 +40,7 @@ function fitBoundsFromPins(pins: ArticlePin[]) {
   };
 }
 
-export const ArticleMiniMap: React.FC<Props> = ({ slug, pins }) => {
+export const ArticleMiniMap: React.FC<Props> = ({ slug, pins, mapStyle = 'light-v11' }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,7 +69,12 @@ export const ArticleMiniMap: React.FC<Props> = ({ slug, pins }) => {
           scrollWheelZoom: false,
           attributionControl: true,
         });
-        L.tileLayer(TILE_URL, { attribution: ATTRIBUTION, maxZoom: 18 }).addTo(map);
+        const tiles = getTileLayer(mapStyle);
+        L.tileLayer(tiles.url, {
+          attribution: tiles.attribution,
+          maxZoom: tiles.maxZoom,
+          tileSize: tiles.tileSize,
+        }).addTo(map);
 
         for (const p of pins) {
           const colour = p.confidence ? CONFIDENCE_COLOR[p.confidence] : 'hsl(217 91% 60%)';
