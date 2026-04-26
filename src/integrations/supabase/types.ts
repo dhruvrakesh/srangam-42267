@@ -412,7 +412,9 @@ export type Database = {
           dek: Json | null
           featured: boolean | null
           id: string
+          og_image_status: string
           og_image_url: string | null
+          og_image_version: number
           part_number: number | null
           published_date: string
           read_time_minutes: number | null
@@ -435,7 +437,9 @@ export type Database = {
           dek?: Json | null
           featured?: boolean | null
           id?: string
+          og_image_status?: string
           og_image_url?: string | null
+          og_image_version?: number
           part_number?: number | null
           published_date?: string
           read_time_minutes?: number | null
@@ -458,7 +462,9 @@ export type Database = {
           dek?: Json | null
           featured?: boolean | null
           id?: string
+          og_image_status?: string
           og_image_url?: string | null
+          og_image_version?: number
           part_number?: number | null
           published_date?: string
           read_time_minutes?: number | null
@@ -1052,6 +1058,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      srangam_media_assets: {
+        Row: {
+          article_id: string
+          cost_usd: number | null
+          created_at: string
+          gdrive_file_id: string | null
+          gdrive_share_url: string | null
+          id: string
+          kind: string
+          model: string
+          prompt_hash: string | null
+          provider: string
+          retired_at: string | null
+          status: string
+          version: number
+        }
+        Insert: {
+          article_id: string
+          cost_usd?: number | null
+          created_at?: string
+          gdrive_file_id?: string | null
+          gdrive_share_url?: string | null
+          id?: string
+          kind?: string
+          model: string
+          prompt_hash?: string | null
+          provider: string
+          retired_at?: string | null
+          status?: string
+          version?: number
+        }
+        Update: {
+          article_id?: string
+          cost_usd?: number | null
+          created_at?: string
+          gdrive_file_id?: string | null
+          gdrive_share_url?: string | null
+          id?: string
+          kind?: string
+          model?: string
+          prompt_hash?: string | null
+          provider?: string
+          retired_at?: string | null
+          status?: string
+          version?: number
+        }
+        Relationships: []
       }
       srangam_purana_references: {
         Row: {
