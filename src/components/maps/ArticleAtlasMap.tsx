@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import 'leaflet/dist/leaflet.css';
 import type { GeographyRow } from '@/hooks/useArticleGeography';
+import { getTileLayer, type MapStyle } from '@/lib/mapTiles';
 
 ensureLeafletIcons();
 
@@ -53,6 +54,8 @@ export interface ArticleAtlasMapProps {
   themeFilter?: string | null;
   confidenceFilter?: ('A' | 'B' | 'C')[];
   onPlaceCount?: (count: number) => void;
+  /** Mapbox style id; defaults to outdoors. Falls back to OSM when no token. */
+  mapStyle?: MapStyle;
 }
 
 export const ArticleAtlasMap: React.FC<ArticleAtlasMapProps> = ({
@@ -60,7 +63,9 @@ export const ArticleAtlasMap: React.FC<ArticleAtlasMapProps> = ({
   themeFilter,
   confidenceFilter,
   onPlaceCount,
+  mapStyle = 'outdoors-v12',
 }) => {
+  const tiles = useMemo(() => getTileLayer(mapStyle), [mapStyle]);
   const [openPlaceId, setOpenPlaceId] = useState<string | null>(null);
 
   const clusters = useMemo<PlaceCluster[]>(() => {
@@ -119,8 +124,11 @@ export const ArticleAtlasMap: React.FC<ArticleAtlasMapProps> = ({
         style={{ height: '100%', width: '100%' }}
       >
         <TileLayer
-          attribution='&copy; OpenStreetMap contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          key={tiles.url}
+          attribution={tiles.attribution}
+          url={tiles.url}
+          maxZoom={tiles.maxZoom}
+          tileSize={tiles.tileSize}
         />
         {clusters.map((c) => {
           const radius = Math.min(6 + Math.sqrt(c.articles.length) * 3, 18);
