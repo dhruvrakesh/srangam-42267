@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 import { classifyError } from '../_shared/error-response.ts';
 
+import { requireAdmin } from '../_shared/auth-gate.ts';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -30,7 +31,10 @@ interface BatchImportRequest {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders }
+  const __gate = await requireAdmin(req);
+  if (__gate.error) return __gate.error;
+);
   }
 
   try {

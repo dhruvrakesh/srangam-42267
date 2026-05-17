@@ -5,6 +5,7 @@ import { Marked } from 'https://esm.sh/marked@11.1.1';
 import { runImportPipeline } from '../_shared/markdown-pipeline.ts';
 import { stage, logComplete, countMermaidBlocks } from '../_shared/observability.ts';
 
+import { requireAdmin } from '../_shared/auth-gate.ts';
 // Configure marked for synchronous parsing
 const marked = new Marked({
   async: false,
@@ -429,7 +430,10 @@ function generateShortSlug(title: string): string {
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders }
+  const __gate = await requireAdmin(req);
+  if (__gate.error) return __gate.error;
+);
   }
 
   try {

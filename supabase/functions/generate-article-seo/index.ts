@@ -4,6 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 import { classifyError } from '../_shared/error-response.ts';
 import { sanitizeSnippet } from '../_shared/text-sanitizer.ts';
 
+import { requireAdmin } from '../_shared/auth-gate.ts';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -19,7 +20,10 @@ interface SEORequest {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders }
+  const __gate = await requireAdmin(req);
+  if (__gate.error) return __gate.error;
+);
   }
 
   try {
