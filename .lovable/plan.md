@@ -1,144 +1,146 @@
-## Phase L — TTS Observability & Mobile Overflow Smoke Test
+# Phase M — Security Findings Remediation (Enterprise, Documentation-First)
 
-Surgical, additive, doc-first. Three independent, reversible commits that **heal and instrument** without touching the production TTS pipeline, schema, RLS, auth, routing, or edge functions. Builds directly on Phase K (`.lovable/plan.md`) and the MV-01 invariant in `docs/RELIABILITY_AUDIT.md`.
+Surgical resolution of all six Security panel findings. Aligns with existing memory entries:
+- `mem://security/rls-write-policy-standardization` (admin-write standard)
+- `mem://security/database-function-hardening` (`SET search_path = public` on SECURITY DEFINER)
+- `mem://development/documentation-first-planning` (docs before logic)
 
-### Verified context (codebase as of 2026-05-17)
-
-- TTS state lives in `src/services/narration/NarrationService.ts` + `src/hooks/useNarration.ts`. Cache lookup is `getCachedAudio()`; stream path is `streamAudio()` → `processStreamResponse()` with `decodeBase64InSlices()` (Phase K.1).
-- Article route for Bhṛgu/Aṅgiras is backed by `src/data/articles/rishi-genealogies-vedic-tradition.ts` and rendered through `src/components/articles/ArticlePage.tsx` (no existing `data-testid`).
-- **No Vitest config, no `src/test/setup.ts`, no `src/__tests__` directory exists today.** Adding tests requires bootstrapping the testing harness as a one-time, additive step.
-- MV-01 (mobile viewport, no horizontal overflow at 360 px) is already documented in `docs/RELIABILITY_AUDIT.md`; offenders were wrapped in Phase K.3 (`DeepTimeTimeline`, `GatedLanguageSwitcher`).
+Per the Surgical Healing principle, nothing in this phase touches TTS, article rendering, slug resolution, mobile viewport work, or any Phase A–L invariant.
 
 ---
 
-### Phase L.0 — Documentation first (no code)
+## Inventory & Mapping
 
-Update before any source change, per the documentation-first rule:
-
-- `.lovable/plan.md` — append a **Phase L** section mirroring this plan with dated entries.
-- `docs/TTS_ARCHITECTURE.md` — add an **Observability** section: telemetry record shape, log format, dev-only panel, the 3-second mobile first-play budget, and the four measured phases (`generate`, `decode`, `stream`, `playbackStartGap`).
-- `docs/RELIABILITY_AUDIT.md` — under MV-01, add a **Verification** subsection: jsdom structural regression test + manual cross-browser sweep (iOS Safari 17, Android Chrome 124, Samsung Internet 24) at 360 px.
-
----
-
-### Phase L.1 — Dev-only TTS Cache/Origin Debug Panel
-
-**Goal.** During development, surface whether the most recent play was served from the GDrive cache or freshly streamed, plus provider, voice, content-hash prefix, and slug — focused on validating Bhṛgu/Aṅgiras cache hits on the second play.
-
-**Files**
-- `src/services/narration/telemetry.ts` *(new)* — isolated module so the production bundle can dead-code-eliminate cleanly. Exports `TtsTelemetry` type, `recordTelemetry(record)`, `getLastTelemetry()`, `subscribe(cb): () => void`. Pure in-memory, no storage, no network.
-- `src/services/narration/NarrationService.ts` — emit a telemetry record from `streamAudio()` (origin `stream`) and from `getCachedAudio()` callers (origin `cache`). Telemetry write is best-effort, wrapped in try/catch so it cannot break playback.
-- `src/hooks/useNarration.ts` — at cache-hit branch, finalize a `cache` record before `audio.play()`; at stream success, finalize a `stream` record after first `audio.play()` resolves.
-- `src/components/dev/NarrationDebugPanel.tsx` *(new)* — fixed bottom-left card. Renders only when `import.meta.env.DEV`. Shows origin badge (cache=emerald / stream=amber), provider, voice, `hash.slice(0,8)`, slug, last 4 timings. Subscribes via `telemetry.subscribe`.
-- `src/App.tsx` — mount `{import.meta.env.DEV && <NarrationDebugPanel />}` once at the root. Vite tree-shakes this branch in `build`.
-
-**Type addition (additive to `src/types/narration.ts`)**
-```
-export interface TtsTelemetry {
-  origin: 'cache' | 'stream';
-  provider: NarrationProvider;
-  voice: string;
-  language: string;
-  articleSlug?: string;
-  contentHashPrefix: string; // first 8 chars
-  timings: { generate?: number; decode?: number; stream?: number; playbackStartGap?: number; firstPlayMs?: number };
-  slowest?: 'generate' | 'decode' | 'stream' | 'playbackStartGap';
-  timestamp: number;
-}
-```
+| # | Severity | Finding | Phase | Surface Touched |
+|---|----------|---------|-------|-----------------|
+| 1 | Error | `jspdf ^3.0.2` — 9 advisories (critical/high/medium) | M.1 | `package.json`, `bun.lock` |
+| 2 | Warn  | `user_roles` SELECT policy enables role enumeration | M.2 | 1 migration + `AuthContext.tsx` |
+| 3 | Warn  | Leaked Password Protection (HIBP) disabled | M.3 | Auth config (no code) |
+| 4 | Info  | `spatial_ref_sys` (PostGIS) has no RLS | M.4 | Ignore + memory + docs |
+| 5 | Info  | `jspdf` medium advisories | folds into M.1 | — |
 
 ---
 
-### Phase L.2 — TTS streaming timing instrumentation
+## M.0 — Documentation First (no code)
 
-**Goal.** Make the 3-second mobile first-play budget observable; log the slowest of the four phases per play.
+Before any code/migration, update tracking docs so the baseline is recorded:
+- `.lovable/plan.md` — append Phase M with the four sub-phases and verification matrix.
+- `docs/RELIABILITY_AUDIT.md` — new **§ Phase M — Security Hardening** block + **§ Accepted Risks** for PostGIS.
+- `docs/SOFT_LAUNCH_CHECKLIST.md` — tick "HIBP enabled" once M.3 lands; add "jspdf clean" line.
+- `mem://index.md` — Core: add one-liner "Phase M baseline: jspdf ≥3.0.4, user_roles via has_role RPC, HIBP on, PostGIS accepted."
 
-**Files**
-- `src/services/narration/NarrationService.ts` — record `performance.now()` checkpoints inside `streamAudio()` / `processStreamResponse()`:
-  - `t_request` (POST sent), `t_first_byte` (first NDJSON line parsed), `t_first_audio_chunk` (first decoded slice yielded), `t_stream_done` (last line consumed).
-  - Compute `generate = first_byte - request`, `decode = first_audio_chunk - first_byte`, `stream = stream_done - first_byte`.
-- `src/hooks/useNarration.ts` — capture `t_play_resolved` after the first `audio.play()` promise resolves; compute `playbackStartGap = t_play_resolved - t_first_audio_chunk` and `firstPlayMs = t_play_resolved - t_request_initial`.
-- Single structured log line per play (cap noise to one log):
-  `[TTS perf] origin=stream provider=elevenlabs slug=rishi-genealogies-vedic-tradition hash=ab12cd34 generate=842 decode=118 stream=1840 firstPlay=2104 slowest=stream`
-- `slowest` = `argmax({generate, decode, stream, playbackStartGap})`, persisted in the same telemetry record consumed by L.1.
-
-No new dependencies. All timing fields are optional in the type; missing values (e.g. on cache hit) simply do not log.
+Per project convention, docs are committed in this commit before any executable change.
 
 ---
 
-### Phase L.3 — Responsive overflow smoke test @ 360 px
+## M.1 — Upgrade `jspdf` (resolves findings 1 & 5)
 
-**Goal.** Lock in the MV-01 invariant so a future component with `min-w-[NNNNpx]` cannot silently re-break mobile.
+**Surface**: `src/lib/pdfGenerator.ts` is the **only** consumer. Three call sites, all on the stable surface: `new jsPDF('p','mm','a4')`, `pdf.text(...)`, `pdf.addImage(...)`, `pdf.save(...)`. None of the vulnerable APIs (`AcroForm`, `addJS`, `FreeText`, BMP/GIF decoder, XMP) are used. So the advisories are not exploitable in our call path — but the scanner flags by version string, and we want a clean scan.
 
-**Honest framing.** jsdom does not perform real layout, so a runtime `scrollWidth` assertion is unreliable. The enterprise approach is **two complementary nets**:
+**Action (two-step, conservative)**:
+1. Bump `jspdf` to `^3.0.4` (patch line, same v3 API — zero source diff). Re-scan.
+2. **If** any advisory still flags, bump to `^4.2.1`. The four APIs we use are unchanged across the v3→v4 boundary; `pdfGenerator.ts` requires no edits. Re-scan.
 
-1. **Structural (automated, jsdom).** Walk the rendered article tree (Bhṛgu/Aṅgiras fixture). For every element whose `className` matches `/min-w-\[\d{3,}px\]/`, assert it has an ancestor with `overflow-x-auto` or `overflow-auto`. This catches the exact regression class that produced the Phase K bug.
-2. **Manual cross-browser sweep (documented, not automated).** iOS Safari 17, Android Chrome 124, Samsung Internet 24 at 360×640. Checklist lives under MV-01 in `docs/RELIABILITY_AUDIT.md`. To be run pre-release.
+**Verification**:
+- `bun run build` clean.
+- Manual PDF export from Reading Room → file opens, text + image render correctly.
+- Security scan → jspdf rows disappear.
 
-**Test harness bootstrap (one-time, additive, dev-only)**
-- Add to `package.json` devDependencies: `vitest`, `@testing-library/react`, `@testing-library/jest-dom`, `jsdom`. No runtime deps touched.
-- New files (all isolated to test surface):
-  - `vitest.config.ts`
-  - `src/test/setup.ts` (matchMedia + jest-dom)
-  - `src/__tests__/responsive/article-overflow-360.test.tsx`
-- `tsconfig.app.json` — add `"vitest/globals"` to `compilerOptions.types` (additive only).
-
-**Production code change (single, trivial)**
-- `src/components/articles/ArticlePage.tsx` — add `data-testid="article-body"` to the existing `<article …>` wrapper. Zero visual impact.
+**Rollback**: revert `package.json` + `bun.lock` in one commit.
 
 ---
 
-### Out of scope (explicitly)
+## M.2 — Harden `user_roles` RLS (resolves finding 2)
 
-- No edge-function code or redeploy.
-- No DB migration, no RLS, no auth, no routing.
-- No new runtime dependencies (test deps are dev-only).
-- No change to TTS streaming logic, fallback chain, cache lookup, or hash function.
-- No change to article markdown source.
+**Root cause**: the `"Users can view their own roles"` policy (migration `20251110042316`) lets any authenticated user `SELECT` their own row. Combined with Supabase's user-id UUIDs (which leak through any join surface), it allows a logged-in attacker who has obtained another user_id to probe role status. The enterprise fix is to route **all** client role checks through the existing `public.has_role(_user_id uuid, _role app_role)` SECURITY DEFINER function (verified hardened with `SET search_path = public` per `mem://security/database-function-hardening`) and remove the direct-select policy.
 
-### Verification
-
-1. `bunx vitest run src/__tests__/responsive/article-overflow-360.test.tsx` is green.
-2. Bhṛgu/Aṅgiras article in dev preview → first play shows panel `origin=stream`; second play (within session) shows `origin=cache`.
-3. One `[TTS perf] …` line per play in console, with `slowest=…`.
-4. `npm run build` then `rg NarrationDebugPanel dist/assets` returns nothing (DEV-gated panel tree-shaken).
-5. Manual 360 px sweep on Bhṛgu article in iOS Safari + Android Chrome: no horizontal page scroll; `DeepTimeTimeline` scrolls internally only.
-
-### Rollout
-
-Three independent commits, each reversible by reverting a single feature:
-
-```
-L.0  docs only           (4 files)
-L.1  telemetry + panel   (5 files, 1 new module, 1 new component)
-L.2  timing instrument   (2 files, extends L.1 record)
-L.3  test harness + test (4 new files + 1 testid + tsconfig types)
+**Migration** (single, narrow):
+```sql
+-- Phase M.2: remove direct self-select; force all reads through has_role() RPC.
+-- Admin policy "Admins can view all roles" is preserved for Admin Dashboard UX.
+DROP POLICY IF EXISTS "Users can view their own roles" ON public.user_roles;
 ```
 
-**Estimated diff:** ~220 LOC across 7 source files, 4 new test-harness files, 3 doc updates. Zero schema or edge-function changes. Each phase deployable independently.
+**Client change** (`src/contexts/AuthContext.tsx`, ~6 LOC inside `checkAdminRole`):
+```ts
+const { data, error } = await supabase.rpc('has_role', {
+  _user_id: userId,
+  _role: 'admin',
+});
+if (error) console.warn('has_role RPC failed', error);
+setIsAdmin(data === true);
+```
+Returns only a boolean. No row leak, no enumeration surface, no recursion (SECURITY DEFINER).
+
+**Pre-flight check (must hold before merging)**:
+- `rg "from\\(['\"]user_roles" src/` returns **only** `AuthContext.tsx`. Confirmed during exploration.
+- Admin Dashboard reads come from the preserved `"Admins can view all roles"` policy (unchanged).
+
+**Verification matrix**:
+| Persona | Expected |
+|---------|----------|
+| Anonymous | Unchanged (no access — already true) |
+| Authenticated non-admin | `has_role` → `false`; no admin nav; no console error |
+| Authenticated admin | `has_role` → `true`; full admin sidebar; Admin Dashboard lists all roles |
+
+**Rollback**: re-add the dropped policy via reverse migration; revert AuthContext.
 
 ---
 
-# Phase L — TTS Observability & Mobile Overflow Smoke Test (2026-05-17)
+## M.3 — Enable Leaked Password Protection (resolves finding 3)
 
-## L.0 Documentation (shipped)
-- `docs/TTS_ARCHITECTURE.md` — Observability section: telemetry record, phases, log format, 3s mobile budget.
-- `docs/RELIABILITY_AUDIT.md` — MV-01 verification (source-scan test + manual cross-browser checklist).
+One call to `supabase--configure_auth` with `password_hibp_enabled: true`. Preserve the established posture (per project convention):
+- `disable_signup: false`
+- `external_anonymous_users_enabled: false`
+- `auto_confirm_email: false` (users still verify email before sign-in)
 
-## L.1 Dev-only TTS Cache/Origin Debug Panel (shipped)
-- `src/services/narration/telemetry.ts` (new) — in-memory pub/sub, history of last 4, single structured log per play.
-- `src/components/dev/NarrationDebugPanel.tsx` (new) — fixed bottom-left badge (cache=emerald / stream=amber), tree-shaken in prod.
-- `src/App.tsx` — DEV-gated lazy mount.
+No source code change. The signup form surfaces the new HIBP rejection error from the API automatically.
 
-## L.2 TTS streaming timing instrumentation (shipped)
-- `src/services/narration/NarrationService.ts` — `lastPerf` checkpoints (`tRequest`, `tFirstByte`, `tFirstAudioChunk`, `tStreamDone`).
-- `src/hooks/useNarration.ts` — finalize telemetry on first `audio.play()` resolve; compute `firstPlayMs`, `playbackStartGap`, slowest phase.
+**Verification**: attempt signup with `password123` → API rejects with weak/leaked-password message.
 
-## L.3 Responsive overflow smoke test @ 360 px (shipped)
-- `vitest.config.ts` (new) — minimal node-env config.
-- `src/__tests__/responsive/article-overflow-360.test.ts` (new) — source-scan regression net for `min-w-[≥360px]` without `overflow-x-auto`.
-- `src/components/articles/ArticlePage.tsx` — `data-testid="article-body"` anchor (additive only).
-- DevDeps: `vitest`, `@testing-library/react`, `@testing-library/jest-dom`, `jsdom`, `@vitejs/plugin-react-swc`.
+**Rollback**: re-run `configure_auth` with `password_hibp_enabled: false`.
 
-## Out of scope
-No edge-function redeploy, schema migration, RLS/auth/routing change, runtime-dependency addition, or TTS pipeline logic change.
+---
+
+## M.4 — Acknowledge `spatial_ref_sys` (resolves finding 4)
+
+`spatial_ref_sys` is the **PostGIS extension-owned reference table** containing only standard EPSG entries. We never write to it. Enabling RLS on extension tables is fragile, blocks the extension's own internal use, and is contraindicated by Supabase's own guidance.
+
+**Action** (no migration):
+1. `security--manage_security_finding` → `ignore` with reason: *"PostGIS extension-owned reference table containing only standard EPSG rows; application never writes to it; enabling RLS on extension tables is contraindicated."*
+2. `security--update_memory` → record this as an accepted risk so future scans do not re-flag.
+3. Add to `docs/RELIABILITY_AUDIT.md` § Accepted Risks.
+
+---
+
+## Sequencing (3 reversible commits)
+
+```text
+Commit 1 (M.0 + M.4 docs)  →  docs only, zero runtime impact
+Commit 2 (M.1)             →  jspdf bump
+Commit 3 (M.2)             →  migration + AuthContext RPC switch
+Commit 4 (M.3)             →  configure_auth + ignore PostGIS finding + memory
+```
+
+## Diff Estimate
+
+- ~10 source LOC (`AuthContext.tsx`)
+- 1 migration file (one `DROP POLICY`)
+- 1 dependency bump (`jspdf`)
+- 1 auth-config call (HIBP)
+- 1 ignored finding + 1 memory update
+- 3 doc files updated
+
+## Verification Checklist (run after Commit 4)
+
+- [ ] Security panel: 0 errors, 0 warnings; PostGIS shown as ignored with reason.
+- [ ] `supabase--linter` clean for the touched objects.
+- [ ] Admin sign-in → admin nav visible; admin dashboard lists roles.
+- [ ] Non-admin sign-in → no admin nav, no console errors.
+- [ ] Signup with weak password → rejected by HIBP.
+- [ ] PDF export from Reading Room → renders correctly.
+- [ ] `bun run build` clean; existing Vitest MV-01 suite still green.
+
+## Out of Scope
+
+No edge-function changes, no schema additions, no new tables, no new auth providers, no package additions beyond the jspdf bump, no UI redesign, no changes to TTS, narration, slug resolver, article rendering, or mobile overflow work (Phases A–L preserved).
