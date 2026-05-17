@@ -221,6 +221,15 @@ export class NarrationService {
   ): AsyncGenerator<AudioChunk, void, unknown> {
     this.abortController = new AbortController();
 
+    // Phase L.2 — initialize per-stream perf record. Stamped further
+    // downstream as bytes flow; finalized in useNarration after first
+    // audio.play() resolves.
+    this.lastPerf = {
+      tRequest: performance.now(),
+      provider: config.provider,
+      voice: config.voice,
+    };
+
     // Track current config (may change on fallback)
     let currentConfig = { ...config };
     let endpoint = this.getEndpoint(currentConfig.provider);
