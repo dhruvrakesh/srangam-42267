@@ -74,6 +74,17 @@ export function useNarration(initialConfig?: Partial<NarrationConfig>) {
           throw new Error('Audio playback blocked by browser. Please try clicking play again.');
         }
 
+        // Phase L.1/L.2 — cache-hit telemetry.
+        recordTelemetry({
+          origin: 'cache',
+          provider: cached.metadata.provider,
+          voice: cached.metadata.voice,
+          language: cached.metadata.language,
+          articleSlug: cached.metadata.articleSlug,
+          contentHashPrefix: contentHash.slice(0, 8),
+          timings: { firstPlayMs: performance.now() - tRequestInitial },
+        });
+
         setState(prev => ({
           ...prev,
           status: 'playing',
