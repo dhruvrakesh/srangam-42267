@@ -614,3 +614,28 @@ When adding a new article-body component with a fixed `min-w-[…]`
 element, grep for `min-w-\[` in `src/components/` and re-confirm each
 hit either (a) sits inside `overflow-x-auto` / `ScrollArea`, or (b)
 uses a value `< 640px` and lives in a flex container with `max-w-full`.
+
+---
+
+## 2026-05-17 update — MV-01 Verification (Phase L.3)
+
+Two complementary nets enforce MV-01:
+
+1. **Automated (source scan).** `src/__tests__/responsive/article-overflow-360.test.ts`
+   walks `src/**/*.{ts,tsx}` and fails CI if any file declares a Tailwind
+   `min-w-[Npx]` (N ≥ 360) without an `overflow-x-auto`/`overflow-auto`
+   sibling in the same source file. Catches the exact regression class
+   that broke mobile in Phase K (fixed-width child rendered into article
+   body without a horizontal scroll container).
+
+2. **Manual cross-browser sweep (pre-release).** On the Bhṛgu/Aṅgiras
+   article (`/articles/rishi-genealogies-vedic-tradition`) at 360×640:
+
+   - [ ] iOS Safari 17 — no horizontal page scroll; `DeepTimeTimeline`
+     scrolls internally only.
+   - [ ] Android Chrome 124 — same.
+   - [ ] Samsung Internet 24 — same.
+   - [ ] Language switcher trigger fits within viewport.
+
+`ArticlePage.tsx` exposes a stable `[data-testid="article-body"]` anchor
+for future Playwright instrumentation.
