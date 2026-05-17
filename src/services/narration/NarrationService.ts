@@ -4,6 +4,21 @@ import type { NarrationConfig, NarrationMetadata, CachedAudio, AudioChunk } from
 import { ssmlBuilder } from './SSMLBuilder';
 import { voiceStrategyEngine } from './VoiceStrategyEngine';
 import { supabase } from '@/integrations/supabase/client';
+import type { TtsTimings } from './telemetry';
+
+/**
+ * Phase L.2 — Per-stream timing checkpoints. Populated by streamAudio /
+ * processStreamResponse; consumed by useNarration which finalizes the
+ * telemetry record after the first audio.play() resolves.
+ */
+export interface TtsStreamPerf {
+  tRequest: number;
+  tFirstByte?: number;
+  tFirstAudioChunk?: number;
+  tStreamDone?: number;
+  provider?: string;
+  voice?: string;
+}
 
 /**
  * Phase K.1: Decode a base64 string into Uint8Array slices.
