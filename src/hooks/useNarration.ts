@@ -140,6 +140,32 @@ export function useNarration(initialConfig?: Partial<NarrationConfig>) {
               throw new Error('Audio playback blocked. Please check browser permissions.');
             }
 
+            // Phase L.1/L.2 — stream telemetry, finalized once audio plays.
+            const perf = narrationService.lastPerf;
+            const tPlay = performance.now();
+            const timings: Record<string, number> = { firstPlayMs: tPlay - tRequestInitial };
+            if (perf) {
+              if (perf.tFirstByte !== undefined) timings.generate = perf.tFirstByte - perf.tRequest;
+              if (perf.tFirstByte !== undefined && perf.tFirstAudioChunk !== undefined) {
+                timings.decode = perf.tFirstAudioChunk - perf.tFirstByte;
+              }
+              if (perf.tFirstByte !== undefined && perf.tStreamDone !== undefined) {
+                timings.stream = perf.tStreamDone - perf.tFirstByte;
+              }
+              if (perf.tFirstAudioChunk !== undefined) {
+                timings.playbackStartGap = tPlay - perf.tFirstAudioChunk;
+              }
+            }
+            recordTelemetry({
+              origin: 'stream',
+              provider: (perf?.provider as any) || config.provider,
+              voice: perf?.voice || config.voice,
+              language: config.language,
+              articleSlug,
+              contentHashPrefix: contentHash.slice(0, 8),
+              timings,
+            });
+
             setState(prev => ({
               ...prev,
               status: 'playing',
