@@ -5,6 +5,31 @@ import { ssmlBuilder } from './SSMLBuilder';
 import { voiceStrategyEngine } from './VoiceStrategyEngine';
 import { supabase } from '@/integrations/supabase/client';
 
+/**
+ * Phase K.1: Decode a base64 string into Uint8Array slices.
+ *
+ * Base64 encodes 3 bytes per 4 chars; we walk the input in 64 KB base64
+ * windows (~48 KB decoded) so peak heap stays bounded on mobile WebKit,
+ * which throws RangeError when atob() is asked to decode 10+ MB at once
+ * and then mapped through Uint8Array.from(..., c => c.charCodeAt(0)).
+ */
+function* decodeBase64InSlices(b64: string): Generator<Uint8Array> {
+  if (!b64) return;
+  const WINDOW = 65536; // 64 KB of base64 chars -> ~48 KB decoded
+  for (let i = 0; i < b64.length; i += WINDOW) {
+    // Snap window to multiple of 4 to keep base64 alignment, except the tail.
+    let end = Math.min(i + WINDOW, b64.length);
+    if (end < b64.length) end -= (end - i) % 4;
+    const slice = b64.substring(i, end);
+    if (!slice) continue;
+    const bin = atob(slice);
+    const out = new Uint8Array(bin.length);
+    for (let j = 0; j < bin.length; j++) out[j] = bin.charCodeAt(j);
+    yield out;
+    i = end - WINDOW; // i += WINDOW happens at loop head; compensate
+  }
+}
+
 export class NarrationService {
   private abortController: AbortController | null = null;
 
@@ -77,13 +102,14 @@ export class NarrationService {
           try {
             const data = JSON.parse(buffer);
             if (data.audio) {
-              const audioContent = Uint8Array.from(atob(data.audio), c => c.charCodeAt(0));
-              yield {
-                audioContent,
-                chunkIndex: chunkIndex++,
-                totalChunks: -1,
-                isLast: false,
-              };
+              for (const slice of decodeBase64InSlices(data.audio)) {
+                yield {
+                  audioContent: slice,
+                  chunkIndex: chunkIndex++,
+                  totalChunks: -1,
+                  isLast: false,
+                };
+              }
             }
             if (data.done) {
               yield {
@@ -120,13 +146,19 @@ export class NarrationService {
           }
 
           if (data.audio) {
-            const audioContent = Uint8Array.from(atob(data.audio), c => c.charCodeAt(0));
-            yield {
-              audioContent,
-              chunkIndex: chunkIndex++,
-              totalChunks: -1,
-              isLast: false,
-            };
+            // Phase K.1: Chunked base64 decode (64 KB slices) to prevent
+            // RangeError / GC stalls on mobile WebKit when a single NDJSON
+            // line carries 10-15 MB of base64. Yield each decoded slice
+            // immediately so the consumer can concatenate without us
+            // holding the full decoded buffer in scope.
+            for (const slice of decodeBase64InSlices(data.audio)) {
+              yield {
+                audioContent: slice,
+                chunkIndex: chunkIndex++,
+                totalChunks: -1,
+                isLast: false,
+              };
+            }
           }
 
           if (data.done) {
@@ -359,20 +391,23 @@ export class NarrationService {
   }
 
   /**
-   * Generate content hash for caching
+   * Generate content hash for caching.
+   *
+   * Phase K.1: Upgraded from 32-bit non-crypto hash to SHA-256 (hex) to
+   * eliminate collision risk as the narration cache grows. The edge
+   * functions persist whatever hash the client sends, so this remains a
+   * pure round-trip key.
    */
-  generateContentHash(content: string, config: Partial<NarrationConfig>): string {
+  async generateContentHash(
+    content: string,
+    config: Partial<NarrationConfig>
+  ): Promise<string> {
     const key = `${content}_${config.language}_${config.voice}_${config.speed}`;
-
-    // Simple hash function (for production, use crypto.subtle.digest)
-    let hash = 0;
-    for (let i = 0; i < key.length; i++) {
-      const char = key.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32bit integer
-    }
-
-    return Math.abs(hash).toString(36);
+    const bytes = new TextEncoder().encode(key);
+    const digest = await crypto.subtle.digest('SHA-256', bytes);
+    return Array.from(new Uint8Array(digest))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
   }
 }
 

@@ -44,7 +44,7 @@ export function useNarration(initialConfig?: Partial<NarrationConfig>) {
       setState(prev => ({ ...prev, status: 'loading', isLoading: true, error: undefined }));
 
       // Check cache first
-      const contentHash = narrationService.generateContentHash(content, config);
+      const contentHash = await narrationService.generateContentHash(content, config);
       
       let cached;
       try {
@@ -147,6 +147,10 @@ export function useNarration(initialConfig?: Partial<NarrationConfig>) {
         // Phase 14e: If stream died or failed, auto-retry with OpenAI TTS (more reliable than Google for English)
         if (streamError instanceof Error && 
             (streamError.message === 'STREAM_DIED' || streamError.message.includes('TTS'))) {
+          // Phase K.1: Abort the primary reader before retrying so its
+          // pending base64 buffers are released on mobile.
+          narrationService.cancel();
+
           // Use OpenAI for English, Google for other languages
           const isEnglish = config.language === 'en';
           const fallbackProvider = isEnglish ? 'openai' : 'google-cloud';
@@ -199,8 +203,15 @@ export function useNarration(initialConfig?: Partial<NarrationConfig>) {
           }
         }
         
-        console.error('TTS streaming error:', streamError);
-        throw new Error('Text-to-speech generation failed. Please try again later.');
+        // Phase K.1: Preserve the true error name/message in state for
+        // diagnostics while keeping the user toast generic.
+        console.error('[useNarration] TTS streaming error:', streamError);
+        const detail = streamError instanceof Error
+          ? `${streamError.name}: ${streamError.message}`
+          : String(streamError);
+        const wrapped = new Error('Text-to-speech generation failed. Please try again later.');
+        (wrapped as any).cause = detail;
+        throw wrapped;
       }
     } catch (error) {
       console.error('Playback error:', error);
