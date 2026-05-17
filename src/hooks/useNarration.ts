@@ -41,6 +41,9 @@ export function useNarration(initialConfig?: Partial<NarrationConfig>) {
       return;
     }
 
+    // Phase L.2 — total first-play budget anchor.
+    const tRequestInitial = performance.now();
+
     try {
       setState(prev => ({ ...prev, status: 'loading', isLoading: true, error: undefined }));
 
