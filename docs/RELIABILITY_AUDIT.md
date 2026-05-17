@@ -729,3 +729,39 @@ Re-scan after Phase M surfaced 5 errors + 8 warnings + 1 info that were always p
 13. `realtime.messages` requires `has_role(auth.uid(),'admin')` for SELECT.
 14. Public buckets serve files via CDN URLs; object listing is admin-only.
 15. `SECURITY DEFINER` functions are EXECUTE-restricted by default; only explicitly listed RPCs are callable by `anon`/`authenticated`.
+
+---
+
+## Phase O — Residual Security Triage (2026-05-17)
+
+Re-scan after Phase N flagged 14 items; live `pg_policies` / `pg_proc` inspection found 6 stale, 3 informational/accepted, and 5 real. Real ones fixed in one migration + one follow-up migration + ~6 LOC FE.
+
+### O.1 — `srangam_book_chapters` RLS `OR true` bug
+- Dropped policy with `((status='published') OR true)`; replaced with `status='published'` for `public` and a separate admin-all-rows SELECT.
+
+### O.2 — `srangam_audio_narrations` cost/metadata leak
+- Created `public.srangam_audio_narrations_public` view (`security_invoker=on`) exposing only playback-safe columns plus `content_hash`/`character_count` needed for the in-app cache lookup. `cost_usd`, `provider_metadata`, `google_drive_file_id` excluded.
+- Base table SELECT restricted to `has_role(auth.uid(),'admin') OR auth.role()='service_role'`.
+- `NarrationService.getCachedAudio` now reads from the view.
+
+### O.3 — `srangam-articles` bucket write hardening
+- Replaced authenticated-wide INSERT/UPDATE/DELETE policies on `storage.objects` with admin-only equivalents (`has_role(auth.uid(),'admin')`). Public CDN reads unchanged.
+
+### O.4 — SECURITY DEFINER EXECUTE lockdown (residual)
+- Revoked EXECUTE on `analyze_tag_cooccurrence` and `get_purana_statistics` from `PUBLIC/anon/authenticated`. Service-role tooling unaffected.
+
+### O.5 — Markdown XSS hardening
+- Added `rehype-sanitize@6.0.0`. `ProfessionalTextFormatter` now applies `[rehypeRaw, [rehypeSanitize, articleSanitizeSchema]]` at every render site. Schema permits footnote anchors, `data-*` cultural-term markers, `colSpan/rowSpan`, `dir/lang`, `className`; strips `<script>`, event handlers, `javascript:` URLs.
+
+## Accepted Risks (updated 2026-05-17)
+
+- PostGIS `spatial_ref_sys` — extension-owned, no RLS by design.
+- PostGIS `st_estimatedextent` SECURITY DEFINER — extension-owned, no app-data impact.
+- PostGIS extensions installed in `public` schema — Supabase project default.
+- Function-search-path warnings on built-in PostGIS functions — not user-defined; not actionable.
+
+## Invariants Added (Phase O)
+
+16. Public consumers of audio narration metadata MUST read `srangam_audio_narrations_public`; base table reads require admin or service role.
+17. Article HTML rendering MUST flow through `rehype-sanitize` with the project's allow-list schema.
+18. Book chapters with `status != 'published'` are visible only to admins.
