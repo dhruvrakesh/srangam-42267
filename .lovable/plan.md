@@ -116,3 +116,29 @@ L.3  test harness + test (4 new files + 1 testid + tsconfig types)
 ```
 
 **Estimated diff:** ~220 LOC across 7 source files, 4 new test-harness files, 3 doc updates. Zero schema or edge-function changes. Each phase deployable independently.
+
+---
+
+# Phase L — TTS Observability & Mobile Overflow Smoke Test (2026-05-17)
+
+## L.0 Documentation (shipped)
+- `docs/TTS_ARCHITECTURE.md` — Observability section: telemetry record, phases, log format, 3s mobile budget.
+- `docs/RELIABILITY_AUDIT.md` — MV-01 verification (source-scan test + manual cross-browser checklist).
+
+## L.1 Dev-only TTS Cache/Origin Debug Panel (shipped)
+- `src/services/narration/telemetry.ts` (new) — in-memory pub/sub, history of last 4, single structured log per play.
+- `src/components/dev/NarrationDebugPanel.tsx` (new) — fixed bottom-left badge (cache=emerald / stream=amber), tree-shaken in prod.
+- `src/App.tsx` — DEV-gated lazy mount.
+
+## L.2 TTS streaming timing instrumentation (shipped)
+- `src/services/narration/NarrationService.ts` — `lastPerf` checkpoints (`tRequest`, `tFirstByte`, `tFirstAudioChunk`, `tStreamDone`).
+- `src/hooks/useNarration.ts` — finalize telemetry on first `audio.play()` resolve; compute `firstPlayMs`, `playbackStartGap`, slowest phase.
+
+## L.3 Responsive overflow smoke test @ 360 px (shipped)
+- `vitest.config.ts` (new) — minimal node-env config.
+- `src/__tests__/responsive/article-overflow-360.test.ts` (new) — source-scan regression net for `min-w-[≥360px]` without `overflow-x-auto`.
+- `src/components/articles/ArticlePage.tsx` — `data-testid="article-body"` anchor (additive only).
+- DevDeps: `vitest`, `@testing-library/react`, `@testing-library/jest-dom`, `jsdom`, `@vitejs/plugin-react-swc`.
+
+## Out of scope
+No edge-function redeploy, schema migration, RLS/auth/routing change, runtime-dependency addition, or TTS pipeline logic change.
