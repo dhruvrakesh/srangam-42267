@@ -275,6 +275,7 @@ export function DeepTimeTimeline() {
                   className="absolute inset-0 w-full h-full object-contain opacity-20 pointer-events-none"
                 />
               </div>
+              </div>
             </ScrollArea>
           </div>
 
