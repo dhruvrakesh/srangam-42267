@@ -4,6 +4,21 @@ import type { NarrationConfig, NarrationMetadata, CachedAudio, AudioChunk } from
 import { ssmlBuilder } from './SSMLBuilder';
 import { voiceStrategyEngine } from './VoiceStrategyEngine';
 import { supabase } from '@/integrations/supabase/client';
+import type { TtsTimings } from './telemetry';
+
+/**
+ * Phase L.2 — Per-stream timing checkpoints. Populated by streamAudio /
+ * processStreamResponse; consumed by useNarration which finalizes the
+ * telemetry record after the first audio.play() resolves.
+ */
+export interface TtsStreamPerf {
+  tRequest: number;
+  tFirstByte?: number;
+  tFirstAudioChunk?: number;
+  tStreamDone?: number;
+  provider?: string;
+  voice?: string;
+}
 
 /**
  * Phase K.1: Decode a base64 string into Uint8Array slices.
@@ -32,6 +47,8 @@ function* decodeBase64InSlices(b64: string): Generator<Uint8Array> {
 
 export class NarrationService {
   private abortController: AbortController | null = null;
+  /** Phase L.2 — exposed per-stream timing for useNarration to finalize telemetry. */
+  public lastPerf: TtsStreamPerf | null = null;
 
   /**
    * Get endpoint for TTS provider
@@ -95,6 +112,10 @@ export class NarrationService {
 
     while (true) {
       const { done, value } = await reader.read();
+      // Phase L.2 — first NDJSON byte parsed.
+      if (this.lastPerf && this.lastPerf.tFirstByte === undefined && value && value.length > 0) {
+        this.lastPerf.tFirstByte = performance.now();
+      }
 
       if (done) {
         // Process any remaining buffer on stream end
@@ -152,6 +173,10 @@ export class NarrationService {
             // immediately so the consumer can concatenate without us
             // holding the full decoded buffer in scope.
             for (const slice of decodeBase64InSlices(data.audio)) {
+              // Phase L.2 — first decoded base64 slice yielded.
+              if (this.lastPerf && this.lastPerf.tFirstAudioChunk === undefined) {
+                this.lastPerf.tFirstAudioChunk = performance.now();
+              }
               yield {
                 audioContent: slice,
                 chunkIndex: chunkIndex++,
@@ -162,6 +187,10 @@ export class NarrationService {
           }
 
           if (data.done) {
+            // Phase L.2 — last NDJSON line consumed.
+            if (this.lastPerf && this.lastPerf.tStreamDone === undefined) {
+              this.lastPerf.tStreamDone = performance.now();
+            }
             yield {
               audioContent: new Uint8Array(0),
               chunkIndex: chunkIndex,
@@ -191,6 +220,15 @@ export class NarrationService {
     contentHash?: string
   ): AsyncGenerator<AudioChunk, void, unknown> {
     this.abortController = new AbortController();
+
+    // Phase L.2 — initialize per-stream perf record. Stamped further
+    // downstream as bytes flow; finalized in useNarration after first
+    // audio.play() resolves.
+    this.lastPerf = {
+      tRequest: performance.now(),
+      provider: config.provider,
+      voice: config.voice,
+    };
 
     // Track current config (may change on fallback)
     let currentConfig = { ...config };

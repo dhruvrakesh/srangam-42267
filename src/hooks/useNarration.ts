@@ -2,6 +2,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { NarrationConfig, NarrationState } from '@/types/narration';
 import { narrationService } from '@/services/narration/NarrationService';
+import { recordTelemetry } from '@/services/narration/telemetry';
 
 export function useNarration(initialConfig?: Partial<NarrationConfig>) {
   const [state, setState] = useState<NarrationState>({
@@ -40,6 +41,9 @@ export function useNarration(initialConfig?: Partial<NarrationConfig>) {
       return;
     }
 
+    // Phase L.2 — total first-play budget anchor.
+    const tRequestInitial = performance.now();
+
     try {
       setState(prev => ({ ...prev, status: 'loading', isLoading: true, error: undefined }));
 
@@ -69,6 +73,17 @@ export function useNarration(initialConfig?: Partial<NarrationConfig>) {
           console.error('Cached audio playback failed:', playError);
           throw new Error('Audio playback blocked by browser. Please try clicking play again.');
         }
+
+        // Phase L.1/L.2 — cache-hit telemetry.
+        recordTelemetry({
+          origin: 'cache',
+          provider: cached.metadata.provider,
+          voice: cached.metadata.voice,
+          language: cached.metadata.language,
+          articleSlug: cached.metadata.articleSlug,
+          contentHashPrefix: contentHash.slice(0, 8),
+          timings: { firstPlayMs: performance.now() - tRequestInitial },
+        });
 
         setState(prev => ({
           ...prev,
@@ -124,6 +139,32 @@ export function useNarration(initialConfig?: Partial<NarrationConfig>) {
               console.error('Streamed audio playback failed:', playError);
               throw new Error('Audio playback blocked. Please check browser permissions.');
             }
+
+            // Phase L.1/L.2 — stream telemetry, finalized once audio plays.
+            const perf = narrationService.lastPerf;
+            const tPlay = performance.now();
+            const timings: Record<string, number> = { firstPlayMs: tPlay - tRequestInitial };
+            if (perf) {
+              if (perf.tFirstByte !== undefined) timings.generate = perf.tFirstByte - perf.tRequest;
+              if (perf.tFirstByte !== undefined && perf.tFirstAudioChunk !== undefined) {
+                timings.decode = perf.tFirstAudioChunk - perf.tFirstByte;
+              }
+              if (perf.tFirstByte !== undefined && perf.tStreamDone !== undefined) {
+                timings.stream = perf.tStreamDone - perf.tFirstByte;
+              }
+              if (perf.tFirstAudioChunk !== undefined) {
+                timings.playbackStartGap = tPlay - perf.tFirstAudioChunk;
+              }
+            }
+            recordTelemetry({
+              origin: 'stream',
+              provider: (perf?.provider as any) || config.provider,
+              voice: perf?.voice || config.voice,
+              language: config.language,
+              articleSlug,
+              contentHashPrefix: contentHash.slice(0, 8),
+              timings,
+            });
 
             setState(prev => ({
               ...prev,

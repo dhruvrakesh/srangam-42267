@@ -15,6 +15,12 @@ import { ProtectedRoute } from "@/components/admin/ProtectedRoute";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { SiteSchema } from "@/components/seo/SiteSchema";
 
+// Phase L.1 — dev-only TTS telemetry panel. Vite tree-shakes both the
+// import and the JSX branch from production bundles via import.meta.env.DEV.
+const NarrationDebugPanel = import.meta.env.DEV
+  ? lazy(() => import('@/components/dev/NarrationDebugPanel').then(m => ({ default: m.NarrationDebugPanel })))
+  : null;
+
 // Immediate load for critical pages
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
@@ -118,6 +124,11 @@ const App = () => (
                 <Toaster />
                 <Sonner />
                 <SiteSchema />
+                {import.meta.env.DEV && NarrationDebugPanel && (
+                  <Suspense fallback={null}>
+                    <NarrationDebugPanel />
+                  </Suspense>
+                )}
                 <BrowserRouter>
                   <ScrollToTop />
                   <Layout>

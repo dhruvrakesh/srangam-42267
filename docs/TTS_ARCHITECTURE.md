@@ -420,3 +420,43 @@ mobile WebKit.
 - No edge-function redeploy.
 - No schema change to `srangam_audio_narrations`.
 - No RLS or auth change.
+
+---
+
+## Observability (Phase L — 2026-05-17)
+
+Per-play telemetry is recorded in-memory by `src/services/narration/telemetry.ts`
+and surfaced via a dev-only panel (`src/components/dev/NarrationDebugPanel.tsx`),
+mounted only when `import.meta.env.DEV` (tree-shaken from production).
+
+### Telemetry record
+
+```
+{
+  origin: 'cache' | 'stream',
+  provider, voice, language,
+  articleSlug?, contentHashPrefix,  // first 8 hex chars of SHA-256
+  timings: { generate?, decode?, stream?, playbackStartGap?, firstPlayMs? },
+  slowest?: 'generate' | 'decode' | 'stream' | 'playbackStartGap',
+  timestamp,
+}
+```
+
+### Measured phases (stream origin)
+
+| Phase              | Definition                                              |
+|--------------------|---------------------------------------------------------|
+| `generate`         | POST sent → first NDJSON byte parsed (server-side TTFB) |
+| `decode`           | first NDJSON byte → first base64 slice yielded          |
+| `stream`           | first byte → last NDJSON line consumed                  |
+| `playbackStartGap` | first decoded slice → `audio.play()` resolved           |
+| `firstPlayMs`      | request initiated → `audio.play()` resolved (budget: 3s) |
+
+A single structured line is logged per play:
+
+```
+[TTS perf] origin=stream provider=elevenlabs voice=... slug=rishi-genealogies-vedic-tradition hash=ab12cd34 generate=842 decode=118 stream=1840 playbackStartGap=104 firstPlay=2104 slowest=stream
+```
+
+Telemetry writes are wrapped in try/catch and MUST NOT throw; production
+playback is unaffected if telemetry fails.
