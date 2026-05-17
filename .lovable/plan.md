@@ -1,132 +1,111 @@
-## Where we actually stand (verified, not assumed)
+## Revived context (verified against project docs)
 
-| Surface | State | Evidence |
-|---|---|---|
-| RBAC | Working — `user_roles` table + `useAuth().isAdmin` (`AuthContext.tsx:25-34`) | No change needed |
-| Admin pin authoring | Exists — `GeographyMedia.tsx` calls `backfill-article-pins` edge function per article + bulk | Route already mounted under `/admin` |
-| Imaging handoff | Working end-to-end — HMAC, nonce table, `IMAGING_HANDOFF_SECRET` set both sides | `docs/integrations/IMAGING_HANDOFF.md` already published |
-| react-leaflet@4 fix | Stable, dev-server clean | `tail dev-server.log` shows two clean Vite boots |
-| Per-article map link | **Regressed** — `ImagingLabLauncher` returns `null` when no pins AND no challenge match | `ImagingLabLauncher.tsx:51` |
-| In-page pins card | Correctly gated to `pins.length > 0` | `OceanicArticlePage.tsx:287` |
-| Article-card list links to maps | Never existed historically | grep on `OceanicIndex`/`Articles` returned nothing |
+Read before planning: `docs/TTS_ARCHITECTURE.md`, `docs/TTS_COST_OPTIMIZATION.md`, `docs/CULTURAL_TERMS_AUTO_HIGHLIGHTING.md`, `docs/RELIABILITY_AUDIT.md`, edge functions `tts-stream-{elevenlabs,openai,google}/index.ts`, and `src/services/narration/NarrationService.ts` + `src/hooks/useNarration.ts` + `src/lib/culturalTermEnhancer.ts`.
 
-**RBAC modification: none required.** The plan re-uses `isAdmin` for an admin-only "Add geo-pins" CTA. No new tables, no new policies, no new edge functions.
+Three independent regressions, three independent root causes. All fixes are additive, file-scoped, and reversible per commit. No schema, RLS, edge-function, or routing changes.
 
 ---
 
-## Phase 0 — Documentation first (saves context, zero code)
+### Finding 1 — TTS "Text-to-speech generation failed" on mobile
 
-Before touching code, update three docs so future agents have full context:
-
-1. **`docs/integrations/IMAGING_HANDOFF.md`** — append a "Per-article launcher contract" section: card always renders; admin-only "Create pins" CTA when `pins.length===0`; signed handoff still skipped for anonymous; `ref=srangam:<slug>` always sanitised.
-2. **`docs/architecture/SOURCES_PINS_SYSTEM.md`** — add an "Empty-pin policy" subsection: every published article must either have ≥1 confidence-A/B pin OR be explicitly marked `geo_scope: 'non-spatial'`. Until then, admins see the deeplink CTA.
-3. **`docs/IMPLEMENTATION_STATUS.md`** — record Phase J.1 (universal launcher restoration) under the Imaging Bridge section with a checklist of the four sub-phases below.
-
-No memory files needed — this content belongs in the project docs, not in agent memory.
-
----
-
-## Phase 1 — Restore the universal launcher (the actual regression fix)
-
-Single file: `src/components/imaging/ImagingLabLauncher.tsx`.
-
-- Remove the `if (!firstPin && !challenge) return null;` early return.
-- Always render the card. Title becomes "Maps, Imagery & Astronomy".
-- **Conditional button stack** (top-to-bottom, only what's relevant shows):
-  1. `firstPin` present → "View {pin.name} in satellite imagery" (existing)
-  2. `challenge` present → astronomy-lab CTA (existing)
-  3. Always → "Open in Atlas" → internal `<Link to={'/maps-data?focus=' + encodeURIComponent(slug)}>` (no token, same tab, instant)
-  4. Always → "Open Map Explorer on maps.sankyo.in" → `openImaging({ kind: 'viewer', params: { ref } })` (signed if logged in, public fallback otherwise)
-  5. Always (ghost button) → "Open the Srangam Dating Lab hub" (existing)
-  6. **Admin-only AND `pins.length===0`** → amber-tinted CTA "Add geo-pins for this article" → internal `<Link to={'/admin/geography-media?article=' + slug}>`. Reads `isAdmin` from `useAuth()`. **This is the user's explicit ask.**
-
-No early returns anywhere. Layout stable: card height grows by one button row max for admins on un-pinned articles.
-
-## Phase 2 — Wire the admin deep-link target
-
-Single file: `src/pages/admin/GeographyMedia.tsx`.
-
-Read `?article=<slug>` from `useSearchParams`. If present:
-- Pre-populate the existing `filter` state with the slug so the article surfaces at the top of the table.
-- Auto-scroll to its row and flash a one-second highlight (CSS-only).
-- Do **not** auto-trigger the backfill — admin still clicks the existing "Backfill pins" button. Surgical, no new mutation paths.
-
-Zero schema change. Reuses existing edge function and existing UI. ~25 LOC.
-
-## Phase 3 — Broaden challenge coverage (curated, not bloated)
-
-Single file: `src/lib/imaging/challengeMap.ts`. Add **one** new rule:
-
-```ts
-{
-  challengeId: 'precession-demo',
-  label: 'Open the precession & nakshatra explainer',
-  triggers: ['harappa', 'indus', 'sarasvati', 'ghaggar', 'dwaraka', 'dvaraka', 'rigveda antiquity'],
-}
+`supabase--edge_function_logs tts-stream-elevenlabs` confirms the server side completes successfully:
+```
+INFO Generating ElevenLabs TTS for chunk 1/3 → Encoding 11,326,319 bytes
+INFO Generating ElevenLabs TTS for chunk 2/3 → Encoding 10,762,493 bytes
+INFO Generating ElevenLabs TTS for chunk 3/3 → Encoding  7,701,359 bytes
+INFO ElevenLabs TTS stream completed successfully
 ```
 
-Keep first-match-wins. Total rules ≤ 8. Anything beyond this becomes table-driven in a later phase if traffic justifies it.
+Failure is **client-side** in `NarrationService.processStreamResponse`:
+- Each NDJSON line carries a ~10–15 MB base64 string. `JSON.parse` of one line allocates ~15 MB of JS string; then `Uint8Array.from(atob(data.audio), c => c.charCodeAt(0))` materialises the same data again, triggering `RangeError`/GC stalls on Android Chrome. The reader aborts; `useNarration.ts:202` swallows the underlying error as the generic toast.
+- Correction to earlier note: edge functions persist whatever `contentHash` the client sends (verified in all three `tts-stream-*` functions at lines that write `content_hash: contentHash`). So the hash *does* round-trip — but the current `generateContentHash` is a 32-bit non-crypto hash with measurable collision risk at scale. It is not the cause of today's failure; it is a latent reliability issue worth fixing in the same surgical sweep.
 
-## Phase 4 — Verification (mandatory before declaring done)
+### Finding 2 — Broken inline links inside articles
 
-Read-only QA — no further code edits.
+Screenshot shows `Veda -english- translation/d/doc839029.html">Wisdom Library)` rendered as body text. Root cause is `src/lib/culturalTermEnhancer.ts`: it protects `<table>` and markdown tables only. Anchor tags, markdown `[text](url)`, and bare URLs are not protected, so `Veda` inside `…/sayana-veda-english-translation/…` gets rewritten to `{{cultural:veda}}`, splitting the URL.
 
-1. `/articles/reassessing-rigveda-antiquity` (no pins, now matches `rigveda antiquity`) → 4 buttons + admin sees "Add geo-pins".
-2. `/articles/sacred-tree-harvest-rhythms` (no pins, no challenge) → 3 universal buttons + admin sees "Add geo-pins". **This is the regression test.**
-3. `/articles/asura-exiles-indo-iranian` (pins + Mitanni) → 5 buttons, no admin CTA (pins exist).
-4. Anonymous private window → "Sign-in required" badge, no admin CTA, public-URL fallback works.
-5. Authenticated click on "Map Explorer" → confirm redirect lands on `/auth?handoff=…&next=/viewer?ref=srangam:<slug>`.
-6. Tail `imaging-handoff-token` edge logs → one 200 per click, no 401/500.
-7. Click "Add geo-pins" as admin → lands on `/admin/geography-media?article=<slug>`, row pre-filtered and flash-highlighted.
-8. `bun run build` → confirm `OceanicArticlePage` chunk delta < 2 kB gz.
-9. `/maps-data` smoke test → `ArticleAtlasMap` still mounts (leaflet@4 still healthy).
+### Finding 3 — Desktop layout on mobile
+
+`index.html` viewport meta is correct. The regression is content-driven. The repeat offender is `src/components/geology/DeepTimeTimeline.tsx:212` `min-w-[1200px]`; when this renders inside an article body that is not wrapped in `overflow-x-auto`, the document grows to 1200 CSS px and the browser zooms out. Secondary offenders: `GatedLanguageSwitcher` / `EnhancedLanguageSwitcher` `min-w-[200px]` on <360 px viewports.
 
 ---
 
-## What we explicitly will NOT change
+## Phase 0 — Documentation refresh (no source changes)
 
-- `react-leaflet@^4.2.1` pin (v5 needs React 19).
-- `ArticleMiniMap` lazy-import + Suspense — keeps Leaflet out of the article critical path.
-- `imaging-handoff-token` edge function, `srangam_handoff_nonces` schema, `IMAGING_HANDOFF_SECRET`.
-- `useImagingDeepLink` signed→public fallback chain.
-- `user_roles` schema, `has_role()` SECURITY DEFINER, RLS policies — RBAC is already correct.
-- Article list/card components — never had a maps link; adding one would inflate list-page bundles.
-- `ImagingHubCallout` on `/maps-data` — already working.
+Append a temporally-tagged "2026-05-17 baseline" section to each doc, preserving prior content:
+
+- `docs/TTS_ARCHITECTURE.md` — document: (a) per-line base64 budget for client decode (≤4 MB recommended); (b) chunked `Uint8Array` decoder requirement; (c) `contentHash` round-trip contract (client computes, edge persists verbatim) and the upgrade path to SHA-256.
+- `docs/CULTURAL_TERMS_AUTO_HIGHLIGHTING.md` — add "Anchor/URL safety" invariant: enhancer must skip HTML anchors, markdown link syntax, and bare URLs (in addition to tables).
+- `docs/RELIABILITY_AUDIT.md` — add Mobile-Viewport Invariant MV-01: "No article-body component may emit a `min-w-[≥640px]` element that is not wrapped in `overflow-x-auto`." List the audited offenders.
+- `.lovable/plan.md` — log Phase K (TTS resilience, link-safe enhancer, viewport hardening) with this plan as the source of truth.
+
+## Phase 1 — TTS client robustness (surgical)
+
+File scope: 2 files.
+
+1. `src/services/narration/NarrationService.ts`
+   - In `processStreamResponse`, replace `Uint8Array.from(atob(data.audio), c => c.charCodeAt(0))` with a chunked decoder that walks the base64 string in 64 KB slices, emitting `Uint8Array` segments to the consumer immediately. This caps peak heap per audio line at ~64 KB instead of ~15 MB.
+   - When `data.audio.length > 4_000_000`, decode and yield in slices without ever holding the full decoded buffer in scope — `useNarration` already concatenates downstream.
+   - Upgrade `generateContentHash` to `crypto.subtle.digest('SHA-256', …)` returning a hex string. Make it `async`. Update the single caller in `useNarration.ts`. (This keeps the round-trip contract intact since edge functions persist whatever they receive.)
+
+2. `src/hooks/useNarration.ts`
+   - In the catch path, persist the real error name/message in `state.error` and `console.error` it; keep the user-facing toast generic.
+   - Before the OpenAI fallback runs, call `narrationService.cancel()` to abort the primary reader and free its buffers on mobile.
+   - `await` the new async `generateContentHash`.
+
+3. `src/components/tts/ArticleNarrator.tsx`
+   - **No code change**. Confirmed it already uses `VITE_SUPABASE_PUBLISHABLE_KEY` in the Authorization header. Verification only.
+
+No edge-function redeploy. No DB writes. Expected outcome: audio starts on mid-range Android within 3 s; subsequent plays of the same article hit cache.
+
+## Phase 2 — Link-safe cultural-term highlighter
+
+Single file: `src/lib/culturalTermEnhancer.ts`. Mirror the existing table-protection pattern with three new placeholder passes, applied **before** the cultural-term regex and restored **in reverse order** after:
+
+```text
+1. HTML anchor tags:   /<a\b[^>]*>[\s\S]*?<\/a>/gi   → __A_PLACEHOLDER_n__
+2. Markdown links:     /\[[^\]]+\]\([^)]+\)/g         → __MDLINK_PLACEHOLDER_n__
+3. Bare URLs:          /\bhttps?:\/\/[^\s<>"')]+/gi   → __URL_PLACEHOLDER_n__
+4. (existing) HTML tables, markdown tables
+5. Cultural-term regex pass
+6. Restore #4, #3, #2, #1
+```
+
+Diff is ~30 LOC; risk contained to one pure function. No downstream renderer change.
+
+## Phase 3 — Mobile viewport hardening
+
+1. `src/components/geology/DeepTimeTimeline.tsx:212` — wrap the `min-w-[1200px]` element in `<div className="overflow-x-auto">…</div>`.
+2. `src/components/oceanic/CorrelationTable.tsx` — verify the wrapping element uses `overflow-x-auto`; add only if missing. No table-cell changes.
+3. `src/components/i18n/GatedLanguageSwitcher.tsx` and `src/components/i18n/EnhancedLanguageSwitcher.tsx` — add `max-w-full` so the trigger button can shrink below its `min-w-[200px]` on <360 px viewports.
+4. `src/components/narration/NarrationControls.tsx:130` `min-w-[120px]` — leave as-is (already inside flex; safe).
+5. Record the audited list in `docs/RELIABILITY_AUDIT.md` under MV-01 for future regressions.
+
+No global CSS, no `index.html`, no Tailwind config change.
 
 ---
 
-## Tenant & security invariants (preserved)
+## Out of scope (explicit)
 
-- Cross-tenant boundary unchanged: signed handoff still carries only `{ sub, email, name, srangam_role, iat, exp, nonce, target }`. Admin-approval gate on the imaging side stays manual.
-- `ref=srangam:<slug>` remains the only Srangam identifier crossing the wire; `sanitiseRef()` continues to strip control chars + leading path/protocol prefixes.
-- The new admin CTA links **internally** to `/admin/geography-media` — never crosses the imaging boundary, so no token, no leak.
-- Admin gate is enforced two ways: (a) UI hides the button when `!isAdmin`; (b) `/admin/*` routes are already wrapped by `ProtectedRoute` + RLS on `srangam_article_pins` writes (the existing `backfill-article-pins` function uses service-role with admin verification).
+- No edge-function rewrites or redeploys.
+- No DB migrations (`srangam_audio_narrations` untouched).
+- No RLS, auth, or routing changes.
+- No new dependencies (`crypto.subtle` is built-in).
+- No edits to article markdown source files.
+- No design-token or theme changes.
 
----
+## Verification checklist
 
-## Performance & UX impact (measured, not guessed)
+- Mobile Chrome (≤390 px): open the Bhṛgu/Aṅgiras article, tap Play → audio starts within ~3 s, no error toast; replay → console `Cache HIT` for the SHA-256 hash.
+- Same article: the `(Wisdom Library)` link renders as one underlined hyperlink; "Veda" and "Agni" still highlight elsewhere in body prose.
+- 360 px viewport: no horizontal scroll on article pages; `DeepTimeTimeline` scrolls internally only.
+- TypeScript build clean; no lint regressions; existing narration tests still green.
 
-- **Bundle**: ~50 LOC added, zero new deps. Expected delta: < 2 kB gz on `OceanicArticlePage` chunk and < 1 kB gz on the admin chunk. Verified in Phase 4 step 8.
-- **TTI**: unchanged — launcher card already renders in the existing critical path; we're toggling a few extra buttons, not loading new code.
-- **CLS**: zero — card height now stable across all article variants (no longer disappears).
-- **A11y**: every new button gets a `<Link>` or `<Button>` with explicit text, `aria-label` where icon-only, and the admin CTA gets `role="link"` semantics inherited from `<Link>`.
+## Rollout
 
----
+Three independent commits (≈120 LOC across 5 source files plus 3 docs), each reversible by reverting a single file:
+1. Phase 0 docs.
+2. Phase 1 TTS resilience.
+3. Phase 2 + Phase 3 (link-safe enhancer and viewport wrappers — both pure UI/text-pipeline, ship together).
 
-## Sequencing & rollback
-
-| Step | File(s) | Risk | Rollback |
-|---|---|---|---|
-| 0 | 3 markdown docs | None | `git revert` |
-| 1 | `ImagingLabLauncher.tsx` | Low — pure render change | revert one file |
-| 2 | `GeographyMedia.tsx` | Low — read-only `useSearchParams` | revert one file |
-| 3 | `challengeMap.ts` | Trivial — adds one rule | revert one file |
-| 4 | none (QA) | None | n/a |
-
-Each phase is independently revertible. No migrations, no edge function deploys, no secret rotations, no RBAC changes.
-
----
-
-## Estimated diff
-
-~80 LOC across **3 code files + 3 docs**. Zero new dependencies. Zero schema changes. Zero edge-function changes. Zero RBAC changes.
+After ship, re-pull `supabase--edge_function_logs tts-stream-elevenlabs` to confirm cache hits replace re-generations on repeat plays.
