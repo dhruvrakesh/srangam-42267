@@ -141,3 +141,14 @@ All four DB items ship as `supabase/migrations/<ts>_phase_o_residual_security.sq
 ## Out of Scope
 
 No new edge functions, no new auth providers, no schema additions, no changes to TTS provider fallback, slug resolver, multilingual merging, OG generation, or article rendering pipeline beyond the rehype-sanitize plugin.
+
+---
+
+## Phase O — Implementation Complete (2026-05-17)
+
+- Migration 1: O.1 + O.2 (view+lock) + O.3 + O.4 applied.
+- Migration 2: Public narration view recreated with `content_hash`, `character_count` appended so the in-app cache lookup keeps working without exposing `cost_usd` / `provider_metadata`.
+- FE: `NarrationService.getCachedAudio` now reads `srangam_audio_narrations_public`.
+- FE: `ProfessionalTextFormatter` plugins are `[rehypeRaw, [rehypeSanitize, articleSanitizeSchema]]` across all three render sites (article body, callouts, generic markdown). Schema permits footnote `id/href`, cultural-term `data-*`, table `colSpan/rowSpan`, `dir/lang`. Scripts and event handlers stripped.
+- Dep: `rehype-sanitize@6.0.0` added.
+- Remaining Supabase linter noise (PostGIS `spatial_ref_sys` RLS, PostGIS extension-in-public, PostGIS `st_estimatedextent` SECURITY DEFINER, three function-search-path warnings on built-in PostGIS functions) is accepted risk — documented in security memory.
