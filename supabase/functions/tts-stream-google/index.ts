@@ -213,11 +213,10 @@ serve(async (req) => {
   console.log('[tts-stream-google] Request received');
   
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders }
+    return new Response(null, { headers: corsHeaders });
+  }
   const __gate = await requireUser(req);
   if (__gate.error) return __gate.error;
-);
-  }
 
   try {
     const body = await req.json();

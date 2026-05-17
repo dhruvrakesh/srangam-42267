@@ -190,11 +190,10 @@ async function uploadAudioToGDrive(
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders }
+    return new Response(null, { headers: corsHeaders });
+  }
   const __gate = await requireUser(req);
   if (__gate.error) return __gate.error;
-);
-  }
 
   try {
     const { text, voice = 'george', speed = 1.0, articleSlug, contentHash } = await req.json();
