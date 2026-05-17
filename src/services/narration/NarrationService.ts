@@ -47,6 +47,8 @@ function* decodeBase64InSlices(b64: string): Generator<Uint8Array> {
 
 export class NarrationService {
   private abortController: AbortController | null = null;
+  /** Phase L.2 — exposed per-stream timing for useNarration to finalize telemetry. */
+  public lastPerf: TtsStreamPerf | null = null;
 
   /**
    * Get endpoint for TTS provider
