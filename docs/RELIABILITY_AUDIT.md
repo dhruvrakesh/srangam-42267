@@ -585,3 +585,32 @@ plus a per-article summary:
 
 Renaming `evt`, `stage`, or top-level field names is a breaking change
 for cost dashboards and log queries.
+
+---
+
+## 2026-05-17 baseline — Phase K.3 (Mobile-viewport invariant MV-01)
+
+**MV-01 — Mobile-viewport invariant.** No article-body component may
+emit a `min-w-[≥640px]` element that is not wrapped in an
+`overflow-x-auto` container (or a Radix `ScrollArea` with a horizontal
+scrollbar). Violations cause the document body to grow to the inner
+min-width on mobile, forcing the browser to zoom out and surface the
+desktop layout — which the user perceives as "site opened in desktop
+mode on phone."
+
+### Audited offenders (2026-05-17)
+
+| File                                                         | Element        | Status        |
+| ------------------------------------------------------------ | -------------- | ------------- |
+| `src/components/geology/DeepTimeTimeline.tsx`                | `min-w-[1200px]` | Wrapped in `overflow-x-auto` (Phase K.3) |
+| `src/components/oceanic/CorrelationTable.tsx`                | `min-w-[300px]` etc. | Already wrapped at line 111 |
+| `src/components/i18n/GatedLanguageSwitcher.tsx`              | `min-w-[200px]`  | `max-w-full` added (Phase K.3) |
+| `src/components/i18n/EnhancedLanguageSwitcher.tsx`           | `min-w-[120px]`  | Safe (<640 px), no change |
+| `src/components/narration/NarrationControls.tsx`             | `min-w-[120px]`  | Safe inside flex, no change |
+
+### Regression check
+
+When adding a new article-body component with a fixed `min-w-[…]`
+element, grep for `min-w-\[` in `src/components/` and re-confirm each
+hit either (a) sits inside `overflow-x-auto` / `ScrollArea`, or (b)
+uses a value `< 640px` and lives in a flex container with `max-w-full`.

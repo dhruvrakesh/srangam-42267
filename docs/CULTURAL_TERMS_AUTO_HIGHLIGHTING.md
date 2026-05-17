@@ -395,3 +395,33 @@ None identified. System is clean, performant, and well-architected.
 **Design:** Polished ✅  
 **Documentation:** Complete ✅  
 **Testing:** Verified ✅
+
+---
+
+## 2026-05-17 baseline — Phase K.2 (Anchor/URL safety)
+
+### Known defect (now mitigated)
+
+The enhancer matched cultural terms inside URL paths. Example: a link to
+`https://…/sayana-veda-english-translation/d/doc839029.html` contained
+the word `veda`, which the regex (with word boundaries that treat `-`
+as a boundary) rewrote to `{{cultural:veda}}`. This split the href and
+the markdown renderer surfaced raw attribute fragments such as
+`Veda -english- translation/d/doc839029.html">Wisdom Library)` as body
+text.
+
+### Invariant (must hold going forward)
+
+`enhanceTextWithCulturalTerms` MUST skip the following constructs before
+running the cultural-term regex, and restore them in reverse order
+afterwards:
+
+1. HTML anchor tags         — `/<a\b[^>]*>[\s\S]*?<\/a>/gi`
+2. Markdown link syntax     — `/\[[^\]]+\]\([^)]+\)/g`
+3. Bare URLs                — `/\bhttps?:\/\/[^\s<>"')]+/gi`
+4. HTML tables              — `/<table[\s\S]*?<\/table>/gi`     (existing)
+5. Markdown tables          — `/(\|[^\n]+\|\n)+/g`              (existing)
+
+Adding a new protected construct? Append it to both the protect and
+restore arrays, and restore in LIFO order so nested placeholders unwind
+correctly.
