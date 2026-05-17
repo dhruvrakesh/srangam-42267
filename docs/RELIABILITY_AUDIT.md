@@ -639,3 +639,42 @@ Two complementary nets enforce MV-01:
 
 `ArticlePage.tsx` exposes a stable `[data-testid="article-body"]` anchor
 for future Playwright instrumentation.
+
+---
+
+## 2026-05-17 — Phase M Security Hardening
+
+Enterprise resolution of all six Security panel findings. Aligned with `mem://security/rls-write-policy-standardization` and `mem://security/database-function-hardening`.
+
+### M.1 — jspdf upgraded
+- `^3.0.2` → `^3.0.4`. Only consumer is `src/lib/pdfGenerator.ts`, which uses `new jsPDF`, `text`, `addImage`, `save` — none of the vulnerable surfaces (`AcroForm`, `addJS`, `FreeText`, BMP/GIF, XMP).
+- If supply-chain scanner re-flags v3, upgrade to `^4.2.1` (API unchanged for our surface).
+
+### M.2 — user_roles role-enumeration surface closed
+- Migration dropped `"Users can view their own roles"` SELECT policy on `public.user_roles`.
+- `src/contexts/AuthContext.tsx#checkAdminRole` now calls `supabase.rpc('has_role', { _user_id, _role: 'admin' })`. Returns only a boolean. SECURITY DEFINER with `SET search_path = public`.
+- `"Admins can view all roles"` policy preserved (Admin Dashboard listing of all roles).
+- Only client reader of `user_roles` was `AuthContext.tsx`; switching to RPC removes the only direct-read code path.
+
+### M.3 — HIBP leaked-password protection enabled
+- `password_hibp_enabled: true`. Other auth posture preserved: signups open, no anonymous, email verification still required.
+- Verify: signup with `password123` → API rejection.
+
+### M.4 — Accepted Risks
+
+| Item | Reason |
+| ---- | ------ |
+| `public.spatial_ref_sys` RLS disabled | PostGIS extension-owned reference table; only standard EPSG entries; app never writes. RLS on extension tables is contraindicated by Supabase and breaks PostGIS internals. |
+
+Recorded in security memory; do not re-flag.
+
+### Verification matrix
+
+- [x] Migration applied — `DROP POLICY ... user_roles` succeeded.
+- [x] HIBP enabled via `configure_auth`.
+- [x] `jspdf` 3.0.4 installed, dev server restarted clean.
+- [x] `AuthContext.checkAdminRole` routed through `has_role` RPC.
+- [ ] Manual: admin sign-in → admin sidebar visible.
+- [ ] Manual: non-admin sign-in → no admin nav, no console errors.
+- [ ] Manual: PDF export from Reading Room renders.
+- [ ] Manual: signup with weak password rejected.
