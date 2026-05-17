@@ -1399,6 +1399,8 @@ export type Database = {
         Row: {
           article_slug: string | null
           audio_format: string | null
+          character_count: number | null
+          content_hash: string | null
           created_at: string | null
           duration_seconds: number | null
           file_size_bytes: number | null
@@ -1413,6 +1415,8 @@ export type Database = {
         Insert: {
           article_slug?: string | null
           audio_format?: string | null
+          character_count?: number | null
+          content_hash?: string | null
           created_at?: string | null
           duration_seconds?: number | null
           file_size_bytes?: number | null
@@ -1427,6 +1431,8 @@ export type Database = {
         Update: {
           article_slug?: string | null
           audio_format?: string | null
+          character_count?: number | null
+          content_hash?: string | null
           created_at?: string | null
           duration_seconds?: number | null
           file_size_bytes?: number | null
