@@ -376,3 +376,47 @@ const MAX_CHARS_PER_DAY = 100000; // ~1 article/user/day
 - [Google Cloud TTS Documentation](https://cloud.google.com/text-to-speech)
 - [OpenAI TTS API](https://platform.openai.com/docs/guides/text-to-speech)
 - [SSML Specification](https://www.w3.org/TR/speech-synthesis/)
+
+---
+
+## 2026-05-17 baseline — Phase K.1 (mobile decode resilience)
+
+### Known defect (now mitigated)
+
+On mid-range Android Chrome, the ElevenLabs path was failing with the
+generic toast "Text-to-speech generation failed. Please try again later."
+Edge-function logs showed the server completed successfully, emitting
+three NDJSON lines of 7.7 / 10.7 / 11.3 MB base64 each. The client
+decoder in `NarrationService.processStreamResponse` was:
+
+```ts
+const audioContent = Uint8Array.from(atob(data.audio), c => c.charCodeAt(0));
+```
+
+This allocates ~15 MB twice per line (once for `atob`, once for the
+`Uint8Array.from` walk) and throws `RangeError` / aborts the reader on
+mobile WebKit.
+
+### Contract (must hold going forward)
+
+- **Per-line base64 budget for client decode: ≤ 4 MB.** When a server
+  emits more, the client decodes in 64 KB base64 windows
+  (`decodeBase64InSlices`) and yields each slice immediately.
+  `useNarration` already concatenates downstream.
+- **`contentHash` round-trip is verbatim.** Edge functions
+  (`tts-stream-{elevenlabs,openai,google}`) write whatever hash the
+  client sends to `srangam_audio_narrations.content_hash`. The client is
+  the source of truth for the key; do not recompute server-side.
+- **Hash algorithm: SHA-256 hex** (`crypto.subtle.digest('SHA-256', …)`).
+  The previous 32-bit non-crypto hash had collision risk at scale.
+  `NarrationService.generateContentHash` is now async; callers must
+  `await` it.
+- **Fallback ordering:** before retrying with OpenAI, the primary
+  `AbortController` must be aborted (`narrationService.cancel()`) so
+  pending ElevenLabs base64 buffers are released on mobile.
+
+### Out of scope for this baseline
+
+- No edge-function redeploy.
+- No schema change to `srangam_audio_narrations`.
+- No RLS or auth change.

@@ -70,12 +70,38 @@ export const enhanceTextWithCulturalTerms = (
     return text; // Already enhanced
   }
 
+  // Phase K.2: Protect HTML anchor tags from enhancement.
+  // Without this, a cultural term that appears inside an href attribute
+  // (e.g. "veda" inside ".../sayana-veda-english-translation/...") gets
+  // rewritten to {{cultural:veda}}, splitting the URL and producing raw
+  // attribute text in the rendered article body.
+  const anchorRegex = /<a\b[^>]*>[\s\S]*?<\/a>/gi;
+  const anchors: string[] = [];
+  let protectedText = text.replace(anchorRegex, (match) => {
+    anchors.push(match);
+    return `__A_PLACEHOLDER_${anchors.length - 1}__`;
+  });
+
+  // Phase K.2: Protect markdown link syntax [text](url).
+  const mdLinkRegex = /\[[^\]]+\]\([^)]+\)/g;
+  const mdLinks: string[] = [];
+  protectedText = protectedText.replace(mdLinkRegex, (match) => {
+    mdLinks.push(match);
+    return `__MDLINK_PLACEHOLDER_${mdLinks.length - 1}__`;
+  });
+
+  // Phase K.2: Protect bare URLs.
+  const bareUrlRegex = /\bhttps?:\/\/[^\s<>"')]+/gi;
+  const bareUrls: string[] = [];
+  protectedText = protectedText.replace(bareUrlRegex, (match) => {
+    bareUrls.push(match);
+    return `__URL_PLACEHOLDER_${bareUrls.length - 1}__`;
+  });
+
   // CRITICAL: Protect table content from enhancement to prevent HTML corruption
   const tableRegex = /<table[\s\S]*?<\/table>/gi;
   const tables: string[] = [];
-  
-  // Extract tables and replace with placeholders
-  let protectedText = text.replace(tableRegex, (match) => {
+  protectedText = protectedText.replace(tableRegex, (match) => {
     tables.push(match);
     return `__TABLE_PLACEHOLDER_${tables.length - 1}__`;
   });
@@ -121,14 +147,21 @@ export const enhanceTextWithCulturalTerms = (
     enhancedText += protectedText.substring(maxLength);
   }
 
-  // Restore markdown tables
+  // Restore in reverse order of protection so nested placeholders unwind correctly.
   mdTables.forEach((table, index) => {
     enhancedText = enhancedText.replace(`__MDTABLE_PLACEHOLDER_${index}__`, table);
   });
-
-  // Restore HTML tables
   tables.forEach((table, index) => {
     enhancedText = enhancedText.replace(`__TABLE_PLACEHOLDER_${index}__`, table);
+  });
+  bareUrls.forEach((url, index) => {
+    enhancedText = enhancedText.replace(`__URL_PLACEHOLDER_${index}__`, url);
+  });
+  mdLinks.forEach((link, index) => {
+    enhancedText = enhancedText.replace(`__MDLINK_PLACEHOLDER_${index}__`, link);
+  });
+  anchors.forEach((anchor, index) => {
+    enhancedText = enhancedText.replace(`__A_PLACEHOLDER_${index}__`, anchor);
   });
 
   return enhancedText;

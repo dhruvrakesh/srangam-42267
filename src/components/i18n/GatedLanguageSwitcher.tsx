@@ -114,7 +114,7 @@ export const GatedLanguageSwitcher: React.FC<GatedLanguageSwitcherProps> = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className={cn('gap-2 min-w-[200px]', className)}>
+        <Button variant="outline" className={cn('gap-2 min-w-[200px] max-w-full', className)}>
           <Globe className="h-4 w-4" />
           <span className={getScriptFont(currentLanguage)}>
             {supportedLanguages[currentLanguage].nativeName}

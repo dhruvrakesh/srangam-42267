@@ -209,6 +209,10 @@ export function DeepTimeTimeline() {
           {/* Timeline visualization */}
           <div className="relative bg-muted/30 rounded-lg p-6 overflow-hidden">
             <ScrollArea className="w-full" ref={scrollRef}>
+              {/* Phase K.3: Belt-and-braces overflow wrapper so the 1200px
+                  timeline never escapes the article body on mobile if the
+                  surrounding ScrollArea fails to provide horizontal scroll. */}
+              <div className="overflow-x-auto w-full">
               <div className="relative min-w-[1200px] h-[400px]">
                 {/* Time axis */}
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-border" />
@@ -270,6 +274,7 @@ export function DeepTimeTimeline() {
                   alt="Deep time geological timeline"
                   className="absolute inset-0 w-full h-full object-contain opacity-20 pointer-events-none"
                 />
+              </div>
               </div>
             </ScrollArea>
           </div>
