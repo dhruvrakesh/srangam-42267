@@ -187,6 +187,10 @@ export class NarrationService {
           }
 
           if (data.done) {
+            // Phase L.2 — last NDJSON line consumed.
+            if (this.lastPerf && this.lastPerf.tStreamDone === undefined) {
+              this.lastPerf.tStreamDone = performance.now();
+            }
             yield {
               audioContent: new Uint8Array(0),
               chunkIndex: chunkIndex,
