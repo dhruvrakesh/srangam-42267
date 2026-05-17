@@ -112,6 +112,10 @@ export class NarrationService {
 
     while (true) {
       const { done, value } = await reader.read();
+      // Phase L.2 — first NDJSON byte parsed.
+      if (this.lastPerf && this.lastPerf.tFirstByte === undefined && value && value.length > 0) {
+        this.lastPerf.tFirstByte = performance.now();
+      }
 
       if (done) {
         // Process any remaining buffer on stream end
