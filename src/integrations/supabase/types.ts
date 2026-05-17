@@ -1395,6 +1395,57 @@ export type Database = {
         }
         Relationships: []
       }
+      srangam_audio_narrations_public: {
+        Row: {
+          article_slug: string | null
+          audio_format: string | null
+          character_count: number | null
+          content_hash: string | null
+          created_at: string | null
+          duration_seconds: number | null
+          file_size_bytes: number | null
+          google_drive_share_url: string | null
+          id: string | null
+          language_code: string | null
+          provider: string | null
+          sample_rate: number | null
+          updated_at: string | null
+          voice_id: string | null
+        }
+        Insert: {
+          article_slug?: string | null
+          audio_format?: string | null
+          character_count?: number | null
+          content_hash?: string | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          file_size_bytes?: number | null
+          google_drive_share_url?: string | null
+          id?: string | null
+          language_code?: string | null
+          provider?: string | null
+          sample_rate?: number | null
+          updated_at?: string | null
+          voice_id?: string | null
+        }
+        Update: {
+          article_slug?: string | null
+          audio_format?: string | null
+          character_count?: number | null
+          content_hash?: string | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          file_size_bytes?: number | null
+          google_drive_share_url?: string | null
+          id?: string | null
+          language_code?: string | null
+          provider?: string | null
+          sample_rate?: number | null
+          updated_at?: string | null
+          voice_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       _postgis_deprecate: {

@@ -333,8 +333,9 @@ export class NarrationService {
     try {
       // Query by content_hash only - the hash already includes language, voice, speed
       // Previous filters on language_code/voice_id caused cache misses due to format differences (e.g., "en" vs "en-US")
+      // Phase O — Read via security-scoped public view (no cost/provider metadata exposure).
       const { data, error } = await supabase
-        .from('srangam_audio_narrations')
+        .from('srangam_audio_narrations_public')
         .select('*')
         .eq('content_hash', contentHash)
         .maybeSingle();
