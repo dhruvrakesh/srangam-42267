@@ -173,6 +173,10 @@ export class NarrationService {
             // immediately so the consumer can concatenate without us
             // holding the full decoded buffer in scope.
             for (const slice of decodeBase64InSlices(data.audio)) {
+              // Phase L.2 — first decoded base64 slice yielded.
+              if (this.lastPerf && this.lastPerf.tFirstAudioChunk === undefined) {
+                this.lastPerf.tFirstAudioChunk = performance.now();
+              }
               yield {
                 audioContent: slice,
                 chunkIndex: chunkIndex++,
