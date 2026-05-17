@@ -67,7 +67,7 @@ const ArticleContent = React.memo(({
   const titleText = typeof title === 'string' ? title : (title as any).en || 'Article';
 
   return (
-    <article className="max-w-4xl mx-auto px-4 py-8 relative">
+    <article data-testid="article-body" className="max-w-4xl mx-auto px-4 py-8 relative">
         {/* Contextual Sacred Geometry Background */}
         <div className="absolute inset-0 bg-gradient-to-b from-cream/40 via-sandalwood/30 to-cream/40 rounded-3xl -z-10" />
         <div className={cn(
