@@ -2,6 +2,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { NarrationConfig, NarrationState } from '@/types/narration';
 import { narrationService } from '@/services/narration/NarrationService';
+import { recordTelemetry } from '@/services/narration/telemetry';
 
 export function useNarration(initialConfig?: Partial<NarrationConfig>) {
   const [state, setState] = useState<NarrationState>({
