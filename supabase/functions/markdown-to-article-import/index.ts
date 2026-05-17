@@ -430,11 +430,10 @@ function generateShortSlug(title: string): string {
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders }
+    return new Response(null, { headers: corsHeaders });
+  }
   const __gate = await requireAdmin(req);
   if (__gate.error) return __gate.error;
-);
-  }
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;

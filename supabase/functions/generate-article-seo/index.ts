@@ -20,11 +20,10 @@ interface SEORequest {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders }
+    return new Response(null, { headers: corsHeaders });
+  }
   const __gate = await requireAdmin(req);
   if (__gate.error) return __gate.error;
-);
-  }
 
   try {
     const { currentFilters }: SEORequest = await req.json();

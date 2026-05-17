@@ -29,11 +29,10 @@ interface TagGenerationResponse {
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders }
+    return new Response(null, { headers: corsHeaders });
+  }
   const __gate = await requireAdmin(req);
   if (__gate.error) return __gate.error;
-);
-  }
 
   try {
     const { title, theme, culturalTerms, contentPreview }: TagGenerationRequest = await req.json();
