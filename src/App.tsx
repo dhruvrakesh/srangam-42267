@@ -124,6 +124,11 @@ const App = () => (
                 <Toaster />
                 <Sonner />
                 <SiteSchema />
+                {import.meta.env.DEV && NarrationDebugPanel && (
+                  <Suspense fallback={null}>
+                    <NarrationDebugPanel />
+                  </Suspense>
+                )}
                 <BrowserRouter>
                   <ScrollToTop />
                   <Layout>
