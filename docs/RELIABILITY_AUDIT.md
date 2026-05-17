@@ -678,3 +678,54 @@ Recorded in security memory; do not re-flag.
 - [ ] Manual: non-admin sign-in → no admin nav, no console errors.
 - [ ] Manual: PDF export from Reading Room renders.
 - [ ] Manual: signup with weak password rejected.
+
+---
+
+## Phase N — Hardening Pass (Post-Phase-M Re-scan, 2026-05-17)
+
+Re-scan after Phase M surfaced 5 errors + 8 warnings + 1 info that were always present but masked by prior policy ordering. Phase N resolves every finding in 5 reversible commits. See `.lovable/plan.md` for the full plan.
+
+### N.1 — Draft articles hidden from anon
+- Dropped `"Anyone can view articles"` (`USING(true)`) on `srangam_articles`.
+- Added `"Admins can view all articles"` (admin-only via `has_role`).
+- Public anonymous reads now flow exclusively through `"Public read published articles"` (`status='published'`).
+
+### N.2 — Admin-jobs Realtime locked to admins
+- Kept `srangam_admin_jobs` in `supabase_realtime` publication so `useAdminJob` keeps live UI.
+- Added restrictive `realtime.messages` SELECT policy requiring `has_role(auth.uid(),'admin')`.
+
+### N.3 — Server-side auth gate on edge functions
+- New `_shared/auth-gate.ts` exports `requireUser()` and `requireAdmin()`.
+- `requireUser` applied to `tts-stream-openai|elevenlabs|google` (cost back-stop for admin-only narration).
+- `requireAdmin` applied to all write/cost/generation functions (19 total). Public exceptions documented: `generate-sitemap`, `gdrive-image-proxy`, `get-public-config`, `imaging-handoff-token`.
+
+### N.4 — `jspdf` ≥ 4.2.1
+- All v3 CVEs cleared. Stable API surface (`new jsPDF`, `text`, `addImage`, `save`) used in `pdfGenerator.ts`.
+
+### N.5 — `ProtectedRoute` admin gate
+- `if (!user || !isAdmin) → /auth`. Backed by Phase M `has_role` RPC.
+
+### N.6 — RLS tightening
+- `narration_analytics`: SELECT restricted to owner or admin (anon row read closed).
+- `srangam_audio_narrations`: writes restricted to admin or service-role.
+- Editorial content tables (book chapters, article chapters, bibliography entries, article bibliography, markdown sources, cross references): blanket `authenticated` write replaced with admin-only.
+
+### N.7 — `SECURITY DEFINER` EXECUTE lockdown
+- Revoked from `public/anon/authenticated`: `update_tag_stats`, `srangam_update_updated_at`, `srangam_increment_bibliography_usage`, `srangam_increment_term_usage`, `increment_term_usage_counts`, `analyze_tag_cooccurrence`, `get_purana_statistics`.
+- Kept: `has_role`, `srangam_search_articles_fulltext`, `srangam_search_articles_semantic`.
+
+### N.8 — Storage bucket listing closed
+- Dropped public `SELECT` policies on `storage.objects` for `srangam-articles` and `og-images`.
+- Replaced with admin-only `SELECT` policies. Direct CDN URLs still serve public files.
+
+## Accepted Risks (updated)
+
+- PostGIS `spatial_ref_sys` — extension-owned reference table, no PII, no application writes. RLS not enabled by design.
+
+## Invariants Added (Phase N)
+
+11. Every cost-bearing edge function requires a valid Supabase JWT (and admin role where applicable).
+12. `srangam_articles` SELECT for anon = `status='published'` only.
+13. `realtime.messages` requires `has_role(auth.uid(),'admin')` for SELECT.
+14. Public buckets serve files via CDN URLs; object listing is admin-only.
+15. `SECURITY DEFINER` functions are EXECUTE-restricted by default; only explicitly listed RPCs are callable by `anon`/`authenticated`.

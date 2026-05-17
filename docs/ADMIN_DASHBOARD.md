@@ -277,3 +277,11 @@ WHERE author = ANY($sources);
 - `docs/CURRENT_STATUS.md` - Platform status and recent changes
 - `docs/CONTENT_ARCHITECTURE.md` - Document lifecycle
 - `docs/DATA_HEALTH_DASHBOARD.md` - Data integrity monitoring
+
+## Phase N — Route & Realtime Gates
+
+- `ProtectedRoute` now requires `isAdmin` (server-backed via `has_role` RPC).
+  Non-admin authenticated users are redirected to `/auth`.
+- `srangam_admin_jobs` remains in the `supabase_realtime` publication so the
+  Job Progress card keeps live updates; access is restricted by a new
+  `realtime.messages` admin-only SELECT policy.

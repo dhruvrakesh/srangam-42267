@@ -460,3 +460,16 @@ A single structured line is logged per play:
 
 Telemetry writes are wrapped in try/catch and MUST NOT throw; production
 playback is unaffected if telemetry fails.
+
+## Server-Side Auth Gate (Phase N)
+
+All `tts-stream-*` and `tts-save-drive` edge functions now require a valid
+Supabase JWT (and admin role for `tts-save-drive`). This back-stops the
+existing client-side admin-only narration gate
+(`mem://features/narration/admin-only-access`) and closes the cost-abuse
+vector where an attacker could call the streaming functions directly.
+
+Implementation: `supabase/functions/_shared/auth-gate.ts` exports
+`requireUser(req)` and `requireAdmin(req)`. Each handler awaits the
+appropriate helper before any provider call. CORS, NDJSON shape, and
+streaming behaviour are unchanged.
