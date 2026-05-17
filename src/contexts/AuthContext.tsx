@@ -23,14 +23,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
 
   const checkAdminRole = async (userId: string) => {
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .eq("role", "admin")
-      .maybeSingle();
-
-    setIsAdmin(!!data);
+    // Phase M.2: role checks go through SECURITY DEFINER RPC, not direct
+    // table reads. Returns only a boolean — no row exposure, no enumeration.
+    const { data, error } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "admin",
+    });
+    if (error) console.warn("has_role RPC failed", error);
+    setIsAdmin(data === true);
   };
 
   useEffect(() => {
