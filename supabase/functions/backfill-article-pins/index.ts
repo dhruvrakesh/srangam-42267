@@ -28,6 +28,7 @@ import { stage } from '../_shared/observability.ts';
 import { aiExtractPlaces, NoAIProviderError } from '../_shared/ai-provider.ts';
 import { reportItem, isCancelled, finishJob } from '../_shared/jobs.ts';
 
+import { requireAdmin } from '../_shared/auth-gate.ts';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -272,6 +273,9 @@ async function backfillOne(
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  const __gate = await requireAdmin(req);
+  if (__gate.error) return __gate.error;
+
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;

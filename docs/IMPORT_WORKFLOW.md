@@ -525,3 +525,10 @@ Use `<br/>` (not `\n`) for line breaks inside node labels.
 Sources copied directly from ChatGPT may arrive **without** the ` ``` `
 fences around diagrams. The Phase H pipeline auto-fences them, but you
 can also restore fences manually before import for a cleaner audit trail.
+
+## Auth Gate (Phase N)
+
+`markdown-to-article-import`, `batch-import-from-github`, and
+`scan-github-markdown` now require an admin JWT
+(`_shared/auth-gate.ts → requireAdmin`). Non-admin or anonymous calls
+receive 401 / 403 before any work is done.

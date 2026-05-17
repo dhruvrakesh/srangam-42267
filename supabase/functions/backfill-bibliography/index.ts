@@ -2,6 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 import { Marked } from 'https://esm.sh/marked@11.1.1';
 import { classifyError } from '../_shared/error-response.ts';
 
+import { requireAdmin } from '../_shared/auth-gate.ts';
 const marked = new Marked({ async: false, gfm: true, breaks: false });
 
 const corsHeaders = {
@@ -190,6 +191,8 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+  const __gate = await requireAdmin(req);
+  if (__gate.error) return __gate.error;
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
