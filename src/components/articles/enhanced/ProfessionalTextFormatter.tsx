@@ -1,7 +1,44 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import parse from 'html-react-parser';
+
+// Phase O.5 — Allow the small set of HTML attributes our article system relies on
+// (footnote anchors, cultural-term spans, evidence-table cell spans, language hints)
+// while stripping <script>, event handlers, and other XSS vectors.
+const articleSanitizeSchema = {
+  ...defaultSchema,
+  attributes: {
+    ...defaultSchema.attributes,
+    '*': [
+      ...((defaultSchema.attributes && defaultSchema.attributes['*']) || []),
+      'className', 'id', 'dir', 'lang',
+      ['data*'],
+    ],
+    a: [
+      ...((defaultSchema.attributes && defaultSchema.attributes.a) || []),
+      'href', 'name', 'target', 'rel', 'id',
+    ],
+    td: [
+      ...((defaultSchema.attributes && defaultSchema.attributes.td) || []),
+      'colSpan', 'rowSpan',
+    ],
+    th: [
+      ...((defaultSchema.attributes && defaultSchema.attributes.th) || []),
+      'colSpan', 'rowSpan', 'scope',
+    ],
+    span: [
+      ...((defaultSchema.attributes && defaultSchema.attributes.span) || []),
+      'className', 'id', 'dir', 'lang',
+      ['data*'],
+    ],
+    sup: [...((defaultSchema.attributes && defaultSchema.attributes.sup) || []), 'id'],
+    sub: [...((defaultSchema.attributes && defaultSchema.attributes.sub) || []), 'id'],
+  },
+};
+const ARTICLE_REHYPE_PLUGINS: any = [rehypeRaw, [rehypeSanitize, articleSanitizeSchema]];
+
 import { useTranslation } from 'react-i18next';
 import { CulturalTermTooltip } from '@/components/language/CulturalTermTooltip';
 import { TooltipProvider } from '@/components/ui/tooltip';
