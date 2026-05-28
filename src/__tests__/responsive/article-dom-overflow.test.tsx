@@ -140,4 +140,64 @@ describe('Phase V Layer 2 — DOM overflow inside [data-testid="article-body"]',
     expect(offenders.length).toBeGreaterThan(0);
     expect(offenders[0].scroll).toBeGreaterThanOrEqual(900);
   });
+
+  // ───── Phase W: hardened invariants — images / tables / pre+code ─────
+
+  it('Phase W: wide <img> WITH max-width:100% constraint → no offender', () => {
+    const { container } = renderInProviders(
+      <article data-testid="article-body" className="min-w-0 w-full max-w-full">
+        <style>{`img { max-width: 100%; height: auto; }`}</style>
+        <img src="x" alt="" width={1600} />
+      </article>,
+    );
+    const offenders = findOverflowOffenders(container.querySelector('[data-testid="article-body"]')!);
+    expect(offenders, JSON.stringify(offenders)).toEqual([]);
+  });
+
+  it('Phase W: wide <img> WITHOUT constraint → flagged (negative control)', () => {
+    const { container } = renderInProviders(
+      <article data-testid="article-body" className="min-w-0 w-full max-w-full">
+        <img src="x" alt="" width={1600} />
+      </article>,
+    );
+    const offenders = findOverflowOffenders(container.querySelector('[data-testid="article-body"]')!);
+    expect(offenders.length).toBeGreaterThan(0);
+    expect(offenders[0].scroll).toBeGreaterThanOrEqual(1600);
+  });
+
+  it('Phase W: <table min-w-[900px]> inside overflow-x-auto wrapper → no offender', () => {
+    const { container } = renderInProviders(
+      <article data-testid="article-body" className="min-w-0 w-full max-w-full">
+        <div className="overflow-x-auto">
+          <table className="min-w-[900px]"><tbody><tr><td>cell</td></tr></tbody></table>
+        </div>
+      </article>,
+    );
+    const offenders = findOverflowOffenders(container.querySelector('[data-testid="article-body"]')!);
+    expect(offenders, JSON.stringify(offenders)).toEqual([]);
+  });
+
+  it('Phase W: bare <table min-w-[900px]> directly in body → flagged (negative control)', () => {
+    const { container } = renderInProviders(
+      <article data-testid="article-body" className="min-w-0 w-full max-w-full">
+        <table className="min-w-[900px]"><tbody><tr><td>cell</td></tr></tbody></table>
+      </article>,
+    );
+    const offenders = findOverflowOffenders(container.querySelector('[data-testid="article-body"]')!);
+    expect(offenders.length).toBeGreaterThan(0);
+    expect(offenders[0].scroll).toBeGreaterThanOrEqual(900);
+  });
+
+  it('Phase W: <pre><code> inside inline overflow-x:auto wrapper → no offender', () => {
+    const { container } = renderInProviders(
+      <article data-testid="article-body" className="min-w-0 w-full max-w-full">
+        <pre style={{ overflowX: 'auto' }}>
+          <code style={{ width: '1200px' }}>{'x'.repeat(200)}</code>
+        </pre>
+      </article>,
+    );
+    const offenders = findOverflowOffenders(container.querySelector('[data-testid="article-body"]')!);
+    expect(offenders, JSON.stringify(offenders)).toEqual([]);
+  });
 });
+

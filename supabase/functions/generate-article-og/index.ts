@@ -155,24 +155,29 @@ Deno.serve(async (req) => {
 
     const colors = themeColors[theme] || themeColors['Ancient India'];
 
-    const prompt = `Create a professional academic Open Graph image (1792x1024 landscape) for a scholarly article about Indian civilization research:
+    const subject = `Symbolic, non-literal evocation of "${title}": ${theme} iconography drawing on ${colors.motif}, rendered as visual metaphor — never as text.`;
 
-TITLE: "${title}"
+    const prompt = `Create a professional academic Open Graph image (1792x1024 landscape) for a scholarly article about Indian civilization research.
+
+SUBJECT: ${subject}
 THEME: ${theme}
+INTERNAL_TITLE (do not render in the image): "${title}"
 
 DESIGN REQUIREMENTS:
-- Clean, minimalist academic aesthetic with dignified scholarly appearance
-- Sacred geometry patterns as subtle background (faded mandala, yantra, or ${colors.motif})
-- The article title "${title}" MUST appear clearly readable in large elegant serif font (center or left-aligned)
-- Primary color: ${colors.primary}
-- Accent color: ${colors.accent}
-- Background: warm cream (#F8F5F0) with subtle texture
-- NO photographs, NO human faces, NO AI-looking effects
-- Professional typography suitable for academic journals
-- Subtle dharmic/Indic design elements as decorative borders or corners
-- Clear visual hierarchy: title prominent, decorative elements subtle
+- Clean, minimalist academic aesthetic with dignified scholarly appearance.
+- Sacred geometry as subtle background (faded mandala, yantra, or ${colors.motif}).
+- Primary color: ${colors.primary}.
+- Accent color: ${colors.accent}.
+- Background: warm cream (#F8F5F0) with subtle texture.
+- Subtle dharmic/Indic decorative borders or corner motifs.
+- Composition reads as a museum exhibition poster or academic journal cover.
 
-STYLE: Scholarly, dignified, suitable for sharing on LinkedIn, Twitter, and academic platforms. Think academic journal cover or museum exhibition poster.`;
+NEGATIVE (strict, non-negotiable):
+- Absolutely NO text, NO letters, NO glyphs, NO captions, NO watermarks, NO signage.
+- NO calligraphy of the title, NO pseudo-script, NO Devanagari, NO Latin lettering, NO numerals.
+- NO photographs, NO human faces, NO logos, NO AI-looking gradients or chromatic aberration.
+
+STYLE: Scholarly, dignified, suitable for sharing on LinkedIn, Twitter, and academic platforms. Pure iconography — the article title appears only in the page's H1 and meta tags, never inside the image.`;
 
     const promptHash = await sha256Hex(prompt);
 
