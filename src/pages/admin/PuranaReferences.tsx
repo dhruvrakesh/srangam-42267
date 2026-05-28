@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +11,7 @@ import { BookOpen, Play, RefreshCw, Trash2, Edit, CheckCircle, XCircle, Trending
 import { ConfidenceBadge } from "@/components/admin/purana/ConfidenceBadge";
 import { PuranaCategoryBadge } from "@/components/admin/purana/PuranaCategoryBadge";
 import { ExtractionProgress } from "@/components/admin/purana/ExtractionProgress";
+import { JobProgressCard } from "@/components/admin/JobProgressCard";
 import { usePuranaReferences, usePuranaStats, useExtractReferences, useUpdateReference, useDeleteReference } from "@/hooks/usePuranaReferences";
 import { toast } from "sonner";
 import {
