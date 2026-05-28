@@ -69,7 +69,7 @@ const ArticleContent = React.memo(({
   const titleText = typeof title === 'string' ? title : (title as any).en || 'Article';
 
   return (
-    <article data-testid="article-body" className="max-w-4xl mx-auto px-4 py-8 relative">
+    <article data-testid="article-body" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative overflow-x-clip [overflow-x:clip] w-full min-w-0">
         {/* Contextual Sacred Geometry Background */}
         <div className="absolute inset-0 bg-gradient-to-b from-cream/40 via-sandalwood/30 to-cream/40 rounded-3xl -z-10" />
         <div className={cn(
@@ -91,20 +91,21 @@ const ArticleContent = React.memo(({
         <header className="mb-12 text-center relative z-10">
           <div className="flex justify-center mb-6 relative">
             <div className="absolute inset-0 bg-burgundy/40 rounded-full blur-2xl transform scale-150 animate-pulse-gentle" />
-            <div className="relative bg-gradient-to-br from-burgundy/30 to-saffron/30 p-8 rounded-full backdrop-blur-sm border border-burgundy/40 shadow-2xl">
-              <Icon className="text-burgundy" size={64} />
+            <div className="relative bg-gradient-to-br from-burgundy/30 to-saffron/30 p-5 sm:p-8 rounded-full backdrop-blur-sm border border-burgundy/40 shadow-2xl">
+              <Icon className="text-burgundy" size={isMobile ? 48 : 64} />
             </div>
           </div>
           
-          <h1 className="font-serif text-4xl md:text-6xl font-bold mb-6 leading-tight">
+          <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight break-words [overflow-wrap:anywhere] [hyphens:auto]">
             <span className="bg-gradient-to-r from-burgundy via-saffron to-gold-warm bg-clip-text text-transparent">
               <EnhancedMultilingualText content={title} />
             </span>
           </h1>
           
-          <p className="text-xl text-charcoal/80 mb-8 leading-relaxed max-w-3xl mx-auto font-medium">
+          <p className="text-lg sm:text-xl text-charcoal/80 mb-8 leading-relaxed max-w-3xl mx-auto font-medium break-words [overflow-wrap:anywhere]">
             <EnhancedMultilingualText content={dek} />
           </p>
+
 
           {/* Enhanced Tags */}
           <div className="flex flex-wrap justify-center gap-3 mb-8">
