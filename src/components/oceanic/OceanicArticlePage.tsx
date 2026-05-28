@@ -268,31 +268,33 @@ export const OceanicArticlePage: React.FC = () => {
 
           {/* Main Content */}
           <div className={cn(
-            "grid gap-8 transition-all duration-300",
+            "grid gap-8 transition-all duration-300 min-w-0 w-full max-w-full",
             sidebarCollapsed ? "lg:grid-cols-1" : "lg:grid-cols-4"
           )}>
             <div className={cn(
-              "space-y-8 transition-all duration-300",
+              "space-y-8 transition-all duration-300 min-w-0 w-full max-w-full",
               sidebarCollapsed ? "lg:col-span-1" : "lg:col-span-3"
             )}>
               {/* Full Article Content */}
-              <Card>
-                <CardContent className="pt-6">
+              <Card className="min-w-0 w-full max-w-full overflow-hidden">
+                <CardContent className="pt-6 min-w-0 w-full max-w-full">
                   {article.content ? (
                     <TooltipProvider>
                       <ProfessionalTextFormatter
                         content={article.content}
                         enableCulturalTerms={true}
                         enableDropCap={false}
+                        suppressLeadingTitle={getArticleTitle(article, currentLanguage)}
                       />
                     </TooltipProvider>
                   ) : (
-                    <p className="text-lg leading-relaxed text-foreground/90">
+                    <p className="text-lg leading-relaxed text-foreground/90 break-words [overflow-wrap:break-word]">
                       {article.abstract}
                     </p>
                   )}
                 </CardContent>
               </Card>
+
 
               {/* Pins Map — Phase H.2: hide entirely when no pins, lazy-load Leaflet on demand */}
               {article.pins.length > 0 && (
