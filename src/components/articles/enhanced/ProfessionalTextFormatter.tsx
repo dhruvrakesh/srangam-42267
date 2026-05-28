@@ -88,8 +88,15 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
       // tokens, dangling footnote digits) at render time. Additive; the
       // source row in srangam_articles.content is untouched.
       text = sanitizeArticleHtml(text);
-      
-      
+
+      // Phase U.2 — Suppress duplicate leading title (HTML <h1> or `# `)
+      // when the caller declares the page-shell title. Render-time only;
+      // source rows are not mutated. If body title does not match the
+      // page title (or no title supplied), body is returned untouched.
+      if (suppressLeadingTitle) {
+        text = stripLeadingTitle(text, suppressLeadingTitle);
+      }
+
       // AUTO-ENHANCE: Inject cultural term markers if enabled
       if (enableCulturalTerms && autoHighlightTerms) {
         text = enhanceTextWithCulturalTerms(text, {
