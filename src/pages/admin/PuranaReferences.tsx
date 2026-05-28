@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { BookOpen, Play, RefreshCw, Trash2, Edit, CheckCircle, XCircle, TrendingUp, BarChart3 } from "lucide-react";
 import { ConfidenceBadge } from "@/components/admin/purana/ConfidenceBadge";
 import { PuranaCategoryBadge } from "@/components/admin/purana/PuranaCategoryBadge";
-import { ExtractionProgress } from "@/components/admin/purana/ExtractionProgress";
+// Phase X.7.1 — ExtractionProgress legacy bar retired; JobProgressCard owns batch UX.
 import { JobProgressCard } from "@/components/admin/JobProgressCard";
 import { usePuranaReferences, usePuranaStats, useExtractReferences, useUpdateReference, useDeleteReference } from "@/hooks/usePuranaReferences";
 import { toast } from "sonner";
