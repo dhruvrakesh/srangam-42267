@@ -362,7 +362,10 @@ serve(async (req) => {
     }
 
     const chunkOffset = body.offset ?? 0;
-    const chunkSize = Math.min(Math.max(body.chunk_size ?? 3, 1), 5);
+    // Phase X.7.1 — lower default chunk_size 3 → 2 articles per pump slot.
+    // Long articles now dominate the 150 s wall clock (each can take 60-90 s
+    // with retries), so 2 keeps a comfortable margin before pump reinvoke.
+    const chunkSize = Math.min(Math.max(body.chunk_size ?? 2, 1), 5);
 
     // Count once (cheap with count: 'exact', head: true)
     const { count } = await supabase
