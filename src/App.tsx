@@ -80,6 +80,7 @@ const GitHubSync = lazy(() => import("./pages/admin/GitHubSync"));
 const ContextManagement = lazy(() => import("./pages/admin/ContextManagement"));
 const DataHealth = lazy(() => import("./pages/admin/DataHealth"));
 const GeographyMedia = lazy(() => import("./pages/admin/GeographyMedia"));
+const CorpusCorrelations = lazy(() => import("./pages/admin/CorpusCorrelations"));
 const Auth = lazy(() => import("./pages/Auth"));
 import { AdminLayout } from "./components/admin/AdminLayout";
 
