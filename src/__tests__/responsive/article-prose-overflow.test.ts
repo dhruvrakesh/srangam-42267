@@ -35,13 +35,15 @@ describe('MV-02: mobile prose overflow guard', () => {
     ['OceanicArticlePage', 'components/oceanic/OceanicArticlePage.tsx'],
   ])('%s <article data-testid="article-body"> declares overflow-x-clip and min-w-0', (_name, rel) => {
     const src = readFileSync(join(ROOT, rel), 'utf8');
-    const line = src
-      .split('\n')
-      .find((l) => l.includes('data-testid="article-body"'));
-    expect(line, 'article-body anchor missing').toBeDefined();
-    expect(line!).toMatch(/overflow-x-clip/);
-    expect(line!).toMatch(/min-w-0/);
+    // Match the <article ...> opening tag containing data-testid="article-body".
+    const match = src.match(/<article[^>]*data-testid="article-body"[^>]*>/s)
+      ?? src.match(/<article[\s\S]{0,400}?data-testid="article-body"[\s\S]{0,400}?>/);
+    expect(match, 'article-body opening tag not found').toBeTruthy();
+    const block = match![0];
+    expect(block).toMatch(/overflow-x-clip/);
+    expect(block).toMatch(/min-w-0/);
   });
+
 
 
   it('index.css mobile block applies safe overflow-wrap (break-word|anywhere) + hyphens:auto to .article-content', () => {
