@@ -1,12 +1,22 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 import { sanitizeSnippet } from '../_shared/text-sanitizer.ts';
 import { callImage, NoAIProviderError } from '../_shared/ai-provider.ts';
+import { reportItem, isCancelled, finishJob, touchHeartbeat } from '../_shared/jobs.ts';
 
 import { requireAdmin } from '../_shared/auth-gate.ts';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+/** Phase X.1 — one entry in a bulk OG job's params.targets[]. */
+interface OgTarget {
+  articleId: string;
+  title: string;
+  theme: string;
+  slug: string;
+}
+
 
 // Theme palette (preserved from previous implementation for visual continuity)
 const themeColors: Record<string, { primary: string; accent: string; motif: string }> = {
