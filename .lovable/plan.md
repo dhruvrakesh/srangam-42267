@@ -92,3 +92,24 @@ Existing OG images stay until admin triggers regen (manual or via Data Health bu
 - Lighthouse CI desktop perf budget.
 - Bulk backfill regen of all 32+ OG images (admin-discretion to control AI spend).
 - Migration of `docs/OG_IMAGE_SYSTEM.md` storage section (currently references `og-images` bucket; live system uses Google Drive — separate doc-only cleanup).
+
+---
+
+## Phase W — Implementation status (2026-05-28, frozen)
+
+✅ **Complete.** All 28 Vitest specs green (23 prior + 5 new Phase W).
+
+- `e2e/_helpers/overflow.ts` — shared walker (mobile + desktop).
+- `e2e/article-desktop.spec.ts` — 1024/1280/1440/1920 sweep.
+- `playwright.config.ts` — `chromium-desktop` project added; mobile unchanged.
+- `src/test/overflow-rules.ts` — shared `SANCTIONED_OVERFLOW_RE` constant.
+- `src/test/setup.ts` — shim honors `<img width>`, `naturalWidth`, inline
+  `style="(min-)width:NNNpx"`, inline `overflow-x`, plus expanded sanctioned-class list.
+- `src/__tests__/responsive/article-dom-overflow.test.tsx` — 5 new specs
+  (img × 2, table × 2, pre/code × 1).
+- `supabase/functions/generate-article-og/index.ts` — non-literal prompt
+  with explicit `NEGATIVE` block; title no longer rendered in pixels.
+- `docs/RELIABILITY_AUDIT.md`, `docs/OG_IMAGE_SYSTEM.md` — synchronized.
+
+Next admin OG regen on `reassessing-ashoka-legacy` / `gopadri-kasyapa-varahamula`
+will produce a zero-text PNG and bump `srangam_media_assets.version`.
