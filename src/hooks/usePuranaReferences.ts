@@ -156,7 +156,7 @@ export const useExtractReferences = () => {
           total,
           started_at: new Date().toISOString(),
           created_by: user?.id ?? null,
-          params: { chunk_size: 3 },
+          params: { chunk_size: 2 },
         })
         .select('id')
         .single();
@@ -168,7 +168,7 @@ export const useExtractReferences = () => {
       // after scheduling its own next reinvoke.
       const { error: invokeErr } = await supabase.functions.invoke(
         'extract-purana-references',
-        { body: { batch_mode: true, job_id: jobId, offset: 0, chunk_size: 3 } },
+        { body: { batch_mode: true, job_id: jobId, offset: 0, chunk_size: 2 } },
       );
       if (invokeErr) {
         // Mark the job failed so the watchdog/UI both see it cleanly.
