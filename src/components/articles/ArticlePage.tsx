@@ -12,6 +12,7 @@ import { ArticleProvider, useReadingProgress } from '@/components/context/Articl
 import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ArticleCrossReferences } from '@/components/academic/ArticleCrossReferences';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const ReadingProgressBar = () => {
   const progress = useReadingProgress();
