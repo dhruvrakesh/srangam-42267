@@ -1,173 +1,137 @@
-## Context (verified, not assumed)
 
-Direct inspection of code + edge logs + migrations shows the current pain has **two specific root causes**, not "Phase X.5 doesn't work":
+# Phase X.7 — Correlation Vision Hardening
 
-1. **Purana "Extract all" → `srangam_admin_jobs_kind_check` violation.**
-   Migration `20260426141244_…sql` defines the check as
-   `kind IN ('pin_backfill','og_generate','og_force')`. Phase X.5 added `'purana_extract'` to the TS `JobKind` union and the client now inserts it, but **no migration ever extended the SQL CHECK**. Insert fails → toast you saw.
+Surgical, additive, admin-only. Public site, RLS, routes, and Phases X.1–X.6 invariants are not touched. Each sub-phase is independently shippable and revertable.
 
-2. **Pin Backfill "keeps running" then dies.**
-   `backfill-article-pins` edge logs (16:40:33Z):
-   ```
-   ERROR pump reinvoke failed: 404 {"error":"requested path is invalid"}
-   ```
-   The self-pump uses `req.url` as the reinvoke target. Inside Supabase Edge Runtime `req.url` is an internal address (host/path don't match the public `/functions/v1/<name>` route), so the second chunk 404s. Only chunk 0 (4 succeeded / 1 errored) runs, no more `reportItem` calls, heartbeat goes stale, and the watchdog reaps it ~5 min later. The UI shows "running" until then because realtime never sees a terminal update.
+## Why now (frozen baseline, 2026-05-28)
 
-3. **Progress UX is genuinely thin.** `JobProgressCard` shows %, succeeded/failed/cost/ETA but no per-item stream, no cancel-confirm, no "last error" surfaced inline, no scrollback for finished items, no tier breakdown labels for Purana.
+Live counts: 44 published articles · 55 purana refs (9 articles covered) · 12 pins (5 covered) · 32 gazetteer · **1,718 cultural terms** · **1,233 curated cross_references** · 0 rows in legacy `srangam_correlation_matrix`. The X.6 Jaccard view runs over only the two thinnest signals (pins + purana refs), so only 5 pairs surface and the top score is 0.286 from a single shared place. The substrate is correct; the inputs are starved. Meanwhile `purana_extract` failed at 3/44 on a 30 s Gemini timeout; `pin_backfill` is healthy on the self-pump fix. The job substrate and correlation views are the right enterprise shape — Phase X.7 feeds them properly and tightens the UX around them.
 
-Everything else in Phase X.5 (jobs table, `reportItem`, Realtime hook, rehydration, `aiExtractCitations`) is sound — it's the two bugs above that make it feel broken.
+## Sub-phases
 
----
+### X.7.1 — Stabilise `purana_extract` (no schema change)
 
-## Phase X.5.1 — Surgical bugfix (must land before X.6)
+Goal: one slow article never kills the run; progress is always visible.
 
-### Migration: extend job-kind check
-```sql
-ALTER TABLE public.srangam_admin_jobs
-  DROP CONSTRAINT srangam_admin_jobs_kind_check;
-ALTER TABLE public.srangam_admin_jobs
-  ADD CONSTRAINT srangam_admin_jobs_kind_check
-  CHECK (kind IN ('pin_backfill','og_generate','og_force','purana_extract'));
-```
-No data migration; existing rows already satisfy the wider set.
+- `supabase/functions/extract-purana-references/index.ts`
+  - Replace paragraph-count chunking with **char-budget chunking** (~6 000 chars/chunk, hard cap 25 chunks per article; tail-truncate with a logged warning).
+  - Per chunk: 2 retries with exponential backoff (2 s, 6 s); on second timeout fall back from Gemini → OpenAI inside the chunk via the existing `aiExtractCitations` provider list.
+  - `await touchHeartbeat` between every chunk (today it only fires every 6 chunks).
+  - Persist per-article resume state in `srangam_admin_jobs.params.resume = { article_id, chunk_offset }` so a pump reinvoke can continue mid-article on the next slot.
+  - Lower `chunk_size` default from 3 articles to 2 (long articles dominate the 150 s wall clock).
+- `supabase/functions/_shared/ai-provider.ts`
+  - `aiExtractCitations`: accept a `timeoutMs` array `[18000, 28000]` so the second attempt gets more headroom; surface `provider_used` in the result for telemetry.
+- `src/pages/admin/PuranaReferences.tsx`
+  - Remove the `ExtractionProgress` "Processing… 0/0" branch entirely. Show `JobProgressCard` from the optimistic job row inserted in `useExtractReferences` (the row is created client-side **before** invoke, so `activeJobId` is non-null on first render — eliminates the flicker the user saw).
+  - Surface `last_error` and `last_item` in the existing card; add a tier legend (H ≥ 0.8 / M 0.6–0.8 / L < 0.6).
+- `src/hooks/usePuranaReferences.ts`
+  - Move the `srangam_admin_jobs` insert above the `functions.invoke` call (it already does this — verify and keep) and return `job_id` synchronously so the page sets `activeJobId` before the invoke promise resolves.
 
-### Self-pump fix (both `backfill-article-pins` and `extract-purana-references`)
-Replace `req.url` with a built-from-env URL:
-```ts
-const PUMP_URL = `${Deno.env.get('SUPABASE_URL')}/functions/v1/<function-name>`;
-schedulePumpReinvoke(PUMP_URL, { ... });
-```
-Keep the service-role bearer + `_pump: true` gate exactly as today.
-Add a one-line log `[pump] target=…` so the next regression is visible in 1 click.
+**Blast radius:** edge function + shared helper + one page + one hook. Zero schema. Zero RLS. Zero public-site touch.
 
-### Defensive: client-side terminal sweep
-In `useAdminJob`, when a row's `heartbeat_at` is older than 90 s **and** status is still `running`, surface a yellow "Stalled — watchdog will reap shortly" banner instead of an indefinitely spinning progress bar. Pure presentation; doesn't touch the row.
+### X.7.2 — Expand correlation axes (additive, read-only)
 
-### Edge-function config sanity
-Add `verify_jwt = false` blocks in `supabase/config.toml` **only if missing** for these two functions (pump self-call uses service-role bearer, not the user JWT). Inspect current toml first; do not blindly overwrite.
+Goal: enrich `get_corpus_correlations` with the dense signals already in the DB.
 
----
-
-## Phase X.5.2 — Progress UX polish (admin-only, presentational)
-
-Refactor `JobProgressCard` into a small composition; no new business logic:
-
-- **Header row**: kind label + status pill + elapsed wall-clock + ETA.
-- **Throughput bar**: existing % bar, but stripe-animate while `running` and freeze on terminal status.
-- **Counters**: `Succeeded / Failed / Cost`, plus a fourth slot that's **kind-aware** — `H/M/L` for `purana_extract`, `A/B/C` for `pin_backfill`, OG dims for `og_*`.
-- **Last item + last error**: two compact mono rows, error in `text-destructive`, truncated with hover-expand.
-- **Activity tail**: last 8 items in a scrolling `<ol>` fed by the same realtime row's `last_item` history (kept client-side in a ring buffer — no DB churn).
-- **Cancel**: confirm dialog; button disabled until `created_at + 3 s` to prevent accidental immediate cancel.
-- **Stalled banner**: from X.5.1.
-- **Done state**: green check, "View N references / N pins" deep-link into the relevant admin page, "Run again" secondary button.
-
-Files: `src/components/admin/JobProgressCard.tsx` only. Hook `useAdminJob.ts` gains a `recentItems: string[]` ring (capped at 8). No other components touched.
-
----
-
-## Phase X.5.3 — Job history strip (operator memory)
-
-New `src/hooks/useAdminJobHistory.ts` + small `JobHistoryStrip` rendered under each `JobProgressCard`'s parent panel. Shows last 10 jobs of that `kind` from `srangam_admin_jobs` with status pill + duration + cost. Clicking an entry rehydrates the card. Purely additive; no schema change, RLS already allows admin select.
-
----
-
-## Phase X.6 — Correlation substrate (read-only, additive)
-
-Goal: a single admin surface where a curator can ask "what does our corpus actually connect?" — without ever writing to the substrate. Promotion of a finding into a published cross-reference stays a manual, audited action in the existing admin flows.
-
-### Database (additive, all read-only views + one RPC)
+Migration adds three `security_invoker` views and extends the RPC; no table writes, no destructive changes.
 
 ```sql
--- 1. Pins ↔ Purana refs co-occurring on the same article.
-CREATE OR REPLACE VIEW public.srangam_corpus_purana_pin_overlap AS
-SELECT p.article_id,
-       pr.purana_name, pr.kanda, pr.adhyaya,
-       g.canonical_name AS place,
-       pr.confidence_score AS purana_conf,
-       p.confidence       AS pin_conf
-FROM public.srangam_purana_references pr
-JOIN public.srangam_article_pins p USING (article_id)
-JOIN public.srangam_gazetteer g ON g.id = p.gazetteer_id;
+-- New views, mirroring the X.6 pair-view pattern
+CREATE VIEW public.srangam_corpus_article_term_pairs AS
+  SELECT a.id AS article_a, b.id AS article_b, count(*) AS shared
+  FROM srangam_articles a
+  JOIN srangam_articles b ON a.id < b.id AND a.status='published' AND b.status='published'
+  JOIN LATERAL (
+    SELECT unnest(regexp_matches(a.content::text, '\{\{cultural:([^}|]+)', 'g')) AS term
+  ) ta ON true
+  JOIN LATERAL (
+    SELECT unnest(regexp_matches(b.content::text, '\{\{cultural:([^}|]+)', 'g')) AS term
+  ) tb ON ta.term = tb.term
+  GROUP BY 1, 2;
 
--- 2. Cultural terms ↔ Purana co-citation.
-CREATE OR REPLACE VIEW public.srangam_corpus_term_purana_cooccurrence AS
-SELECT pr.purana_name,
-       t.term,
-       count(*) AS articles,
-       avg(pr.confidence_score) AS avg_conf
-FROM public.srangam_purana_references pr
-JOIN public.srangam_article_cultural_terms act USING (article_id)
-JOIN public.srangam_cultural_terms t ON t.id = act.term_id
-GROUP BY pr.purana_name, t.term;
-
--- 3. Xref evidence aggregation by article cluster.
-CREATE OR REPLACE VIEW public.srangam_corpus_xref_evidence AS
-SELECT a1.id AS article_a, a2.id AS article_b,
-       count(DISTINCT g.id)  AS shared_places,
-       count(DISTINCT pr.id) AS shared_purana_refs
-FROM public.srangam_article_pins p1
-JOIN public.srangam_article_pins p2 ON p1.gazetteer_id = p2.gazetteer_id
-                                    AND p1.article_id <> p2.article_id
-JOIN public.srangam_articles a1 ON a1.id = p1.article_id
-JOIN public.srangam_articles a2 ON a2.id = p2.article_id
-LEFT JOIN public.srangam_gazetteer g ON g.id = p1.gazetteer_id
-LEFT JOIN public.srangam_purana_references pr
-       ON pr.article_id IN (a1.id, a2.id)
-GROUP BY a1.id, a2.id;
+CREATE VIEW public.srangam_corpus_article_tag_pairs AS ...        -- intersect tags[]
+CREATE VIEW public.srangam_corpus_article_biblio_pairs AS ...     -- intersect bibliography_id via srangam_article_bibliography
 ```
-Grants: `SELECT` to `authenticated` only (admin-checked at the application layer; views inherit underlying RLS). No `anon` grant.
 
-RPC for the graph:
-```sql
-CREATE OR REPLACE FUNCTION public.get_corpus_correlations(
-  min_articles int DEFAULT 2,
-  limit_rows   int DEFAULT 200
-) RETURNS TABLE (
-  entity_a text, entity_a_kind text,
-  entity_b text, entity_b_kind text,
-  shared_articles int, jaccard numeric
-)
-LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
-  -- pairwise Jaccard over place/term/purana sets keyed by article
-  ...
-$$;
-REVOKE ALL ON FUNCTION public.get_corpus_correlations(int,int) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.get_corpus_correlations(int,int) TO authenticated;
-```
-The RPC is the **only** new function; it is `STABLE`, read-only, capped by `limit_rows`, and gated by the admin-only route.
+Extend `public.get_corpus_correlations(min_shared int, limit_rows int, w_place numeric, w_purana numeric, w_term numeric, w_tag numeric, w_biblio numeric)` to compute a weighted Jaccard sum with sane defaults (0.25 / 0.30 / 0.20 / 0.10 / 0.15). Keep the old 2-arg signature as a wrapper for back-compat.
 
-### Admin UI
+- `src/hooks/useCorpusCorrelations.ts` — pass the new weights through.
+- `src/pages/admin/CorpusCorrelations.tsx` — add 5 weight sliders (collapsible "Advanced") and 3 new columns (TERMS, TAGS, BIBLIO). Existing table layout stays; the new columns join the row tail so mobile horizontal-scroll invariant MV-01 still holds.
 
-- New route `/admin/corpus-correlations` (registered in admin router only).
-- New `src/pages/admin/CorpusCorrelations.tsx`:
-  - Header with three preset queries (Place↔Purana, Term↔Purana, Article↔Article).
-  - Force-graph (`react-force-graph-2d`, lazy-loaded) sized to viewport.
-  - Side table of top-N findings with Jaccard, shared count, "Open article", "Mark for review" (writes to existing `srangam_event_log` only — does not auto-promote).
-- New `src/hooks/useCorpusCorrelations.ts` — react-query wrapper over the RPC + the three views, 5-min staleTime.
+**Blast radius:** one migration (views + RPC), one hook, one page. No edits to public components, public RLS, or non-admin routes.
 
-### Documentation
+### X.7.3 — Findings persistence (curator-in-the-loop)
 
-- `docs/PURANIC_EXTRACTION.md` — current pipeline, job kinds, failure modes, watchdog behavior.
-- `docs/CORPUS_CORRELATION.md` — view contracts, RPC signature, what "Mark for review" does and does not do, promotion workflow.
-- Append rows to `docs/SCALABILITY_ROADMAP.md` for the new views (when to materialize, when to add indexes).
+Goal: make the Corpus Correlations page actionable. A curator clicking "Promote" turns a Jaccard pair into a row in the existing `srangam_cross_references` table (no schema change — `srangam_cross_references` already has `source_article_id`, `target_article_id`, `reference_type`, `strength`, `context_description`).
 
----
+- `src/pages/admin/CorpusCorrelations.tsx` — per-row "Promote → cross-reference" button; uses the **existing** admin RLS on `srangam_cross_references`. Pre-fill `reference_type='discovered'`, `strength=ceil(jaccard*10)`, `context_description={ axes:{places,puranas,terms,tags,biblio}, source:'corpus-correlations' }`.
+- `src/hooks/useCorpusCorrelations.ts` — add `promotePair` mutation; invalidate `cross_references` query keys.
+- Optional UI affordance: a "Promoted" badge on rows whose `(a,b)` already exists in `srangam_cross_references` (left-join the RPC result client-side).
 
-## Blast-radius guarantee
+**Blast radius:** one page + one hook. Zero migration. Reuses an RLS-policied table that already exists.
 
-Edits stay inside:
-- `src/pages/admin/**`, `src/components/admin/**`
-- `src/hooks/useAdmin*`, `src/hooks/usePurana*`, new `useCorpusCorrelations.ts`
-- `supabase/functions/backfill-article-pins/**`, `supabase/functions/extract-purana-references/**`
-- `supabase/migrations/**` (additive only — extend CHECK, add views, add RPC)
-- `docs/**`, `.lovable/plan.md`
+### X.7.4 — Nightly materialised snapshot (`corpus_correlate` job kind)
 
-Untouched: public routes, public components, public RLS, end-user UI, narration, article rendering, search, i18n, all Phase X.1–X.4 invariants.
+Goal: page load < 200 ms instead of running the multi-view RPC per refresh; gives us a temporal series for trend analysis later.
 
-## Sequencing
+- Migration:
+  - Extend `srangam_admin_jobs_kind_check` to include `'corpus_correlate'`.
+  - Create `public.srangam_corpus_correlations_snapshot (job_id, computed_at, article_a, article_b, places, puranas, terms, tags, biblio, total, jaccard, weights jsonb, PRIMARY KEY (job_id, article_a, article_b))` + GRANT SELECT to authenticated, admin-only write via RLS, indexed on `(computed_at DESC, jaccard DESC)`.
+- New edge function `supabase/functions/correlate-corpus/index.ts` — admin/service-role gated, inserts an `srangam_admin_jobs` row, computes via the RPC, bulk-inserts the snapshot, then `finishJob`.
+- pg_cron: 02:30 UTC daily invocation (registered via `supabase--insert` tool, not migration, because it embeds the anon key — per project convention).
+- `src/pages/admin/CorpusCorrelations.tsx` — add a "Source" toggle: **Live RPC** (current behaviour) vs **Latest snapshot** (default, fast). Show snapshot `computed_at` timestamp.
+- `supabase/functions/_shared/jobs.ts` — register the new `JobKind`.
 
-1. X.5.1 migration + edge fixes + stalled banner — **unblocks both broken jobs today**.
-2. X.5.2 progress polish + X.5.3 history strip — operator UX.
-3. X.6 views + RPC migration, then page + hook, then docs.
+**Blast radius:** one migration (one new table + one check-constraint extension), one new edge function, one cron registration, one shared types touch, one page toggle. Public site untouched.
 
-Each phase is independently shippable and independently revertable.
+### X.7.5 — Documentation + memory refresh
+
+- New: `docs/CORPUS_CORRELATION.md` — axes, weights, snapshot lifecycle, promotion workflow, temporal notes for the X.7 baseline.
+- Update: `docs/SCALABILITY_ROADMAP.md` — mark X.6 done, X.7 in progress; record the snapshot table as a new growth-watch surface.
+- Update: `docs/ADMIN_JOBS.md` — add `purana_extract` adaptive-chunking notes and `corpus_correlate` job lifecycle.
+- Update: `.lovable/plan.md` — append X.7.1–X.7.5 with file-level deltas (this plan, transcribed).
+- Update: `mem://index.md` Core — add "Correlation axes: place + purana + cultural-term + tag + biblio, weighted Jaccard, nightly snapshot".
+
+## Sequencing & rollback
+
+| Step | Ships independently | Rollback |
+|---|---|---|
+| X.7.1 | Yes — edge fn + UI only | Revert edge fn; UI still renders JobProgressCard on existing schema |
+| X.7.2 | Yes after X.7.1 | `DROP VIEW` + restore 2-arg RPC wrapper |
+| X.7.3 | Yes after X.7.2 | Hide promote button; no data loss (rows are normal cross_references) |
+| X.7.4 | Yes after X.7.2 | Unschedule cron, leave snapshot table empty, toggle defaults to Live |
+| X.7.5 | Anytime | Docs only |
+
+## What is intentionally **out of scope**
+
+- No changes to `srangam_correlation_matrix` (legacy, empty, orphaned) — decision deferred to a later "retire vs hydrate" review.
+- No automated cross-reference creation — promotion is always a human click (matches the user's "AI for curation, not expansion" memory).
+- No embeddings/vector search — that is a separate Phase Y, not part of the Jaccard substrate.
+- No public-facing correlation surface — admin-only until findings persistence proves quality.
+
+## File-level blast radius (complete)
+
+**Edge functions**
+- `supabase/functions/extract-purana-references/index.ts` (X.7.1, edit)
+- `supabase/functions/_shared/ai-provider.ts` (X.7.1, edit)
+- `supabase/functions/_shared/jobs.ts` (X.7.4, edit — add `'corpus_correlate'`)
+- `supabase/functions/correlate-corpus/index.ts` (X.7.4, new)
+
+**Migrations**
+- 1 migration for X.7.2 (3 views + extend RPC, additive)
+- 1 migration for X.7.4 (snapshot table + GRANTs + RLS + kind_check extension)
+
+**Frontend (admin-only)**
+- `src/pages/admin/PuranaReferences.tsx` (X.7.1, edit — drop legacy ExtractionProgress branch, surface last_error/last_item)
+- `src/hooks/usePuranaReferences.ts` (X.7.1, edit — ensure job row inserted before invoke)
+- `src/pages/admin/CorpusCorrelations.tsx` (X.7.2 + X.7.3 + X.7.4, edits — sliders, promote button, snapshot toggle)
+- `src/hooks/useCorpusCorrelations.ts` (X.7.2 + X.7.3, edits — weights, promotePair)
+
+**Docs / memory**
+- `docs/CORPUS_CORRELATION.md` (new)
+- `docs/SCALABILITY_ROADMAP.md`, `docs/ADMIN_JOBS.md`, `.lovable/plan.md`, `mem://index.md` (edits)
+
+**Cron registration (via `supabase--insert`, not migration)**
+- `cron.schedule('corpus-correlate-nightly', '30 2 * * *', …)` invoking `/functions/v1/correlate-corpus`
+
+Zero touches outside: `supabase/functions/**`, `supabase/migrations/**`, `src/pages/admin/**`, `src/hooks/useAdmin*` + `usePurana*` + `useCorpus*`, `docs/**`, memory. Public routes, public components, public RLS, end-user UI: untouched.
