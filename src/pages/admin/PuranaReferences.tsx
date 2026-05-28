@@ -29,7 +29,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 export default function PuranaReferences() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
-  const [currentArticle, setCurrentArticle] = useState<string>("");
+  // Phase X.7.1 — currentArticle state removed with the legacy progress bar.
   const [showBatchDialog, setShowBatchDialog] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
