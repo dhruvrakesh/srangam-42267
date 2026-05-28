@@ -91,7 +91,9 @@ export function NarrationDebugPanel() {
 
 const panelStyle: React.CSSProperties = {
   position: 'fixed',
-  bottom: 12,
+  // Phase Q / MC-01: sit above the mobile bottom tab bar (h-16 + safe-area)
+  // in dev preview, and cap width so it never causes horizontal page scroll.
+  bottom: 'calc(env(safe-area-inset-bottom) + 76px)',
   left: 12,
   zIndex: 99999,
   background: 'rgba(17,17,17,0.92)',
@@ -101,8 +103,9 @@ const panelStyle: React.CSSProperties = {
   fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
   fontSize: 11,
   lineHeight: 1.4,
-  minWidth: 220,
-  maxWidth: 320,
+  minWidth: 0,
+  maxWidth: 'calc(100vw - 24px)',
+  width: 'max-content',
   boxShadow: '0 6px 24px rgba(0,0,0,0.5)',
   pointerEvents: 'auto',
   border: '1px solid #2a2a2a',

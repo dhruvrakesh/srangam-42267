@@ -235,8 +235,14 @@ export function HeaderNav() {
           {/* Theme toggle */}
           <ThemeToggle />
 
-          {/* Language switcher */}
-          <EnhancedLanguageSwitcher />
+          {/* Language switcher — compact on mobile (Phase Q / MC-01) to keep
+              header chrome inside the 320px viewport. Full switcher returns at sm. */}
+          <div className="sm:hidden">
+            <EnhancedLanguageSwitcher compact showLabel={false} />
+          </div>
+          <div className="hidden sm:block">
+            <EnhancedLanguageSwitcher />
+          </div>
         </div>
         
         {/* ARIA live region for announcements */}
@@ -378,36 +384,40 @@ function MobileNavContent({
 }
 
 function MobileBottomTabs() {
+  // Phase Q / MC-01: safe-area padding so iOS home indicator doesn't crop
+  // tabs; min-w-0 on the grid prevents long labels forcing horizontal scroll.
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-40 bg-background border-t border-border shadow-sm lg:hidden">
-      <div className="grid grid-cols-4 text-xs">
-        <Link 
-          to="/" 
-          className="flex flex-col items-center py-2 px-1 hover:bg-accent hover:text-accent-foreground min-h-[48px] justify-center"
+    <nav
+      className="fixed bottom-0 inset-x-0 z-40 bg-background border-t border-border shadow-sm lg:hidden pb-[env(safe-area-inset-bottom)]"
+    >
+      <div className="grid grid-cols-4 text-xs min-w-0">
+        <Link
+          to="/"
+          className="flex flex-col items-center py-2 px-1 hover:bg-accent hover:text-accent-foreground min-h-[48px] justify-center min-w-0"
         >
           <Home className="h-5 w-5 mb-1" />
-          <span>Home</span>
+          <span className="truncate">Home</span>
         </Link>
-        <Link 
-          to="/themes/indian-ocean-world" 
-          className="flex flex-col items-center py-2 px-1 hover:bg-accent hover:text-accent-foreground min-h-[48px] justify-center"
+        <Link
+          to="/themes/indian-ocean-world"
+          className="flex flex-col items-center py-2 px-1 hover:bg-accent hover:text-accent-foreground min-h-[48px] justify-center min-w-0"
         >
           <List className="h-5 w-5 mb-1" />
-          <span>Themes</span>
+          <span className="truncate">Themes</span>
         </Link>
-        <Link 
-          to="/maps-data" 
-          className="flex flex-col items-center py-2 px-1 hover:bg-accent hover:text-accent-foreground min-h-[48px] justify-center"
+        <Link
+          to="/maps-data"
+          className="flex flex-col items-center py-2 px-1 hover:bg-accent hover:text-accent-foreground min-h-[48px] justify-center min-w-0"
         >
           <MapIcon className="h-5 w-5 mb-1" />
-          <span>Map</span>
+          <span className="truncate">Map</span>
         </Link>
-        <Link 
-          to="/search" 
-          className="flex flex-col items-center py-2 px-1 hover:bg-accent hover:text-accent-foreground min-h-[48px] justify-center"
+        <Link
+          to="/search"
+          className="flex flex-col items-center py-2 px-1 hover:bg-accent hover:text-accent-foreground min-h-[48px] justify-center min-w-0"
         >
           <BookOpen className="h-5 w-5 mb-1" />
-          <span>Search</span>
+          <span className="truncate">Search</span>
         </Link>
       </div>
     </nav>
