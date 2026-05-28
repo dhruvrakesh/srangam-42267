@@ -883,3 +883,32 @@ On `/articles/satisar-springs-and-shifting-shores`, one DB article with long IAS
 - Mobile header: language switcher is icon-only below `sm`; full label returns at `sm` and above.
 - Dev panel: in production builds (`!import.meta.env.DEV`) the panel does not mount at all; only DEV preview sees the repositioned overlay.
 
+
+## Phase U — Mobile Article Readability Recovery (2026-05-28)
+
+Surgical follow-up to Phase T after the `overflow-x-clip` wrapper was found to
+clip readable text on `/oceanic` article pages (384 px viewport). No DB or edge
+work; presentation layer only.
+
+### MV-02 invariants (extended)
+
+- `OceanicArticlePage` now mirrors `ArticlePage`: `<article data-testid="article-body">`
+  declares `overflow-x-clip` + `min-w-0` + `w-full`.
+- Article card chain (`grid` → primary column → `Card` → `CardContent`) carries
+  `min-w-0 w-full max-w-full` so the prose column can actually shrink below the
+  intrinsic width of long unbroken tokens.
+- `ProfessionalTextFormatter` h1/h2/h3/p/ul/li renderers carry
+  `min-w-0 max-w-full break-words [overflow-wrap:break-word]`; h1 mobile ramp is
+  `text-2xl sm:text-3xl md:text-4xl`.
+- Duplicate leading title suppressed at render-time via
+  `suppressLeadingTitle={pageTitle}` (source DB rows untouched; `stripLeadingTitle`
+  matches first `<h1>` or `# ` heading using conservative normalization).
+- Mobile (`max-width: 640px`) CSS uses `overflow-wrap: break-word` + `hyphens: auto`
+  on `.article-content` p/li/h1-h3 (regression guard accepts `break-word|anywhere`).
+
+### Regression net
+
+- `src/__tests__/responsive/article-prose-overflow.test.ts` parameterized over
+  both `ArticlePage` and `OceanicArticlePage`.
+- `src/__tests__/responsive/article-overflow-360.test.ts` unchanged.
+- Cross-browser visual sweep at 320/360/390/414 px remains a manual checkpoint.
