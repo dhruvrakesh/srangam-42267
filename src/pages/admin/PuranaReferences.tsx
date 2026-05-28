@@ -101,13 +101,13 @@ export default function PuranaReferences() {
   const handleBatchExtract = async () => {
     setShowBatchDialog(false);
     setIsProcessing(true);
-    setProgress({ current: 0, total: articles?.length || 0 });
-    
     try {
-      await extractMutation.mutateAsync({ batch_mode: true });
+      const result: any = await extractMutation.mutateAsync({ batch_mode: true });
+      if (result?.mode === 'batch' && result.job_id) {
+        setActiveJobId(result.job_id);
+      }
     } finally {
       setIsProcessing(false);
-      setProgress({ current: 0, total: 0 });
       setCurrentArticle("");
     }
   };
