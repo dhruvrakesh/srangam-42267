@@ -108,7 +108,6 @@ export default function PuranaReferences() {
       }
     } finally {
       setIsProcessing(false);
-      setCurrentArticle("");
     }
   };
 
