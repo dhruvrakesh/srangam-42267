@@ -100,14 +100,32 @@ WITH CHECK (bucket_id = 'og-images');
 
 ## Prompt Engineering Guidelines
 
-The DALL-E 3 prompt is structured for academic, dharmic aesthetics:
+> **Phase W (2026-05-28) update — No In-Image Text.** Earlier iterations
+> asked the model to render the article title in serif typography. This
+> reliably failed on diacritics (`ā / ś / ū / ṛ / ṅ`), producing visible
+> garbling such as "Varáhamüola" and "Ashóka". The current contract is
+> **pure iconography**: the title is fed into the prompt for thematic
+> steering and into `promptHash` for idempotency, but the model is
+> explicitly forbidden from rendering text, letters, glyphs, calligraphy,
+> watermarks, signage, numerals, or pseudo-script. The canonical surface
+> for the title is the page H1 plus `og:title` / `twitter:title` meta tags.
 
-1. **Clear Title Display**: Article title must be readable in large serif font
-2. **Theme Colors**: Use theme-specific color palette (see mapping above)
-3. **Sacred Geometry**: Subtle mandala, yantra, or architectural motifs as background
-4. **No Photography**: Avoid photographs or human faces for consistency
-5. **Academic Tone**: Professional, dignified appearance suitable for LinkedIn/Twitter
-6. **Aspect Ratio**: 1792×1024 (closest to OG standard 1.91:1)
+The image prompt is structured for academic, dharmic aesthetics:
+
+1. **No rendered text** — strict negative. Title appears only in meta tags + H1.
+2. **Theme Colors**: Use theme-specific color palette (see mapping above).
+3. **Sacred Geometry**: Subtle mandala, yantra, or architectural motifs as background.
+4. **No Photography**: Avoid photographs or human faces for consistency.
+5. **Academic Tone**: Professional, dignified appearance suitable for LinkedIn/Twitter.
+6. **Aspect Ratio**: 1792×1024 (closest to OG standard 1.91:1).
+
+> **Provider note.** The edge function uses `_shared/ai-provider.ts`
+> (`callImage`, `shape: 'landscape'`) which selects Gemini image models
+> first and falls back to OpenAI `gpt-image-2`. The cost table below
+> references DALL-E 3 for historical context; live spend tracks the
+> provider chain configured in `ai-provider.ts`.
+
+
 
 ## Usage
 

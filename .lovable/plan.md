@@ -1,126 +1,115 @@
-# Phase V — Enterprise CI Guardrails for Article Rendering
+# Phase W — Desktop Guardrail, Hardened Overflow Detection, Thematic OG Images
 
-Surgical, additive only. **Zero edits** to `src/components/**`, `src/pages/**`, `src/lib/**`, `supabase/**`, or DB. Builds three new test layers on top of the existing Vitest source-scan invariants (MV-01, MV-02), which become Layer 1 of a 4-layer net.
+Surgical, additive follow-up to Phase V. Context verified against `supabase/functions/generate-article-og/index.ts`, `docs/OG_IMAGE_SYSTEM.md`, `src/test/setup.ts`, `e2e/article-mobile.spec.ts`, `playwright.config.ts`, and the Phase O / P / U memory baselines. No production component, hook, lib, route, RLS, or migration is touched.
 
-## Revived context (verified, not assumed)
+## 1. Desktop Playwright guardrail (Layer 3 extension)
 
-- `package.json` has **no `test` script** and no `@playwright/test`. Vitest 4.1.6 + jsdom 29 + `@testing-library/react` are installed but `vitest.config.ts` uses `environment: 'node'` and has **no `setupFiles`**. We must add a jsdom config + setup for Layer 2 without breaking existing node-env source-scan tests.
-- Article routes (per `App.tsx`): there is **no `/oceanic/articles/...` route**. `OceanicArticlePage` is rendered conditionally inside the canonical `/articles/:slug` flow. The E2E spec must hit `/articles/<slug>` and select which renderer to assert against based on observed DOM, not assume a route.
-- `ArticlePage` is a **props-driven** component (`title`, `content`, `tags`, `icon` …), not slug-driven. Layer 2 renders it with a synthetic fixture — no resolver/DB mocking needed. `OceanicArticlePage` is slug/article-driven and needs a lightweight fixture + mocked `useArticle`.
-- Existing tests live in `src/__tests__/responsive/`. Phase U closed with 20/20 passing source-scan specs; we will not touch them.
-- `.lovable/plan.md` Phase U is marked complete; Phase V is added as the observability follow-up the user already deferred ("DOM scrollWidth diagnostic helper in CI logs", "Playwright visual regression").
+**New:** `e2e/article-desktop.spec.ts`
+- Pinned to a new `chromium-desktop` Playwright project (added below) so mobile project semantics remain unchanged.
+- For `E2E_ARTICLE_SLUG` (default `reassessing-ashoka-legacy`), per viewport in `[1024×768, 1280×800, 1440×900, 1920×1080]`:
+  - `documentElement.scrollWidth <= innerWidth + 1` (no page-level horizontal scroll).
+  - `[data-testid="article-body"]` text length > 500.
+  - No descendants flagged by the shared `collectOffenders` walker.
+- Tolerance for legitimate desktop scrollbar gutter handled via the existing `+ 1` slack.
 
-## Goals
-
-1. **Layer 2 — Vitest DOM overflow check (jsdom):** for `ArticlePage` and `OceanicArticlePage`, render in jsdom at simulated 384 px, walk `[data-testid="article-body"]`, and fail if any descendant reports `scrollWidth > clientWidth + 1` under a deterministic shim. Report offender path (`tag.classExcerpt[data-testid]`) in the failure message.
-2. **Layer 3 — Playwright mobile E2E:** load `/articles/<stable-slug>` in Chromium at 384×844, assert `document.documentElement.scrollWidth <= innerWidth + 1`, `[data-testid="article-body"]` text length > 500 chars, and no descendant has `scrollWidth > clientWidth + 1` (real layout). Sweep 320/360/390/414.
-3. **Layer 4 — Performance budget:** measure article-body first-paint and LCP via Playwright; fail if regressed past documented thresholds calibrated from the first green run.
-
-Layers 1 + 2 run on every PR via `bunx vitest run`. Layers 3 + 4 run via `bun run test:e2e` (documented; no CI workflow file created in this phase).
-
-## Files
-
-```text
-NEW   src/test/setup.ts                                          (jsdom globals shim)
-EDIT  vitest.config.ts                                           (jsdom + setupFiles, scoped)
-NEW   src/__tests__/responsive/article-dom-overflow.test.tsx     (Layer 2)
-NEW   src/__tests__/fixtures/articleFixture.ts                   (deterministic fixture)
-NEW   playwright.config.ts                                       (Chromium only, webServer)
-NEW   e2e/article-mobile.spec.ts                                 (Layer 3)
-NEW   e2e/article-perf.spec.ts                                   (Layer 4)
-EDIT  package.json                  (scripts: test, test:e2e, test:perf; devDep @playwright/test)
-EDIT  docs/RELIABILITY_AUDIT.md     (Phase V section + thresholds + commands)
-EDIT  .lovable/plan.md              (Phase V status entry)
+**Edit:** `playwright.config.ts` — add a second entry to `projects[]`:
 ```
+{ name: 'chromium-desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } }
+```
+`webServer`, `baseURL`, retries, reporter all unchanged. `bun run test:e2e` now runs both projects; mobile spec behavior is bit-for-bit identical.
 
-No production source files (`src/components`, `src/pages`, `src/lib`, edge functions, migrations) are modified.
+## 2. Hardened overflow detection (shared source of truth)
 
-## Layer 2 — DOM overflow test (technical)
+**New:** `e2e/_helpers/overflow.ts` exports `SANCTIONED_OVERFLOW_RE` and `collectOffenders(root)`. The current inline copy in `e2e/article-mobile.spec.ts` is replaced by an import — no logic change.
 
-- `vitest.config.ts`: switch `environment` to `jsdom`, add `setupFiles: ['./src/test/setup.ts']`, keep existing `include` glob so the Phase P/U source-scan tests still run (they are environment-agnostic).
-- `src/test/setup.ts`: imports `@testing-library/jest-dom`, defines `matchMedia` stub, sets `window.innerWidth = 384`, and installs a **deterministic width shim** on `HTMLElement.prototype`:
-  - `clientWidth` getter walks up to the nearest ancestor with an explicit width (root container = 384) and returns that minus padding.
-  - `scrollWidth` getter returns `max(clientWidth, intrinsicChildWidth)` where intrinsic width is parsed from inline `style.width`, `style.minWidth`, and Tailwind `min-w-[NNNpx]` / `w-[NNNpx]` class hints on the element or its descendants.
-  - Documented as a **structural** check, not a layout engine. It catches the exact regression class (fixed-width child inside the prose well) that Phase K/P/U fought.
-- `src/__tests__/fixtures/articleFixture.ts`: small in-memory article object — title, dek, ~800 chars of content with a representative `<h1>`, paragraphs, an `<ul>`, a wide `<table class="min-w-[900px]">` inside `<div class="overflow-x-auto">` (sanctioned), and a cultural-term chip. Single source of truth shared by both specs.
-- `src/__tests__/responsive/article-dom-overflow.test.tsx`:
-  - Renders `<MemoryRouter><ArticlePage {...fixture} icon={DummyIcon} /></MemoryRouter>` then `<OceanicArticlePage />` with `useArticle` mocked via `vi.mock` to return the fixture.
-  - Locates `[data-testid="article-body"]`, walks descendants, skips any node whose nearest ancestor matches `.overflow-x-auto` or `.overflow-auto` (sanctioned wide wrappers).
-  - For each remaining offender, builds `tagName + '.' + className.slice(0,40) + [data-testid?]` path.
-  - `expect(offenders, offenders.join('\n')).toEqual([])`.
+**Expanded allowlist** (single regex, used by Layer 2 jsdom shim, Layer 2 walker, and Layer 3 walker):
+```
+/\b(overflow-(?:x-)?(?:auto|scroll|hidden|clip)|snap-x|carousel|leaflet-container|map-container|chart-scroll|embla)\b/
+```
+Plus a runtime check: skip any element whose computed `overflow-x` ∈ `{auto, scroll, hidden, clip}` so future Tailwind variants (`md:overflow-x-auto`) and inline `style="overflow-x:auto"` are covered without churn. Inline `style` is honored in jsdom; `getComputedStyle` is used in Playwright.
 
-## Layer 3 — Playwright mobile E2E (technical)
+**New Layer 2 specs** in `src/__tests__/responsive/article-dom-overflow.test.tsx` (all wrapped in the existing 384px provider harness):
+1. Wide `<img>` (intrinsic 1600) with the production `img { max-width:100%; height:auto }` rule injected via `<style>` → **no offender** (positive).
+2. Same wide `<img>` WITHOUT the constraint → **flagged** (negative control proves images are observed).
+3. `<table class="min-w-[900px]">` inside `<div class="overflow-x-auto">` → **no offender** (positive).
+4. Bare `<table class="min-w-[900px]">` directly in `article-body` → **flagged** (negative control).
+5. `<pre><code>` with a 200-char unbroken line inside a `.article-content pre` styled `overflow-x:auto` → **no offender**.
 
-- Add devDep `@playwright/test`. `playwright.config.ts`: Chromium only, `testDir: 'e2e'`, `use.baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:8080'`, `webServer: { command: 'bun run dev', url: 'http://localhost:8080', reuseExistingServer: !process.env.CI }`.
-- `e2e/article-mobile.spec.ts`:
-  - Stable slug: `reassessing-ashoka-legacy` (verified — exists in `content/articles/` and DB).
-  - Viewport 384×844. `await page.goto('/articles/reassessing-ashoka-legacy')`.
-  - `await page.waitForSelector('[data-testid="article-body"]', { state: 'visible' })`.
-  - Asserts:
-    1. `page.evaluate(() => document.documentElement.scrollWidth) <= page.viewportSize().width + 1`.
-    2. `(await page.locator('[data-testid="article-body"]').innerText()).length > 500`.
-    3. `page.evaluate` walks article-body, returns offenders where `scrollWidth > clientWidth + 1` (excluding `.overflow-x-auto` subtrees). Expect empty.
-  - Viewport sweep `[320, 360, 390, 414]` repeats assertions 1 + 3.
+**Shim extension** in `src/test/setup.ts` (additive, test-env only):
+- `intrinsicMinWidth` also honors `<img width="NNN">`, `<img>` natural-width hint via `naturalWidth` setter the test seeds, inline `style="width:NNNpx"`, and inline `style="min-width:NNNpx"`.
+- Sanctioned-wrapper skip uses the new shared regex + an inline-style check for `overflow-x`.
+- No change for any existing spec (the previous `min-w-[NNNpx]` parsing remains the primary path).
 
-## Layer 4 — Performance budget (technical)
+## 3. Thematic (non-literal) OG image generation
 
-- `e2e/article-perf.spec.ts`. Same baseURL, viewport 390×844, Chromium CDP throttling: `Network.emulateNetworkConditions` Fast-3G preset + `Emulation.setCPUThrottlingRate(4)`.
-- `page.addInitScript` injects a `MutationObserver` watching for `[data-testid="article-body"]` insertion; stamps `performance.mark('article-body-visible')`. Also a `PerformanceObserver({type:'largest-contentful-paint',buffered:true})` collecting last LCP entry.
-- Navigates, waits for the mark, reads `performance.getEntriesByName('article-body-visible')[0].startTime` and the LCP.
-- Thresholds (constants at top of spec, frozen after first green CI run):
-  - `ARTICLE_BODY_VISIBLE_MS = 2500`
-  - `LCP_MS = 3000`
-- Fails if exceeded; logs measured values for trend tracking.
+Verified against `supabase/functions/generate-article-og/index.ts`:
+- Provider stack is `callImage(prompt, { shape: 'landscape' })` from `_shared/ai-provider.ts` (Gemini → OpenAI fallback). DALL-E 3 references in `docs/OG_IMAGE_SYSTEM.md` are stale; doc will be corrected in this phase (no code reference depends on it).
+- Output size remains 1792×1024 (closest landscape to OG 1.91:1), uploaded to Google Drive via `srangam_media_assets`, denormalized onto `srangam_articles.og_image_url`. **No schema, no signature, no caller change.**
+- Idempotency: `promptHash = SHA-256(prompt)`; any prompt edit naturally invalidates the cache on next regen and bumps `version`, flips prior row to `superseded`. This is the desired effect — no migration needed.
 
-## CI wiring
+**Edit only** lines 156–175 of `index.ts` (the prompt string). New contract:
+- Remove `The article title "${title}" MUST appear clearly readable in large elegant serif font` — this directive is the root cause of glyph garbling on diacritics (`ā / ś / ū / ṅ`), e.g. the "Varáhamüola" failure seen in the user's screenshot.
+- Add `SUBJECT:` line — a server-built one-sentence thematic interpretation: `Symbolic, non-literal evocation of <title>: <theme> iconography drawing on ${colors.motif}, rendered as visual metaphor — never as text.`
+- Add `NEGATIVE:` line — `absolutely no text, no letters, no glyphs, no captions, no watermarks, no signage, no calligraphy of the title, no pseudo-script, no logos`.
+- Keep palette (`colors.primary`, `colors.accent`), cream background, sacred-geometry motif, no-photographs / no-faces, museum/journal aesthetic.
+- `title` and `theme` continue to flow into the prompt body (for `promptHash` + thematic steering) but are never asked to be rendered as pixels.
 
-- `package.json` scripts: `"test": "vitest run"`, `"test:e2e": "playwright test"`, `"test:perf": "playwright test e2e/article-perf.spec.ts"`.
-- No `.github/workflows/*.yml` created in this phase — Lovable does not own a CI runner here. Commands are documented in `RELIABILITY_AUDIT.md` Phase V.
+Existing OG images stay until admin triggers regen (manual or via Data Health bulk path). `force: true` path is unchanged. AI spend stays bounded.
+
+## Documentation (per documentation-first principle)
+
+- `.lovable/plan.md` — append Phase W (objective, three workstreams, files touched, acceptance, frozen 2026-05-28 baseline note).
+- `docs/RELIABILITY_AUDIT.md` — extend Phase V matrix with: desktop viewport row (1024/1280/1440/1920), image invariant (`img` constrained by prose `max-width:100%`), table invariant (`min-w-[≥360px]` must sit inside sanctioned wrapper), pre/code invariant (`overflow-x:auto` mandatory). Add cross-ref to OG no-text contract.
+- `docs/OG_IMAGE_SYSTEM.md` — (a) correct DALL-E 3 references to "Gemini → OpenAI fallback via `_shared/ai-provider.ts`"; (b) add a "No In-Image Text" subsection with rationale (diacritic legibility, `ā/ś/ū/ṛ/ṅ` failures, page H1 + meta tags are the canonical title surface); (c) update "Prompt Engineering Guidelines" item 1 accordingly.
 
 ## Acceptance gate
 
-- `bunx vitest run` is green, including Layer 2 (22+ specs total).
-- `bunx playwright test` is green locally against `bun run dev`.
-- `docs/RELIABILITY_AUDIT.md` Phase V lists the 4 layers, thresholds, commands, and a temporal note that thresholds were calibrated on YYYY-MM-DD.
-- `.lovable/plan.md` Phase V status entry added.
-- Zero diffs in `src/components/**`, `src/pages/**`, `src/lib/**`, `supabase/**`.
+- `bunx vitest run` green: prior 23 specs + 5 new Layer 2 specs (image ×2, table ×2, pre/code ×1).
+- `bunx playwright test --project=chromium-mobile` green at 320 / 360 / 384 / 390 / 414 (no behavior change).
+- `bunx playwright test --project=chromium-desktop` green at 1024 / 1280 / 1440 / 1920.
+- One admin-triggered regen of `reassessing-ashoka-legacy` (and `gopadri-kasyapa-varahamula` per the failing screenshot) produces an OG PNG with **zero rendered text**, theme-consistent iconography, `srangam_media_assets.version = prev + 1`, `status = 'active'`, prior row flipped to `superseded`. Confirmed via `srangam_event_log` `evt: 'og_image_generated'`.
+- Zero edits to `src/components/**`, `src/pages/**`, `src/hooks/**`, `src/lib/**`, RLS policies, migrations, or any edge function other than `generate-article-og`.
 
-## Risk & rollback
+## Files touched (exhaustive)
 
-- Only real risk: switching Vitest to jsdom could surface latent DOM assumptions in Phase P/U source-scan tests. Mitigation: those specs only read files (`readFileSync`) and never touch `window`; verified safe. If a regression appears, the rollback is a one-line revert of `vitest.config.ts` — Layer 2 can also be isolated to its own `vitest.dom.config.ts` if needed.
-- Playwright is a devDep only; no runtime bundle impact.
+**New (3):** `e2e/_helpers/overflow.ts`, `e2e/article-desktop.spec.ts`, plus expanded specs inside the existing `article-dom-overflow.test.tsx`.
 
-## Out of scope (deferred to Phase W)
+**Edited (7):** `e2e/article-mobile.spec.ts` (import shared helper only), `playwright.config.ts` (add desktop project), `src/test/setup.ts` (additive shim extensions), `src/__tests__/responsive/article-dom-overflow.test.tsx` (5 new specs + shared regex), `supabase/functions/generate-article-og/index.ts` (prompt block lines 156–175 only), `.lovable/plan.md`, `docs/RELIABILITY_AUDIT.md`, `docs/OG_IMAGE_SYSTEM.md`.
 
-- GitHub Actions workflow file (needs user confirmation of CI runner + secrets).
-- Visual regression snapshots.
-- Lighthouse CI / Web Vitals dashboard.
-- Multi-browser (WebKit / Firefox) E2E matrix.
+## Risk register
 
-## Implementation order (after approval)
+| Risk | Mitigation |
+|---|---|
+| Desktop sweep flakiness on scrollbar gutter | `+1` slack already used by mobile; reuse the same tolerance. |
+| Shared regex over-skips legitimate offenders | Negative-control specs (#2 and #4) lock detection in. |
+| Prompt change still emits text on some Gemini runs | `NEGATIVE` block is explicit; if regression observed, fall back to `openai/gpt-image-2` via existing provider chain — no code change required. |
+| Stale OG images linger on social caches | Existing `version` bump + `og_image_status` flip; admin re-shares via FB/Twitter/LinkedIn debuggers (already documented in OG doc §Validation). |
+| Doc drift introduces confusion | All three docs edited in same phase; Phase W marked frozen-baseline 2026-05-28. |
 
-1. Phase V baseline note in `.lovable/plan.md` + `docs/RELIABILITY_AUDIT.md`.
-2. `src/test/setup.ts` + `vitest.config.ts` switch to jsdom; run existing suite to confirm 20/20 still green.
-3. Fixture + Layer 2 spec; confirm green.
-4. Install `@playwright/test`, add `playwright.config.ts`, Layer 3 spec; run locally.
-5. Layer 4 spec; calibrate thresholds from first run; freeze.
-6. Update docs with measured baseline; close Phase V.
+## Out of scope (Phase X candidates)
+
+- Visual regression snapshots (`toHaveScreenshot` / Percy).
+- Lighthouse CI desktop perf budget.
+- Bulk backfill regen of all 32+ OG images (admin-discretion to control AI spend).
+- Migration of `docs/OG_IMAGE_SYSTEM.md` storage section (currently references `og-images` bucket; live system uses Google Drive — separate doc-only cleanup).
 
 ---
 
-## Phase V — Status (2026-05-28)
+## Phase W — Implementation status (2026-05-28, frozen)
 
-Completed (additive, zero production source edits):
-- `vitest.config.ts` switched to `jsdom` + `setupFiles: ['./src/test/setup.ts']`.
-- `src/test/setup.ts` — jest-dom + matchMedia stub + deterministic `clientWidth`/`scrollWidth` shim parsing inline style and Tailwind `min-w-[NNNpx]` / `w-[NNNpx]` hints.
-- `src/__tests__/fixtures/articleFixture.ts` — deterministic article fixture (HTML body + sanctioned wide table inside `overflow-x-auto`).
-- `src/__tests__/responsive/article-dom-overflow.test.tsx` — Layer 2: ArticlePage (with `CulturalTermTooltip` stubbed) + OceanicArticlePage structural shell + negative-control shim sanity. 23/23 green.
-- `playwright.config.ts` + `e2e/article-mobile.spec.ts` + `e2e/article-perf.spec.ts` — Layers 3 + 4 (mobile sweep 320/360/384/390/414; CDP Fast-3G + 4× CPU perf budget).
-- `package.json` — `test`, `test:e2e`, `test:perf` scripts; `@playwright/test` devDep.
-- `docs/RELIABILITY_AUDIT.md` — Phase V section with layers, thresholds, commands.
+✅ **Complete.** All 28 Vitest specs green (23 prior + 5 new Phase W).
 
-Deferred (Phase W):
-- GitHub Actions workflow file.
-- Visual regression snapshots.
-- Lighthouse CI / Web Vitals dashboard.
-- Multi-browser E2E matrix.
+- `e2e/_helpers/overflow.ts` — shared walker (mobile + desktop).
+- `e2e/article-desktop.spec.ts` — 1024/1280/1440/1920 sweep.
+- `playwright.config.ts` — `chromium-desktop` project added; mobile unchanged.
+- `src/test/overflow-rules.ts` — shared `SANCTIONED_OVERFLOW_RE` constant.
+- `src/test/setup.ts` — shim honors `<img width>`, `naturalWidth`, inline
+  `style="(min-)width:NNNpx"`, inline `overflow-x`, plus expanded sanctioned-class list.
+- `src/__tests__/responsive/article-dom-overflow.test.tsx` — 5 new specs
+  (img × 2, table × 2, pre/code × 1).
+- `supabase/functions/generate-article-og/index.ts` — non-literal prompt
+  with explicit `NEGATIVE` block; title no longer rendered in pixels.
+- `docs/RELIABILITY_AUDIT.md`, `docs/OG_IMAGE_SYSTEM.md` — synchronized.
+
+Next admin OG regen on `reassessing-ashoka-legacy` / `gopadri-kasyapa-varahamula`
+will produce a zero-text PNG and bump `srangam_media_assets.version`.

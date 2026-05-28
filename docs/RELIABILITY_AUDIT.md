@@ -966,3 +966,57 @@ bunx playwright install chromium
 - Visual regression snapshots.
 - Lighthouse CI dashboard.
 - Multi-browser (WebKit / Firefox) matrix.
+
+---
+
+## Phase W — Desktop guardrail, hardened overflow, thematic OG (2026-05-28)
+
+Surgical extension of Phase V. No production source touched.
+
+### Layer 3 (Playwright) — desktop project added
+
+- `e2e/article-desktop.spec.ts` sweeps **1024×768 / 1280×800 / 1440×900 / 1920×1080**.
+- New `chromium-desktop` project in `playwright.config.ts`. `chromium-mobile` unchanged.
+- Both projects share `e2e/_helpers/overflow.ts` (`collectOffenders` walker).
+
+### Hardened overflow detection
+
+Shared sanctioned-class regex (`src/test/overflow-rules.ts`,
+`e2e/_helpers/overflow.ts`):
+
+```
+/\b(overflow-(?:x-)?(?:auto|scroll|hidden|clip)|snap-x|carousel|leaflet-container|map-container|chart-scroll|embla)\b/
+```
+
+Plus runtime checks for inline `overflow-x: auto|scroll|hidden|clip` and
+(in Playwright) `getComputedStyle().overflowX`.
+
+### New Layer 2 invariants
+
+| Invariant | Spec | Status |
+|---|---|---|
+| Wide `<img>` constrained by `img { max-width:100% }` | Phase W positive | green |
+| Wide `<img>` unconstrained → flagged | Phase W negative | green |
+| `<table min-w-[≥360px]>` inside `overflow-x-auto` | Phase W positive | green |
+| Bare wide `<table>` → flagged | Phase W negative | green |
+| `<pre><code>` inside `overflow-x:auto` | Phase W positive | green |
+
+### Thematic OG image contract (cross-ref: `docs/OG_IMAGE_SYSTEM.md`)
+
+`supabase/functions/generate-article-og/index.ts` prompt rewritten:
+- Title no longer rendered into the pixels (root cause of diacritic
+  garbling — "Varáhamüola", "Ashóka").
+- Explicit `NEGATIVE` block forbids text, glyphs, calligraphy, signage,
+  watermarks, logos.
+- `SUBJECT` block server-derived from `title + theme + colors.motif` —
+  pure iconography.
+- Palette, motif, no-photographs / no-faces preserved.
+- `promptHash` change forces version bump on next regen.
+
+### Commands (unchanged)
+
+```bash
+bun run test                                       # Vitest (28 specs)
+bunx playwright test --project=chromium-mobile     # mobile sweep
+bunx playwright test --project=chromium-desktop    # desktop sweep
+```
