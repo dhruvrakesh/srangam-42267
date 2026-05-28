@@ -420,6 +420,13 @@ export type Database = {
             foreignKeyName: "srangam_article_pins_gazetteer_id_fkey"
             columns: ["gazetteer_id"]
             isOneToOne: false
+            referencedRelation: "srangam_corpus_purana_pin_overlap"
+            referencedColumns: ["gazetteer_id"]
+          },
+          {
+            foreignKeyName: "srangam_article_pins_gazetteer_id_fkey"
+            columns: ["gazetteer_id"]
+            isOneToOne: false
             referencedRelation: "srangam_gazetteer"
             referencedColumns: ["id"]
           },
@@ -1449,6 +1456,43 @@ export type Database = {
         }
         Relationships: []
       }
+      srangam_corpus_article_place_pairs: {
+        Row: {
+          article_a: string | null
+          article_b: string | null
+          shared_places: number | null
+        }
+        Relationships: []
+      }
+      srangam_corpus_article_purana_pairs: {
+        Row: {
+          article_a: string | null
+          article_b: string | null
+          shared_puranas: number | null
+        }
+        Relationships: []
+      }
+      srangam_corpus_purana_pin_overlap: {
+        Row: {
+          adhyaya: string | null
+          article_id: string | null
+          gazetteer_id: string | null
+          kanda: string | null
+          pin_conf: string | null
+          place: string | null
+          purana_conf: number | null
+          purana_name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_purana_references_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       _postgis_deprecate: {
@@ -1726,6 +1770,17 @@ export type Database = {
         Returns: boolean
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
+      get_corpus_correlations: {
+        Args: { limit_rows?: number; min_shared?: number }
+        Returns: {
+          article_a: string
+          article_b: string
+          jaccard: number
+          shared_places: number
+          shared_puranas: number
+          shared_total: number
+        }[]
+      }
       get_purana_statistics: {
         Args: never
         Returns: {

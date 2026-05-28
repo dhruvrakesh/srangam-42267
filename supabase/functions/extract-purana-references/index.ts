@@ -347,7 +347,10 @@ serve(async (req) => {
     if (done) {
       await finishJob(supabase, body.job_id, 'succeeded');
     } else {
-      schedulePumpReinvoke(req.url, {
+      // Phase X.5.1 — build pump target from env (req.url is internal → 404s).
+      const pumpUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/extract-purana-references`;
+      console.log(`[extract-purana-references] pump target=${pumpUrl} next_offset=${nextOffset}`);
+      schedulePumpReinvoke(pumpUrl, {
         batch_mode: true,
         job_id: body.job_id,
         offset: nextOffset,

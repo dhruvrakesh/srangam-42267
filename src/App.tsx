@@ -80,6 +80,7 @@ const GitHubSync = lazy(() => import("./pages/admin/GitHubSync"));
 const ContextManagement = lazy(() => import("./pages/admin/ContextManagement"));
 const DataHealth = lazy(() => import("./pages/admin/DataHealth"));
 const GeographyMedia = lazy(() => import("./pages/admin/GeographyMedia"));
+const CorpusCorrelations = lazy(() => import("./pages/admin/CorpusCorrelations"));
 const Auth = lazy(() => import("./pages/Auth"));
 import { AdminLayout } from "./components/admin/AdminLayout";
 
@@ -226,7 +227,8 @@ const App = () => (
                     <Route path="purana-refs" element={<PuranaReferences />} />
                     <Route path="analytics" element={<ImportAnalytics />} />
                     <Route path="context" element={<ContextManagement />} />
-                    <Route path="data-health" element={<DataHealth />} />
+                    <Route path="geography-media" element={<GeographyMedia />} />
+                    <Route path="corpus-correlations" element={<CorpusCorrelations />} />
                     <Route path="geography-media" element={<GeographyMedia />} />
                   </Route>
                   

@@ -16,7 +16,7 @@
  *   • Tears the channel down on unmount or when `jobId` changes.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface AdminJobRow {
@@ -40,27 +40,46 @@ export interface AdminJobRow {
 }
 
 
+const RECENT_CAP = 8;
+const STALL_MS = 90_000;
+
 export function useAdminJob(jobId: string | null) {
   const [job, setJob] = useState<AdminJobRow | null>(null);
+  const [recentItems, setRecentItems] = useState<string[]>([]);
+  const [nowTick, setNowTick] = useState(() => Date.now());
+  const lastItemRef = useRef<string | null>(null);
+
+  // Heartbeat tick — re-evaluates `stalled` every 5s without DB chatter.
+  useEffect(() => {
+    if (!jobId) return;
+    const id = window.setInterval(() => setNowTick(Date.now()), 5_000);
+    return () => window.clearInterval(id);
+  }, [jobId]);
 
   useEffect(() => {
     if (!jobId) {
       setJob(null);
+      setRecentItems([]);
+      lastItemRef.current = null;
       return;
     }
     let cancelled = false;
 
-    // 1. Initial snapshot.
     (async () => {
       const { data } = await supabase
         .from('srangam_admin_jobs')
         .select('*')
         .eq('id', jobId)
         .maybeSingle();
-      if (!cancelled && data) setJob(data as AdminJobRow);
+      if (!cancelled && data) {
+        setJob(data as AdminJobRow);
+        if ((data as AdminJobRow).last_item) {
+          lastItemRef.current = (data as AdminJobRow).last_item;
+          setRecentItems([(data as AdminJobRow).last_item as string]);
+        }
+      }
     })();
 
-    // 2. Realtime UPDATE subscription scoped to this row.
     const channel = supabase
       .channel(`admin-job:${jobId}`)
       .on(
@@ -71,7 +90,17 @@ export function useAdminJob(jobId: string | null) {
           table: 'srangam_admin_jobs',
           filter: `id=eq.${jobId}`,
         },
-        (payload) => setJob(payload.new as AdminJobRow),
+        (payload) => {
+          const next = payload.new as AdminJobRow;
+          setJob(next);
+          if (next.last_item && next.last_item !== lastItemRef.current) {
+            lastItemRef.current = next.last_item;
+            setRecentItems((prev) => {
+              const merged = [next.last_item as string, ...prev];
+              return merged.slice(0, RECENT_CAP);
+            });
+          }
+        },
       )
       .subscribe();
 
@@ -96,6 +125,16 @@ export function useAdminJob(jobId: string | null) {
     return Math.round((elapsed / job.processed) * remaining);
   }, [job]);
 
+  /** Phase X.5.1 — true when the row is still `running` but no heartbeat
+   *  has landed for STALL_MS. Watchdog reaps at 5 min; we surface a
+   *  yellow banner well before that so operators aren't left guessing. */
+  const stalled = useMemo(() => {
+    if (!job || job.status !== 'running') return false;
+    const beat = job.heartbeat_at ?? job.started_at;
+    if (!beat) return false;
+    return nowTick - new Date(beat).getTime() > STALL_MS;
+  }, [job, nowTick]);
+
   async function cancel() {
     if (!jobId || !job || job.status !== 'running') return;
     await supabase
@@ -104,8 +143,9 @@ export function useAdminJob(jobId: string | null) {
       .eq('id', jobId);
   }
 
-  return { job, progress, etaMs, cancel };
+  return { job, progress, etaMs, cancel, recentItems, stalled };
 }
+
 
 export function formatEta(ms: number | null): string {
   if (ms === null) return '—';

@@ -94,6 +94,11 @@ const adminNavItems = [
     url: "/admin/geography-media",
     icon: MapIcon,
   },
+  {
+    title: "Corpus Correlations",
+    url: "/admin/corpus-correlations",
+    icon: Network,
+  },
 ];
 
 export function AdminLayout() {
