@@ -47,7 +47,7 @@ import { SupportedLanguage } from '@/lib/i18n';
 import { normalizeLanguageCode, getScriptFont } from '@/lib/languageUtils';
 import { cn } from '@/lib/utils';
 import { enhanceTextWithCulturalTerms } from '@/lib/culturalTermEnhancer';
-import { sanitizeArticleHtml } from '@/lib/textSanitizer';
+import { sanitizeArticleHtml, stripLeadingTitle } from '@/lib/textSanitizer';
 import { EvidenceTable, isEvidenceTable } from './EvidenceTable';
 import { MermaidBlock } from './MermaidBlock';
 
@@ -57,6 +57,13 @@ interface ProfessionalTextFormatterProps {
   enableCulturalTerms?: boolean;
   enableDropCap?: boolean;
   autoHighlightTerms?: boolean; // Auto-detect and highlight cultural terms
+  /**
+   * Phase U.2 — When supplied, the first leading <h1> / `# ` heading in
+   * the body is suppressed at render time IF it is semantically equivalent
+   * to this title. Prevents duplicate-title clipping on mobile cards.
+   * Source DB rows are never mutated.
+   */
+  suppressLeadingTitle?: string;
 }
 
 export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps> = ({
@@ -64,7 +71,8 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
   className,
   enableCulturalTerms = true,
   enableDropCap = false,
-  autoHighlightTerms = true
+  autoHighlightTerms = true,
+  suppressLeadingTitle,
 }) => {
   const { i18n } = useTranslation();
   const currentLanguage = normalizeLanguageCode(i18n.language || 'en') as SupportedLanguage;
