@@ -145,7 +145,7 @@ const ArticleContent = React.memo(({
 
         {/* Professional Article Content */}
         <div className="relative z-10">
-          <div className="max-w-4xl mx-auto px-6">
+          <div className="max-w-4xl mx-auto px-0 min-w-0">
             <ProfessionalTextFormatter 
               content={typeof content === 'string' ? { en: content } : content}
               className="mb-12"
