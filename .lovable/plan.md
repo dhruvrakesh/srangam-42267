@@ -1,101 +1,373 @@
-# Phase T — Mobile Article Readability, Honestly Diagnosed
+# Enterprise Surgical Recovery Plan: Mobile Article Readability
 
-This plan is surgical and presentation-layer. No DB / RLS / edge-function / narration / resolver / import-pipeline changes.
+## Baseline diagnosis
 
-## What the diagnostic actually showed
+The project is running and functional. The failure is a presentation-layer regression, not a backend outage.
 
-A live DOM inspection at 360×640 on the sandbox for the Satīsar article (rendered by `OceanicArticlePage`, **not** `ArticlePage`) returned clean numbers: `documentElement.scrollWidth === clientWidth === 360`, h1 fits, paragraphs fit, list items fit. So the previous "horizontal page overflow" fix (Phase P / MV-02) is intact — but **only on `ArticlePage.tsx`**. The screenshots the user sent are from `OceanicArticlePage.tsx`, which renders every published DB article (Satīsar, Gopādri, …) and was **never wired into Phase P**.
+### What the live/mobile evidence shows
 
-That is the root cause of the user's frustration: the invariants exist on the wrong component.
+On the mobile article route `/articles/satisar-springs-sacred-flow`, the page-level overflow is now clipped/contained:
 
-A careful re-read of the screenshots + code confirms five distinct mobile defects on `OceanicArticlePage`:
+```text
+documentElement.clientWidth = 360
+documentElement.scrollWidth = 360
+body.clientWidth = 360
+body.scrollWidth = 360
+```
 
-1. **H1 is bare** — `text-4xl font-bold leading-tight`, no responsive ramp, no `break-words`, no `[overflow-wrap:break-word]`, no `[hyphens:auto]`, no `min-w-0`. On a 384 px Chrome viewport the title visually dominates 7–8 lines and looks broken next to the hero card.
-2. **No article overflow guard** — `OceanicArticlePage` has no `<article data-testid="article-body">` wrapper, no `overflow-x-clip`, no `min-w-0` on the `Card`/`CardContent` that hosts `ProfessionalTextFormatter`. MV-02 doesn't apply.
-3. **`overflow-wrap: anywhere` is over-applied** — Phase P scoped `anywhere` to all `.article-content p|li|h1|h2|h3` at ≤640 px. Per CSS spec, `anywhere` breaks at *any* grapheme, including mid-word in English (e.g. "climbing" → "climb-/ing", "wherever" → "where-/ver"). This is exactly the mid-word clipping the user noticed. The correct policy for prose is `overflow-wrap: break-word` (only breaks otherwise-unbreakable tokens), and reserve `anywhere` for `.cultural-term-highlight`, `code`, and long URLs.
-4. **Cultural-term chip behaves like a block** — `.cultural-term-highlight` in `index.css` declares `white-space: nowrap` + `px-1.5 py-0.5` + bordered pill + an inline Info icon. In a flowing paragraph it visually detaches from neighbouring words (the user's "Satisaras   (काश्यप…)" gap), and on a 320 px screen a long term forces page widening even though MV-02 tries to clip it.
-5. **Import-artefact tokens leak into the body** — `fileturn0file0`, `fileturn0file1` appear in the live HTML (`srangam_articles.content`). These are ChatGPT export markers; `sanitizeSnippet` already strips them from the abstract for `<meta>`, but the in-body renderer doesn't, so readers see them. This is a curation problem, not a render bug — but it is the most visible "readability" complaint and a one-line additive fix.
+But the article is still not readable because a descendant inside the article body card is wider than its visual container. The observed offender is the in-body duplicate heading:
 
-Database status checked: backend healthy, no error logs implicated. Edge-function inventory unchanged. So this stays 100% frontend.
+```text
+/html/body/div/div[3]/main/div/div/article/div[3]/div/div/div/div/h1
+```
 
-## Phase T.1 — Apply MV-02 invariants to `OceanicArticlePage` (the actual production article view)
+Visible text:
 
-- Wrap the article content region in `<article data-testid="article-body" className="… overflow-x-clip [overflow-x:clip] min-w-0 w-full">` so the same Phase P regression test covers both renderers.
-- Add `min-w-0` to the grid column, the content `Card`, and the inner `CardContent` so a long token cannot inflate the row.
-- Change the bare H1 to a responsive, wrap-safe ramp matching the existing `ArticlePage` H1: `text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight break-words [overflow-wrap:break-word] [hyphens:auto] min-w-0`.
-- Keep the back-button row above the H1 — no behavioural change.
+```text
+Satīsar, Springs and the Sacred Flow: Reading Kashmir Beyond the Mughal Garden
+```
 
-## Phase T.2 — Correct the prose wrap policy (replace `anywhere` with `break-word` for English prose)
+This is not the page shell title. It is a duplicate `<h1>` coming from the article content itself.
 
-In `src/index.css`, replace the `@media (max-width: 640px)` block from Phase P so that:
+### Database facts, read-only
 
-- `.article-content p|li|h2|h3` use `overflow-wrap: break-word` (preserves natural word boundaries; only breaks unbreakable runs).
-- `.article-content h1` keeps `break-word` + `hyphens: auto` (already in component-level classes).
-- `.article-content :is(.cultural-term-highlight, a[href], code)` use `overflow-wrap: anywhere` + `max-width: 100%` (these are the actual mid-token offenders that need to break anywhere to avoid pushing the viewport).
-- Keep `hyphens: auto` on prose elements.
+For the Satīsar article, `srangam_articles.content.en` begins with:
 
-This eliminates the "water is climb-/…" / "where would-/…" mid-word breaks the user reported, while still protecting against a long Sanskrit transliteration token blowing out the viewport.
+```html
+<h1>Satīsar, Springs and the Sacred Flow: Reading Kashmir Beyond the Mughal Garden</h1>
+<h2>Executive summary</h2>
+<p>...</p>
+```
 
-Update the MV-02 invariant note in `docs/RELIABILITY_AUDIT.md` to record the policy change and why.
+Platform-wide read-only counts:
 
-## Phase T.3 — Tame the cultural-term chip inline
+```text
+published_articles = 44
+starts_with_html_h1 = 37
+starts_with_md_h1 = 2
+has_export_tokens = 2
+```
 
-In `src/index.css` `.cultural-term-highlight`:
+So the issue is systemic for DB/Markdown-imported articles, not a single bad row.
 
-- Drop `white-space: nowrap` (allow the chip text to wrap at natural break points if the term is multi-word).
-- Replace `word-break: keep-all` with `word-break: normal` + `overflow-wrap: anywhere` so a single long term still cannot force overflow.
-- Tighten padding on `<640 px`: `px-1 py-0` instead of `px-1.5 py-0.5`, drop the border to `border-saffron/10`. Reduce visual disconnection between the chip and the surrounding sentence.
-- Hide the inline Info icon on coarse pointers (`@media(pointer:coarse) .cultural-term-highlight svg { display: none }`); the dotted underline + saffron tint is enough affordance, and the icon adds width pressure.
-- Keep the `inline` display (MV-02 invariant), keep Phase R tap-target pseudo, keep tooltip behaviour.
+### Backend / logs / edge functions
 
-## Phase T.4 — Strip ChatGPT export artefacts from rendered article HTML
+Checked signals:
 
-- Centralise the artefact sweep in `src/lib/textSanitizer.ts`: add a new exported `sanitizeArticleHtml(html)` that strips:
-  - `\bfileturn\d+file\d+\b`
-  - `\bturn\d+file\d+\b`
-  - `\bcite\u200bturn\d+\w+\d+\b` and the zero-width-joined variants
-  - leading/trailing whitespace lines created by the strip
-- Call it in two places only:
-  1. `ProfessionalTextFormatter.getText()` once per render, after the multilingual pick and before cultural-term injection.
-  2. The existing `sanitizeSnippet` keeps its current behaviour (defence-in-depth for meta tags).
-- This is **render-time only**. Source rows in `srangam_articles.content` are not mutated — additive, reversible, observability-friendly per the user's standing memory.
+- Lovable Cloud backend is healthy.
+- Database connection/disk/memory status is acceptable.
+- Article route network calls returned 200.
+- No relevant recent edge-function errors were found for article import, OG generation, image proxy, or TTS.
 
-## Phase T.5 — Diagnostic guardrails
+Conclusion: no migration, data rewrite, RLS change, or edge-function deployment is warranted for this recovery.
 
-Extend `src/__tests__/responsive/article-prose-overflow.test.ts` (and add minimal source-scan assertions) so this cannot regress:
+## Root cause
 
-- MV-02b: `src/components/oceanic/OceanicArticlePage.tsx` must contain `data-testid="article-body"` with `overflow-x-clip` + `min-w-0`.
-- MV-02c: `src/index.css` mobile media block must use `overflow-wrap: break-word` on `.article-content p|li|h2|h3`, and `overflow-wrap: anywhere` only inside an `:is(.cultural-term-highlight, a, code)` selector.
-- MV-02d: `.cultural-term-highlight` must not declare `white-space: nowrap`.
-- AR-01: `src/lib/textSanitizer.ts` exports `sanitizeArticleHtml` and `ProfessionalTextFormatter.tsx` calls it.
+The previous Phase T patch added clipping and some wrapping, but it did not fully heal the descendant layout contract.
 
-## Manual verification matrix
+Three things are colliding:
 
-- Viewports: 320×568, 360×800, 384×676 (current preview), 390×844, 414×896.
-- Routes: `/articles/satisar-springs-sacred-flow`, `/articles/gopadri-kasyapa-varahamula`, one long-title DB article, one article with a 6-col evidence table.
-- Pass criteria:
-  - `document.documentElement.scrollWidth === clientWidth` at every viewport above.
-  - H1 wraps without mid-word breaks; no horizontal page scroll.
-  - No `fileturn…` / `turn…` tokens visible in the rendered body.
-  - Cultural-term chip flows inline with surrounding text; tap opens tooltip; keyboard still works.
-  - Tables remain horizontally scrollable inside their `overflow-x-auto` wrapper (MV-01 unchanged).
+1. `OceanicArticlePage` renders a canonical page-level article title.
+2. Most DB article bodies also start with their own `<h1>` or Markdown `#` title.
+3. `ProfessionalTextFormatter` renders that in-body title as a large desktop-style heading inside a padded mobile card.
 
-## Files touched (presentation only)
+`overflow-x-clip` then prevents right-scroll, so the user cannot even pan to read the clipped content. The enterprise fix is not to restore page-wide horizontal scrolling. It is to make normal article descendants fit their containers, while preserving horizontal scroll only for sanctioned wide elements like evidence tables.
 
-| File | Phase | Change |
-|------|-------|--------|
-| `src/components/oceanic/OceanicArticlePage.tsx` | T.1 | `<article data-testid="article-body" overflow-x-clip min-w-0 w-full>` wrapper; responsive H1 ramp with `break-words [overflow-wrap:break-word] [hyphens:auto]`; `min-w-0` on grid column / `Card` / `CardContent` |
-| `src/index.css` | T.2, T.3 | Mobile media block uses `break-word` on prose, `anywhere` only on chip/anchor/code; `.cultural-term-highlight` loses `white-space: nowrap`, tightens mobile padding, hides icon on coarse pointers |
-| `src/lib/textSanitizer.ts` | T.4 | New `sanitizeArticleHtml()` (additive; existing `sanitizeSnippet` untouched) |
-| `src/components/articles/enhanced/ProfessionalTextFormatter.tsx` | T.4 | One-line call to `sanitizeArticleHtml(text)` inside `getText()` |
-| `src/__tests__/responsive/article-prose-overflow.test.ts` | T.5 | Add MV-02b/c/d + AR-01 source-scan assertions |
-| `docs/RELIABILITY_AUDIT.md` | docs | Phase T section: corrected wrap policy, OceanicArticlePage now under MV-02, render-time artefact sweep recorded |
-| `.lovable/plan.md` | docs | Append Phase T plan + diagnostic notes (incl. live 360 px DOM measurements) |
+## Non-negotiable constraints
+
+- No production data mutation.
+- No database schema change.
+- No edge-function change.
+- No router/data-flow rewrite.
+- No mass renderer rebuild.
+- Keep existing `ArticlePage`, `OceanicArticlePage`, resolver hierarchy, RLS/security model, and import architecture intact.
+- Improve observability with tests/diagnostics before calling the issue fixed.
+- Documentation gets temporal notes: Phase T was incomplete; Phase U is the surgical correction.
+
+## Phase U.0 — Documentation-first reset
+
+Update:
+
+- `.lovable/plan.md`
+- `docs/RELIABILITY_AUDIT.md`
+
+Record:
+
+- Phase T added a safety clip but did not fix all overflowing descendants.
+- The exact observed offender is the in-body duplicate `<h1>` inside `ProfessionalTextFormatter`.
+- The correct invariant is: article prose descendants must fit their content box; `overflow-x-clip` is a final safety guard, not the primary fix.
+- Only table/wide-data wrappers may scroll horizontally.
+
+## Phase U.1 — Surgical layout repair
+
+Update `src/components/oceanic/OceanicArticlePage.tsx`:
+
+- Add `min-w-0 w-full max-w-full` to:
+  - main content grid
+  - primary content column
+  - article content `Card`
+  - article content `CardContent`
+- Change mobile card padding from default broad `p-6` behavior to a mobile-safe rhythm:
+
+```text
+px-4 py-5 sm:px-6 sm:py-6
+```
+
+Update `src/components/articles/enhanced/ProfessionalTextFormatter.tsx`:
+
+- Make the formatter root explicitly shrink-safe:
+
+```text
+prose prose-lg sm:prose-xl max-w-none article-content min-w-0 max-w-full
+```
+
+- Make custom headings mobile-safe:
+
+```text
+h1: text-2xl sm:text-3xl md:text-4xl, leading-snug, max-w-full, min-w-0, break-words, [overflow-wrap:break-word], [hyphens:auto]
+h2: text-xl sm:text-2xl, min-w-0, max-w-full, break-words
+h3: text-lg sm:text-xl, min-w-0, max-w-full, break-words
+```
+
+- For `h2`/`h3`, prevent icon+text flex rows from forming an unshrinkable row:
+  - icon span: `shrink-0`
+  - text span: `min-w-0 break-words [overflow-wrap:break-word]`
+
+- Make list rows shrink-safe:
+
+```text
+li: min-w-0 max-w-full
+bullet span: shrink-0
+content span: min-w-0 flex-1 break-words [overflow-wrap:break-word]
+```
+
+Keep MV-01 intact:
+
+- `min-w-[900px]` tables remain inside `overflow-x-auto` wrappers.
+- Do not globally hide overflow on table wrappers.
+
+## Phase U.2 — Render-time duplicate leading title suppression
+
+Update `ProfessionalTextFormatter` with an optional prop:
+
+```ts
+suppressLeadingTitle?: string
+```
+
+Behavior:
+
+- Before Markdown/HTML rendering, remove only a leading title that matches the page title.
+- Supported first-line forms:
+
+```html
+<h1>Matching page title</h1>
+```
+
+```md
+# Matching page title
+```
+
+- Use conservative normalization:
+  - strip tags
+  - collapse whitespace
+  - trim
+  - case-insensitive compare
+  - tolerate harmless punctuation/spacing differences
+
+Update `OceanicArticlePage`:
+
+```tsx
+<ProfessionalTextFormatter
+  content={article.content}
+  suppressLeadingTitle={articleTitle}
+  ...
+/>
+```
+
+Why this is safe:
+
+- No article rows are changed.
+- Only redundant first titles are hidden at render time.
+- If a body H1 is not equivalent to the page title, it remains visible.
+- This helps old DB articles and newly imported Markdown-route articles.
+
+## Phase U.3 — Automated DOM diagnostic for CI logs
+
+Add a Playwright diagnostic helper that runs in the browser and prints actionable offender details.
+
+New helper, for example:
+
+```text
+tests/e2e/helpers/articleOverflowDiagnostics.ts
+```
+
+Diagnostic responsibilities:
+
+- Scope to `article[data-testid="article-body"]`.
+- Compare each descendant against its nearest meaningful wrapper/container.
+- Flag:
+  - `element.scrollWidth > element.clientWidth + 1`
+  - `element.getBoundingClientRect().right > containerRect.right + 1`
+  - `element.getBoundingClientRect().width > containerRect.width + 1`
+- Ignore sanctioned wrappers:
+  - elements inside `overflow-x-auto` table/data wrappers
+  - map/canvas/media containers explicitly marked as wide-scroll-safe
+- For each offender, print CI log details:
+
+```text
+route
+viewport
+tagName
+className
+text prefix
+CSS-like path
+bounding rect
+clientWidth / scrollWidth
+computed display / white-space / overflow-wrap / word-break / min-width / max-width
+offending wrapper tag/class/path
+```
+
+This directly addresses the requirement to print the offending element and wrapper element in CI logs.
+
+## Phase U.4 — Playwright visual regression coverage
+
+Current repo has Vitest but no Playwright dependency/config. Add Playwright deliberately and minimally.
+
+Add dev dependency:
+
+```text
+@playwright/test
+```
+
+Add config:
+
+```text
+playwright.config.ts
+```
+
+Use Vite dev server via `webServer`, without changing app runtime code.
+
+Add tests:
+
+```text
+tests/e2e/mobile-article-visual.spec.ts
+```
+
+Viewports required by user:
+
+```text
+390 × 844
+360 × 640
+```
+
+Core route set:
+
+1. `/articles/satisar-springs-sacred-flow`
+2. one DB article with long body/title content
+3. one Markdown-imported route from `srangam_markdown_sources`
+4. one article with evidence tables/wide table content
+5. one legacy/static `ArticlePage` route
+
+Because Playwright tests cannot query Lovable Cloud directly unless credentials/env are available in CI, keep the first version deterministic:
+
+- encode a curated route list in the spec
+- include a separate read-only local script/doc note for refreshing the route list from the database when backend access is enabled
+- do not block the test suite on live DB introspection
+
+Assertions:
+
+- page loads article body
+- `documentElement.scrollWidth <= documentElement.clientWidth + 1`
+- DOM diagnostic returns zero unsanctioned overflow offenders
+- body card screenshots match snapshots at both viewports
+
+Snapshots:
+
+- capture the article content area, not the whole browser chrome
+- mask/avoid unstable regions where possible:
+  - dev TTS debug panel
+  - transient loading/skeletons
+  - external image load timing if necessary
+- keep snapshots small and targeted so they are useful in review.
+
+## Phase U.5 — Run Phase T/U overflow checks across all renderers
+
+Existing known renderers:
+
+- `src/components/articles/ArticlePage.tsx`
+- `src/components/oceanic/OceanicArticlePage.tsx`
+- `src/components/articles/enhanced/ProfessionalTextFormatter.tsx`
+
+Add/extend source-scan tests in:
+
+```text
+src/__tests__/responsive/article-prose-overflow.test.ts
+```
+
+Checks:
+
+- `ArticlePage` article wrapper has `data-testid="article-body"`, `overflow-x-clip`, `min-w-0`, `w-full`.
+- `OceanicArticlePage` article wrapper has the same.
+- `OceanicArticlePage` content grid/column/card/content include `min-w-0`/`max-w-full` as appropriate.
+- `ProfessionalTextFormatter` h1/h2/h3/p/li renderers include wrap-safe classes.
+- `ProfessionalTextFormatter` supports `suppressLeadingTitle`.
+- `index.css` keeps the corrected policy:
+  - prose uses `break-word`
+  - chips/anchors/code use `anywhere`
+  - cultural-term trigger remains inline, never `inline-block`
+- wide tables with `min-w-[900px]` remain inside `overflow-x-auto`.
+
+Also add a source search guard for other article-like renderers:
+
+- scan `src/components/articles/**`
+- scan `src/pages/articles/**`
+- flag new article renderers that use `ProfessionalTextFormatter` without an article-body wrapper or wrap-safe parent.
+
+## Phase U.6 — Narration/dev overlay containment
+
+No backend/TTS logic change.
+
+Confirm/adjust only if tests show overlap:
+
+- `UniversalNarrator` remains admin-only.
+- sticky-bottom narrator uses max-width/min-width-safe controls.
+- `NarrationDebugPanel` does not obscure mobile visual snapshots; in test mode it can be hidden through CSS or masked in snapshots.
+- `Layout` bottom padding remains enough for mobile bottom tabs.
+
+## Verification gate before saying fixed
+
+Do not call the article mobile view fixed until all of these pass:
+
+1. Source-scan responsive tests pass.
+2. Playwright DOM diagnostic passes for both:
+   - 390 × 844
+   - 360 × 640
+3. Playwright screenshots are generated and reviewed.
+4. Manual preview confirms:
+   - no clipped in-body heading
+   - no duplicate title if it matches page title
+   - paragraphs/lists wrap inside the card
+   - cultural-term chips remain inline/tappable
+   - tables scroll only inside their own wrappers
+   - bottom nav/narrator do not cover reading content
+5. Network calls remain 200 and no new article-render console errors appear.
 
 ## Explicit non-scope
 
-- No router / data-flow / hook changes.
-- No edge-function, schema, RLS, migration, storage, sanitizer-allow-list, or article-content-model edits.
-- No narration provider, OG image, sitemap, or search architecture changes.
-- No new dependency, no design token additions, no font swap.
-- Source rows in `srangam_articles.content` are not modified (user memory: production data immutable).
+- No database writes.
+- No migrations.
+- No RLS/auth changes.
+- No edge-function edits/deployments.
+- No production content rewrites.
+- No route architecture rewrite.
+- No visual redesign beyond mobile readability repair.
+
+## Implementation order after approval
+
+1. Documentation Phase U baseline.
+2. Source-scan regression guard updates.
+3. `ProfessionalTextFormatter` shrink-safe headings/lists/root and duplicate-title suppression.
+4. `OceanicArticlePage` shrink-safe content card/wrapper and `suppressLeadingTitle` prop.
+5. Add Playwright config/helper/spec/snapshots for 390×844 and 360×640.
+6. Run targeted tests.
+7. Verify live preview and report exact pass/fail findings.

@@ -47,7 +47,7 @@ import { SupportedLanguage } from '@/lib/i18n';
 import { normalizeLanguageCode, getScriptFont } from '@/lib/languageUtils';
 import { cn } from '@/lib/utils';
 import { enhanceTextWithCulturalTerms } from '@/lib/culturalTermEnhancer';
-import { sanitizeArticleHtml } from '@/lib/textSanitizer';
+import { sanitizeArticleHtml, stripLeadingTitle } from '@/lib/textSanitizer';
 import { EvidenceTable, isEvidenceTable } from './EvidenceTable';
 import { MermaidBlock } from './MermaidBlock';
 
@@ -57,6 +57,13 @@ interface ProfessionalTextFormatterProps {
   enableCulturalTerms?: boolean;
   enableDropCap?: boolean;
   autoHighlightTerms?: boolean; // Auto-detect and highlight cultural terms
+  /**
+   * Phase U.2 — When supplied, the first leading <h1> / `# ` heading in
+   * the body is suppressed at render time IF it is semantically equivalent
+   * to this title. Prevents duplicate-title clipping on mobile cards.
+   * Source DB rows are never mutated.
+   */
+  suppressLeadingTitle?: string;
 }
 
 export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps> = ({
@@ -64,7 +71,8 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
   className,
   enableCulturalTerms = true,
   enableDropCap = false,
-  autoHighlightTerms = true
+  autoHighlightTerms = true,
+  suppressLeadingTitle,
 }) => {
   const { i18n } = useTranslation();
   const currentLanguage = normalizeLanguageCode(i18n.language || 'en') as SupportedLanguage;
@@ -80,8 +88,15 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
       // tokens, dangling footnote digits) at render time. Additive; the
       // source row in srangam_articles.content is untouched.
       text = sanitizeArticleHtml(text);
-      
-      
+
+      // Phase U.2 — Suppress duplicate leading title (HTML <h1> or `# `)
+      // when the caller declares the page-shell title. Render-time only;
+      // source rows are not mutated. If body title does not match the
+      // page title (or no title supplied), body is returned untouched.
+      if (suppressLeadingTitle) {
+        text = stripLeadingTitle(text, suppressLeadingTitle);
+      }
+
       // AUTO-ENHANCE: Inject cultural term markers if enabled
       if (enableCulturalTerms && autoHighlightTerms) {
         text = enhanceTextWithCulturalTerms(text, {
@@ -259,10 +274,14 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
     },
 
     h1: ({ children, ...props }: any) => {
+      // Phase U.1 — mobile-safe ramp + shrink contract. The previous bare
+      // `text-4xl` clipped long titles inside the article card at 320–384 px.
       return (
-        <h1 
+        <h1
           className={cn(
-            'text-4xl font-serif font-bold text-burgundy mt-12 mb-8',
+            'text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-burgundy mt-12 mb-8',
+            'leading-snug min-w-0 max-w-full',
+            'break-words [overflow-wrap:break-word] [hyphens:auto]',
             'border-b-4 border-burgundy/40 pb-6',
             scriptFont
           )}
@@ -274,21 +293,24 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
     },
 
     h2: ({ children, ...props }: any) => {
+      // Phase U.1 — icon stays `shrink-0`, text sits in a `min-w-0` span so
+      // the flex row can wrap on narrow viewports without forcing overflow.
       return (
-        <div className="relative mt-14 mb-7">
+        <div className="relative mt-14 mb-7 min-w-0 max-w-full">
           <div className="absolute -top-6 left-0 right-0 h-px bg-gradient-to-r from-transparent via-burgundy/30 to-transparent" />
-          
-          <h2 
+          <h2
             className={cn(
-              'text-xl font-serif font-bold text-burgundy pb-3',
+              'text-xl sm:text-2xl font-serif font-bold text-burgundy pb-3',
               'border-b-2 border-burgundy/30',
-              'flex items-center gap-3',
+              'flex items-start gap-3 min-w-0 max-w-full',
               scriptFont
             )}
             {...props}
           >
-            <span className="text-saffron text-2xl">§</span>
-            {children}
+            <span className="text-saffron text-2xl shrink-0 leading-none">§</span>
+            <span className="min-w-0 flex-1 break-words [overflow-wrap:break-word]">
+              {children}
+            </span>
           </h2>
         </div>
       );
@@ -296,26 +318,28 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
 
     h3: ({ children, ...props }: any) => {
       return (
-        <h3 
+        <h3
           className={cn(
-            'text-lg font-serif font-semibold text-burgundy mt-10 mb-6',
-            'flex items-center gap-2',
+            'text-lg sm:text-xl font-serif font-semibold text-burgundy mt-10 mb-6',
+            'flex items-start gap-2 min-w-0 max-w-full',
             scriptFont
           )}
           {...props}
         >
-          <span className="text-gold-warm text-xl">◆</span>
-          {children}
+          <span className="text-gold-warm text-xl shrink-0 leading-none">◆</span>
+          <span className="min-w-0 flex-1 break-words [overflow-wrap:break-word]">
+            {children}
+          </span>
         </h3>
       );
     },
 
     p: ({ children, ...props }: any) => {
       return (
-        <p 
+        <p
           className={cn(
             'text-base leading-relaxed mb-6 text-foreground/90',
-            'break-words',
+            'min-w-0 max-w-full break-words [overflow-wrap:break-word]',
             enableDropCap && 'first-letter:text-6xl first-letter:font-serif first-letter:font-bold',
             enableDropCap && 'first-letter:text-burgundy first-letter:float-left first-letter:mr-3',
             enableDropCap && 'first-letter:mt-1 first-letter:leading-none',
@@ -330,20 +354,22 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
     },
 
     ul: ({ children, ...props }: any) => (
-      <ul className="list-none space-y-4 mb-8 ml-4" {...props}>
+      <ul className="list-none space-y-4 mb-8 ml-4 min-w-0 max-w-full" {...props}>
         {children}
       </ul>
     ),
 
     li: ({ children, ...props }: any) => {
+      // Phase U.1 — bullet `shrink-0`, content span `min-w-0 flex-1` so long
+      // tokens cannot inflate the row.
       return (
         <li className={cn(
           'flex items-start gap-4 text-base leading-relaxed text-foreground/90',
-          'break-words',
+          'min-w-0 max-w-full',
           scriptFont
         )} {...props}>
-          <span className="text-saffron text-xl font-bold leading-none mt-1">•</span>
-          <span className="flex-1">
+          <span className="text-saffron text-xl font-bold leading-none mt-1 shrink-0">•</span>
+          <span className="min-w-0 flex-1 break-words [overflow-wrap:break-word]">
             {children}
           </span>
         </li>
