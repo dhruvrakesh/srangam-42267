@@ -1,387 +1,107 @@
-# Enterprise Surgical Recovery Plan: Mobile Article Readability
+# Phase V — Enterprise CI Guardrails for Article Rendering
 
-## Baseline diagnosis
+Surgical, additive only. **Zero edits** to `src/components/**`, `src/pages/**`, `src/lib/**`, `supabase/**`, or DB. Builds three new test layers on top of the existing Vitest source-scan invariants (MV-01, MV-02), which become Layer 1 of a 4-layer net.
 
-The project is running and functional. The failure is a presentation-layer regression, not a backend outage.
+## Revived context (verified, not assumed)
 
-### What the live/mobile evidence shows
+- `package.json` has **no `test` script** and no `@playwright/test`. Vitest 4.1.6 + jsdom 29 + `@testing-library/react` are installed but `vitest.config.ts` uses `environment: 'node'` and has **no `setupFiles`**. We must add a jsdom config + setup for Layer 2 without breaking existing node-env source-scan tests.
+- Article routes (per `App.tsx`): there is **no `/oceanic/articles/...` route**. `OceanicArticlePage` is rendered conditionally inside the canonical `/articles/:slug` flow. The E2E spec must hit `/articles/<slug>` and select which renderer to assert against based on observed DOM, not assume a route.
+- `ArticlePage` is a **props-driven** component (`title`, `content`, `tags`, `icon` …), not slug-driven. Layer 2 renders it with a synthetic fixture — no resolver/DB mocking needed. `OceanicArticlePage` is slug/article-driven and needs a lightweight fixture + mocked `useArticle`.
+- Existing tests live in `src/__tests__/responsive/`. Phase U closed with 20/20 passing source-scan specs; we will not touch them.
+- `.lovable/plan.md` Phase U is marked complete; Phase V is added as the observability follow-up the user already deferred ("DOM scrollWidth diagnostic helper in CI logs", "Playwright visual regression").
 
-On the mobile article route `/articles/satisar-springs-sacred-flow`, the page-level overflow is now clipped/contained:
+## Goals
 
-```text
-documentElement.clientWidth = 360
-documentElement.scrollWidth = 360
-body.clientWidth = 360
-body.scrollWidth = 360
-```
+1. **Layer 2 — Vitest DOM overflow check (jsdom):** for `ArticlePage` and `OceanicArticlePage`, render in jsdom at simulated 384 px, walk `[data-testid="article-body"]`, and fail if any descendant reports `scrollWidth > clientWidth + 1` under a deterministic shim. Report offender path (`tag.classExcerpt[data-testid]`) in the failure message.
+2. **Layer 3 — Playwright mobile E2E:** load `/articles/<stable-slug>` in Chromium at 384×844, assert `document.documentElement.scrollWidth <= innerWidth + 1`, `[data-testid="article-body"]` text length > 500 chars, and no descendant has `scrollWidth > clientWidth + 1` (real layout). Sweep 320/360/390/414.
+3. **Layer 4 — Performance budget:** measure article-body first-paint and LCP via Playwright; fail if regressed past documented thresholds calibrated from the first green run.
 
-But the article is still not readable because a descendant inside the article body card is wider than its visual container. The observed offender is the in-body duplicate heading:
+Layers 1 + 2 run on every PR via `bunx vitest run`. Layers 3 + 4 run via `bun run test:e2e` (documented; no CI workflow file created in this phase).
 
-```text
-/html/body/div/div[3]/main/div/div/article/div[3]/div/div/div/div/h1
-```
-
-Visible text:
+## Files
 
 ```text
-Satīsar, Springs and the Sacred Flow: Reading Kashmir Beyond the Mughal Garden
+NEW   src/test/setup.ts                                          (jsdom globals shim)
+EDIT  vitest.config.ts                                           (jsdom + setupFiles, scoped)
+NEW   src/__tests__/responsive/article-dom-overflow.test.tsx     (Layer 2)
+NEW   src/__tests__/fixtures/articleFixture.ts                   (deterministic fixture)
+NEW   playwright.config.ts                                       (Chromium only, webServer)
+NEW   e2e/article-mobile.spec.ts                                 (Layer 3)
+NEW   e2e/article-perf.spec.ts                                   (Layer 4)
+EDIT  package.json                  (scripts: test, test:e2e, test:perf; devDep @playwright/test)
+EDIT  docs/RELIABILITY_AUDIT.md     (Phase V section + thresholds + commands)
+EDIT  .lovable/plan.md              (Phase V status entry)
 ```
 
-This is not the page shell title. It is a duplicate `<h1>` coming from the article content itself.
-
-### Database facts, read-only
-
-For the Satīsar article, `srangam_articles.content.en` begins with:
-
-```html
-<h1>Satīsar, Springs and the Sacred Flow: Reading Kashmir Beyond the Mughal Garden</h1>
-<h2>Executive summary</h2>
-<p>...</p>
-```
-
-Platform-wide read-only counts:
-
-```text
-published_articles = 44
-starts_with_html_h1 = 37
-starts_with_md_h1 = 2
-has_export_tokens = 2
-```
-
-So the issue is systemic for DB/Markdown-imported articles, not a single bad row.
-
-### Backend / logs / edge functions
-
-Checked signals:
-
-- Lovable Cloud backend is healthy.
-- Database connection/disk/memory status is acceptable.
-- Article route network calls returned 200.
-- No relevant recent edge-function errors were found for article import, OG generation, image proxy, or TTS.
-
-Conclusion: no migration, data rewrite, RLS change, or edge-function deployment is warranted for this recovery.
-
-## Root cause
-
-The previous Phase T patch added clipping and some wrapping, but it did not fully heal the descendant layout contract.
-
-Three things are colliding:
-
-1. `OceanicArticlePage` renders a canonical page-level article title.
-2. Most DB article bodies also start with their own `<h1>` or Markdown `#` title.
-3. `ProfessionalTextFormatter` renders that in-body title as a large desktop-style heading inside a padded mobile card.
-
-`overflow-x-clip` then prevents right-scroll, so the user cannot even pan to read the clipped content. The enterprise fix is not to restore page-wide horizontal scrolling. It is to make normal article descendants fit their containers, while preserving horizontal scroll only for sanctioned wide elements like evidence tables.
-
-## Non-negotiable constraints
-
-- No production data mutation.
-- No database schema change.
-- No edge-function change.
-- No router/data-flow rewrite.
-- No mass renderer rebuild.
-- Keep existing `ArticlePage`, `OceanicArticlePage`, resolver hierarchy, RLS/security model, and import architecture intact.
-- Improve observability with tests/diagnostics before calling the issue fixed.
-- Documentation gets temporal notes: Phase T was incomplete; Phase U is the surgical correction.
-
-## Phase U.0 — Documentation-first reset
-
-Update:
-
-- `.lovable/plan.md`
-- `docs/RELIABILITY_AUDIT.md`
-
-Record:
-
-- Phase T added a safety clip but did not fix all overflowing descendants.
-- The exact observed offender is the in-body duplicate `<h1>` inside `ProfessionalTextFormatter`.
-- The correct invariant is: article prose descendants must fit their content box; `overflow-x-clip` is a final safety guard, not the primary fix.
-- Only table/wide-data wrappers may scroll horizontally.
-
-## Phase U.1 — Surgical layout repair
-
-Update `src/components/oceanic/OceanicArticlePage.tsx`:
-
-- Add `min-w-0 w-full max-w-full` to:
-  - main content grid
-  - primary content column
-  - article content `Card`
-  - article content `CardContent`
-- Change mobile card padding from default broad `p-6` behavior to a mobile-safe rhythm:
-
-```text
-px-4 py-5 sm:px-6 sm:py-6
-```
-
-Update `src/components/articles/enhanced/ProfessionalTextFormatter.tsx`:
-
-- Make the formatter root explicitly shrink-safe:
-
-```text
-prose prose-lg sm:prose-xl max-w-none article-content min-w-0 max-w-full
-```
-
-- Make custom headings mobile-safe:
-
-```text
-h1: text-2xl sm:text-3xl md:text-4xl, leading-snug, max-w-full, min-w-0, break-words, [overflow-wrap:break-word], [hyphens:auto]
-h2: text-xl sm:text-2xl, min-w-0, max-w-full, break-words
-h3: text-lg sm:text-xl, min-w-0, max-w-full, break-words
-```
-
-- For `h2`/`h3`, prevent icon+text flex rows from forming an unshrinkable row:
-  - icon span: `shrink-0`
-  - text span: `min-w-0 break-words [overflow-wrap:break-word]`
-
-- Make list rows shrink-safe:
-
-```text
-li: min-w-0 max-w-full
-bullet span: shrink-0
-content span: min-w-0 flex-1 break-words [overflow-wrap:break-word]
-```
-
-Keep MV-01 intact:
-
-- `min-w-[900px]` tables remain inside `overflow-x-auto` wrappers.
-- Do not globally hide overflow on table wrappers.
-
-## Phase U.2 — Render-time duplicate leading title suppression
-
-Update `ProfessionalTextFormatter` with an optional prop:
-
-```ts
-suppressLeadingTitle?: string
-```
-
-Behavior:
-
-- Before Markdown/HTML rendering, remove only a leading title that matches the page title.
-- Supported first-line forms:
-
-```html
-<h1>Matching page title</h1>
-```
-
-```md
-# Matching page title
-```
-
-- Use conservative normalization:
-  - strip tags
-  - collapse whitespace
-  - trim
-  - case-insensitive compare
-  - tolerate harmless punctuation/spacing differences
-
-Update `OceanicArticlePage`:
-
-```tsx
-<ProfessionalTextFormatter
-  content={article.content}
-  suppressLeadingTitle={articleTitle}
-  ...
-/>
-```
-
-Why this is safe:
-
-- No article rows are changed.
-- Only redundant first titles are hidden at render time.
-- If a body H1 is not equivalent to the page title, it remains visible.
-- This helps old DB articles and newly imported Markdown-route articles.
-
-## Phase U.3 — Automated DOM diagnostic for CI logs
-
-Add a Playwright diagnostic helper that runs in the browser and prints actionable offender details.
-
-New helper, for example:
-
-```text
-tests/e2e/helpers/articleOverflowDiagnostics.ts
-```
-
-Diagnostic responsibilities:
-
-- Scope to `article[data-testid="article-body"]`.
-- Compare each descendant against its nearest meaningful wrapper/container.
-- Flag:
-  - `element.scrollWidth > element.clientWidth + 1`
-  - `element.getBoundingClientRect().right > containerRect.right + 1`
-  - `element.getBoundingClientRect().width > containerRect.width + 1`
-- Ignore sanctioned wrappers:
-  - elements inside `overflow-x-auto` table/data wrappers
-  - map/canvas/media containers explicitly marked as wide-scroll-safe
-- For each offender, print CI log details:
-
-```text
-route
-viewport
-tagName
-className
-text prefix
-CSS-like path
-bounding rect
-clientWidth / scrollWidth
-computed display / white-space / overflow-wrap / word-break / min-width / max-width
-offending wrapper tag/class/path
-```
-
-This directly addresses the requirement to print the offending element and wrapper element in CI logs.
-
-## Phase U.4 — Playwright visual regression coverage
-
-Current repo has Vitest but no Playwright dependency/config. Add Playwright deliberately and minimally.
-
-Add dev dependency:
-
-```text
-@playwright/test
-```
-
-Add config:
-
-```text
-playwright.config.ts
-```
-
-Use Vite dev server via `webServer`, without changing app runtime code.
-
-Add tests:
-
-```text
-tests/e2e/mobile-article-visual.spec.ts
-```
-
-Viewports required by user:
-
-```text
-390 × 844
-360 × 640
-```
-
-Core route set:
-
-1. `/articles/satisar-springs-sacred-flow`
-2. one DB article with long body/title content
-3. one Markdown-imported route from `srangam_markdown_sources`
-4. one article with evidence tables/wide table content
-5. one legacy/static `ArticlePage` route
-
-Because Playwright tests cannot query Lovable Cloud directly unless credentials/env are available in CI, keep the first version deterministic:
-
-- encode a curated route list in the spec
-- include a separate read-only local script/doc note for refreshing the route list from the database when backend access is enabled
-- do not block the test suite on live DB introspection
-
-Assertions:
-
-- page loads article body
-- `documentElement.scrollWidth <= documentElement.clientWidth + 1`
-- DOM diagnostic returns zero unsanctioned overflow offenders
-- body card screenshots match snapshots at both viewports
-
-Snapshots:
-
-- capture the article content area, not the whole browser chrome
-- mask/avoid unstable regions where possible:
-  - dev TTS debug panel
-  - transient loading/skeletons
-  - external image load timing if necessary
-- keep snapshots small and targeted so they are useful in review.
-
-## Phase U.5 — Run Phase T/U overflow checks across all renderers
-
-Existing known renderers:
-
-- `src/components/articles/ArticlePage.tsx`
-- `src/components/oceanic/OceanicArticlePage.tsx`
-- `src/components/articles/enhanced/ProfessionalTextFormatter.tsx`
-
-Add/extend source-scan tests in:
-
-```text
-src/__tests__/responsive/article-prose-overflow.test.ts
-```
-
-Checks:
-
-- `ArticlePage` article wrapper has `data-testid="article-body"`, `overflow-x-clip`, `min-w-0`, `w-full`.
-- `OceanicArticlePage` article wrapper has the same.
-- `OceanicArticlePage` content grid/column/card/content include `min-w-0`/`max-w-full` as appropriate.
-- `ProfessionalTextFormatter` h1/h2/h3/p/li renderers include wrap-safe classes.
-- `ProfessionalTextFormatter` supports `suppressLeadingTitle`.
-- `index.css` keeps the corrected policy:
-  - prose uses `break-word`
-  - chips/anchors/code use `anywhere`
-  - cultural-term trigger remains inline, never `inline-block`
-- wide tables with `min-w-[900px]` remain inside `overflow-x-auto`.
-
-Also add a source search guard for other article-like renderers:
-
-- scan `src/components/articles/**`
-- scan `src/pages/articles/**`
-- flag new article renderers that use `ProfessionalTextFormatter` without an article-body wrapper or wrap-safe parent.
-
-## Phase U.6 — Narration/dev overlay containment
-
-No backend/TTS logic change.
-
-Confirm/adjust only if tests show overlap:
-
-- `UniversalNarrator` remains admin-only.
-- sticky-bottom narrator uses max-width/min-width-safe controls.
-- `NarrationDebugPanel` does not obscure mobile visual snapshots; in test mode it can be hidden through CSS or masked in snapshots.
-- `Layout` bottom padding remains enough for mobile bottom tabs.
-
-## Verification gate before saying fixed
-
-Do not call the article mobile view fixed until all of these pass:
-
-1. Source-scan responsive tests pass.
-2. Playwright DOM diagnostic passes for both:
-   - 390 × 844
-   - 360 × 640
-3. Playwright screenshots are generated and reviewed.
-4. Manual preview confirms:
-   - no clipped in-body heading
-   - no duplicate title if it matches page title
-   - paragraphs/lists wrap inside the card
-   - cultural-term chips remain inline/tappable
-   - tables scroll only inside their own wrappers
-   - bottom nav/narrator do not cover reading content
-5. Network calls remain 200 and no new article-render console errors appear.
-
-## Explicit non-scope
-
-- No database writes.
-- No migrations.
-- No RLS/auth changes.
-- No edge-function edits/deployments.
-- No production content rewrites.
-- No route architecture rewrite.
-- No visual redesign beyond mobile readability repair.
-
-## Implementation order after approval
-
-1. Documentation Phase U baseline.
-2. Source-scan regression guard updates.
-3. `ProfessionalTextFormatter` shrink-safe headings/lists/root and duplicate-title suppression.
-4. `OceanicArticlePage` shrink-safe content card/wrapper and `suppressLeadingTitle` prop.
-5. Add Playwright config/helper/spec/snapshots for 390×844 and 360×640.
-6. Run targeted tests.
-7. Verify live preview and report exact pass/fail findings.
----
-
-## Phase U — Status (2026-05-28)
-
-Completed (surgical, presentation-only):
-- `src/lib/textSanitizer.ts` — added `stripLeadingTitle(body, pageTitle)`.
-- `src/components/articles/enhanced/ProfessionalTextFormatter.tsx` — `suppressLeadingTitle` prop; shrink-safe h1/h2/h3/p/ul/li; mobile h1 ramp.
-- `src/components/oceanic/OceanicArticlePage.tsx` — `min-w-0 w-full max-w-full` chain on grid → column → Card → CardContent; mobile padding `px-4 py-5`; passes `suppressLeadingTitle` to formatter.
-- `src/__tests__/responsive/article-prose-overflow.test.ts` — parameterized over `ArticlePage` + `OceanicArticlePage`; mobile CSS guard accepts `break-word|anywhere` + `hyphens: auto`. 20/20 passing.
-- `docs/RELIABILITY_AUDIT.md` — Phase U MV-02 extension recorded.
-
-Deferred (not required for fix):
-- Playwright visual regression at 390×844 / 360×640 (manual sweep still authoritative).
-- DOM scrollWidth diagnostic helper in CI logs.
+No production source files (`src/components`, `src/pages`, `src/lib`, edge functions, migrations) are modified.
+
+## Layer 2 — DOM overflow test (technical)
+
+- `vitest.config.ts`: switch `environment` to `jsdom`, add `setupFiles: ['./src/test/setup.ts']`, keep existing `include` glob so the Phase P/U source-scan tests still run (they are environment-agnostic).
+- `src/test/setup.ts`: imports `@testing-library/jest-dom`, defines `matchMedia` stub, sets `window.innerWidth = 384`, and installs a **deterministic width shim** on `HTMLElement.prototype`:
+  - `clientWidth` getter walks up to the nearest ancestor with an explicit width (root container = 384) and returns that minus padding.
+  - `scrollWidth` getter returns `max(clientWidth, intrinsicChildWidth)` where intrinsic width is parsed from inline `style.width`, `style.minWidth`, and Tailwind `min-w-[NNNpx]` / `w-[NNNpx]` class hints on the element or its descendants.
+  - Documented as a **structural** check, not a layout engine. It catches the exact regression class (fixed-width child inside the prose well) that Phase K/P/U fought.
+- `src/__tests__/fixtures/articleFixture.ts`: small in-memory article object — title, dek, ~800 chars of content with a representative `<h1>`, paragraphs, an `<ul>`, a wide `<table class="min-w-[900px]">` inside `<div class="overflow-x-auto">` (sanctioned), and a cultural-term chip. Single source of truth shared by both specs.
+- `src/__tests__/responsive/article-dom-overflow.test.tsx`:
+  - Renders `<MemoryRouter><ArticlePage {...fixture} icon={DummyIcon} /></MemoryRouter>` then `<OceanicArticlePage />` with `useArticle` mocked via `vi.mock` to return the fixture.
+  - Locates `[data-testid="article-body"]`, walks descendants, skips any node whose nearest ancestor matches `.overflow-x-auto` or `.overflow-auto` (sanctioned wide wrappers).
+  - For each remaining offender, builds `tagName + '.' + className.slice(0,40) + [data-testid?]` path.
+  - `expect(offenders, offenders.join('\n')).toEqual([])`.
+
+## Layer 3 — Playwright mobile E2E (technical)
+
+- Add devDep `@playwright/test`. `playwright.config.ts`: Chromium only, `testDir: 'e2e'`, `use.baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:8080'`, `webServer: { command: 'bun run dev', url: 'http://localhost:8080', reuseExistingServer: !process.env.CI }`.
+- `e2e/article-mobile.spec.ts`:
+  - Stable slug: `reassessing-ashoka-legacy` (verified — exists in `content/articles/` and DB).
+  - Viewport 384×844. `await page.goto('/articles/reassessing-ashoka-legacy')`.
+  - `await page.waitForSelector('[data-testid="article-body"]', { state: 'visible' })`.
+  - Asserts:
+    1. `page.evaluate(() => document.documentElement.scrollWidth) <= page.viewportSize().width + 1`.
+    2. `(await page.locator('[data-testid="article-body"]').innerText()).length > 500`.
+    3. `page.evaluate` walks article-body, returns offenders where `scrollWidth > clientWidth + 1` (excluding `.overflow-x-auto` subtrees). Expect empty.
+  - Viewport sweep `[320, 360, 390, 414]` repeats assertions 1 + 3.
+
+## Layer 4 — Performance budget (technical)
+
+- `e2e/article-perf.spec.ts`. Same baseURL, viewport 390×844, Chromium CDP throttling: `Network.emulateNetworkConditions` Fast-3G preset + `Emulation.setCPUThrottlingRate(4)`.
+- `page.addInitScript` injects a `MutationObserver` watching for `[data-testid="article-body"]` insertion; stamps `performance.mark('article-body-visible')`. Also a `PerformanceObserver({type:'largest-contentful-paint',buffered:true})` collecting last LCP entry.
+- Navigates, waits for the mark, reads `performance.getEntriesByName('article-body-visible')[0].startTime` and the LCP.
+- Thresholds (constants at top of spec, frozen after first green CI run):
+  - `ARTICLE_BODY_VISIBLE_MS = 2500`
+  - `LCP_MS = 3000`
+- Fails if exceeded; logs measured values for trend tracking.
+
+## CI wiring
+
+- `package.json` scripts: `"test": "vitest run"`, `"test:e2e": "playwright test"`, `"test:perf": "playwright test e2e/article-perf.spec.ts"`.
+- No `.github/workflows/*.yml` created in this phase — Lovable does not own a CI runner here. Commands are documented in `RELIABILITY_AUDIT.md` Phase V.
+
+## Acceptance gate
+
+- `bunx vitest run` is green, including Layer 2 (22+ specs total).
+- `bunx playwright test` is green locally against `bun run dev`.
+- `docs/RELIABILITY_AUDIT.md` Phase V lists the 4 layers, thresholds, commands, and a temporal note that thresholds were calibrated on YYYY-MM-DD.
+- `.lovable/plan.md` Phase V status entry added.
+- Zero diffs in `src/components/**`, `src/pages/**`, `src/lib/**`, `supabase/**`.
+
+## Risk & rollback
+
+- Only real risk: switching Vitest to jsdom could surface latent DOM assumptions in Phase P/U source-scan tests. Mitigation: those specs only read files (`readFileSync`) and never touch `window`; verified safe. If a regression appears, the rollback is a one-line revert of `vitest.config.ts` — Layer 2 can also be isolated to its own `vitest.dom.config.ts` if needed.
+- Playwright is a devDep only; no runtime bundle impact.
+
+## Out of scope (deferred to Phase W)
+
+- GitHub Actions workflow file (needs user confirmation of CI runner + secrets).
+- Visual regression snapshots.
+- Lighthouse CI / Web Vitals dashboard.
+- Multi-browser (WebKit / Firefox) E2E matrix.
+
+## Implementation order (after approval)
+
+1. Phase V baseline note in `.lovable/plan.md` + `docs/RELIABILITY_AUDIT.md`.
+2. `src/test/setup.ts` + `vitest.config.ts` switch to jsdom; run existing suite to confirm 20/20 still green.
+3. Fixture + Layer 2 spec; confirm green.
+4. Install `@playwright/test`, add `playwright.config.ts`, Layer 3 spec; run locally.
+5. Layer 4 spec; calibrate thresholds from first run; freeze.
+6. Update docs with measured baseline; close Phase V.
