@@ -172,7 +172,7 @@ export const OceanicArticlePage: React.FC = () => {
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-        <div className="container mx-auto px-4 py-8 max-w-6xl min-w-0">
+        <div className="container mx-auto px-4 py-5 sm:px-6 sm:py-8 max-w-6xl min-w-0 w-full">
           {/* Phase T.1 — MV-02 wrapper: OceanicArticlePage now adopts the
               same overflow-x-clip + min-w-0 invariants used by ArticlePage,
               so the regression net covers the production article view. */}
@@ -268,31 +268,33 @@ export const OceanicArticlePage: React.FC = () => {
 
           {/* Main Content */}
           <div className={cn(
-            "grid gap-8 transition-all duration-300",
+            "grid gap-8 transition-all duration-300 min-w-0 w-full max-w-full",
             sidebarCollapsed ? "lg:grid-cols-1" : "lg:grid-cols-4"
           )}>
             <div className={cn(
-              "space-y-8 transition-all duration-300",
+              "space-y-8 transition-all duration-300 min-w-0 w-full max-w-full",
               sidebarCollapsed ? "lg:col-span-1" : "lg:col-span-3"
             )}>
               {/* Full Article Content */}
-              <Card>
-                <CardContent className="pt-6">
+              <Card className="min-w-0 w-full max-w-full overflow-hidden">
+                <CardContent className="pt-6 min-w-0 w-full max-w-full">
                   {article.content ? (
                     <TooltipProvider>
                       <ProfessionalTextFormatter
                         content={article.content}
                         enableCulturalTerms={true}
                         enableDropCap={false}
+                        suppressLeadingTitle={getArticleTitle(article, currentLanguage)}
                       />
                     </TooltipProvider>
                   ) : (
-                    <p className="text-lg leading-relaxed text-foreground/90">
+                    <p className="text-lg leading-relaxed text-foreground/90 break-words [overflow-wrap:break-word]">
                       {article.abstract}
                     </p>
                   )}
                 </CardContent>
               </Card>
+
 
               {/* Pins Map — Phase H.2: hide entirely when no pins, lazy-load Leaflet on demand */}
               {article.pins.length > 0 && (

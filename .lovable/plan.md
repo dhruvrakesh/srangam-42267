@@ -371,3 +371,17 @@ Do not call the article mobile view fixed until all of these pass:
 5. Add Playwright config/helper/spec/snapshots for 390×844 and 360×640.
 6. Run targeted tests.
 7. Verify live preview and report exact pass/fail findings.
+---
+
+## Phase U — Status (2026-05-28)
+
+Completed (surgical, presentation-only):
+- `src/lib/textSanitizer.ts` — added `stripLeadingTitle(body, pageTitle)`.
+- `src/components/articles/enhanced/ProfessionalTextFormatter.tsx` — `suppressLeadingTitle` prop; shrink-safe h1/h2/h3/p/ul/li; mobile h1 ramp.
+- `src/components/oceanic/OceanicArticlePage.tsx` — `min-w-0 w-full max-w-full` chain on grid → column → Card → CardContent; mobile padding `px-4 py-5`; passes `suppressLeadingTitle` to formatter.
+- `src/__tests__/responsive/article-prose-overflow.test.ts` — parameterized over `ArticlePage` + `OceanicArticlePage`; mobile CSS guard accepts `break-word|anywhere` + `hyphens: auto`. 20/20 passing.
+- `docs/RELIABILITY_AUDIT.md` — Phase U MV-02 extension recorded.
+
+Deferred (not required for fix):
+- Playwright visual regression at 390×844 / 360×640 (manual sweep still authoritative).
+- DOM scrollWidth diagnostic helper in CI logs.
