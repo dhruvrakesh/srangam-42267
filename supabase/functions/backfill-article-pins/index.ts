@@ -443,7 +443,11 @@ Deno.serve(async (req) => {
     // ---- Phase X.1: server-side self-pump for next chunk ------------------
     // Only when the job is chunked AND there is more work AND no cancel.
     if (body.job_id && !done) {
-      schedulePumpReinvoke(req.url, {
+      // Phase X.5.1 — build pump target from env. `req.url` inside the
+      // Edge Runtime is an internal address that 404s when re-invoked.
+      const pumpUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/backfill-article-pins`;
+      console.log(`[backfill-article-pins] pump target=${pumpUrl} next_offset=${nextOffset}`);
+      schedulePumpReinvoke(pumpUrl, {
         ...body,
         offset: nextOffset,
       });
