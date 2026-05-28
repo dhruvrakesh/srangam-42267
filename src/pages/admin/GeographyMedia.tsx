@@ -59,6 +59,30 @@ export default function GeographyMedia() {
     setLogs((prev) => [`[${new Date().toLocaleTimeString()}] ${s}`, ...prev].slice(0, 200));
   }
 
+  // Phase X.1 — rehydrate the most-recent running job on mount so a tab
+  // refresh re-attaches the progress card to a backfill or OG run that the
+  // server is still pumping. Admin-only RLS already scopes the query.
+  useEffect(() => {
+    if (activeJobId) return; // do not stomp an in-page kick-off
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('srangam_admin_jobs')
+        .select('id')
+        .eq('status', 'running')
+        .in('kind', ['pin_backfill', 'og_generate', 'og_force'])
+        .order('started_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!cancelled && data?.id) {
+        setActiveJobId(data.id);
+        log(`↻ Re-attached to running job ${data.id.slice(0, 8)}`);
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Helper: poll the job row to learn whether the operator clicked Cancel
   // between chunks. Cheap (single indexed PK lookup).
   async function jobIsCancelled(jobId: string): Promise<boolean> {
@@ -74,6 +98,7 @@ export default function GeographyMedia() {
     }
     return false;
   }
+
 
   const { data: articles = [], isLoading, refetch } = useQuery({
     queryKey: ['admin', 'geography-media', 'articles'],
