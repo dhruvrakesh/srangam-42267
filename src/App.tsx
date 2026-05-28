@@ -227,7 +227,8 @@ const App = () => (
                     <Route path="purana-refs" element={<PuranaReferences />} />
                     <Route path="analytics" element={<ImportAnalytics />} />
                     <Route path="context" element={<ContextManagement />} />
-                    <Route path="data-health" element={<DataHealth />} />
+                    <Route path="geography-media" element={<GeographyMedia />} />
+                    <Route path="corpus-correlations" element={<CorpusCorrelations />} />
                     <Route path="geography-media" element={<GeographyMedia />} />
                   </Route>
                   
