@@ -26,8 +26,10 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { ArticlePage } from '@/components/articles/ArticlePage';
 import { articleFixture, FIXTURE_CONTENT_HTML } from '@/__tests__/fixtures/articleFixture';
 
+import { SANCTIONED_OVERFLOW_RE, hasSanctionedInlineOverflowX } from '@/test/overflow-rules';
+
 const VIEWPORT = 384;
-const SANCTIONED_SCROLL_RE = /\boverflow-(x-)?auto\b/;
+
 
 interface Offender {
   path: string;
@@ -46,7 +48,8 @@ function findOverflowOffenders(root: Element): Offender[] {
   const offenders: Offender[] = [];
   const walk = (el: Element, inSanctioned: boolean) => {
     const cls = el.getAttribute('class') || '';
-    const sanctioned = inSanctioned || SANCTIONED_SCROLL_RE.test(cls);
+    const sanctioned =
+      inSanctioned || SANCTIONED_OVERFLOW_RE.test(cls) || hasSanctionedInlineOverflowX(el);
     if (!sanctioned && el instanceof HTMLElement) {
       const client = el.clientWidth;
       const scroll = el.scrollWidth;
@@ -59,6 +62,7 @@ function findOverflowOffenders(root: Element): Offender[] {
   walk(root, false);
   return offenders;
 }
+
 
 function renderInProviders(ui: React.ReactElement) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
