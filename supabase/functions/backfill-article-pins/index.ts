@@ -55,7 +55,14 @@ interface RequestBody {
   /** Articles to process in THIS invocation. Default 5, max 10 — sized to
    *  stay well under the 150 s edge-function wall-clock. */
   chunk_size?: number;
+
+  // ---- Phase X.1 self-pump mode ----
+  /** Internal flag set by the function itself when re-invoking for the
+   *  next chunk via EdgeRuntime.waitUntil. Authenticated by service-role
+   *  bearer instead of the user's admin JWT. */
+  _pump?: boolean;
 }
+
 
 interface GazetteerRow {
   id: string;
@@ -254,7 +261,6 @@ async function backfillOne(
     else if (c === 'B') counts.pins_b++;
     else counts.pins_c++;
   }
-
   console.log(JSON.stringify({
     evt: 'pin_complete',
     article_id: article.id,
@@ -269,50 +275,74 @@ async function backfillOne(
   return { inserted, ...counts, ai: aiStats };
 }
 
+// ---------- Phase X.1: self-pump helper ----------
+// Re-invokes this same function with the next offset, authenticated by the
+// service-role key. Runs in the background via EdgeRuntime.waitUntil so the
+// current response returns immediately. Removes the "browser tab closed →
+// job stalls" failure mode without introducing any new infrastructure.
+function schedulePumpReinvoke(selfUrl: string, body: RequestBody) {
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!serviceKey) {
+    console.error('[backfill-article-pins] pump: missing SERVICE_ROLE_KEY');
+    return;
+  }
+  // @ts-ignore — EdgeRuntime is provided by Supabase Edge Runtime.
+  const waitUntil = (globalThis as any).EdgeRuntime?.waitUntil;
+  const fetchP = fetch(selfUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${serviceKey}`,
+    },
+    body: JSON.stringify({ ...body, _pump: true }),
+  }).then(async (r) => {
+    if (!r.ok) {
+      console.error('[backfill-article-pins] pump reinvoke failed:', r.status, await r.text());
+    }
+  }).catch((e) => {
+    console.error('[backfill-article-pins] pump reinvoke error:', e?.message ?? e);
+  });
+  if (typeof waitUntil === 'function') waitUntil(fetchP);
+}
+
+    total_ms: Math.round(performance.now() - t0),
+    ai: aiStats,
+    ts: new Date().toISOString(),
+  }));
+
+  return { inserted, ...counts, ai: aiStats };
+}
+
 // ---------- HTTP entry ----------
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
-  const __gate = await requireAdmin(req);
-  if (__gate.error) return __gate.error;
 
+  // Parse body up-front so we can distinguish a user-initiated call from
+  // an internal self-pump re-invocation (Phase X.1).
+  const body = (await req.clone().json().catch(() => ({}))) as RequestBody;
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-
-    // Admin gate — derive caller from JWT, then check user_roles.
-    const authHeader = req.headers.get('Authorization') ?? '';
-    if (!authHeader.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'missing bearer token' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    const userClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: userRes, error: userErr } = await userClient.auth.getUser();
-    if (userErr || !userRes.user) {
-      return new Response(JSON.stringify({ error: 'invalid token' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    const admin = createClient(supabaseUrl, serviceKey);
-    const { data: roleRow } = await admin
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', userRes.user.id)
-      .eq('role', 'admin')
-      .maybeSingle();
-    if (!roleRow) {
-      return new Response(JSON.stringify({ error: 'admin role required' }), {
+  // ---- Auth gate ---------------------------------------------------------
+  // Self-pump: authenticated by service-role bearer + a valid existing
+  // job_id (the original caller already passed requireAdmin to create it).
+  const isPump = body._pump === true && !!body.job_id;
+  if (isPump) {
+    const auth = req.headers.get('Authorization') ?? '';
+    if (auth !== `Bearer ${serviceKey}`) {
+      return new Response(JSON.stringify({ error: 'pump auth required' }), {
         status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+  } else {
+    const gate = await requireAdmin(req);
+    if (gate.error) return gate.error;
+  }
 
-    const body = (await req.json().catch(() => ({}))) as RequestBody;
+  try {
     const skipAi = body.skip_ai === true;
+    const admin = createClient(supabaseUrl, serviceKey);
 
     // Load entire gazetteer once — small (~100s of rows).
     const { data: gaz, error: gazErr } = await admin
@@ -329,7 +359,7 @@ Deno.serve(async (req) => {
     // Resolve target article(s).
     let articles: { id: string; slug: string; content: unknown }[] = [];
     let totalCandidates = 0;          // population size for chunked mode
-    let chunkOffset = body.offset ?? 0;
+    const chunkOffset = body.offset ?? 0;
     const chunkSize = Math.min(Math.max(body.chunk_size ?? 5, 1), 10);
 
     if (body.article_id) {
@@ -351,14 +381,12 @@ Deno.serve(async (req) => {
     } else if (body.all_published) {
       const limit = Math.min(Math.max(body.limit ?? 25, 1), 200);
 
-      // Cheap exact count (RLS already cleared by service role).
       const { count } = await admin
         .from('srangam_articles')
         .select('id', { count: 'exact', head: true })
         .eq('status', 'published');
       totalCandidates = Math.min(count ?? 0, limit);
 
-      // Pull only the slice we will process THIS invocation.
       const sliceEnd = Math.min(chunkOffset + chunkSize, totalCandidates);
       if (chunkOffset < totalCandidates) {
         const { data } = await admin
@@ -398,6 +426,7 @@ Deno.serve(async (req) => {
             ok: true,
             item: a.slug,
             cost_delta_usd: r.ai?.cost_usd_estimate ?? 0,
+            tier_delta: { a: r.pins_a, b: r.pins_b, c: r.pins_c },
           });
         }
       } catch (e) {
@@ -418,27 +447,34 @@ Deno.serve(async (req) => {
       await finishJob(admin, body.job_id, 'succeeded');
     }
 
+    // ---- Phase X.1: server-side self-pump for next chunk ------------------
+    // Only when the job is chunked AND there is more work AND no cancel.
+    if (body.job_id && !done) {
+      schedulePumpReinvoke(req.url, {
+        ...body,
+        offset: nextOffset,
+      });
+    }
+
     return new Response(JSON.stringify({
       ok: true,
       processed: articles.length,
       gazetteer_size: gaz.length,
       total_cost_usd_estimate: Number(total_cost.toFixed(6)),
       results,
-      // Chunked-mode fields (also harmless in single-shot mode):
       total: totalCandidates,
       next_offset: nextOffset,
       done,
+      pumped: !!(body.job_id && !done),
     }), {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error('[backfill-article-pins] fatal:', msg);
-    // Best-effort: mark a chunked job as failed so the UI stops "running".
     try {
-      const body = await req.clone().json().catch(() => ({} as RequestBody));
       if (body?.job_id) {
-        const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+        const admin = createClient(supabaseUrl, serviceKey);
         await finishJob(admin, body.job_id, 'failed', msg);
       }
     } catch { /* swallow */ }
@@ -447,3 +483,4 @@ Deno.serve(async (req) => {
     });
   }
 });
+

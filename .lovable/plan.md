@@ -114,3 +114,18 @@ X.1 (job substrate, zero behaviour risk) → X.4 (cost guard rails before we sca
 - **X.4** — `supabase/functions/_shared/ai-provider.ts`, `src/pages/admin/GeographyMedia.tsx`, new `src/hooks/useAdminJobHistory.ts`, edits to `src/pages/admin/Analytics.tsx` (if it exists; else a new card), new `docs/AI_PROVIDER_OPTIMIZATION.md`.
 
 Zero edits anywhere outside `src/pages/admin/**`, `src/components/admin/**`, `src/hooks/useAdmin*`, `supabase/functions/**`, `supabase/migrations/**`, and `docs/**`. Public routes, public components, public RLS, end-user UI: **untouched**.
+
+
+---
+
+## Phase X.1 — Resumable, observable admin jobs (frozen baseline 2026-05-28)
+
+Shipped. See `docs/ADMIN_JOBS.md` for the full contract. Summary:
+
+- `srangam_admin_jobs.heartbeat_at` column + `reconcile_stuck_admin_jobs()` watchdog (pg_cron every 5 min).
+- `backfill-article-pins` and `generate-article-og` learned `_pump: true` mode; browser kicks off chunk 0 only, server self-reinvokes via `EdgeRuntime.waitUntil`.
+- `reportItem` stamps heartbeat and accumulates `params.tier_totals = {a,b,c}` when the worker reports per-item tier deltas (pin backfill does).
+- `GeographyMedia.tsx` rehydrates the most-recent running job on mount; `JobProgressCard` renders the A/B/C confidence breakdown.
+- Auth: user kick-off via `requireAdmin`; self-pump via service-role bearer + valid `job_id`.
+
+Next (awaits explicit go-ahead): X.4 → X.2 → X.3 per the approved roll-out order.

@@ -59,6 +59,30 @@ export default function GeographyMedia() {
     setLogs((prev) => [`[${new Date().toLocaleTimeString()}] ${s}`, ...prev].slice(0, 200));
   }
 
+  // Phase X.1 — rehydrate the most-recent running job on mount so a tab
+  // refresh re-attaches the progress card to a backfill or OG run that the
+  // server is still pumping. Admin-only RLS already scopes the query.
+  useEffect(() => {
+    if (activeJobId) return; // do not stomp an in-page kick-off
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('srangam_admin_jobs')
+        .select('id')
+        .eq('status', 'running')
+        .in('kind', ['pin_backfill', 'og_generate', 'og_force'])
+        .order('started_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!cancelled && data?.id) {
+        setActiveJobId(data.id);
+        log(`↻ Re-attached to running job ${data.id.slice(0, 8)}`);
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Helper: poll the job row to learn whether the operator clicked Cancel
   // between chunks. Cheap (single indexed PK lookup).
   async function jobIsCancelled(jobId: string): Promise<boolean> {
@@ -74,6 +98,7 @@ export default function GeographyMedia() {
     }
     return false;
   }
+
 
   const { data: articles = [], isLoading, refetch } = useQuery({
     queryKey: ['admin', 'geography-media', 'articles'],
@@ -157,15 +182,16 @@ export default function GeographyMedia() {
     await qc.invalidateQueries({ queryKey: ['admin', 'geography-media'] });
   }
 
-  // ---- pin backfill (bulk — chunked, durable, cancellable) ----
+  // ---- pin backfill (bulk — server self-pumps after first chunk) ----
+
+  // Phase X.1: the browser only kicks off chunk 0. The edge function
+  // re-invokes itself via EdgeRuntime.waitUntil for every subsequent chunk,
+  // so closing the tab no longer stalls the job. Progress streams in via
+  // Realtime on srangam_admin_jobs.
   async function backfillPinsBulk(limit = 50, chunkSize = 5) {
     setBulkBusy('pins');
     try {
-      // 1. Pre-create the durable job row so the UI can subscribe immediately.
       const { data: { user } } = await supabase.auth.getUser();
-      // We don't yet know the exact total (the function will count published
-      // rows on first invocation), so seed with `limit` and let the worker
-      // correct it via the first chunk's `total` response.
       const { data: jobRow, error: jobErr } = await supabase
         .from('srangam_admin_jobs')
         .insert({
@@ -182,42 +208,18 @@ export default function GeographyMedia() {
 
       const jobId = jobRow.id as string;
       setActiveJobId(jobId);
-      log(`▶ Started pin backfill job ${jobId.slice(0, 8)} (chunks of ${chunkSize})`);
+      log(`▶ Started pin backfill job ${jobId.slice(0, 8)} (server-pumped, chunks of ${chunkSize})`);
 
-      // 2. Drive chunks until done / cancelled / fatal.
-      let offset = 0;
-      let actualTotal = limit;
-      while (true) {
-        if (await jobIsCancelled(jobId)) {
-          log(`■ Cancelled by operator at offset ${offset}/${actualTotal}`);
-          break;
-        }
-        const { data, error } = await supabase.functions.invoke('backfill-article-pins', {
-          body: { all_published: true, limit, offset, chunk_size: chunkSize, job_id: jobId },
-        });
-        if (error) throw error;
-
-        // Sync the real total back into the job row on first response.
-        if (typeof data?.total === 'number' && data.total !== actualTotal) {
-          actualTotal = data.total;
-          await supabase.from('srangam_admin_jobs').update({ total: actualTotal }).eq('id', jobId);
-        }
-
-        if (data?.cancelled || data?.done) break;
-        if (typeof data?.next_offset !== 'number' || data.next_offset <= offset) {
-          // Safety: avoid infinite loop on a misbehaving worker.
-          log(`⚠ Worker returned non-advancing offset; stopping.`);
-          await supabase
-            .from('srangam_admin_jobs')
-            .update({ status: 'failed', last_error: 'non-advancing offset', finished_at: new Date().toISOString() })
-            .eq('id', jobId);
-          break;
-        }
-        offset = data.next_offset;
+      // Single kick-off for chunk 0. The edge function will self-reinvoke
+      // for every chunk after this and finishJob() when done.
+      const { data, error } = await supabase.functions.invoke('backfill-article-pins', {
+        body: { all_published: true, limit, offset: 0, chunk_size: chunkSize, job_id: jobId },
+      });
+      if (error) throw error;
+      if (typeof data?.total === 'number' && data.total !== limit) {
+        await supabase.from('srangam_admin_jobs').update({ total: data.total }).eq('id', jobId);
       }
-
-      await qc.invalidateQueries({ queryKey: ['admin', 'geography-media'] });
-      toast({ title: 'Pin backfill finished', description: 'See the progress card for details.' });
+      log(`  chunk 0 returned (pumped=${data?.pumped ? 'yes' : 'no'}, done=${data?.done ? 'yes' : 'no'}). Watch progress card.`);
     } catch (e: any) {
       log(`✗ Pin backfill failed: ${e?.message ?? e}`);
       toast({ title: 'Pin backfill failed', description: e?.message ?? 'Unknown error', variant: 'destructive' });
@@ -269,9 +271,18 @@ export default function GeographyMedia() {
     }
   }
 
-  // ---- OG bulk (chunked, durable, cancellable) ----
+  // ---- OG bulk (Phase X.1 — server self-pumps after first article) ----
+  // The browser persists the full target list into srangam_admin_jobs.params
+  // and kicks off cursor=0. The edge function processes one article per
+  // invocation, reports progress, and self-reinvokes for the next cursor
+  // via EdgeRuntime.waitUntil. Refresh-safe, tab-close-safe, cancel-safe.
   async function bulkOg(force: boolean) {
-    const targets = force ? articles : articles.filter((a) => !a.og_image_url);
+    const targets = (force ? articles : articles.filter((a) => !a.og_image_url)).map((a) => ({
+      articleId: a.id,
+      title: getEnglishTitle(a.title) || 'Untitled',
+      theme: a.theme,
+      slug: a.slug_alias || a.slug,
+    }));
     if (targets.length === 0) {
       toast({ title: 'Nothing to do', description: force ? 'No articles found.' : 'All articles already have OG images.' });
       return;
@@ -287,68 +298,23 @@ export default function GeographyMedia() {
           total: targets.length,
           started_at: new Date().toISOString(),
           created_by: user?.id ?? null,
-          params: { force, count: targets.length },
+          // Persist the full target list so subsequent self-pumps don't need
+          // the browser to be alive.
+          params: { force, count: targets.length, targets },
         })
         .select('id')
         .single();
       if (jobErr || !jobRow) throw jobErr ?? new Error('failed to create job');
       const jobId = jobRow.id as string;
       setActiveJobId(jobId);
-      log(`▶ ${force ? 'Force-regenerating' : 'Generating missing'} OG for ${targets.length} article(s) — job ${jobId.slice(0, 8)}`);
+      log(`▶ ${force ? 'Force-regenerating' : 'Generating missing'} OG for ${targets.length} article(s) — server-pumped job ${jobId.slice(0, 8)}`);
 
-      // Drive one article at a time. Each call is short (~10 s for Gemini)
-      // so we never approach the 150 s edge-function ceiling. Cancellation
-      // is checked between every article.
-      for (const a of targets) {
-        if (await jobIsCancelled(jobId)) {
-          log(`■ Cancelled by operator.`);
-          break;
-        }
-        let ok = false;
-        let cost = 0;
-        let errMsg: string | null = null;
-        try {
-          const r = await generateOg(a, force);
-          ok = true;
-          cost = r.cost;
-        } catch (e: any) {
-          errMsg = e?.message ?? String(e);
-          log(`  ✗ ${getEnglishTitle(a.title)}: ${errMsg}`);
-        }
-
-        // Per-item update on the job row → realtime push to the progress card.
-        const { data: cur } = await supabase
-          .from('srangam_admin_jobs')
-          .select('processed,succeeded,failed,cost_usd,last_error')
-          .eq('id', jobId)
-          .maybeSingle();
-        if (cur) {
-          await supabase
-            .from('srangam_admin_jobs')
-            .update({
-              processed: cur.processed + 1,
-              succeeded: cur.succeeded + (ok ? 1 : 0),
-              failed: cur.failed + (ok ? 0 : 1),
-              cost_usd: Number(cur.cost_usd) + cost,
-              last_item: a.slug_alias || a.slug,
-              last_error: ok ? cur.last_error : errMsg,
-            })
-            .eq('id', jobId);
-        }
-
-        await new Promise((r) => setTimeout(r, 600)); // gentle pacing for image API
-      }
-
-      // Mark terminal (unless cancelled mid-loop, which already set status).
-      const finalCancelled = await jobIsCancelled(jobId);
-      if (!finalCancelled) {
-        await supabase
-          .from('srangam_admin_jobs')
-          .update({ status: 'succeeded', finished_at: new Date().toISOString() })
-          .eq('id', jobId);
-      }
-      await qc.invalidateQueries({ queryKey: ['admin', 'geography-media'] });
-      toast({ title: 'Bulk OG finished', description: 'See the progress card for details.' });
+      // Kick off cursor 0; server pumps the rest.
+      const { data, error } = await supabase.functions.invoke('generate-article-og', {
+        body: { job_id: jobId, cursor: 0, force, targets },
+      });
+      if (error) throw error;
+      log(`  cursor 0 returned (pumped=${data?.pumped ? 'yes' : 'no'}, done=${data?.done ? 'yes' : 'no'}). Watch progress card.`);
     } catch (e: any) {
       log(`✗ Bulk OG failed: ${e?.message ?? e}`);
       toast({ title: 'Bulk OG failed', description: e?.message ?? 'Unknown error', variant: 'destructive' });
@@ -356,6 +322,7 @@ export default function GeographyMedia() {
       setBulkBusy(null);
     }
   }
+
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-6 max-w-7xl">

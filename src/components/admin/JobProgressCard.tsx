@@ -105,10 +105,22 @@ export function JobProgressCard({ jobId, onDismiss }: Props) {
           />
         </div>
 
-        {/* Last item / error */}
+        {/* Last item / error / tier breakdown (Phase X.1) */}
         {job.last_item && (
           <div className="text-xs text-muted-foreground truncate">
             Last: <span className="font-mono">{job.last_item}</span>
+            {job.params?.tier_totals && (
+              (() => {
+                const t = job.params!.tier_totals!;
+                const a = t.a ?? 0, b = t.b ?? 0, c = t.c ?? 0;
+                if (a + b + c === 0) return null;
+                return (
+                  <span className="ml-2 font-mono text-[10px] uppercase tracking-wide">
+                    (A:{a} B:{b} C:{c})
+                  </span>
+                );
+              })()
+            )}
           </div>
         )}
         {job.last_error && job.failed > 0 && (
@@ -116,6 +128,7 @@ export function JobProgressCard({ jobId, onDismiss }: Props) {
             Last error: {job.last_error}
           </div>
         )}
+
 
         {/* Footer */}
         <div className="flex items-center justify-between pt-1">

@@ -32,7 +32,13 @@ export interface AdminJobRow {
   last_error: string | null;
   started_at: string | null;
   finished_at: string | null;
+  /** Phase X.1 — watchdog freshness marker. */
+  heartbeat_at?: string | null;
+  /** Phase X.1 — JSONB bag including `tier_totals: {a,b,c}` and other
+   *  job-specific accumulators reported by the worker. */
+  params?: { tier_totals?: { a?: number; b?: number; c?: number } } & Record<string, unknown>;
 }
+
 
 export function useAdminJob(jobId: string | null) {
   const [job, setJob] = useState<AdminJobRow | null>(null);
