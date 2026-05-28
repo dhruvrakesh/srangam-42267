@@ -264,12 +264,15 @@ export default function PuranaReferences() {
           {activeJobId ? (
             <JobProgressCard jobId={activeJobId} onDismiss={() => setActiveJobId(null)} />
           ) : isProcessing ? (
-            <ExtractionProgress
-              current={0}
-              total={0}
-              currentArticle={currentArticle}
-              isProcessing={isProcessing}
-            />
+            // Phase X.7.1 — brief one-tick state between user click and the
+            // job row insert returning. Once the insert resolves, the
+            // JobProgressCard above takes over with realtime updates. We no
+            // longer show a useless "Processing… 0/0" bar that confused
+            // operators when the kind_check constraint blocked the insert.
+            <div className="flex items-center gap-2 text-sm text-muted-foreground py-3 px-1">
+              <RefreshCw className="h-4 w-4 animate-spin" />
+              <span>Queueing extraction job…</span>
+            </div>
           ) : null}
         </CardContent>
       </Card>
