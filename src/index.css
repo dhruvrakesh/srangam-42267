@@ -192,22 +192,25 @@ All colors MUST be HSL.
     word-break: keep-all;
   }
 
-  /* MV-02 (Phase P, 2026-05-28) — Mobile prose overflow guard.
-     Scoped to <640px so desktop typography rhythm is untouched.
-     `overflow-wrap: anywhere` (stronger than `break-word`) breaks
-     chip+token rows that `break-word` leaves intact. */
+  /* MV-02 (Phase T, 2026-05-28) — Mobile prose overflow guard, corrected.
+     Phase P used `overflow-wrap: anywhere` on prose, which breaks English
+     mid-word (e.g. "climbing" -> "climb-/ing"). The correct policy is
+     `break-word` on prose (only breaks unbreakable runs) and `anywhere`
+     reserved for the actual offenders: cultural-term chips, anchors,
+     and code. Scoped <640 px so desktop typography is untouched. */
   @media (max-width: 640px) {
     .article-content p,
     .article-content li,
     .article-content h1,
     .article-content h2,
     .article-content h3 {
-      overflow-wrap: anywhere;
+      overflow-wrap: break-word;
       word-break: normal;
       hyphens: auto;
       -webkit-hyphens: auto;
     }
-    .article-content :is(.cultural-term-highlight, a, code) {
+    .article-content :is(.cultural-term-highlight, a[href], code) {
+      overflow-wrap: anywhere;
       max-width: 100%;
     }
   }
@@ -382,10 +385,13 @@ All colors MUST be HSL.
   @apply border border-saffron/20;
   @apply cursor-help;
   @apply transition-all duration-200;
-  
-  /* Prevent breaking cultural terms */
-  white-space: nowrap;
-  word-break: keep-all;
+
+  /* Phase T.3 — chip flows inline with prose. `nowrap` + `keep-all` made
+     long terms force horizontal overflow on mobile and visually detach
+     from neighbouring words. `anywhere` only fires when the term itself
+     would exceed the line; natural breaks are preserved. */
+  word-break: normal;
+  overflow-wrap: anywhere;
   hyphens: none;
 }
 
@@ -395,4 +401,18 @@ All colors MUST be HSL.
 
 .cultural-term-highlight:focus-visible {
   @apply outline-2 outline-offset-2 outline-burgundy;
+}
+
+/* Phase T.3 — tighten chip on small screens and remove the inline Info
+   icon on coarse pointers (the dotted underline + saffron tint is enough
+   affordance, and the icon was adding width pressure at 320–360 px). */
+@media (max-width: 640px) {
+  .cultural-term-highlight {
+    @apply px-1 py-0 border-saffron/10;
+  }
+}
+@media (pointer: coarse) {
+  .cultural-term-highlight svg {
+    display: none;
+  }
 }

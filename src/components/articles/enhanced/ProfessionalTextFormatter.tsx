@@ -47,6 +47,7 @@ import { SupportedLanguage } from '@/lib/i18n';
 import { normalizeLanguageCode, getScriptFont } from '@/lib/languageUtils';
 import { cn } from '@/lib/utils';
 import { enhanceTextWithCulturalTerms } from '@/lib/culturalTermEnhancer';
+import { sanitizeArticleHtml } from '@/lib/textSanitizer';
 import { EvidenceTable, isEvidenceTable } from './EvidenceTable';
 import { MermaidBlock } from './MermaidBlock';
 
@@ -74,6 +75,12 @@ export const ProfessionalTextFormatter: React.FC<ProfessionalTextFormatterProps>
     if (typeof text === 'string') {
       // CRITICAL FIX: Trim leading/trailing whitespace and normalize line breaks
       text = text.trim().replace(/^\s+/gm, '');
+
+      // Phase T.4 — Strip ChatGPT export artefacts (`fileturn…`, PUA cite
+      // tokens, dangling footnote digits) at render time. Additive; the
+      // source row in srangam_articles.content is untouched.
+      text = sanitizeArticleHtml(text);
+      
       
       // AUTO-ENHANCE: Inject cultural term markers if enabled
       if (enableCulturalTerms && autoHighlightTerms) {
