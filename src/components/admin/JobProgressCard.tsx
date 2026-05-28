@@ -123,9 +123,10 @@ export function JobProgressCard({ jobId, onDismiss }: Props) {
                 const t = job.params!.tier_totals!;
                 const a = t.a ?? 0, b = t.b ?? 0, c = t.c ?? 0;
                 if (a + b + c === 0) return null;
+                const [la, lb, lc] = TIER_LABELS[job.kind] ?? ['A', 'B', 'C'];
                 return (
                   <span className="ml-2 font-mono text-[10px] uppercase tracking-wide">
-                    (A:{a} B:{b} C:{c})
+                    ({la}:{a} {lb}:{b} {lc}:{c})
                   </span>
                 );
               })()
