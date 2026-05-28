@@ -21,7 +21,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface AdminJobRow {
   id: string;
-  kind: 'pin_backfill' | 'og_generate' | 'og_force';
+  kind: 'pin_backfill' | 'og_generate' | 'og_force' | 'purana_extract';
   status: 'queued' | 'running' | 'succeeded' | 'failed' | 'cancelled';
   total: number;
   processed: number;
