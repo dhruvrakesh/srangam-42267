@@ -68,3 +68,49 @@ export function sanitizeArticleHtml(input: string): string {
     // Trim trailing whitespace on each line (also created by removal).
     .replace(/[ \t]+\n/g, '\n');
 }
+
+/**
+ * Phase U.2 — Render-time duplicate leading-title suppression.
+ *
+ * Many DB / Markdown-imported articles begin with their own <h1> or `# `
+ * title that visually duplicates (and on mobile collides with) the page
+ * shell title. This helper removes ONLY the first leading title if it is
+ * semantically equivalent to the supplied `pageTitle`.
+ *
+ * Conservative normalization: strip tags, lowercase, collapse whitespace,
+ * remove punctuation. Diacritics preserved. If the first heading does not
+ * match the page title, the body is returned untouched.
+ *
+ * Source DB rows are NOT mutated. Additive and idempotent.
+ */
+export function stripLeadingTitle(body: string, pageTitle?: string): string {
+  if (!body || !pageTitle) return body;
+
+  const normalize = (s: string): string =>
+    s
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/[\p{P}\p{S}]+/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+
+  const target = normalize(pageTitle);
+  if (!target) return body;
+
+  // Skip leading whitespace.
+  const trimmed = body.replace(/^\s+/, '');
+
+  // Case 1: HTML <h1>…</h1>
+  const htmlMatch = trimmed.match(/^<h1\b[^>]*>([\s\S]*?)<\/h1>\s*/i);
+  if (htmlMatch && normalize(htmlMatch[1]) === target) {
+    return trimmed.slice(htmlMatch[0].length);
+  }
+
+  // Case 2: Markdown `# Title` on the first non-empty line.
+  const mdMatch = trimmed.match(/^#[ \t]+([^\n]+)\n?/);
+  if (mdMatch && normalize(mdMatch[1]) === target) {
+    return trimmed.slice(mdMatch[0].length);
+  }
+
+  return body;
+}
