@@ -261,13 +261,50 @@ async function backfillOne(
     else if (c === 'B') counts.pins_b++;
     else counts.pins_c++;
   }
-
   console.log(JSON.stringify({
     evt: 'pin_complete',
     article_id: article.id,
     slug: article.slug,
     inserted,
     ...counts,
+    total_ms: Math.round(performance.now() - t0),
+    ai: aiStats,
+    ts: new Date().toISOString(),
+  }));
+
+  return { inserted, ...counts, ai: aiStats };
+}
+
+// ---------- Phase X.1: self-pump helper ----------
+// Re-invokes this same function with the next offset, authenticated by the
+// service-role key. Runs in the background via EdgeRuntime.waitUntil so the
+// current response returns immediately. Removes the "browser tab closed →
+// job stalls" failure mode without introducing any new infrastructure.
+function schedulePumpReinvoke(selfUrl: string, body: RequestBody) {
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!serviceKey) {
+    console.error('[backfill-article-pins] pump: missing SERVICE_ROLE_KEY');
+    return;
+  }
+  // @ts-ignore — EdgeRuntime is provided by Supabase Edge Runtime.
+  const waitUntil = (globalThis as any).EdgeRuntime?.waitUntil;
+  const fetchP = fetch(selfUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${serviceKey}`,
+    },
+    body: JSON.stringify({ ...body, _pump: true }),
+  }).then(async (r) => {
+    if (!r.ok) {
+      console.error('[backfill-article-pins] pump reinvoke failed:', r.status, await r.text());
+    }
+  }).catch((e) => {
+    console.error('[backfill-article-pins] pump reinvoke error:', e?.message ?? e);
+  });
+  if (typeof waitUntil === 'function') waitUntil(fetchP);
+}
+
     total_ms: Math.round(performance.now() - t0),
     ai: aiStats,
     ts: new Date().toISOString(),
