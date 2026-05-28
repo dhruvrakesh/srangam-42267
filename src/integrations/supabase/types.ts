@@ -821,6 +821,51 @@ export type Database = {
         }
         Relationships: []
       }
+      srangam_corpus_correlations_snapshot: {
+        Row: {
+          article_a: string
+          article_b: string
+          computed_at: string
+          jaccard: number
+          job_id: string
+          shared_biblio: number
+          shared_places: number
+          shared_puranas: number
+          shared_tags: number
+          shared_terms: number
+          shared_total: number
+          weights: Json
+        }
+        Insert: {
+          article_a: string
+          article_b: string
+          computed_at?: string
+          jaccard?: number
+          job_id: string
+          shared_biblio?: number
+          shared_places?: number
+          shared_puranas?: number
+          shared_tags?: number
+          shared_terms?: number
+          shared_total?: number
+          weights?: Json
+        }
+        Update: {
+          article_a?: string
+          article_b?: string
+          computed_at?: string
+          jaccard?: number
+          job_id?: string
+          shared_biblio?: number
+          shared_places?: number
+          shared_puranas?: number
+          shared_tags?: number
+          shared_terms?: number
+          shared_total?: number
+          weights?: Json
+        }
+        Relationships: []
+      }
       srangam_correlation_matrix: {
         Row: {
           article_slug: string | null
@@ -1456,6 +1501,14 @@ export type Database = {
         }
         Relationships: []
       }
+      srangam_corpus_article_biblio_pairs: {
+        Row: {
+          article_a: string | null
+          article_b: string | null
+          shared_biblio: number | null
+        }
+        Relationships: []
+      }
       srangam_corpus_article_place_pairs: {
         Row: {
           article_a: string | null
@@ -1469,6 +1522,22 @@ export type Database = {
           article_a: string | null
           article_b: string | null
           shared_puranas: number | null
+        }
+        Relationships: []
+      }
+      srangam_corpus_article_tag_pairs: {
+        Row: {
+          article_a: string | null
+          article_b: string | null
+          shared_tags: number | null
+        }
+        Relationships: []
+      }
+      srangam_corpus_article_term_pairs: {
+        Row: {
+          article_a: string | null
+          article_b: string | null
+          shared_terms: number | null
         }
         Relationships: []
       }
@@ -1778,6 +1847,28 @@ export type Database = {
           jaccard: number
           shared_places: number
           shared_puranas: number
+          shared_total: number
+        }[]
+      }
+      get_corpus_correlations_v2: {
+        Args: {
+          limit_rows?: number
+          min_shared?: number
+          w_biblio?: number
+          w_place?: number
+          w_purana?: number
+          w_tag?: number
+          w_term?: number
+        }
+        Returns: {
+          article_a: string
+          article_b: string
+          jaccard: number
+          shared_biblio: number
+          shared_places: number
+          shared_puranas: number
+          shared_tags: number
+          shared_terms: number
           shared_total: number
         }[]
       }
