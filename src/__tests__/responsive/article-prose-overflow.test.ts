@@ -53,12 +53,12 @@ describe('MV-02: mobile prose overflow guard', () => {
 
   it('CulturalTermTooltip trigger renders inline (never inline-block)', () => {
     const src = readFileSync(join(ROOT, 'components/language/CulturalTermTooltip.tsx'), 'utf8');
-    // The trigger className block must not contain inline-block.
-    // (Other occurrences in tooltip content are fine — but the trigger is the offender.)
-    const triggerSection = src.split('TooltipTrigger')[1] ?? '';
-    const triggerOpening = triggerSection.split('TooltipContent')[0] ?? triggerSection;
-    expect(triggerOpening).not.toMatch(/inline-block/);
-    expect(triggerOpening).toMatch(/\binline\b/);
+    // Locate the trigger className block: starts at <TooltipTrigger and ends at </TooltipTrigger>.
+    const match = src.match(/<TooltipTrigger[\s\S]*?<\/TooltipTrigger>/);
+    expect(match, '<TooltipTrigger> block not found').toBeTruthy();
+    const block = match![0];
+    expect(block).not.toMatch(/\binline-block\b/);
+    expect(block).toMatch(/"relative inline\b/);
   });
 
   it('no article component pairs inline-block with px-* without max-w-full', () => {
