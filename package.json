@@ -8,7 +8,10 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:perf": "playwright test e2e/article-perf.spec.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
