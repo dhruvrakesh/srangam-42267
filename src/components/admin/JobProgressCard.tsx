@@ -34,7 +34,7 @@ interface Props {
 }
 
 export function JobProgressCard({ jobId, onDismiss }: Props) {
-  const { job, progress, etaMs, cancel } = useAdminJob(jobId);
+  const { job, progress, etaMs, cancel, recentItems, stalled } = useAdminJob(jobId);
 
   if (!job) {
     return (
