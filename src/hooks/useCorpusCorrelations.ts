@@ -81,15 +81,17 @@ export function usePuranaPinOverlap(articleId?: string | null, limit = 200) {
     queryKey: ['corpus-purana-pin-overlap', articleId ?? null, limit],
     staleTime: FIVE_MIN,
     queryFn: async () => {
-      let q = supabase
-        .from('srangam_corpus_purana_pin_overlap' as any)
+      // Cast supabase client to any — view is not in generated Database types yet.
+      const sb = supabase as any;
+      let q = sb
+        .from('srangam_corpus_purana_pin_overlap')
         .select('*')
         .order('purana_conf', { ascending: false })
         .limit(limit);
       if (articleId) q = q.eq('article_id', articleId);
       const { data, error } = await q;
       if (error) throw error;
-      return (data ?? []) as Array<{
+      return ((data ?? []) as unknown) as Array<{
         article_id: string;
         purana_name: string;
         kanda: string | null;
@@ -102,3 +104,4 @@ export function usePuranaPinOverlap(articleId?: string | null, limit = 200) {
     },
   });
 }
+
