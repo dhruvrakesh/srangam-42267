@@ -55,7 +55,14 @@ interface RequestBody {
   /** Articles to process in THIS invocation. Default 5, max 10 — sized to
    *  stay well under the 150 s edge-function wall-clock. */
   chunk_size?: number;
+
+  // ---- Phase X.1 self-pump mode ----
+  /** Internal flag set by the function itself when re-invoking for the
+   *  next chunk via EdgeRuntime.waitUntil. Authenticated by service-role
+   *  bearer instead of the user's admin JWT. */
+  _pump?: boolean;
 }
+
 
 interface GazetteerRow {
   id: string;
