@@ -180,7 +180,10 @@ export default function GeographyMedia() {
     log(`✓ Pin backfill done: ${summary}`);
     toast({ title: 'Pin backfill complete', description: summary });
     await qc.invalidateQueries({ queryKey: ['admin', 'geography-media'] });
+  }
+
   // ---- pin backfill (bulk — server self-pumps after first chunk) ----
+
   // Phase X.1: the browser only kicks off chunk 0. The edge function
   // re-invokes itself via EdgeRuntime.waitUntil for every subsequent chunk,
   // so closing the tab no longer stalls the job. Progress streams in via
