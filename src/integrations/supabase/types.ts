@@ -90,6 +90,7 @@ export type Database = {
           created_by: string | null
           failed: number
           finished_at: string | null
+          heartbeat_at: string | null
           id: string
           kind: string
           last_error: string | null
@@ -108,6 +109,7 @@ export type Database = {
           created_by?: string | null
           failed?: number
           finished_at?: string | null
+          heartbeat_at?: string | null
           id?: string
           kind: string
           last_error?: string | null
@@ -126,6 +128,7 @@ export type Database = {
           created_by?: string | null
           failed?: number
           finished_at?: string | null
+          heartbeat_at?: string | null
           id?: string
           kind?: string
           last_error?: string | null
@@ -1789,6 +1792,7 @@ export type Database = {
       }
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
+      reconcile_stuck_admin_jobs: { Args: never; Returns: number }
       srangam_increment_term_usage: {
         Args: { term_key: string }
         Returns: undefined
