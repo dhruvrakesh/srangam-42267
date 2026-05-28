@@ -504,8 +504,10 @@ export const OceanicArticlePage: React.FC = () => {
               autoAnalyze={true}
             />
           </NarrationErrorBoundary>
+          </article>
         </div>
       </div>
+
     </>
   );
 };
