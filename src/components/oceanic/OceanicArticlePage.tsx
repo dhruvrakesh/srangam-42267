@@ -172,7 +172,7 @@ export const OceanicArticlePage: React.FC = () => {
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-        <div className="container mx-auto px-4 py-8 max-w-6xl min-w-0">
+        <div className="container mx-auto px-4 py-5 sm:px-6 sm:py-8 max-w-6xl min-w-0 w-full">
           {/* Phase T.1 — MV-02 wrapper: OceanicArticlePage now adopts the
               same overflow-x-clip + min-w-0 invariants used by ArticlePage,
               so the regression net covers the production article view. */}
