@@ -30,8 +30,11 @@ function walk(dir: string, out: string[] = []): string[] {
 }
 
 describe('MV-02: mobile prose overflow guard', () => {
-  it('ArticlePage <article data-testid="article-body"> declares overflow-x-clip and min-w-0', () => {
-    const src = readFileSync(join(ROOT, 'components/articles/ArticlePage.tsx'), 'utf8');
+  it.each([
+    ['ArticlePage', 'components/articles/ArticlePage.tsx'],
+    ['OceanicArticlePage', 'components/oceanic/OceanicArticlePage.tsx'],
+  ])('%s <article data-testid="article-body"> declares overflow-x-clip and min-w-0', (_name, rel) => {
+    const src = readFileSync(join(ROOT, rel), 'utf8');
     const line = src
       .split('\n')
       .find((l) => l.includes('data-testid="article-body"'));
@@ -39,6 +42,7 @@ describe('MV-02: mobile prose overflow guard', () => {
     expect(line!).toMatch(/overflow-x-clip/);
     expect(line!).toMatch(/min-w-0/);
   });
+
 
   it('index.css contains a (max-width: 640px) block applying overflow-wrap: anywhere to .article-content', () => {
     const css = readFileSync(join(ROOT, 'index.css'), 'utf8');
