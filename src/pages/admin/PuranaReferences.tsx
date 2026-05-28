@@ -261,14 +261,16 @@ export default function PuranaReferences() {
             </div>
           </div>
 
-          {isProcessing && (
-            <ExtractionProgress 
-              current={progress.current}
-              total={progress.total}
+          {activeJobId ? (
+            <JobProgressCard jobId={activeJobId} onDismiss={() => setActiveJobId(null)} />
+          ) : isProcessing ? (
+            <ExtractionProgress
+              current={0}
+              total={0}
               currentArticle={currentArticle}
               isProcessing={isProcessing}
             />
-          )}
+          ) : null}
         </CardContent>
       </Card>
 
