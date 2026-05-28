@@ -912,3 +912,57 @@ work; presentation layer only.
   both `ArticlePage` and `OceanicArticlePage`.
 - `src/__tests__/responsive/article-overflow-360.test.ts` unchanged.
 - Cross-browser visual sweep at 320/360/390/414 px remains a manual checkpoint.
+
+---
+
+## Phase V — CI guardrails (2026-05-28)
+
+A 4-layer regression net for the article view. Additive only — zero changes to
+production source under `src/components`, `src/pages`, `src/lib`, edge functions,
+or DB.
+
+### Layers
+
+1. **Source-scan invariants (MV-01, MV-02)** — `bunx vitest run`. Static checks
+   on Tailwind class contracts and `index.css` rules.
+2. **DOM overflow (jsdom + width shim)** —
+   `src/__tests__/responsive/article-dom-overflow.test.tsx`. Renders
+   `ArticlePage` (real, with `CulturalTermTooltip` stubbed) and an
+   `OceanicArticlePage` structural shell mirroring the Phase U wrapper chain;
+   walks `[data-testid="article-body"]`, fails on any descendant where
+   `scrollWidth > clientWidth + 1` outside sanctioned `overflow-x-auto`
+   wrappers. Width shim in `src/test/setup.ts` parses inline style + Tailwind
+   `min-w-[NNNpx]` / `w-[NNNpx]` hints — exactly the regression class Phase
+   K/P/U fought. Includes a negative-control test asserting the shim flags a
+   known-bad fixture.
+3. **Playwright mobile E2E** — `e2e/article-mobile.spec.ts`. Loads
+   `/articles/reassessing-ashoka-legacy` in Chromium, asserts no page-level
+   horizontal scroll, `[data-testid="article-body"]` text length > 500, and
+   no in-body overflow offenders. Viewport sweep: 320, 360, 384, 390, 414.
+4. **Performance budget** — `e2e/article-perf.spec.ts`. CDP-throttled
+   Fast-3G + 4× CPU. Measures `article-body` first-paint (MutationObserver
+   mark) and LCP. Initial thresholds (calibrate on first green run, then
+   freeze):
+   - `ARTICLE_BODY_VISIBLE_MS = 2500`
+   - `LCP_MS = 3000`
+
+### Commands
+
+```bash
+bun run test         # layers 1 + 2 (Vitest)
+bun run test:e2e     # layers 3 + 4 (Playwright; spawns `bun run dev`)
+bun run test:perf    # layer 4 only
+```
+
+Playwright needs browser binaries on first run:
+
+```bash
+bunx playwright install chromium
+```
+
+### Out of scope (Phase W candidates)
+
+- GitHub Actions workflow file (needs CI runner confirmation).
+- Visual regression snapshots.
+- Lighthouse CI dashboard.
+- Multi-browser (WebKit / Firefox) matrix.
