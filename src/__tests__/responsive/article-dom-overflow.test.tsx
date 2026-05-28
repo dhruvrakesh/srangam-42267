@@ -21,6 +21,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HelmetProvider } from 'react-helmet-async';
 import parse from 'html-react-parser';
 
+import { TooltipProvider } from '@/components/ui/tooltip';
+
 import { ArticlePage } from '@/components/articles/ArticlePage';
 import { articleFixture, FIXTURE_CONTENT_HTML } from '@/__tests__/fixtures/articleFixture';
 
@@ -63,9 +65,11 @@ function renderInProviders(ui: React.ReactElement) {
   return render(
     <HelmetProvider>
       <QueryClientProvider client={qc}>
-        <MemoryRouter initialEntries={['/articles/reassessing-ashoka-legacy']}>
-          <div style={{ width: `${VIEWPORT}px` }}>{ui}</div>
-        </MemoryRouter>
+        <TooltipProvider>
+          <MemoryRouter initialEntries={['/articles/reassessing-ashoka-legacy']}>
+            <div style={{ width: `${VIEWPORT}px` }}>{ui}</div>
+          </MemoryRouter>
+        </TooltipProvider>
       </QueryClientProvider>
     </HelmetProvider>
   );
