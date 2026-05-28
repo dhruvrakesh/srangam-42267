@@ -53,6 +53,7 @@ const ArticleContent = React.memo(({
   articleSlug
 }: ArticlePageProps) => {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const { mark, measure } = usePerformanceMonitor({ 
     componentName: 'ArticlePage',
     trackMemory: true 
