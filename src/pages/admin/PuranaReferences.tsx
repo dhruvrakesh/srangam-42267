@@ -28,10 +28,31 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 export default function PuranaReferences() {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [progress, setProgress] = useState({ current: 0, total: 0 });
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
   const [currentArticle, setCurrentArticle] = useState<string>("");
   const [showBatchDialog, setShowBatchDialog] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  // Phase X.5 — rehydrate the most-recent running purana_extract job on
+  // mount so a tab refresh re-attaches the progress card to a run the
+  // server is still pumping. Admin-only RLS already scopes the query.
+  useEffect(() => {
+    if (activeJobId) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('srangam_admin_jobs')
+        .select('id')
+        .eq('status', 'running')
+        .eq('kind', 'purana_extract')
+        .order('started_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!cancelled && data?.id) setActiveJobId(data.id);
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
   // Filters
   const [selectedArticle, setSelectedArticle] = useState<string>("");
