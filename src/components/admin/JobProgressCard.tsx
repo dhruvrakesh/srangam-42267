@@ -139,6 +139,27 @@ export function JobProgressCard({ jobId, onDismiss }: Props) {
           </div>
         )}
 
+        {/* Stalled banner — appears before watchdog reaps (Phase X.5.1) */}
+        {stalled && (
+          <div className="rounded border border-amber-500/40 bg-amber-500/10 px-2 py-1.5 text-xs text-amber-600 dark:text-amber-400">
+            No heartbeat for 90s — the watchdog will reap this job shortly. You can also cancel and retry.
+          </div>
+        )}
+
+        {/* Recent items tail (ring buffer, presentational) */}
+        {recentItems.length > 1 && (
+          <details className="text-xs">
+            <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+              Recent items ({recentItems.length})
+            </summary>
+            <ol className="mt-1 space-y-0.5 font-mono text-[11px] text-muted-foreground">
+              {recentItems.map((it, i) => (
+                <li key={`${it}-${i}`} className="truncate">· {it}</li>
+              ))}
+            </ol>
+          </details>
+        )}
+
 
         {/* Footer */}
         <div className="flex items-center justify-between pt-1">
