@@ -238,7 +238,7 @@ export function HeaderNav() {
           {/* Language switcher — compact on mobile (Phase Q / MC-01) to keep
               header chrome inside the 320px viewport. Full switcher returns at sm. */}
           <div className="sm:hidden">
-            <EnhancedLanguageSwitcher compact showLabel={false} />
+            <EnhancedLanguageSwitcher variant="compact" />
           </div>
           <div className="hidden sm:block">
             <EnhancedLanguageSwitcher />

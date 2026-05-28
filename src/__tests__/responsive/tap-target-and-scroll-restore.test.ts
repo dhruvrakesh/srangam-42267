@@ -108,7 +108,7 @@ describe('MC-01: mobile chrome safety', () => {
       'utf8'
     );
     expect(src).toMatch(
-      /<EnhancedLanguageSwitcher\s+compact[\s\S]*?showLabel=\{false\}\s*\/>/
+      /<EnhancedLanguageSwitcher\s+variant="compact"\s*\/>/
     );
   });
 });
