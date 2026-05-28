@@ -191,6 +191,26 @@ All colors MUST be HSL.
     -ms-hyphens: none !important;
     word-break: keep-all;
   }
+
+  /* MV-02 (Phase P, 2026-05-28) — Mobile prose overflow guard.
+     Scoped to <640px so desktop typography rhythm is untouched.
+     `overflow-wrap: anywhere` (stronger than `break-word`) breaks
+     chip+token rows that `break-word` leaves intact. */
+  @media (max-width: 640px) {
+    .article-content p,
+    .article-content li,
+    .article-content h1,
+    .article-content h2,
+    .article-content h3 {
+      overflow-wrap: anywhere;
+      word-break: normal;
+      hyphens: auto;
+      -webkit-hyphens: auto;
+    }
+    .article-content :is(.cultural-term-highlight, a, code) {
+      max-width: 100%;
+    }
+  }
 }
 
 /* Sacred Geometry & Dharmic Patterns */
