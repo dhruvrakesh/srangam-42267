@@ -44,16 +44,18 @@ describe('MV-02: mobile prose overflow guard', () => {
   });
 
 
-  it('index.css contains a (max-width: 640px) block applying overflow-wrap: anywhere to .article-content', () => {
+  it('index.css mobile block applies safe overflow-wrap (break-word|anywhere) + hyphens:auto to .article-content', () => {
     const css = readFileSync(join(ROOT, 'index.css'), 'utf8');
-    // Find the mobile media query and confirm it scopes overflow-wrap: anywhere under .article-content.
     expect(css).toMatch(/@media\s*\(max-width:\s*640px\)/);
     const mobileBlockMatch = css.match(/@media\s*\(max-width:\s*640px\)\s*\{[\s\S]*?\n\s*\}\s*\n/);
     expect(mobileBlockMatch, 'mobile media query block not found').toBeTruthy();
     const block = mobileBlockMatch![0];
     expect(block).toMatch(/\.article-content/);
-    expect(block).toMatch(/overflow-wrap:\s*anywhere/);
+    // Phase U: break-word (preferred) or anywhere both satisfy MV-02 wrap safety.
+    expect(block).toMatch(/overflow-wrap:\s*(break-word|anywhere)/);
+    expect(block).toMatch(/hyphens:\s*auto/);
   });
+
 
   it('CulturalTermTooltip trigger renders inline (never inline-block)', () => {
     const src = readFileSync(join(ROOT, 'components/language/CulturalTermTooltip.tsx'), 'utf8');
