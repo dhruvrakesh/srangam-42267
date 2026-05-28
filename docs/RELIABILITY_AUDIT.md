@@ -765,3 +765,65 @@ Re-scan after Phase N flagged 14 items; live `pg_policies` / `pg_proc` inspectio
 16. Public consumers of audio narration metadata MUST read `srangam_audio_narrations_public`; base table reads require admin or service role.
 17. Article HTML rendering MUST flow through `rehype-sanitize` with the project's allow-list schema.
 18. Book chapters with `status != 'published'` are visible only to admins.
+
+---
+
+## 2026-05-28 — Phase P (Mobile prose overflow invariant MV-02)
+
+**Context.** Field report (`srangam.nartiang.org` at 384 px CSS, DPR 2.81): the Satīsar article was clipped at the right edge — H1, dek, body paragraphs, and the `Jalodbhava` cultural-term chip all extended past the viewport. The `<article>` itself was wider than `window.innerWidth`. MV-01 was intact (the `min-w-[900px]` table at `ProfessionalTextFormatter.tsx:407` still sits inside `overflow-x-auto`) — this is a **different** overflow class that MV-01 does not cover.
+
+### Root cause
+
+Three compounding presentation defects:
+
+1. **Article container had no overflow guard** — `ArticlePage.tsx:70` declared `max-w-4xl mx-auto px-4 py-8 relative` with no `min-w-0` (so a `min-content` child could inflate it) and no `overflow-x-clip` (so an escaping descendant pushed the page scroll).
+2. **Double horizontal gutter** — `ArticlePage.tsx:70` applied `px-4`, then `ArticlePage.tsx:145` wrapped content in `<div class="max-w-4xl mx-auto px-6">`. 16 + 24 = 40 px of side padding on a 384 px viewport left only 344 px for `prose-xl` (20 px body).
+3. **Cultural-term chip rendered `inline-block`** — `CulturalTermTooltip.tsx:59` (`relative inline-block …`) prevented the row "chip + space + 22-char token" from breaking; `overflow-wrap: break-word` only breaks tokens that *alone* exceed the line, not chip-adjacent rows.
+
+### MV-02 — Mobile prose overflow invariant
+
+No article-body component may emit text whose natural inline row exceeds the viewport width. Specifically:
+
+- `<article data-testid="article-body">` MUST declare `overflow-x-clip` (with bracketed `[overflow-x:clip]` fallback for older Android WebView) and `min-w-0 w-full`.
+- `.article-content` paragraphs, list items, and `h1`–`h3` MUST use `overflow-wrap: anywhere` at `@media (max-width: 640px)` (scoped to avoid desktop rhythm shifts).
+- Cultural-term chips, inline anchors, and `<code>` inside `.article-content` MUST be `inline` (never `inline-block`) at mobile widths and MUST cap at `max-width: 100%`.
+- Article body typography ramps from `prose-lg` (< 640 px, 18 px) to `prose-xl` (≥ 640 px, 20 px).
+- Article H1 ramps `text-3xl → sm:text-4xl → md:text-5xl → lg:text-6xl` (smooth ramp; no `text-4xl → text-6xl` jump).
+
+### Code changes (Phase P, 2026-05-28)
+
+| File | Change |
+|------|--------|
+| `src/components/articles/ArticlePage.tsx` L70 | Added `overflow-x-clip [overflow-x:clip] w-full min-w-0`; gutter consolidated to `px-4 sm:px-6 lg:px-8` |
+| `src/components/articles/ArticlePage.tsx` L92 | Icon halo `p-5 sm:p-8`; icon size `48` mobile / `64` desktop via `useIsMobile()` |
+| `src/components/articles/ArticlePage.tsx` L97 | H1 ramp + `break-words [overflow-wrap:anywhere] [hyphens:auto]` |
+| `src/components/articles/ArticlePage.tsx` L103 | Dek `break-words [overflow-wrap:anywhere]` |
+| `src/components/articles/ArticlePage.tsx` L145 | Inner wrapper changed to `px-0 min-w-0` (removes double gutter) |
+| `src/components/articles/enhanced/ProfessionalTextFormatter.tsx` L591 | `prose prose-lg sm:prose-xl max-w-none article-content` |
+| `src/components/language/CulturalTermTooltip.tsx` L59 | `inline-block` → `inline break-words [overflow-wrap:anywhere]` |
+| `src/index.css` (new `@media (max-width: 640px)` block) | `overflow-wrap: anywhere` on `.article-content` text + chip cap |
+
+### Regression net (MV-02)
+
+`src/__tests__/responsive/article-prose-overflow.test.ts` (new):
+
+1. `ArticlePage.tsx`: the `data-testid="article-body"` element must include both `overflow-x-clip` and `min-w-0`.
+2. `index.css`: must contain a `@media (max-width: 640px)` block declaring `overflow-wrap: anywhere` for `.article-content`.
+3. `CulturalTermTooltip.tsx`: trigger className must NOT contain `inline-block`.
+4. Source-walk under `src/components/articles/**`: any className combining `inline-block` + `px-` must also include `max-w-full` (allowlist: `MagadhaReligiousTimeline` event badge, `ArticleMiniMap` legend dot — both non-text-flow decorative).
+
+MV-01 is now scoped as "table/wide-child overflow only" and complemented by MV-02.
+
+### Manual cross-browser sweep (pre-release)
+
+On `/articles/satisar-springs-and-shifting-shores`, `/articles/reassessing-ashoka-legacy`, `/articles/rishi-genealogies-vedic-tradition` at 320 / 360 / 390 / 414 px:
+
+- [ ] iOS Safari 17 — `document.documentElement.scrollWidth === window.innerWidth`.
+- [ ] Android Chrome 124 — same; cultural-term chip wraps with text, tooltip tap still works.
+- [ ] Samsung Internet 24 — same.
+
+### Accepted desktop delta
+
+Removing the inner `px-6` and switching outer to `px-4 sm:px-6 lg:px-8` produces a net −8 px desktop gutter (40 → 32 px). Within visual tolerance; no regression for Cross-References / data components, which remain `mx-auto max-w-4xl`.
+
+

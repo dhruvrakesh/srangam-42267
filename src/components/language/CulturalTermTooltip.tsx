@@ -56,7 +56,7 @@ export const CulturalTermTooltip: React.FC<CulturalTermTooltipProps> = ({
       <TooltipTrigger asChild>
         <span 
           className={cn(
-            "relative inline-block cursor-help group/term",
+            "relative inline cursor-help group/term break-words [overflow-wrap:anywhere] max-w-full",
             "border-b-2 border-dotted border-saffron/50 hover:border-saffron",
             "transition-all duration-300 ease-out",
             "hover:bg-gradient-to-r hover:from-saffron/10 hover:to-transparent",
