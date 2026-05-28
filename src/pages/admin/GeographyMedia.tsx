@@ -225,9 +225,6 @@ export default function GeographyMedia() {
     }
   }
 
-    }
-  }
-
   // ---- OG generation (single article) ----
   async function generateOg(article: ArticleRow, force: boolean) {
     const title = getEnglishTitle(article.title) || 'Untitled';
@@ -271,9 +268,18 @@ export default function GeographyMedia() {
     }
   }
 
-  // ---- OG bulk (chunked, durable, cancellable) ----
+  // ---- OG bulk (Phase X.1 — server self-pumps after first article) ----
+  // The browser persists the full target list into srangam_admin_jobs.params
+  // and kicks off cursor=0. The edge function processes one article per
+  // invocation, reports progress, and self-reinvokes for the next cursor
+  // via EdgeRuntime.waitUntil. Refresh-safe, tab-close-safe, cancel-safe.
   async function bulkOg(force: boolean) {
-    const targets = force ? articles : articles.filter((a) => !a.og_image_url);
+    const targets = (force ? articles : articles.filter((a) => !a.og_image_url)).map((a) => ({
+      articleId: a.id,
+      title: getEnglishTitle(a.title) || 'Untitled',
+      theme: a.theme,
+      slug: a.slug_alias || a.slug,
+    }));
     if (targets.length === 0) {
       toast({ title: 'Nothing to do', description: force ? 'No articles found.' : 'All articles already have OG images.' });
       return;
@@ -289,68 +295,23 @@ export default function GeographyMedia() {
           total: targets.length,
           started_at: new Date().toISOString(),
           created_by: user?.id ?? null,
-          params: { force, count: targets.length },
+          // Persist the full target list so subsequent self-pumps don't need
+          // the browser to be alive.
+          params: { force, count: targets.length, targets },
         })
         .select('id')
         .single();
       if (jobErr || !jobRow) throw jobErr ?? new Error('failed to create job');
       const jobId = jobRow.id as string;
       setActiveJobId(jobId);
-      log(`▶ ${force ? 'Force-regenerating' : 'Generating missing'} OG for ${targets.length} article(s) — job ${jobId.slice(0, 8)}`);
+      log(`▶ ${force ? 'Force-regenerating' : 'Generating missing'} OG for ${targets.length} article(s) — server-pumped job ${jobId.slice(0, 8)}`);
 
-      // Drive one article at a time. Each call is short (~10 s for Gemini)
-      // so we never approach the 150 s edge-function ceiling. Cancellation
-      // is checked between every article.
-      for (const a of targets) {
-        if (await jobIsCancelled(jobId)) {
-          log(`■ Cancelled by operator.`);
-          break;
-        }
-        let ok = false;
-        let cost = 0;
-        let errMsg: string | null = null;
-        try {
-          const r = await generateOg(a, force);
-          ok = true;
-          cost = r.cost;
-        } catch (e: any) {
-          errMsg = e?.message ?? String(e);
-          log(`  ✗ ${getEnglishTitle(a.title)}: ${errMsg}`);
-        }
-
-        // Per-item update on the job row → realtime push to the progress card.
-        const { data: cur } = await supabase
-          .from('srangam_admin_jobs')
-          .select('processed,succeeded,failed,cost_usd,last_error')
-          .eq('id', jobId)
-          .maybeSingle();
-        if (cur) {
-          await supabase
-            .from('srangam_admin_jobs')
-            .update({
-              processed: cur.processed + 1,
-              succeeded: cur.succeeded + (ok ? 1 : 0),
-              failed: cur.failed + (ok ? 0 : 1),
-              cost_usd: Number(cur.cost_usd) + cost,
-              last_item: a.slug_alias || a.slug,
-              last_error: ok ? cur.last_error : errMsg,
-            })
-            .eq('id', jobId);
-        }
-
-        await new Promise((r) => setTimeout(r, 600)); // gentle pacing for image API
-      }
-
-      // Mark terminal (unless cancelled mid-loop, which already set status).
-      const finalCancelled = await jobIsCancelled(jobId);
-      if (!finalCancelled) {
-        await supabase
-          .from('srangam_admin_jobs')
-          .update({ status: 'succeeded', finished_at: new Date().toISOString() })
-          .eq('id', jobId);
-      }
-      await qc.invalidateQueries({ queryKey: ['admin', 'geography-media'] });
-      toast({ title: 'Bulk OG finished', description: 'See the progress card for details.' });
+      // Kick off cursor 0; server pumps the rest.
+      const { data, error } = await supabase.functions.invoke('generate-article-og', {
+        body: { job_id: jobId, cursor: 0, force, targets },
+      });
+      if (error) throw error;
+      log(`  cursor 0 returned (pumped=${data?.pumped ? 'yes' : 'no'}, done=${data?.done ? 'yes' : 'no'}). Watch progress card.`);
     } catch (e: any) {
       log(`✗ Bulk OG failed: ${e?.message ?? e}`);
       toast({ title: 'Bulk OG failed', description: e?.message ?? 'Unknown error', variant: 'destructive' });
@@ -358,6 +319,7 @@ export default function GeographyMedia() {
       setBulkBusy(null);
     }
   }
+
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-6 max-w-7xl">
