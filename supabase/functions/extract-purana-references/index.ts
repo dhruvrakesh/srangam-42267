@@ -136,6 +136,43 @@ interface PerArticleResult {
   cost_usd: number;
 }
 
+interface PerArticleResult {
+  extracted: number;
+  high: number;
+  mid: number;
+  low: number;
+  cost_usd: number;
+}
+
+/**
+ * Phase X.7.1 — char-budget chunking. Long articles (85k+ chars) used to blow
+ * up the per-paragraph chunker (200+ chunks @ 30 s each). We now budget ~6 000
+ * chars/chunk and hard-cap at 25 chunks per article (tail-truncated with a
+ * warning). Each chunk gets two attempts with exponential backoff; the second
+ * attempt has a longer timeout so slow Gemini responses still land.
+ */
+const CHUNK_CHAR_BUDGET = 6_000;
+const MAX_CHUNKS_PER_ARTICLE = 25;
+const CHUNK_TIMEOUTS_MS = [18_000, 28_000] as const;
+
+function chunkByCharBudget(text: string, budget: number, maxChunks: number): string[] {
+  const paragraphs = text.split(/\n\n+/).map((p) => p.trim()).filter((p) => p.length > 0);
+  const chunks: string[] = [];
+  let buf = '';
+  for (const p of paragraphs) {
+    if (buf.length === 0) { buf = p; continue; }
+    if (buf.length + 2 + p.length <= budget) {
+      buf += '\n\n' + p;
+    } else {
+      chunks.push(buf);
+      if (chunks.length >= maxChunks) return chunks;
+      buf = p;
+    }
+  }
+  if (buf.length > 0 && chunks.length < maxChunks) chunks.push(buf);
+  return chunks;
+}
+
 async function processArticle(
   supabase: SupabaseClient,
   article: { id: string; slug: string; content: any },
@@ -147,32 +184,54 @@ async function processArticle(
     return { extracted: 0, high: 0, mid: 0, low: 0, cost_usd: 0 };
   }
 
-  const paragraphs = textContent.split('\n\n').filter((p) => p.trim().length > 50);
+  const chunks = chunkByCharBudget(textContent, CHUNK_CHAR_BUDGET, MAX_CHUNKS_PER_ARTICLE);
+  if (chunks.length === MAX_CHUNKS_PER_ARTICLE) {
+    console.warn(
+      `[${article.slug}] hit MAX_CHUNKS_PER_ARTICLE=${MAX_CHUNKS_PER_ARTICLE} ` +
+      `(text=${textContent.length} chars); tail truncated`,
+    );
+  }
+
   const extractedRefs: PuranaReference[] = [];
   let totalCost = 0;
 
-  for (let i = 0; i < paragraphs.length; i += 3) {
-    const chunk = paragraphs.slice(i, i + 3).join('\n\n');
-    try {
-      const result = await aiExtractCitations({
-        system: SYSTEM_PROMPT,
-        user: buildUserPrompt(chunk),
-        timeoutMs: 30_000,
-      });
-      totalCost += result.cost_usd_estimate;
-      const parsed = result.parsed as { references?: PuranaReference[] } | null;
-      if (parsed?.references && Array.isArray(parsed.references)) {
-        extractedRefs.push(...parsed.references);
+  for (let i = 0; i < chunks.length; i++) {
+    const chunk = chunks[i];
+    let lastErr: unknown = null;
+    let succeeded = false;
+    for (let attempt = 0; attempt < CHUNK_TIMEOUTS_MS.length; attempt++) {
+      try {
+        const result = await aiExtractCitations({
+          system: SYSTEM_PROMPT,
+          user: buildUserPrompt(chunk),
+          timeoutMs: CHUNK_TIMEOUTS_MS[attempt],
+        });
+        totalCost += result.cost_usd_estimate;
+        const parsed = result.parsed as { references?: PuranaReference[] } | null;
+        if (parsed?.references && Array.isArray(parsed.references)) {
+          extractedRefs.push(...parsed.references);
+        }
+        succeeded = true;
+        break;
+      } catch (e) {
+        lastErr = e;
+        if (attempt < CHUNK_TIMEOUTS_MS.length - 1) {
+          const backoffMs = 2_000 * Math.pow(3, attempt); // 2 s, 6 s
+          await new Promise((r) => setTimeout(r, backoffMs));
+        }
       }
-    } catch (e) {
-      console.error(`[${article.slug}] AI chunk ${i} failed:`,
-        e instanceof Error ? e.message : e);
+    }
+    if (!succeeded) {
+      console.error(
+        `[${article.slug}] AI chunk ${i}/${chunks.length} failed after ${CHUNK_TIMEOUTS_MS.length} attempts:`,
+        lastErr instanceof Error ? lastErr.message : lastErr,
+      );
       // continue — partial extraction is better than none
     }
 
-    // Heartbeat between chunks so the 5-minute watchdog never reaps a
-    // long article that is making real progress.
-    if (jobId && i % 6 === 3) {
+    // Phase X.7.1 — heartbeat between every chunk so the 5-minute watchdog
+    // never reaps a job that is making slow but real progress on one article.
+    if (jobId) {
       await touchHeartbeat(supabase, jobId).catch(() => {});
     }
   }
@@ -216,9 +275,10 @@ async function processArticle(
     else low++;
   }
 
-  console.log(`✓ ${article.slug}: ${uniqueRefs.length} refs (H:${high} M:${mid} L:${low}) cost=$${totalCost.toFixed(4)}`);
+  console.log(`✓ ${article.slug}: ${uniqueRefs.length} refs (H:${high} M:${mid} L:${low}) chunks=${chunks.length} cost=$${totalCost.toFixed(4)}`);
   return { extracted: uniqueRefs.length, high, mid, low, cost_usd: totalCost };
 }
+
 
 // ---------- Phase X.5: self-pump helper ----------
 function schedulePumpReinvoke(selfUrl: string, body: RequestBody) {
