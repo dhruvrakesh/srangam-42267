@@ -125,20 +125,75 @@ export const useDeleteReference = () => {
 
 export const useExtractReferences = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: async ({ article_id, batch_mode }: { article_id?: string; batch_mode: boolean }) => {
-      const { data, error } = await supabase.functions.invoke('extract-purana-references', {
-        body: { article_id, batch_mode }
-      });
-      
-      if (error) throw error;
-      return data;
+    mutationFn: async (args: { article_id?: string; batch_mode: boolean }) => {
+      // ---- Single article: synchronous, unchanged ----------------------
+      if (!args.batch_mode) {
+        const { data, error } = await supabase.functions.invoke('extract-purana-references', {
+          body: { article_id: args.article_id, batch_mode: false },
+        });
+        if (error) throw error;
+        return { mode: 'single' as const, ...data };
+      }
+
+      // ---- Batch: create the job row first, then kick chunk 0. The edge
+      // function self-pumps via EdgeRuntime.waitUntil for all remaining
+      // chunks, so closing the tab no longer stalls extraction. ---------
+      const { count } = await supabase
+        .from('srangam_articles')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'published');
+      const total = count ?? 0;
+      if (total === 0) throw new Error('No published articles to extract from');
+
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: jobRow, error: jobErr } = await supabase
+        .from('srangam_admin_jobs')
+        .insert({
+          kind: 'purana_extract',
+          status: 'running',
+          total,
+          started_at: new Date().toISOString(),
+          created_by: user?.id ?? null,
+          params: { chunk_size: 3 },
+        })
+        .select('id')
+        .single();
+      if (jobErr || !jobRow) throw jobErr ?? new Error('failed to create job');
+
+      const jobId = jobRow.id as string;
+
+      // Kick off chunk 0 — fire-and-forget; the function returns quickly
+      // after scheduling its own next reinvoke.
+      const { error: invokeErr } = await supabase.functions.invoke(
+        'extract-purana-references',
+        { body: { batch_mode: true, job_id: jobId, offset: 0, chunk_size: 3 } },
+      );
+      if (invokeErr) {
+        // Mark the job failed so the watchdog/UI both see it cleanly.
+        await supabase
+          .from('srangam_admin_jobs')
+          .update({
+            status: 'failed',
+            finished_at: new Date().toISOString(),
+            last_error: invokeErr.message,
+          })
+          .eq('id', jobId);
+        throw invokeErr;
+      }
+      return { mode: 'batch' as const, job_id: jobId, total };
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['purana-references'] });
       queryClient.invalidateQueries({ queryKey: ['purana-stats'] });
-      toast.success(`Extraction complete: ${data.total_references} references from ${data.processed_articles} articles`);
+      if (data?.mode === 'batch') {
+        toast.success(`Batch extraction started across ${data.total} articles`);
+      } else {
+        toast.success(
+          `Extraction complete: ${data.total_references ?? 0} references from ${data.processed_articles ?? 1} article(s)`,
+        );
+      }
     },
     onError: (error: Error) => {
       toast.error(`Extraction failed: ${error.message}`);
