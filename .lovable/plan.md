@@ -105,3 +105,22 @@ No production source files (`src/components`, `src/pages`, `src/lib`, edge funct
 4. Install `@playwright/test`, add `playwright.config.ts`, Layer 3 spec; run locally.
 5. Layer 4 spec; calibrate thresholds from first run; freeze.
 6. Update docs with measured baseline; close Phase V.
+
+---
+
+## Phase V — Status (2026-05-28)
+
+Completed (additive, zero production source edits):
+- `vitest.config.ts` switched to `jsdom` + `setupFiles: ['./src/test/setup.ts']`.
+- `src/test/setup.ts` — jest-dom + matchMedia stub + deterministic `clientWidth`/`scrollWidth` shim parsing inline style and Tailwind `min-w-[NNNpx]` / `w-[NNNpx]` hints.
+- `src/__tests__/fixtures/articleFixture.ts` — deterministic article fixture (HTML body + sanctioned wide table inside `overflow-x-auto`).
+- `src/__tests__/responsive/article-dom-overflow.test.tsx` — Layer 2: ArticlePage (with `CulturalTermTooltip` stubbed) + OceanicArticlePage structural shell + negative-control shim sanity. 23/23 green.
+- `playwright.config.ts` + `e2e/article-mobile.spec.ts` + `e2e/article-perf.spec.ts` — Layers 3 + 4 (mobile sweep 320/360/384/390/414; CDP Fast-3G + 4× CPU perf budget).
+- `package.json` — `test`, `test:e2e`, `test:perf` scripts; `@playwright/test` devDep.
+- `docs/RELIABILITY_AUDIT.md` — Phase V section with layers, thresholds, commands.
+
+Deferred (Phase W):
+- GitHub Actions workflow file.
+- Visual regression snapshots.
+- Lighthouse CI / Web Vitals dashboard.
+- Multi-browser E2E matrix.
