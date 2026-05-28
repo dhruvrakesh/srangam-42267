@@ -89,3 +89,28 @@ Add one focused responsive test file, plus extend existing MV tests if needed:
 - No narration provider/fallback edits.
 - No sanitizer, slug resolver, import pipeline, search architecture, or article content model changes.
 - No redesign, font swap, new dependency, or route-system migration.
+---
+
+# Phase Q / R / S — Mobile Chrome, Tap Targets, Scroll Restoration (2026-05-28)
+
+Surgical, presentation-layer only. Zero backend / edge / DB / RLS / narration / sanitizer / resolver impact. MV-01 and MV-02 invariants preserved.
+
+## Files changed
+
+| File | Phase | Change |
+|------|-------|--------|
+| `src/components/ScrollToTop.tsx` | S / SR-01 | Router-type-aware restoration: POP restores per-`location.key` from `sessionStorage`, PUSH/REPLACE scroll-to-top; `history.scrollRestoration = 'manual'`; rAF-throttled save; synthetic `scroll` dispatch after restore for progress-bar fidelity |
+| `src/components/language/CulturalTermTooltip.tsx` | R / TA-01 | Controlled Radix Tooltip; focusable `role="button"` + `tabIndex={0}` + Enter/Space/Escape; `::before` pseudo expands hit area to ≥44×44 on coarse pointers; `touch-manipulation` + `focus-visible` ring; inline preserved (MV-02 holds) |
+| `src/components/navigation/HeaderNav.tsx` | Q / MC-01 | Mobile header switches to compact language switcher (`variant="compact"`); mobile bottom tabs add `pb-[env(safe-area-inset-bottom)]` + per-cell `min-w-0 truncate` |
+| `src/components/dev/NarrationDebugPanel.tsx` | Q / MC-01 | Dev panel positioned above mobile bottom tabs (`bottom: calc(env(safe-area-inset-bottom) + 76px)`), `maxWidth: calc(100vw - 24px)`, removed forced 220 px min-width |
+| `src/__tests__/responsive/tap-target-and-scroll-restore.test.ts` | new | Source-scan regression net for TA-01, SR-01, MC-01, and the single-mount invariant for `<ScrollToTop />` |
+| `docs/RELIABILITY_AUDIT.md` | docs | Appended Phase Q/R/S section with MC-01 / TA-01 / SR-01 invariants and manual sweep matrix |
+
+## Out of scope
+
+- No schema / RLS / migration changes.
+- No edge-function edits (TTS, OG, import, sitemap, search, etc. untouched).
+- No narration provider fallback / sanitizer / slug resolver / import pipeline changes.
+- No router migration; `BrowserRouter` + `Routes`/`Route` retained.
+- No design-system tokens added; no new dependency.
+

@@ -827,3 +827,59 @@ On `/articles/satisar-springs-and-shifting-shores`, `/articles/reassessing-ashok
 Removing the inner `px-6` and switching outer to `px-4 sm:px-6 lg:px-8` produces a net −8 px desktop gutter (40 → 32 px). Within visual tolerance; no regression for Cross-References / data components, which remain `mx-auto max-w-4xl`.
 
 
+
+## 2026-05-28 — Phase Q / R / S (Mobile chrome MC-01, Tap-target TA-01, Scroll-restore SR-01)
+
+**Context (temporal note).** After Phase P closed prose overflow (MV-02), field testing on `srangam.nartiang.org` at 390 × 844 still surfaced three reading-experience regressions that MV-01 / MV-02 do not cover:
+
+1. **Mobile chrome pressure (MC-01).** The full `EnhancedLanguageSwitcher` (`min-w-[200px]` on mobile) plus the fixed bottom tab bar created horizontal pressure at 320–360 px and covered article footers on devices with iOS home indicators. The dev-only `NarrationDebugPanel` (`minWidth: 220`, `bottom: 12`) sat directly on top of the bottom tabs during QA, masking real bottom-chrome regressions.
+2. **Tooltip touch reliability (TA-01).** `CulturalTermTooltip` used Radix `Tooltip` with a non-focusable inline `<span>` trigger. On touch devices Radix Tooltip does not open on tap, and the hit target was ~28 × (term-width + 8 px) — below WCAG 2.5.5 AAA (24 × 24) and Apple HIG (44 × 44).
+3. **Scroll restoration (SR-01).** `ScrollToTop` always called `window.scrollTo(0)` on every `pathname` change, including POP navigations, destroying browser back/forward scroll restoration. The reading-progress bar (driven by `useReadingProgress` scroll listener) further flashed `0%` until the user nudged.
+
+### Invariants
+
+**MC-01 — Mobile chrome must not cause horizontal page scroll.** On all article routes at 320 / 360 / 390 / 414 px, `document.documentElement.scrollWidth <= clientWidth`. Header chrome uses the compact language switcher (`variant="compact"`) below `sm`. Fixed bottom chrome includes `pb-[env(safe-area-inset-bottom)]`. Dev overlays cap at `maxWidth: calc(100vw - 24px)` and sit above the mobile bottom tab bar so they cannot mask production chrome regressions during QA.
+
+**TA-01 — Cultural-term and similar inline triggers.** Must remain inline (MV-02 cross-check). Must be focusable (`role="button"` + `tabIndex={0}`), keyboard-operable (Enter/Space toggle, Escape close), `aria-expanded` reflects state. Coarse-pointer hit area is expanded to ≥ 44 × 44 px via an absolutely positioned `::before` pseudo (`inset-y-[-14px] inset-x-[-10px]` under `@media(pointer:coarse)`) that does not affect inline layout. `touch-manipulation` removes the 300 ms tap delay. `focus-visible` provides a saffron ring.
+
+**SR-01 — Router-aware scroll restoration.** `<ScrollToTop />` (kept name for zero import churn) uses `useNavigationType()`:
+
+- `PUSH` / `REPLACE` → instant scroll to top.
+- `POP` → restore `window.scrollY` from `sessionStorage` keyed by `location.key`, via a bounded rAF loop (60 frames ≈ 1 s) that waits for article content to hydrate, then dispatches a synthetic `scroll` event so `useReadingProgress` repaints the progress bar at the restored percentage on the next frame.
+
+`history.scrollRestoration` is set to `'manual'` so the browser and the controller cannot fight. Scroll writes are throttled to one rAF per scroll burst and wrapped in try/catch (sessionStorage quota / privacy mode safe).
+
+### Code changes (Phase Q / R / S, 2026-05-28)
+
+| File | Change |
+|------|--------|
+| `src/components/ScrollToTop.tsx` | Replaced unconditional scroll-to-top with router-type-aware restoration; manual scrollRestoration; rAF-throttled save; bounded restore + synthetic scroll dispatch |
+| `src/components/language/CulturalTermTooltip.tsx` | Controlled Radix Tooltip; `role="button"` + `tabIndex={0}` + Enter/Space/Escape; expanded `::before` hit area on coarse pointers; `touch-manipulation`; `focus-visible` saffron ring. Inline preserved (MV-02 holds) |
+| `src/components/navigation/HeaderNav.tsx` | Mobile header uses `<EnhancedLanguageSwitcher variant="compact" />` below `sm`; mobile bottom tabs add `pb-[env(safe-area-inset-bottom)]` + `min-w-0` per cell with `truncate` labels |
+| `src/components/dev/NarrationDebugPanel.tsx` | Dev panel positioned above the mobile bottom tab bar (`bottom: calc(env(safe-area-inset-bottom) + 76px)`); `maxWidth: calc(100vw - 24px)`; removed forced `minWidth: 220` |
+
+### Regression net
+
+`src/__tests__/responsive/tap-target-and-scroll-restore.test.ts` (new):
+
+- TA-01 source scan on `CulturalTermTooltip.tsx`: controlled tooltip; `tabIndex`/`role="button"`/`aria-expanded`/`onKeyDown`/Enter/Escape; `before:absolute` + `(pointer:coarse)]:before:inset-` + `touch-manipulation` + `focus-visible:`; MV-02 cross-check (still `relative inline`, no `inline-block`).
+- SR-01 source scan on `ScrollToTop.tsx`: `useNavigationType` import; `'POP'` branch; `sessionStorage` keyed by `location.key`; `history.scrollRestoration = 'manual'`; `dispatchEvent(new Event('scroll'))`.
+- Mount invariant: `<ScrollToTop />` mounted exactly once in `App.tsx`.
+- MC-01: bottom tabs declare `pb-[env(safe-area-inset-bottom)]`; dev panel caps to `calc(100vw - 24px)` and references `safe-area-inset-bottom`; header uses `<EnhancedLanguageSwitcher variant="compact" />` below `sm`.
+
+### Manual cross-browser sweep (pre-release)
+
+On `/articles/satisar-springs-and-shifting-shores`, one DB article with long IAST tags, and one article with evidence tables, at 320 / 360 / 390 / 414 px:
+
+- [ ] iOS Safari 17 / Android Chrome 124: `documentElement.scrollWidth === clientWidth`; no horizontal scrollbar.
+- [ ] Header compact switcher fits; theme + menu controls remain ≥ 44 × 44.
+- [ ] Cultural-term chip: tap opens tooltip; second tap or tap-outside closes; keyboard Tab focuses chip with visible ring; Enter/Space toggles; Escape closes.
+- [ ] Article A → scroll halfway → Article B → Back: Article A reopens at the saved scroll Y within ≤ 1 s; reading progress bar matches restored Y on first paint (no 0 → N flash).
+- [ ] Fresh in-app link to a new article still opens at top.
+- [ ] Bottom tabs not covered by iOS home indicator; dev panel does not overlap bottom tabs.
+
+### Accepted deltas
+
+- Mobile header: language switcher is icon-only below `sm`; full label returns at `sm` and above.
+- Dev panel: in production builds (`!import.meta.env.DEV`) the panel does not mount at all; only DEV preview sees the repositioned overlay.
+
