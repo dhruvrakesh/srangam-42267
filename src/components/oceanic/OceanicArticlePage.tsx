@@ -172,9 +172,16 @@ export const OceanicArticlePage: React.FC = () => {
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="container mx-auto px-4 py-8 max-w-6xl min-w-0">
+          {/* Phase T.1 — MV-02 wrapper: OceanicArticlePage now adopts the
+              same overflow-x-clip + min-w-0 invariants used by ArticlePage,
+              so the regression net covers the production article view. */}
+          <article
+            data-testid="article-body"
+            className="relative overflow-x-clip [overflow-x:clip] w-full min-w-0"
+          >
           {/* Header */}
-          <div className="mb-8">
+          <div className="mb-8 min-w-0">
             <Button 
               variant="ghost" 
               onClick={() => {
@@ -187,7 +194,7 @@ export const OceanicArticlePage: React.FC = () => {
               {window.location.pathname.includes('/oceanic/') ? 'Back to Oceanic' : 'Back to Articles'}
             </Button>
 
-            <div className="space-y-4">
+            <div className="space-y-4 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 {article.tags.map((tag, index) => (
                   <Badge key={index} variant="secondary">
@@ -196,9 +203,13 @@ export const OceanicArticlePage: React.FC = () => {
                 ))}
               </div>
 
-              <h1 className="text-4xl font-bold leading-tight">
+              {/* Phase T.1 — responsive, wrap-safe H1 ramp. The previous bare
+                  `text-4xl font-bold` had no break/hyphen rules and dominated
+                  7–8 lines on a 384 px viewport. */}
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight break-words [overflow-wrap:break-word] [hyphens:auto] min-w-0">
                 {getArticleTitle(article, currentLanguage)}
               </h1>
+
 
               <div className="flex items-center gap-4 text-muted-foreground">
                 <div className="flex items-center gap-1">
@@ -493,8 +504,10 @@ export const OceanicArticlePage: React.FC = () => {
               autoAnalyze={true}
             />
           </NarrationErrorBoundary>
+          </article>
         </div>
       </div>
+
     </>
   );
 };
