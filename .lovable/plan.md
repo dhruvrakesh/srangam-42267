@@ -1,154 +1,114 @@
+# Phase P — Mobile Reading Experience Hardening
 
-# Phase O — Residual Security Triage (Post Phase N Re-scan)
+## Context (revived & verified against current code)
 
-Surgical, reversible. One migration + ~6 LOC FE + one dep + doc/triage. Zero impact on TTS, slug resolver, multilingual, article rendering, or any Phase A–N invariant.
+User screenshot (`srangam.nartiang.org`, 384 px CSS, DPR 2.81) shows every line of the Satīsar article clipped at the right edge — H1, dek, paragraphs, and the `Jalodbhava` cultural-term chip. The `<article>` element itself is wider than the viewport: this is horizontal overflow, not font sizing.
 
-## Ground-Truth (verified this loop via `pg_policies`, `pg_proc`, source grep)
+**Verified file references:**
 
-```text
-srangam_articles            ✅ Drafts already admin-only (Phase N.1). STALE finding.
-srangam_book_chapters       ❌ Public SELECT USING ((status='published') OR true).      REAL.
-srangam_audio_narrations    ❌ Public SELECT USING true exposes cost_usd / metadata.    REAL.
-srangam_markdown_sources    ✅ Admin-only ALL, no public SELECT. INFO only.
-srangam_article_versions    ✅ Admin-only ALL. INFO only.
-storage srangam-articles    ❌ INSERT/UPDATE/DELETE to authenticated, no admin gate.    REAL.
-storage og-images           ✅ Writes service-role; admin list-only SELECT.
-SECURITY DEFINER (public)   ❌ analyze_tag_cooccurrence, get_purana_statistics grant EXECUTE to authenticated. REAL (low).
-                            ✅ has_role + search RPCs require anon EXECUTE — keep.
-                            ⚠️ PostGIS st_estimatedextent — accepted risk.
-Edge functions              ✅ requireAdmin/requireUser injected Phase N.3. STALE.
-ProtectedRoute              ✅ isAdmin gate present. STALE.
-ProfessionalTextFormatter   ❌ rehypeRaw with no sanitizer. REAL (stored-XSS surface, admin-author trust).
+| File | Line | Current state | Issue |
+|------|------|---------------|-------|
+| `src/components/articles/ArticlePage.tsx` | 70 | `<article class="max-w-4xl mx-auto px-4 py-8 relative">` | No `min-w-0` / `overflow-x-clip` guard on the article root |
+| `src/components/articles/ArticlePage.tsx` | 92 | Icon halo `p-8 rounded-full` + `size={64}` | Halo dominates mobile fold (≈ 160 px tall on 384 px viewport) |
+| `src/components/articles/ArticlePage.tsx` | 97 | `<h1 class="font-serif text-4xl md:text-6xl …">` inside `bg-clip-text` span | Aggressive ramp; no `break-words` on long IAST tokens |
+| `src/components/articles/ArticlePage.tsx` | 103 | dek `<p class="text-xl …">` | No mobile word-break |
+| `src/components/articles/ArticlePage.tsx` | 145 | Inner `<div class="max-w-4xl mx-auto px-6">` nested inside the L70 `px-4` | **Double gutter** — 40 px of horizontal padding eaten on a 384 px screen |
+| `src/components/articles/enhanced/ProfessionalTextFormatter.tsx` | 407 | `min-w-[900px]` table | Correctly wrapped in `overflow-x-auto` (MV-01 covers this — not the regression) |
+| `src/components/articles/enhanced/ProfessionalTextFormatter.tsx` | 591 | `prose prose-xl max-w-none article-content` | `prose-xl` (20 px body) on a 344 px content box is too tight |
+| `src/components/language/CulturalTermTooltip.tsx` | 58–65 | Chip rendered as `<span class="relative inline-block cursor-help group/term">` | `inline-block` chip + adjacent token forms an unbreakable inline row → expands parent |
+| `src/index.css` | 168–175 | `.article-content p, .article-content li { overflow-wrap: break-word; hyphens: auto; }` | `break-word` only breaks when the token *alone* exceeds the line; chip + token together still overflow |
+| `src/__tests__/responsive/article-overflow-360.test.ts` | — | Source-scans for `min-w-[≥360px]` paired with `overflow-x-auto` | MV-01 covers tables only; no coverage for prose overflow, double padding, or chip adjacency |
+
+**Real trigger:** the article body contains unbreakable runs (`fileturn0file1`, raw URLs, `Nīlamata Purāṇa` with diacritics) AND the cultural-term chip renders `inline-block`. The combination "chip + space + 22-char token" is treated as one inline row; `overflow-wrap: break-word` does not break it; the row stretches the parent past the viewport. The MV-01 invariant ("min-w children must sit in overflow-x-auto wrappers") is real and intact — this is a different class of overflow that MV-01 explicitly does not cover.
+
+This is a presentation-only fix. No edge functions, DB, slug resolver, sanitizer, narration, RLS, or any Phase A–O invariant is touched.
+
+## Goals
+
+1. Eliminate horizontal page scroll at 320 / 360 / 375 / 390 / 414 px on every article route.
+2. Keep desktop (≥ 768 px) reading rhythm pixel-identical except for the H1 size ramp (current `text-4xl → text-6xl` jump is replaced with a smoother `text-3xl sm:text-4xl md:text-5xl lg:text-6xl`).
+3. Add **MV-02** regression net covering the prose-overflow class.
+4. Document the new invariant in `docs/RELIABILITY_AUDIT.md`, `.lovable/plan.md`, and `mem://index.md` *before* code changes (documentation-first per user memory).
+
+## Non-Goals
+
+- No redesign, no font swap, no new dependency, no new component.
+- No edits to `EvidenceTable`, `NarrationService`, `ProtectedRoute`, slug resolver, sanitizer, OG generator, or any Phase O artefact.
+- No backend, edge function, RLS, or migration work.
+- No changes to the `min-w-[900px]` table or its wrapper (MV-01 still owns that).
+
+## Phased Plan (3 reversible commits)
+
+### Commit 1 — Documentation (zero runtime risk)
+
+- `docs/RELIABILITY_AUDIT.md`: add **MV-02 — Mobile prose overflow invariant** section with the diagnosis table above, the four code changes, and the regression-net description. Re-scope MV-01 as "table-scope only; complemented by MV-02".
+- `.lovable/plan.md`: append Phase P entry with link to MV-02.
+- `mem://index.md`: extend Core to: *"Mobile invariant: MV-01 (table overflow, source scan for `min-w-[≥360px]` ⊂ `overflow-x-auto`) + MV-02 (prose overflow, source scan for `article-body` declaring `overflow-x-clip min-w-0`, mobile-only `overflow-wrap: anywhere` on `.article-content` text, cultural-term chips render `inline` never `inline-block`)."*
+
+### Commit 2 — Surgical code changes (single visual commit, `sm:` gated)
+
+**P.1 — Article container overflow guard** (`src/components/articles/ArticlePage.tsx`, ~6 LOC)
+
+- L70: `<article data-testid="article-body" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative overflow-x-clip [overflow-x:clip] w-full min-w-0">` — dual `overflow-x-clip` (Tailwind) + bracketed CSS fallback covers Android WebView < 90; `min-w-0` defeats min-content inflation from flex/grid ancestors.
+- L92: icon halo `p-5 sm:p-8`; icon `size={48}` on mobile via `useIsMobile()` hook (already present at `src/hooks/use-mobile.tsx`), `size={64}` on desktop.
+- L97: H1 → `text-3xl sm:text-4xl md:text-5xl lg:text-6xl break-words [overflow-wrap:anywhere] [hyphens:auto]`.
+- L103: dek `<p>` → add `break-words [overflow-wrap:anywhere]`.
+- L145: inner wrapper → `<div class="max-w-4xl mx-auto px-0 min-w-0">` (removes the redundant `px-6` that double-padded with L70's `px-4`).
+
+**P.2 — Prose typography overflow rule** (`src/index.css`, ~12 LOC; `ProfessionalTextFormatter.tsx:591`, 1 className)
+
+```css
+@media (max-width: 640px) {
+  .article-content p,
+  .article-content li,
+  .article-content h1,
+  .article-content h2,
+  .article-content h3 {
+    overflow-wrap: anywhere;       /* stronger than break-word; breaks mid-token in chip+token rows */
+    word-break: normal;            /* keep CJK/Devanagari sensible */
+    hyphens: auto;
+  }
+  .article-content :is(.cultural-term-highlight, a, code) {
+    max-width: 100%;
+  }
+}
 ```
 
-Narration call sites confirmed: `NarrationService.ts:337` (public cache lookup → must move to view) and `useAdminDashboardStats.ts:41` (admin-only cost aggregation → keeps base table).
+- `ProfessionalTextFormatter.tsx:591`: `prose prose-lg sm:prose-xl max-w-none article-content` (downshift mobile from 20 px → 18 px body; desktop unchanged).
 
-## Stale Findings — Triage Only (no code change)
+**P.3 — Cultural-term chip mobile rendering** (`src/components/language/CulturalTermTooltip.tsx:59`, ~3 LOC)
 
-Apply with `security--manage_security_finding`:
+- Change `"relative inline-block cursor-help group/term"` → `"relative inline cursor-help group/term break-words [overflow-wrap:anywhere]"`. The `<TooltipTrigger>` keeps its hit area via the underline; tooltip popover behaviour is unchanged because the trigger is still a `<span>`. No JS / no Radix prop changes.
 
-| Finding | Action | Rationale |
-|---|---|---|
-| `unauth_cost_functions` | mark_as_fixed | `requireAdmin`/`requireUser` injected to all listed cost edge fns in Phase N.3. |
-| `unauth_write_functions` | mark_as_fixed | `requireAdmin` injected to markdown-import, batch-import, extract-purana, tts-save-drive, batch-enrich, scan-github. |
-| `draft_articles_exposed` | mark_as_fixed | "Anyone can view articles" dropped; SELECT is published-only + admin. |
-| `admin_route_any_user` | mark_as_fixed | `ProtectedRoute` enforces `!user \|\| !isAdmin`. |
-| `srangam_article_versions_no_public_read` | ignore | Scanner itself flags "correctly secured". |
-| `srangam_markdown_sources_no_public_read` | ignore | Admin-only ALL locks reads. |
-| `SUPA_*_security_definer_function_executable` (PostGIS residual) | ignore | After O.4 only PostGIS `st_estimatedextent` remains; accepted risk. |
+### Commit 3 — Regression net (MV-02)
 
-## Real Fixes — One Migration + Tiny FE Change
+`src/__tests__/responsive/article-prose-overflow.test.ts` (new):
 
-### O.1 — Book chapters `OR true` RLS bug
+1. Read `src/components/articles/ArticlePage.tsx`; assert the line containing `data-testid="article-body"` also contains both `overflow-x-clip` and `min-w-0`.
+2. Read `src/index.css`; assert it contains a `@media (max-width: 640px)` block with `overflow-wrap: anywhere` scoped under `.article-content`.
+3. Read `src/components/language/CulturalTermTooltip.tsx`; assert the trigger className does NOT contain `inline-block` (chip must be `inline`).
+4. Walk `src/components/articles/**/*.tsx`; for each `className` literal that contains both `inline-block` and `px-`, assert it also contains `max-w-full` (allowlist `MagadhaReligiousTimeline` event badge and `ArticleMiniMap` dot — both are non-text-flow decorative blocks).
 
-```sql
-DROP POLICY "Public read published book chapters" ON public.srangam_book_chapters;
-CREATE POLICY "Public read published book chapters"
-  ON public.srangam_book_chapters FOR SELECT TO public
-  USING (status = 'published');
-CREATE POLICY "Admins read all book chapters"
-  ON public.srangam_book_chapters FOR SELECT TO authenticated
-  USING (has_role(auth.uid(), 'admin'));
-```
+Authoritative manual browser check (recorded in audit, not automated): iOS Safari 17 + Android Chrome 124 at 320 / 360 / 390 / 414 px on three sampled routes — Satīsar, Reassessing Ashoka Legacy, Rishi Genealogies.
 
-Public bookshelf already filters `status='published'` client-side; admin Book Compilation reads via admin role. No visible regression.
+## Acceptance Criteria
 
-### O.2 — Audio narrations cost/metadata leak (view + restrict base)
+- At 360 px CSS width, `/articles/<satisar-slug>` shows `document.documentElement.scrollWidth === window.innerWidth`. Verified on three sampled article routes at 320 / 360 / 390 px.
+- H1, dek, body paragraphs, and the `Jalodbhava` chip all wrap inside the viewport — no clipping.
+- Desktop (≥ 1024 px) renders pixel-identical to current production for the same three articles (visual diff stored in the audit), except for the smoother H1 ramp which only affects the `md` breakpoint (now `text-5xl` instead of jumping straight to `text-6xl`).
+- MV-01 and MV-02 Vitest suites both green.
+- TTS playback (admin), PDF export, narration cost gating, slug resolver, multilingual merging, cultural-term tooltips (hover + tap), and Phase A–O invariants unaffected — no files in those paths are touched.
 
-```sql
-CREATE OR REPLACE VIEW public.srangam_audio_narrations_public
-WITH (security_invoker = on) AS
-SELECT id, article_slug, language_code, voice_id, provider,
-       google_drive_share_url, file_size_bytes, duration_seconds,
-       audio_format, sample_rate, created_at, updated_at
-FROM public.srangam_audio_narrations;
+## Risk Register
 
-GRANT SELECT ON public.srangam_audio_narrations_public TO anon, authenticated;
-
-DROP POLICY "Audio narrations are viewable by everyone" ON public.srangam_audio_narrations;
-CREATE POLICY "Admins and service role read narrations"
-  ON public.srangam_audio_narrations FOR SELECT TO public
-  USING (has_role(auth.uid(), 'admin') OR auth.role() = 'service_role');
-```
-
-FE swap (3 LOC, single call site): `src/services/narration/NarrationService.ts:337` → `.from('srangam_audio_narrations_public')`. `useAdminDashboardStats.ts:41` keeps base table (admin can read it; needs `cost_usd`). Writes continue via service-role edge functions and are unaffected.
-
-### O.3 — Storage bucket `srangam-articles` write hardening
-
-```sql
-DROP POLICY "Authenticated upload srangam articles" ON storage.objects;
-DROP POLICY "Authenticated update srangam articles" ON storage.objects;
-DROP POLICY "Authenticated delete srangam articles" ON storage.objects;
-
-CREATE POLICY "Admin upload srangam articles" ON storage.objects
-  FOR INSERT TO authenticated
-  WITH CHECK (bucket_id = 'srangam-articles' AND has_role(auth.uid(), 'admin'));
-CREATE POLICY "Admin update srangam articles" ON storage.objects
-  FOR UPDATE TO authenticated
-  USING (bucket_id = 'srangam-articles' AND has_role(auth.uid(), 'admin'))
-  WITH CHECK (bucket_id = 'srangam-articles' AND has_role(auth.uid(), 'admin'));
-CREATE POLICY "Admin delete srangam articles" ON storage.objects
-  FOR DELETE TO authenticated
-  USING (bucket_id = 'srangam-articles' AND has_role(auth.uid(), 'admin'));
-```
-
-Public CDN reads + existing admin list-only SELECT untouched.
-
-### O.4 — SECURITY DEFINER EXECUTE lockdown (public-schema residual)
-
-```sql
-REVOKE EXECUTE ON FUNCTION public.analyze_tag_cooccurrence FROM PUBLIC, anon, authenticated;
-REVOKE EXECUTE ON FUNCTION public.get_purana_statistics    FROM PUBLIC, anon, authenticated;
--- Keep: has_role, srangam_search_articles_fulltext, srangam_search_articles_semantic (anon-required).
--- PostGIS st_estimatedextent left as accepted risk.
-```
-
-Both functions called only from admin tooling / service-role edge fns; unaffected.
-
-### O.5 — Markdown XSS hardening (FE, ~5 LOC + 1 dep)
-
-`src/components/articles/enhanced/ProfessionalTextFormatter.tsx`: add `rehype-sanitize` with extended `defaultSchema` (permit footnote `id`/`href`, `data-cultural-term`, `colSpan/rowSpan`, `dir`, `lang`, `className`). Plugins become `[rehypeRaw, [rehypeSanitize, schema]]`. No typography or layout change.
-
-```bash
-bun add rehype-sanitize
-```
-
-## Single Migration File
-
-All four DB items ship as `supabase/migrations/<ts>_phase_o_residual_security.sql`.
-
-## Documentation Updates
-
-- `.lovable/plan.md` — append Phase O with SQL, FE patches, and stale-finding triage table.
-- `docs/RELIABILITY_AUDIT.md` — bump baseline note to "Phase O (2026-05)": book-chapter RLS corrected, narration cost columns moved behind `srangam_audio_narrations_public`, `srangam-articles` bucket writes admin-only, two SECURITY DEFINER helpers revoked, `rehype-sanitize` enforced on article rendering.
-- `mem://index.md` — update Security Baseline Core entry to reference Phase O and the public-view pattern.
-
-## Sequencing (3 reversible commits)
-
-1. **Docs first** — `.lovable/plan.md`, `RELIABILITY_AUDIT.md`, `mem://index.md`. Runtime risk: 0.
-2. **Migration + FE swap + sanitizer + dep** — Phase O migration (O.1–O.4) + `NarrationService.ts` view swap + `ProfessionalTextFormatter` rehype-sanitize + `bun add rehype-sanitize`. Shipped together so the view exists before the FE switch.
-3. **Triage** — `manage_security_finding` (mark_as_fixed × 4, ignore × 3) + `security--update_memory` documenting accepted PostGIS risk and the public-view pattern for narrations.
-
-## Verification
-
-- `pg_policies`: book_chapters public SELECT = `status='published'`; admin SELECT exists.
-- Anon SELECT on `srangam_audio_narrations` → 0 rows; `srangam_audio_narrations_public` returns playback metadata without `cost_usd`.
-- Anon and non-admin authenticated INSERT/UPDATE/DELETE on `storage.objects` bucket `srangam-articles` → 403; public CDN GET still 200.
-- `pg_proc` ACL: `analyze_tag_cooccurrence` / `get_purana_statistics` no longer show `authenticated=X`.
-- Article render: `<script>`/`onerror` payloads stripped; cultural-term spans, footnote anchors, evidence tables render unchanged.
-- MV-01 Vitest suite green; admin TTS playback + GDrive caching still works; PDF export still works; admin Reading Room shows in-progress chapters; anon Reading Room does not.
+| Risk | Mitigation |
+|------|------------|
+| `overflow-x-clip` not supported in old Android WebView | Dual declaration with bracketed `[overflow-x:clip]` + `w-full min-w-0` parent constraint |
+| `overflow-wrap: anywhere` over-breaks long Sanskrit compound words on tablets | Scoped behind `@media (max-width: 640px)` only |
+| `prose-lg` mobile downshift changes vertical rhythm of articles already QA'd | `sm:prose-xl` restores 20 px at ≥ 640 px; only the < 640 px range changes |
+| Chip turning `inline` breaks tooltip positioning | Radix Tooltip anchors to the `<span>` bounding box; `inline` spans still report rects — verified in Radix docs; manual tap test in browser check |
+| Removing inner `px-6` shifts cross-references / data components left by 24 px on desktop | Outer container at L70 now uses `px-4 sm:px-6 lg:px-8`, giving 32 px desktop gutter (was 16+24=40 px) — net −8 px on desktop, within visual tolerance; flagged in audit |
 
 ## Out of Scope
 
-No new edge functions, no new auth providers, no schema additions, no changes to TTS provider fallback, slug resolver, multilingual merging, OG generation, or article rendering pipeline beyond the rehype-sanitize plugin.
-
----
-
-## Phase O — Implementation Complete (2026-05-17)
-
-- Migration 1: O.1 + O.2 (view+lock) + O.3 + O.4 applied.
-- Migration 2: Public narration view recreated with `content_hash`, `character_count` appended so the in-app cache lookup keeps working without exposing `cost_usd` / `provider_metadata`.
-- FE: `NarrationService.getCachedAudio` now reads `srangam_audio_narrations_public`.
-- FE: `ProfessionalTextFormatter` plugins are `[rehypeRaw, [rehypeSanitize, articleSanitizeSchema]]` across all three render sites (article body, callouts, generic markdown). Schema permits footnote `id/href`, cultural-term `data-*`, table `colSpan/rowSpan`, `dir/lang`. Scripts and event handlers stripped.
-- Dep: `rehype-sanitize@6.0.0` added.
-- Remaining Supabase linter noise (PostGIS `spatial_ref_sys` RLS, PostGIS extension-in-public, PostGIS `st_estimatedextent` SECURITY DEFINER, three function-search-path warnings on built-in PostGIS functions) is accepted risk — documented in security memory.
+No font swap, no theme change, no new dependency, no schema/RLS/edge-function edits, no changes to article import, tag generation, narration pipeline, OG generator, or any data-fetching logic.
