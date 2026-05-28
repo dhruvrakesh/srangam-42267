@@ -180,17 +180,15 @@ export default function GeographyMedia() {
     log(`✓ Pin backfill done: ${summary}`);
     toast({ title: 'Pin backfill complete', description: summary });
     await qc.invalidateQueries({ queryKey: ['admin', 'geography-media'] });
-  }
-
-  // ---- pin backfill (bulk — chunked, durable, cancellable) ----
+  // ---- pin backfill (bulk — server self-pumps after first chunk) ----
+  // Phase X.1: the browser only kicks off chunk 0. The edge function
+  // re-invokes itself via EdgeRuntime.waitUntil for every subsequent chunk,
+  // so closing the tab no longer stalls the job. Progress streams in via
+  // Realtime on srangam_admin_jobs.
   async function backfillPinsBulk(limit = 50, chunkSize = 5) {
     setBulkBusy('pins');
     try {
-      // 1. Pre-create the durable job row so the UI can subscribe immediately.
       const { data: { user } } = await supabase.auth.getUser();
-      // We don't yet know the exact total (the function will count published
-      // rows on first invocation), so seed with `limit` and let the worker
-      // correct it via the first chunk's `total` response.
       const { data: jobRow, error: jobErr } = await supabase
         .from('srangam_admin_jobs')
         .insert({
@@ -207,47 +205,26 @@ export default function GeographyMedia() {
 
       const jobId = jobRow.id as string;
       setActiveJobId(jobId);
-      log(`▶ Started pin backfill job ${jobId.slice(0, 8)} (chunks of ${chunkSize})`);
+      log(`▶ Started pin backfill job ${jobId.slice(0, 8)} (server-pumped, chunks of ${chunkSize})`);
 
-      // 2. Drive chunks until done / cancelled / fatal.
-      let offset = 0;
-      let actualTotal = limit;
-      while (true) {
-        if (await jobIsCancelled(jobId)) {
-          log(`■ Cancelled by operator at offset ${offset}/${actualTotal}`);
-          break;
-        }
-        const { data, error } = await supabase.functions.invoke('backfill-article-pins', {
-          body: { all_published: true, limit, offset, chunk_size: chunkSize, job_id: jobId },
-        });
-        if (error) throw error;
-
-        // Sync the real total back into the job row on first response.
-        if (typeof data?.total === 'number' && data.total !== actualTotal) {
-          actualTotal = data.total;
-          await supabase.from('srangam_admin_jobs').update({ total: actualTotal }).eq('id', jobId);
-        }
-
-        if (data?.cancelled || data?.done) break;
-        if (typeof data?.next_offset !== 'number' || data.next_offset <= offset) {
-          // Safety: avoid infinite loop on a misbehaving worker.
-          log(`⚠ Worker returned non-advancing offset; stopping.`);
-          await supabase
-            .from('srangam_admin_jobs')
-            .update({ status: 'failed', last_error: 'non-advancing offset', finished_at: new Date().toISOString() })
-            .eq('id', jobId);
-          break;
-        }
-        offset = data.next_offset;
+      // Single kick-off for chunk 0. The edge function will self-reinvoke
+      // for every chunk after this and finishJob() when done.
+      const { data, error } = await supabase.functions.invoke('backfill-article-pins', {
+        body: { all_published: true, limit, offset: 0, chunk_size: chunkSize, job_id: jobId },
+      });
+      if (error) throw error;
+      if (typeof data?.total === 'number' && data.total !== limit) {
+        await supabase.from('srangam_admin_jobs').update({ total: data.total }).eq('id', jobId);
       }
-
-      await qc.invalidateQueries({ queryKey: ['admin', 'geography-media'] });
-      toast({ title: 'Pin backfill finished', description: 'See the progress card for details.' });
+      log(`  chunk 0 returned (pumped=${data?.pumped ? 'yes' : 'no'}, done=${data?.done ? 'yes' : 'no'}). Watch progress card.`);
     } catch (e: any) {
       log(`✗ Pin backfill failed: ${e?.message ?? e}`);
       toast({ title: 'Pin backfill failed', description: e?.message ?? 'Unknown error', variant: 'destructive' });
     } finally {
       setBulkBusy(null);
+    }
+  }
+
     }
   }
 
