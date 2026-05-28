@@ -17,6 +17,15 @@ const KIND_LABEL: Record<string, string> = {
   pin_backfill: 'Pin Backfill',
   og_generate: 'OG Image Generation',
   og_force: 'OG Image Regeneration',
+  purana_extract: 'Puranic Citation Extraction',
+};
+
+// For purana_extract, tier_totals is repurposed as confidence buckets
+// (a=high ≥0.80, b=mid 0.60-0.79, c=low <0.60). The card just renders
+// whatever labels the kind dictates.
+const TIER_LABELS: Record<string, [string, string, string]> = {
+  pin_backfill: ['A', 'B', 'C'],
+  purana_extract: ['H', 'M', 'L'],
 };
 
 interface Props {
