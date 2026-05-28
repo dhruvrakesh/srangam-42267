@@ -6,6 +6,7 @@
 //      scrollWidth > clientWidth + 1 (excluding sanctioned .overflow-x-auto wrappers)
 
 import { test, expect, Page } from '@playwright/test';
+import { collectOffenders } from './_helpers/overflow';
 
 const SLUG = process.env.E2E_ARTICLE_SLUG ?? 'reassessing-ashoka-legacy';
 const VIEWPORTS: Array<{ w: number; h: number }> = [
@@ -21,28 +22,6 @@ async function gotoArticle(page: Page) {
   await page.waitForSelector('[data-testid="article-body"]', { state: 'visible', timeout: 20_000 });
 }
 
-async function collectOffenders(page: Page) {
-  return page.evaluate(() => {
-    const SANCTIONED = /\boverflow-(x-)?auto\b/;
-    const root = document.querySelector('[data-testid="article-body"]');
-    if (!root) return ['NO_ARTICLE_BODY'];
-    const offenders: string[] = [];
-    const walk = (el: Element, inSanctioned: boolean) => {
-      const cls = el.getAttribute('class') || '';
-      const sanctioned = inSanctioned || SANCTIONED.test(cls);
-      if (!sanctioned && el instanceof HTMLElement) {
-        if (el.scrollWidth > el.clientWidth + 1) {
-          const tag = el.tagName.toLowerCase();
-          const tid = el.getAttribute('data-testid');
-          offenders.push(`${tag}${cls ? '.' + cls.slice(0, 50).replace(/\s+/g, '.') : ''}${tid ? `[data-testid="${tid}"]` : ''} (c=${el.clientWidth} s=${el.scrollWidth})`);
-        }
-      }
-      for (const c of Array.from(el.children)) walk(c, sanctioned);
-    };
-    walk(root, false);
-    return offenders;
-  });
-}
 
 test.describe('Phase V Layer 3 — mobile article rendering', () => {
   test('renders at 384x844 with no horizontal scroll and full content', async ({ page }) => {

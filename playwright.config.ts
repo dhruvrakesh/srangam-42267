@@ -25,7 +25,12 @@ export default defineConfig({
       name: 'chromium-mobile',
       use: { ...devices['Pixel 5'], viewport: { width: 384, height: 844 } },
     },
+    {
+      name: 'chromium-desktop',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
+    },
   ],
+
   webServer: process.env.E2E_BASE_URL
     ? undefined
     : {
