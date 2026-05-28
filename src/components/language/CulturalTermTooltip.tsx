@@ -105,7 +105,7 @@ export const CulturalTermTooltip: React.FC<CulturalTermTooltipProps> = ({
           onKeyDown={onKeyDown}
           onPointerDown={onPointerDown}
           className={cn(
-            // MV-02: keep inline (never inline-block). MV-02 test asserts this.
+            // MV-02 invariant: trigger stays inline; do NOT switch to block-level inline.
             "relative inline cursor-help group/term break-words [overflow-wrap:anywhere] max-w-full",
             "border-b-2 border-dotted border-saffron/50 hover:border-saffron",
             "transition-all duration-300 ease-out",
