@@ -19,8 +19,8 @@ interface CulturalTermTooltipProps {
  *    devices where Radix Tooltip alone is hover/focus-only.
  *  - `role="button"` + `tabIndex={0}` + Enter/Space/Escape keyboard handling.
  *  - Coarse-pointer hit area expanded to ≥44×44 via an absolutely positioned
- *    `::before` pseudo. Inline flow is preserved (no `inline-block`) so the
- *    Phase P MV-02 invariant remains intact.
+ *    `::before` pseudo. Inline flow is preserved (display stays `inline`) so
+ *    the Phase P MV-02 invariant remains intact.
  *  - `touch-manipulation` removes the 300ms tap delay on iOS/Android Chrome.
  */
 export const CulturalTermTooltip: React.FC<CulturalTermTooltipProps> = ({
