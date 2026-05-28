@@ -1,114 +1,116 @@
-# Phase P — Mobile Reading Experience Hardening
+# Enterprise Path Forward — Mobile Article View, Tap Targets, Scroll Restoration
 
-## Context (revived & verified against current code)
+This stays surgical: frontend presentation + router-scroll behaviour only. No database, schema, RLS, storage, narration provider, sanitizer, resolver, import, or edge-function changes.
 
-User screenshot (`srangam.nartiang.org`, 384 px CSS, DPR 2.81) shows every line of the Satīsar article clipped at the right edge — H1, dek, paragraphs, and the `Jalodbhava` cultural-term chip. The `<article>` element itself is wider than the viewport: this is horizontal overflow, not font sizing.
+## Verified Context
 
-**Verified file references:**
+- **Docs baseline:** `.lovable/plan.md` currently records Phase P and `docs/RELIABILITY_AUDIT.md` records MV-01/MV-02. Phase P fixed prose overflow, but does not yet cover app chrome, fixed overlays, tooltip touch interaction, or browser back/forward scroll restoration.
+- **Current mobile evidence:** 390px screenshot still shows horizontal page chrome/scrollbar at the bottom and cramped article header chrome. The dev-only TTS debug overlay is visible over mobile bottom tabs, which degrades reading QA in preview even if production removes it.
+- **Code findings:**
+  - `src/components/ScrollToTop.tsx` always scrolls to top on `pathname` changes, so back/forward restoration is currently broken by design.
+  - `src/components/language/CulturalTermTooltip.tsx` uses Radix Tooltip with a non-focusable inline `<span>` trigger; this is not reliable for touch.
+  - `src/components/navigation/HeaderNav.tsx` mobile top chrome keeps full language switcher (`min-w-[120px]`) and fixed bottom tabs; this can create pressure at 320–390px and needs an invariant, not a one-off guess.
+  - `src/components/dev/NarrationDebugPanel.tsx` is fixed bottom-left with `minWidth: 220`, `zIndex: 99999`; it overlaps mobile reading chrome in dev preview.
+- **Runtime signals:** Article data requests returned 200. Available console warnings are preview/manifest/router-future noise, not article-render failures. Edge-function inventory was reviewed; no backend path is implicated in this request.
 
-| File | Line | Current state | Issue |
-|------|------|---------------|-------|
-| `src/components/articles/ArticlePage.tsx` | 70 | `<article class="max-w-4xl mx-auto px-4 py-8 relative">` | No `min-w-0` / `overflow-x-clip` guard on the article root |
-| `src/components/articles/ArticlePage.tsx` | 92 | Icon halo `p-8 rounded-full` + `size={64}` | Halo dominates mobile fold (≈ 160 px tall on 384 px viewport) |
-| `src/components/articles/ArticlePage.tsx` | 97 | `<h1 class="font-serif text-4xl md:text-6xl …">` inside `bg-clip-text` span | Aggressive ramp; no `break-words` on long IAST tokens |
-| `src/components/articles/ArticlePage.tsx` | 103 | dek `<p class="text-xl …">` | No mobile word-break |
-| `src/components/articles/ArticlePage.tsx` | 145 | Inner `<div class="max-w-4xl mx-auto px-6">` nested inside the L70 `px-4` | **Double gutter** — 40 px of horizontal padding eaten on a 384 px screen |
-| `src/components/articles/enhanced/ProfessionalTextFormatter.tsx` | 407 | `min-w-[900px]` table | Correctly wrapped in `overflow-x-auto` (MV-01 covers this — not the regression) |
-| `src/components/articles/enhanced/ProfessionalTextFormatter.tsx` | 591 | `prose prose-xl max-w-none article-content` | `prose-xl` (20 px body) on a 344 px content box is too tight |
-| `src/components/language/CulturalTermTooltip.tsx` | 58–65 | Chip rendered as `<span class="relative inline-block cursor-help group/term">` | `inline-block` chip + adjacent token forms an unbreakable inline row → expands parent |
-| `src/index.css` | 168–175 | `.article-content p, .article-content li { overflow-wrap: break-word; hyphens: auto; }` | `break-word` only breaks when the token *alone* exceeds the line; chip + token together still overflow |
-| `src/__tests__/responsive/article-overflow-360.test.ts` | — | Source-scans for `min-w-[≥360px]` paired with `overflow-x-auto` | MV-01 covers tables only; no coverage for prose overflow, double padding, or chip adjacency |
+## Phase Q — Mobile Chrome & Reading Surface Stabilization
 
-**Real trigger:** the article body contains unbreakable runs (`fileturn0file1`, raw URLs, `Nīlamata Purāṇa` with diacritics) AND the cultural-term chip renders `inline-block`. The combination "chip + space + 22-char token" is treated as one inline row; `overflow-wrap: break-word` does not break it; the row stretches the parent past the viewport. The MV-01 invariant ("min-w children must sit in overflow-x-auto wrappers") is real and intact — this is a different class of overflow that MV-01 explicitly does not cover.
+**Goal:** eliminate horizontal page scroll in article view at 320/360/390/414px and stop fixed dev chrome from covering mobile reading controls.
 
-This is a presentation-only fix. No edge functions, DB, slug resolver, sanitizer, narration, RLS, or any Phase A–O invariant is touched.
+1. **Document first**
+   - Add `MC-01` to `docs/RELIABILITY_AUDIT.md`: article routes must satisfy `documentElement.scrollWidth <= clientWidth` at mobile widths, including header, bottom tabs, dev overlays, hero image, tags, and article prose.
+   - Append Phase Q to `.lovable/plan.md` with the measured screenshot symptom and exact file scope.
+   - Update project memory after implementation with the new mobile chrome invariant.
 
-## Goals
+2. **Header chrome pressure relief**
+   - In `HeaderNav.tsx`, use the compact language switcher on mobile (`<EnhancedLanguageSwitcher compact />`) while preserving the full switcher on `sm`/desktop.
+   - Add `min-w-0` to mobile header flex containers where shrink behaviour matters.
+   - Keep tap targets ≥44px for menu/theme/language controls.
 
-1. Eliminate horizontal page scroll at 320 / 360 / 375 / 390 / 414 px on every article route.
-2. Keep desktop (≥ 768 px) reading rhythm pixel-identical except for the H1 size ramp (current `text-4xl → text-6xl` jump is replaced with a smoother `text-3xl sm:text-4xl md:text-5xl lg:text-6xl`).
-3. Add **MV-02** regression net covering the prose-overflow class.
-4. Document the new invariant in `docs/RELIABILITY_AUDIT.md`, `.lovable/plan.md`, and `mem://index.md` *before* code changes (documentation-first per user memory).
+3. **Bottom chrome safe area**
+   - Keep bottom tabs, but add safe-area padding (`pb-[env(safe-area-inset-bottom)]`) and ensure the main content bottom padding accounts for the fixed nav height.
+   - Add source regression coverage so future fixed mobile chrome cannot reintroduce horizontal overflow (`w-screen`, fixed left/right offsets, large min-widths without mobile guards).
 
-## Non-Goals
+4. **Dev overlay containment**
+   - Make `NarrationDebugPanel` mobile-safe in dev only: position above bottom tabs, cap width with `maxWidth: calc(100vw - 24px)`, and avoid covering the bottom nav.
+   - Do not change narration service logic or telemetry payloads.
 
-- No redesign, no font swap, no new dependency, no new component.
-- No edits to `EvidenceTable`, `NarrationService`, `ProtectedRoute`, slug resolver, sanitizer, OG generator, or any Phase O artefact.
-- No backend, edge function, RLS, or migration work.
-- No changes to the `min-w-[900px]` table or its wrapper (MV-01 still owns that).
+## Phase R — Cultural-Term Tap Targets & Reliable Touch Tooltips
 
-## Phased Plan (3 reversible commits)
+**Goal:** cultural-term highlights remain inline (MV-02 preserved) but become accessible, focusable, and touch reliable.
 
-### Commit 1 — Documentation (zero runtime risk)
+1. Convert `CulturalTermTooltip.tsx` to a controlled tooltip with internal `open` state.
+2. Make the trigger accessible:
+   - `role="button"`, `tabIndex={0}`, `aria-expanded`, descriptive `aria-label`.
+   - `Enter`/`Space` toggles, `Escape` closes.
+   - Tap toggles; tap outside closes through Radix controlled state.
+3. Increase coarse-pointer hit area without changing inline layout:
+   - Keep `inline`, never `inline-block`.
+   - Add `touch-manipulation`, `focus-visible` ring, and an absolutely positioned `::before` expansion under `@media(pointer:coarse)`.
+4. Keep visual design unchanged: same dotted underline, saffron hover/focus treatment, same tooltip content.
 
-- `docs/RELIABILITY_AUDIT.md`: add **MV-02 — Mobile prose overflow invariant** section with the diagnosis table above, the four code changes, and the regression-net description. Re-scope MV-01 as "table-scope only; complemented by MV-02".
-- `.lovable/plan.md`: append Phase P entry with link to MV-02.
-- `mem://index.md`: extend Core to: *"Mobile invariant: MV-01 (table overflow, source scan for `min-w-[≥360px]` ⊂ `overflow-x-auto`) + MV-02 (prose overflow, source scan for `article-body` declaring `overflow-x-clip min-w-0`, mobile-only `overflow-wrap: anywhere` on `.article-content` text, cultural-term chips render `inline` never `inline-block`)."*
+## Phase S — Back/Forward Scroll Restoration + Progress Bar Fidelity
 
-### Commit 2 — Surgical code changes (single visual commit, `sm:` gated)
+**Goal:** new article links open at top, but browser back/forward restores the reader’s previous position and updates the progress bar immediately.
 
-**P.1 — Article container overflow guard** (`src/components/articles/ArticlePage.tsx`, ~6 LOC)
+1. Replace the current `ScrollToTop` behaviour with router-aware restoration while keeping the same component name/import.
+2. Use `useNavigationType()`:
+   - `PUSH`/`REPLACE`: scroll to top.
+   - `POP`: restore saved scroll position for that history entry.
+3. Save scroll positions in `sessionStorage` keyed by `location.key`, throttled with `requestAnimationFrame`.
+4. Set `history.scrollRestoration = 'manual'` to prevent browser/app conflict.
+5. On restore, wait briefly for article content height to hydrate, then scroll and dispatch a synthetic `scroll` event so `useReadingProgress()` updates immediately.
+6. Do not modify the `ArticleContext` reducer or article data-loading logic.
 
-- L70: `<article data-testid="article-body" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative overflow-x-clip [overflow-x:clip] w-full min-w-0">` — dual `overflow-x-clip` (Tailwind) + bracketed CSS fallback covers Android WebView < 90; `min-w-0` defeats min-content inflation from flex/grid ancestors.
-- L92: icon halo `p-5 sm:p-8`; icon `size={48}` on mobile via `useIsMobile()` hook (already present at `src/hooks/use-mobile.tsx`), `size={64}` on desktop.
-- L97: H1 → `text-3xl sm:text-4xl md:text-5xl lg:text-6xl break-words [overflow-wrap:anywhere] [hyphens:auto]`.
-- L103: dek `<p>` → add `break-words [overflow-wrap:anywhere]`.
-- L145: inner wrapper → `<div class="max-w-4xl mx-auto px-0 min-w-0">` (removes the redundant `px-6` that double-padded with L70's `px-4`).
+## Regression Net
 
-**P.2 — Prose typography overflow rule** (`src/index.css`, ~12 LOC; `ProfessionalTextFormatter.tsx:591`, 1 className)
+Add one focused responsive test file, plus extend existing MV tests if needed:
 
-```css
-@media (max-width: 640px) {
-  .article-content p,
-  .article-content li,
-  .article-content h1,
-  .article-content h2,
-  .article-content h3 {
-    overflow-wrap: anywhere;       /* stronger than break-word; breaks mid-token in chip+token rows */
-    word-break: normal;            /* keep CJK/Devanagari sensible */
-    hyphens: auto;
-  }
-  .article-content :is(.cultural-term-highlight, a, code) {
-    max-width: 100%;
-  }
-}
-```
+- **MC-01:** source-scan mobile chrome for width-safe classes and dev overlay max-width/safe positioning.
+- **TA-01:** cultural-term trigger must be focusable, tap-toggleable, coarse-pointer expanded, `touch-manipulation`, `focus-visible`, and still not `inline-block`.
+- **SR-01:** scroll restoration must use `useNavigationType`, `location.key`, `sessionStorage`, `history.scrollRestoration = 'manual'`, and dispatch a synthetic `scroll` event.
+- **Mount invariant:** `<ScrollToTop />` remains mounted exactly once inside `<BrowserRouter>`.
 
-- `ProfessionalTextFormatter.tsx:591`: `prose prose-lg sm:prose-xl max-w-none article-content` (downshift mobile from 20 px → 18 px body; desktop unchanged).
+## Manual Verification Matrix
 
-**P.3 — Cultural-term chip mobile rendering** (`src/components/language/CulturalTermTooltip.tsx:59`, ~3 LOC)
+- Viewports: 320×568, 360×800, 390×844, 414×896, and 1024×768.
+- Routes: `/articles`, Satīsar article, one DB article with long title/tags, one article with tables/evidence.
+- Checks:
+  - No horizontal page scrollbar: `document.documentElement.scrollWidth <= document.documentElement.clientWidth`.
+  - Header controls fit without clipping.
+  - Bottom tabs do not cover article content or dev overlay.
+  - Cultural-term tooltip opens on tap, closes on second tap/outside, works with keyboard.
+  - Article A → scroll halfway → Article B → Back restores Article A position and progress bar.
 
-- Change `"relative inline-block cursor-help group/term"` → `"relative inline cursor-help group/term break-words [overflow-wrap:anywhere]"`. The `<TooltipTrigger>` keeps its hit area via the underline; tooltip popover behaviour is unchanged because the trigger is still a `<span>`. No JS / no Radix prop changes.
+## Explicit Non-Scope
 
-### Commit 3 — Regression net (MV-02)
+- No schema/RLS/migration changes.
+- No edge-function edits.
+- No narration provider/fallback edits.
+- No sanitizer, slug resolver, import pipeline, search architecture, or article content model changes.
+- No redesign, font swap, new dependency, or route-system migration.
+---
 
-`src/__tests__/responsive/article-prose-overflow.test.ts` (new):
+# Phase Q / R / S — Mobile Chrome, Tap Targets, Scroll Restoration (2026-05-28)
 
-1. Read `src/components/articles/ArticlePage.tsx`; assert the line containing `data-testid="article-body"` also contains both `overflow-x-clip` and `min-w-0`.
-2. Read `src/index.css`; assert it contains a `@media (max-width: 640px)` block with `overflow-wrap: anywhere` scoped under `.article-content`.
-3. Read `src/components/language/CulturalTermTooltip.tsx`; assert the trigger className does NOT contain `inline-block` (chip must be `inline`).
-4. Walk `src/components/articles/**/*.tsx`; for each `className` literal that contains both `inline-block` and `px-`, assert it also contains `max-w-full` (allowlist `MagadhaReligiousTimeline` event badge and `ArticleMiniMap` dot — both are non-text-flow decorative blocks).
+Surgical, presentation-layer only. Zero backend / edge / DB / RLS / narration / sanitizer / resolver impact. MV-01 and MV-02 invariants preserved.
 
-Authoritative manual browser check (recorded in audit, not automated): iOS Safari 17 + Android Chrome 124 at 320 / 360 / 390 / 414 px on three sampled routes — Satīsar, Reassessing Ashoka Legacy, Rishi Genealogies.
+## Files changed
 
-## Acceptance Criteria
+| File | Phase | Change |
+|------|-------|--------|
+| `src/components/ScrollToTop.tsx` | S / SR-01 | Router-type-aware restoration: POP restores per-`location.key` from `sessionStorage`, PUSH/REPLACE scroll-to-top; `history.scrollRestoration = 'manual'`; rAF-throttled save; synthetic `scroll` dispatch after restore for progress-bar fidelity |
+| `src/components/language/CulturalTermTooltip.tsx` | R / TA-01 | Controlled Radix Tooltip; focusable `role="button"` + `tabIndex={0}` + Enter/Space/Escape; `::before` pseudo expands hit area to ≥44×44 on coarse pointers; `touch-manipulation` + `focus-visible` ring; inline preserved (MV-02 holds) |
+| `src/components/navigation/HeaderNav.tsx` | Q / MC-01 | Mobile header switches to compact language switcher (`variant="compact"`); mobile bottom tabs add `pb-[env(safe-area-inset-bottom)]` + per-cell `min-w-0 truncate` |
+| `src/components/dev/NarrationDebugPanel.tsx` | Q / MC-01 | Dev panel positioned above mobile bottom tabs (`bottom: calc(env(safe-area-inset-bottom) + 76px)`), `maxWidth: calc(100vw - 24px)`, removed forced 220 px min-width |
+| `src/__tests__/responsive/tap-target-and-scroll-restore.test.ts` | new | Source-scan regression net for TA-01, SR-01, MC-01, and the single-mount invariant for `<ScrollToTop />` |
+| `docs/RELIABILITY_AUDIT.md` | docs | Appended Phase Q/R/S section with MC-01 / TA-01 / SR-01 invariants and manual sweep matrix |
 
-- At 360 px CSS width, `/articles/<satisar-slug>` shows `document.documentElement.scrollWidth === window.innerWidth`. Verified on three sampled article routes at 320 / 360 / 390 px.
-- H1, dek, body paragraphs, and the `Jalodbhava` chip all wrap inside the viewport — no clipping.
-- Desktop (≥ 1024 px) renders pixel-identical to current production for the same three articles (visual diff stored in the audit), except for the smoother H1 ramp which only affects the `md` breakpoint (now `text-5xl` instead of jumping straight to `text-6xl`).
-- MV-01 and MV-02 Vitest suites both green.
-- TTS playback (admin), PDF export, narration cost gating, slug resolver, multilingual merging, cultural-term tooltips (hover + tap), and Phase A–O invariants unaffected — no files in those paths are touched.
+## Out of scope
 
-## Risk Register
+- No schema / RLS / migration changes.
+- No edge-function edits (TTS, OG, import, sitemap, search, etc. untouched).
+- No narration provider fallback / sanitizer / slug resolver / import pipeline changes.
+- No router migration; `BrowserRouter` + `Routes`/`Route` retained.
+- No design-system tokens added; no new dependency.
 
-| Risk | Mitigation |
-|------|------------|
-| `overflow-x-clip` not supported in old Android WebView | Dual declaration with bracketed `[overflow-x:clip]` + `w-full min-w-0` parent constraint |
-| `overflow-wrap: anywhere` over-breaks long Sanskrit compound words on tablets | Scoped behind `@media (max-width: 640px)` only |
-| `prose-lg` mobile downshift changes vertical rhythm of articles already QA'd | `sm:prose-xl` restores 20 px at ≥ 640 px; only the < 640 px range changes |
-| Chip turning `inline` breaks tooltip positioning | Radix Tooltip anchors to the `<span>` bounding box; `inline` spans still report rects — verified in Radix docs; manual tap test in browser check |
-| Removing inner `px-6` shifts cross-references / data components left by 24 px on desktop | Outer container at L70 now uses `px-4 sm:px-6 lg:px-8`, giving 32 px desktop gutter (was 16+24=40 px) — net −8 px on desktop, within visual tolerance; flagged in audit |
-
-## Out of Scope
-
-No font swap, no theme change, no new dependency, no schema/RLS/edge-function edits, no changes to article import, tag generation, narration pipeline, OG generator, or any data-fetching logic.
