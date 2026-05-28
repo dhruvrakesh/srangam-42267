@@ -305,13 +305,6 @@ function schedulePumpReinvoke(selfUrl: string, body: RequestBody) {
   if (typeof waitUntil === 'function') waitUntil(fetchP);
 }
 
-    total_ms: Math.round(performance.now() - t0),
-    ai: aiStats,
-    ts: new Date().toISOString(),
-  }));
-
-  return { inserted, ...counts, ai: aiStats };
-}
 
 // ---------- HTTP entry ----------
 

@@ -1,131 +1,97 @@
-## Phase X — Admin Pipelines: Reliability, Resumability, Quality & API Optimization
+## Phase X (continued) — Puranic extraction reliability + cross-corpus correlation
 
-**Frozen baseline: 2026-05-28.** Anything stamped before this date in `docs/RELIABILITY_AUDIT.md` is treated as Do-Not-Break.
-
-A surgical, additive, multi-phase plan addressing four operator complaints from the Geography & Media admin page:
-
-1. Pin backfill shows no visible progress and can't be resumed.
-2. Stop / resume / per-chunk commit semantics are undocumented.
-3. Quality of pin extraction and OG image generation.
-4. Whether the user's Gemini / OpenAI keys are utilised optimally.
-
-This is **plan-only**. No production behaviour changes until each sub-phase is approved individually. Every step is additive to the substrate that already exists: `srangam_admin_jobs` (RLS admin-only, in `supabase_realtime` publication), `useAdminJob` (Realtime subscription), `JobProgressCard`, `backfill-article-pins` (chunked, `job_id` / `offset` / `chunk_size`), `generate-article-og` (Gemini-first via `_shared/ai-provider.ts`), `_shared/observability.ts` (structured `evt` logs).
+**Frozen baseline: 2026-05-28.** Additive only. Public routes, components, RLS, end-user UI: untouched. Phases X.1–X.4 already cover pin backfill + OG generation; this extends the same substrate to the Puranic Citation Extraction page and lays a read-only analytics layer over what already exists.
 
 ---
 
-### Verified current state (read from repo + DB schema)
+### Verified current state (re-checked against repo + live DB schema)
 
 | Claim | Evidence | Status |
 |---|---|---|
-| `srangam_admin_jobs` exists, admin-RLS, in realtime publication | schema + migration `20260426141244` | ✅ |
-| Pin chunked driver runs **in the browser** (`backfillPinsBulk` while-loop in `GeographyMedia.tsx`) | lines 188-217 | ✅ (bug source) |
-| `JobProgressCard` only mounts while `activeJobId` is in local state | line 427-428 | ✅ (no rehydrate) |
-| OG bulk loop is also browser-driven (`bulkOg`, lines 302-340) | same | ✅ (same failure mode) |
-| `cancel()` flips status only; current chunk completes before next `isCancelled` check | `useAdminJob.ts` + edge `isCancelled` at chunk boundary | ✅ (documented gap) |
-| Pin tiers A/B/C exist but admin UI shows only a total count | column "Pins" in row table | ✅ |
-| `aiExtractPlaces` truncates input at 60 000 chars | `_shared/ai-provider.ts` line 286 | ✅ |
-| OG model is hardcoded `gemini-2.5-flash-image` (Nano Banana v1) | `_shared/ai-provider.ts` line 346 | ✅ |
-| Fallback on **any** Gemini error → OpenAI (no 4xx-terminal check) | line 449-453 | ✅ |
-| `srangam_event_log` table — **planned but does not exist yet** (per comment in `observability.ts`) | observability.ts line 19 | ⚠ |
-| Platform policy: **no backend rate limiting** | knowledge `no-backend-rate-limiting` | ⚠ kills RPM guard idea |
-| Gemini explicit `cachedContent` has a **~1024-token floor**; current SYSTEM_PROMPT is ~80 tokens | Gemini docs | ⚠ kills explicit cache idea |
-| `srangam_admin_jobs` has no `heartbeat_at` column | schema dump | ✅ |
-| Per-article pin upsert is its own transaction (durable after each article) | `backfillOne` Stage 4 | ✅ |
+| `PuranaReferences.tsx` shows progress from **local React state only** — `setProgress` is never updated during the run; "0/44 · 22 minutes" is a static placeholder | `PuranaReferences.tsx` 79-91, `ExtractionProgress` widget | ✅ confirmed bug |
+| `extract-purana-references` loops **all 44 articles in one invocation**, no chunking, no job row, no resumability — will hit the 150 s wall-clock on bulk runs | `index.ts` 41-249 | ✅ confirmed |
+| Function calls **OpenAI gpt-4o-mini directly** (line 161), bypassing `_shared/ai-provider.ts` which already exposes a Gemini-first `aiExtractPlaces` + `callImage` and is used by pins / OG | `_shared/ai-provider.ts` 277-308 | ✅ ignores user's Gemini key today |
+| `srangam_admin_jobs` exists with `heartbeat_at`, RLS admin-only, in realtime publication; `_shared/jobs.ts` exposes `createJob`, `reportItem`, `touchHeartbeat`; `JobKind` is a string-union — adding `'purana_extract'` is a 1-line additive edit | live schema + `_shared/jobs.ts` 24, 50-73, 91, 140 | ✅ substrate ready |
+| Per-article `.insert(refsToInsert)` is its own statement — **partial progress is already durable**, only the UI doesn't know about it | `index.ts` 230-238 | ✅ no rollback risk |
+| **The correct pin table is `srangam_article_pins`** (columns: `article_id`, `gazetteer_id`, `confidence`, `source`, `display_order`) — *not* `srangam_pins` (that name does not exist) | live schema | ⚠ correction vs. prior draft |
+| `srangam_correlation_matrix` **already exists** (theme, source_type, coordinates, pin_data jsonb, bibliography jsonb) — a curated public-read table populated manually | live schema | ⚠ correction — must extend, not duplicate |
+| `srangam_cross_references` keys on `source_article_id` / `target_article_id`, has `reference_type`, `strength`, `bidirectional` — public-read, admin-write | live schema | ✅ |
+| `srangam_purana_references` keys on `article_id`, has `purana_name`, `purana_category`, `confidence_score`, `validation_status`, `metadata jsonb` — public-read, admin-write | live schema | ✅ |
+| `srangam_cultural_terms` is **not** article-keyed — it's a global gloss table (`term`, `module`, `translations`); article ↔ term mapping today is implicit via `{{cultural:term}}` in-prose markers, not a join row | live schema | ⚠ correction — term-correlation needs a derived view, not a direct join |
+| `CrossReferencesBrowser.tsx` already imports `react-force-graph-2d` — graph dep is in the bundle | file head | ✅ reuse |
+| Admin router lazy-loads pages from `src/pages/admin/` under `<AdminLayout>` gated by `<ProtectedRoute>` — adding one route is additive | `src/App.tsx` 71-84, 224-226 | ✅ |
+| Phase X.1 substrate (self-pump, heartbeat watchdog cron, `JobProgressCard`, `useAdminJob`) is live as of 2026-05-28 | prior migrations + `_shared/jobs.ts` | ✅ reusable |
 
-Two ideas from the prior draft are **withdrawn** because of the above:
-
-- ❌ Backend RPM token bucket — forbidden by platform policy. Replaced with client-side pacing + smarter fallback.
-- ❌ Explicit `cachedContent` for the NER system prompt — too small to fit the 1024-token floor. Replaced with implicit caching by **reordering** the request payload so static parts are first (Gemini implicit cache kicks in automatically at the eligible prefix).
+Conclusion: the Puranic page exhibits the **same disease** X.1 cured for pins/OG. Same cure, applied surgically. Correlation work must **extend** what already exists (`srangam_correlation_matrix`, `srangam_cross_references`) and treat cultural-term linkage as a *derived* signal, not invented joins.
 
 ---
 
-### Phase X.1 — Resumable, observable jobs (no behaviour risk, ~1 day)
+### Phase X.5 — Puranic extraction: adopt the job substrate (~1 day, zero behaviour risk)
 
-Goal: progress always visible, jobs survive page reload, no orphan `running` rows.
+Goal: real per-article progress, survives page refresh, resumable, watchdog-reaped, uses the user's Gemini key first.
 
-1. **Server-driven self-pump.** Extend `backfill-article-pins` and `generate-article-og` with a `mode: "pump"` body field. When set with a `job_id`, after writing per-item progress and before returning, the function calls `EdgeRuntime.waitUntil(fetch(self_url, { body: { job_id, offset: next_offset, mode: "pump" } }))`. The browser kicks off chunk 0 only; the server walks the rest. Stays well inside the 150 s wall-clock per invocation (chunks are 5 articles).
-2. **Heartbeat watchdog.** Additive migration: add `heartbeat_at timestamptz` to `srangam_admin_jobs`. `reportItem` in `_shared/jobs.ts` sets it on every write. New SQL function `public.reconcile_stuck_admin_jobs()` (SECURITY DEFINER, search_path=public) flips `status='running' AND heartbeat_at < now() - interval '5 min'` to `failed` with `last_error='watchdog: no heartbeat'`. Scheduled via `pg_cron` every 5 min (uses the existing `pg_cron + pg_net` pattern documented in our edge-function knowledge).
-3. **Rehydrate on mount.** `GeographyMedia.tsx` queries `srangam_admin_jobs where status='running' and kind in ('pin_backfill','og_generate','og_force') order by started_at desc limit 1` on mount; if found, hydrates `activeJobId` so `JobProgressCard` reappears after refresh.
-4. **A/B/C breakdown in progress card.** `reportItem` payload patched to include `{a,b,c}` counters that accumulate in `params.tier_totals` JSONB; `JobProgressCard` renders `Last: <slug> (A:2 B:5 C:1)`. Additive — no schema change.
-5. **Documentation.** New `docs/ADMIN_JOBS.md` (job contract, kinds, params shape, pump semantics, watchdog SLA, cancel-window guarantee). Update `docs/RELIABILITY_AUDIT.md` with Phase X.1 invariants and a frozen-baseline-2026-05-28 marker per user preference. Update `docs/SCALABILITY_ROADMAP.md` triggers.
+1. **Wrap the edge function in the shared job contract.** Add `'purana_extract'` to the `JobKind` union in `_shared/jobs.ts` (1 line). Extend `extract-purana-references/index.ts` request body to `{ article_id?, batch_mode?, job_id?, mode?: 'start' | 'pump', offset?, chunk_size? }`. On `mode:'start'` (or legacy `batch_mode:true`) the function calls `createJob({ kind:'purana_extract', total: published_count, params:{ chunk_size:3 } })`, returns `{ job_id }` immediately, and kicks the first pump via `EdgeRuntime.waitUntil(self-reinvoke)` — same pattern as `backfill-article-pins`. On `mode:'pump'` it processes `params.chunk_size` articles starting at `offset` then self-reinvokes for `offset + chunk_size` if more remain. Single-article (`batch_mode:false` + `article_id`) path stays **synchronous and unchanged** — the per-row "Extract" button keeps working exactly as today.
 
-**Acceptance gate:** mid-run tab refresh re-attaches to the running job; closing the browser entirely still completes the job server-side; a deliberately-killed worker is reaped by the watchdog within 5 min; A/B/C counters appear in the card. Zero edits to public components, public routes, public RLS.
+2. **Heartbeat + tier_totals.** After each article completes, call `reportItem(supabase, { job_id, processed:i+1, succeeded:n, failed:m, cost_usd, last_item: slug })` — `_shared/jobs.ts` already stamps `heartbeat_at` on every write. Accumulate `{ high: ≥0.80, mid: 0.60-0.79, low: <0.60 }` counters into `params.tier_totals` JSONB (same idiom X.1.1 used for A/B/C). The existing `reconcile_stuck_admin_jobs()` cron (every 5 min) reaps zombies for free — no new SQL.
 
----
+3. **Switch provider to Gemini-first via `_shared/ai-provider.ts`.** Add `aiExtractCitations(text, { system, schema, fallback })` colocated with `aiExtractPlaces` (lines 277-308). Same Gemini → OpenAI fallthrough, same **4xx-terminal** rule from X.4 (no silent double-billing), same implicit-cache-friendly payload ordering (system + schema first, per-article content last). The existing inline OpenAI call in `extract-purana-references` is replaced with one call to this helper. Single source of truth.
 
-### Phase X.2 — Pin extraction quality (~1 day)
+4. **Re-plumb the UI to the job substrate.** `PuranaReferences.tsx`:
+   - Replace the fake `progress` local state + the `ExtractionProgress` widget (in the **batch** path only) with `<JobProgressCard jobId={activeJobId} />` — proven on Geography & Media.
+   - Add `useAdminJob('purana_extract')` rehydrate-on-mount (3 lines, same pattern as `GeographyMedia.tsx` after X.1.4) so refreshing the tab re-attaches to a running job.
+   - Wire the "Extract All Published Articles" button to invoke with `mode:'start'`, capture `job_id`, set `activeJobId`. Card then renders real %, last slug, tier breakdown `(H:n M:n L:n)`, running cost, Cancel button — all from Realtime.
+   - Keep `ExtractionProgress` for the single-article path untouched.
 
-Goal: more correct pins per article, with visible confidence, without spurious noise.
+5. **Documentation.** Append `docs/ADMIN_JOBS.md` with the `purana_extract` row in the kind matrix. Add Phase X.5 invariants + frozen-baseline-2026-05-28 marker to `docs/RELIABILITY_AUDIT.md`. New `docs/PURANIC_EXTRACTION.md`: chunking contract, confidence rubric (already in the prompt at lines 143-149), provider order, cancel-window guarantee (chunk boundary, same as pins/OG).
 
-1. **Wider variant matching.** Extend `matchAiName` in `backfill-article-pins/index.ts` with a single deterministic fold: lowercase → NFD diacritic strip → IAST→Hunterian rewrite (`ā→a, ī→i, ū→u, ṛ→ri, ś→sh, ṣ→sh, ñ→n, ṭ→t, ḍ→d, ṇ→n, ṅ→ng, ḥ→''`). Pure function, unit-testable, no schema change. Catches *Dwāraka / Dvaraka / Dwarka* collisions without expanding the gazetteer.
-2. **Self-healing curation log.** New table `srangam_gazetteer_unmatched (id, ai_name text, normalized text, occurrences int, last_seen_article_id, last_seen_at)` with admin-only RLS, `GRANT` block per platform contract. AI-returned names that fail `matchAiName` increment `occurrences` via `ON CONFLICT (normalized) DO UPDATE`. Admin page gains a small "Pending gazetteer additions (top 20 by occurrences)" panel — operator can promote real toponyms with one click into `srangam_gazetteer` (curation-over-expansion philosophy preserved). No automatic promotion.
-3. **Confidence surfaced in per-article table.** Pins column changes from `7` to `7 (A:2 B:4 C:1)` using counts already computed by `backfillOne`. One extra `select confidence, count(*) ... group by` query in the admin page's article fetch.
-4. **Token-budget lift.** Raise `aiExtractPlaces` input cap from 60 000 → 200 000 chars for the **Gemini path only** (still <5 % of 1 M-token ceiling, marginal cost ≤$0.02/article at current pricing). OpenAI fallback stays at 60 000 because gpt-4o-mini has a 128 K context window.
-
-**Acceptance gate:** representative 5-article sample shows ≥15 % more correct pins (manual spot-check), no false positives, `srangam_gazetteer_unmatched` populates and the admin promote-flow works end-to-end.
+**Acceptance gate:** mid-run tab refresh re-attaches; closing the browser still completes the job server-side; deliberately-killed worker is reaped by the watchdog within 5 min; tier counters appear in the card; `srangam_admin_jobs.cost_usd` shows Gemini-priced rows (not OpenAI) for the dominant path; zero edits to public components, public routes, public RLS.
 
 ---
 
-### Phase X.3 — OG image quality & safety (~1.5 days)
+### Phase X.6 — Centralised correlation substrate (~1.5 days, additive, read-only surface)
 
-Goal: better covers, never silently publish a bad render.
+Goal: cross-reference pins, Puranic citations, and curated cross-references to surface latent connections — without touching the curation pipelines that produced them, and **without inventing data that does not exist** (cultural-term linkage is treated as derived signal only).
 
-1. **Model upgrade behind a feature flag.** Add optional `model` to the `generate-article-og` request body. `_shared/ai-provider.ts` `callImage` learns three Gemini paths: `gemini-2.5-flash-image` (default, current), `gemini-3.1-flash-image-preview` (Nano Banana 2, better composition), `gemini-3-pro-image-preview` (hero articles, highest fidelity). Pricing table updated. Default unchanged until acceptance gate passes.
-2. **Admin toggle.** `GeographyMedia.tsx` gains a compact `Model: [Default | NB2 | Pro]` selector that flows into both single and bulk OG actions; per-image cost shows in the activity log.
-3. **Auto-QA on upload.** Before flipping the new asset to `status='active'`, the edge function runs three cheap checks on the returned bytes: (a) decoded dimensions = the requested aspect (1792×1024 ± 2 px), (b) file-size between 80 KB and 4 MB (catches transparent-output regressions and bloated re-encodes), (c) image is not >95 % single-colour (catches blank/solid-fill failures). On any failure: mark new asset `status='quarantined'`, leave the existing `active` row in place, surface a "needs review" badge on the per-article row. No external library — pure-Deno PNG header parse + sample-pixel scan keeps the function self-contained.
-4. **Prompt-hash idempotency stays correct.** Hash already includes the prompt text; we extend it to include `model` so a Pro regen never silently no-ops against a prior NB1 hash.
-5. **Documentation.** Append `docs/OG_IMAGE_SYSTEM.md` with model matrix, QA contract, and frozen-baseline marker.
+1. **Read-only views over existing tables (no new mutable tables).** One migration. All views `SECURITY INVOKER` so they inherit underlying RLS (public-read tables stay public-read; admin-only tables stay admin-only — no new attack surface).
+   - `srangam_corpus_article_summary` — per-article rollup: pin counts split by `confidence` (A/B/C) from `srangam_article_pins`; Puranic citation counts split by `purana_category` (Mahapurana / Itihasa / Veda / Upapurana / Agama / Other) from `srangam_purana_references`; outbound + inbound cross-reference counts from `srangam_cross_references`; `{{cultural:term}}` marker count derived by regex over `srangam_articles.content->>'en'` (no fabricated join row). Powers the overview tiles.
+   - `srangam_corpus_purana_pin_overlap` — joins `srangam_purana_references` ↔ `srangam_article_pins` via `article_id`, grouped by `(purana_name, gazetteer_id)`, returning `co_article_count` and `pin_canonical_name` (joined from `srangam_gazetteer`). Substrate for hypothesis-style findings (e.g. *Skanda Purāṇa co-occurs with Kāśī pin in N articles*).
+   - `srangam_corpus_xref_evidence` — joins `srangam_cross_references` with both source/target articles' `srangam_purana_references` and reports `shared_purana_count` per edge. Powers the cementing/disproving findings below.
 
-**Acceptance gate:** one admin-triggered Pro regen produces a visibly better image and bumps `srangam_media_assets.version`; quarantine path is provable by forcing a deliberately broken prompt (e.g. empty); zero accidental supersedes of good covers.
+2. **Light Postgres function for graph edges.** `public.get_corpus_correlations(min_co_articles int default 3)` returns weighted edges between `(purana_name, gazetteer_id)` nodes using **Jaccard over shared article membership**, computed entirely in SQL over the views above. `SECURITY DEFINER`, `SET search_path = public`, `REVOKE ALL` then `GRANT EXECUTE TO authenticated` (per the SECURITY DEFINER hardening memory). No row writes. Returns `(source_node, target_node, weight, shared_articles)`.
 
----
+3. **New admin-only page `/admin/corpus-correlations`** (additive route under `src/pages/admin/CorpusCorrelations.tsx`, lazy-loaded in `src/App.tsx` like the existing admin pages, mounted inside `<AdminLayout>` under `<ProtectedRoute>`).
+   - **Top**: four tiles from `srangam_corpus_article_summary` (articles processed / total citations / total pins / total xrefs).
+   - **Middle**: a force graph using `react-force-graph-2d` (already in the bundle) rendered from `get_corpus_correlations()`. Node = Purana or Pin; edge weight = Jaccard. Cluster colouring by node type, matching the existing `THEME_COLORS` / `TYPE_COLORS` palette in `CrossReferencesBrowser.tsx` for visual continuity.
+   - **Bottom — "Findings" table** (3 preset queries, all SQL-backed, no AI):
+     * **Cementing**: rows from `srangam_corpus_xref_evidence` where `shared_purana_count ≥ 3` — strong textual co-grounding for an existing curated xref.
+     * **Disproving / Needs review**: rows where `reference_type = 'explicit_citation'` AND `shared_purana_count = 0` — curated edge has no shared Puranic basis, flag for editorial review.
+     * **Hitherto unfound**: pairs of `purana_name` that co-occur in ≥5 articles per `srangam_corpus_purana_pin_overlap` but have **no** existing `srangam_cross_references` row connecting any of those articles — candidate edges for the curator to author manually.
 
-### Phase X.4 — API-key utilisation (~1 day)
+4. **Relationship to the existing `srangam_correlation_matrix`.** That table is preserved as the curated public-facing correlation surface (Theme → Source → Location). This phase does **not** modify, populate, or compete with it. The findings table is internal admin tooling — promotion of a finding into either `srangam_cross_references` or `srangam_correlation_matrix` is a manual curator action (per the **AI for curation, not expansion** user memory).
 
-Goal: lower cost per call, fewer wasted tokens, predictable provider behaviour. **No backend rate limiting** (platform-forbidden).
+5. **No disruption.** No changes to `CrossReferencesBrowser.tsx` (frozen baseline). No changes to `srangam_correlation_matrix`. No new mutable tables. New page only. Sidebar entry under Admin → Analysis, gated by `isAdmin`.
 
-1. **Implicit-cache friendly request shape.** In `callGemini`, move `systemInstruction` + `generationConfig.responseSchema` (the static prefix) ahead of the per-article `contents`. Gemini's implicit cache kicks in automatically when the eligible prefix exceeds the model floor; this reordering is a no-op when it doesn't and a free token discount when it does. No `cachedContent` API call needed (which our 80-token system prompt cannot satisfy anyway).
-2. **Smarter fallback decision.** Today `callImage` and `aiExtractPlaces` fall through to OpenAI on **any** Gemini error. Tighten to: fall back only on `429 | 5xx | timeout | quota`; treat `400 | 403 | safety-block` as **terminal** per platform "4xx is terminal" guidance and emit a single human-readable `last_error` on the job row. Stops us from silently double-billing OpenAI when the real problem is a malformed prompt or content-safety reject.
-3. **Client-side pacing on bulk pin backfill.** `backfillPinsBulk` already paces 0 ms between chunks (OG paces 600 ms). Add a matching `await new Promise(r => setTimeout(r, 400))` between pin chunks. This is **client-side** (browser tab driving the loop today; the X.1 pump replaces it with a server-side `await` of identical duration), so it does not violate the no-backend-rate-limiting policy.
-4. **Telemetry via existing rows, not a new view.** Skip the materialised view (would require `srangam_event_log`, which is still on the roadmap). Instead, add a tiny `useAdminJobHistory(kind, days)` hook over `srangam_admin_jobs` (already has `cost_usd, processed, started_at, finished_at, kind, status`) and a "Last 30 days" stacked bar on the admin Analytics page — zero schema change, real cost visibility today, and a clean upgrade path when `srangam_event_log` lands.
-5. **Documentation.** New `docs/AI_PROVIDER_OPTIMIZATION.md`: implicit-cache rationale, fallback decision matrix, client-side pacing rules, why backend rate-limiting is intentionally absent (platform policy link). Frozen-baseline marker.
+6. **Documentation.** New `docs/CORPUS_CORRELATION.md`: view definitions, Jaccard formula, three preset findings queries, curator promotion workflow ("promote a finding into a `srangam_cross_references` or `srangam_correlation_matrix` row manually — never auto"), relationship to existing curated tables. Update `docs/SCALABILITY_ROADMAP.md` triggers (rebuild as materialised view + `pg_cron` REFRESH when article count crosses ~500 — current corpus is ~44, plain views are fine).
 
-**Acceptance gate:** a 50-article bulk pin backfill costs ≤80 % of the previous run measured from `srangam_admin_jobs.cost_usd`; zero unjustified OpenAI invocations (verified from `last_error` on synthetic 400s); admin Analytics chart renders without new tables.
+**Acceptance gate:** the three views return non-empty results on live data; force graph renders for the current corpus in <2 s; one "hitherto unfound" candidate is reviewable end-to-end; zero impact on extraction/import paths; zero writes to existing tables; `srangam_correlation_matrix` is byte-identical before and after.
 
 ---
 
 ### Out of scope (deferred candidates)
 
-- `srangam_event_log` table itself (separate workstream — already planned in `observability.ts`).
-- pg_boss / external queue worker — overkill while self-pump satisfies the 150 s wall-clock budget.
-- Bulk re-QA of the existing 44 published OG images — admin discretion to control AI spend.
-- Visual-regression snapshots for OG covers (candidate for Phase Y).
-- Per-tenant API-key rotation UI (keys live in Supabase secrets; one-line rotation today).
+- Auto-promotion of correlation findings into `srangam_cross_references` or `srangam_correlation_matrix` (violates curation-over-expansion; deferred indefinitely).
+- A standalone `srangam_event_log` table (independent workstream; `srangam_admin_jobs` covers X.5's needs today).
+- Public-facing "related Puranas / co-cited locations" badges on article pages — possible Phase Y; the user-visible UI is explicitly frozen here.
+- Embedding-based semantic correlation via `pgvector` on `srangam_article_metadata.embeddings` (column already exists) — heavier lift; Jaccard over curated joins is the right first cut and matches "AI for curation, not expansion".
+- Materialised refresh of the three views via `pg_cron` — triggered only at the scalability threshold above.
 
-### Roll-out order (each its own approval gate + doc update)
+### Roll-out order
 
-X.1 (job substrate, zero behaviour risk) → X.4 (cost guard rails before we scale model usage) → X.2 (pin quality) → X.3 (image quality, the riskiest because output is user-visible).
+X.5 (heal the broken page, smallest blast radius, zero behaviour risk) → X.6 (additive analytics layer, read-only). Each phase its own approval gate and docs update before the next begins.
 
-### Files that will be touched (per phase, planning only)
+### Files that will be touched (planning only — zero edits outside these)
 
-- **X.1** — `supabase/functions/backfill-article-pins/index.ts`, `supabase/functions/generate-article-og/index.ts`, `supabase/functions/_shared/jobs.ts`, `src/pages/admin/GeographyMedia.tsx`, `src/components/admin/JobProgressCard.tsx`, `src/hooks/useAdminJob.ts`, new migration for `heartbeat_at` + `reconcile_stuck_admin_jobs()` + `pg_cron`, new `docs/ADMIN_JOBS.md`, edits to `docs/RELIABILITY_AUDIT.md` and `docs/SCALABILITY_ROADMAP.md`.
-- **X.2** — `supabase/functions/backfill-article-pins/index.ts`, `src/pages/admin/GeographyMedia.tsx`, new migration for `srangam_gazetteer_unmatched` (with `GRANT` block per platform contract), edits to `docs/ARTICLE_DISPLAY_GUIDE.md` or new `docs/PIN_QUALITY.md`.
-- **X.3** — `supabase/functions/_shared/ai-provider.ts`, `supabase/functions/generate-article-og/index.ts`, `src/pages/admin/GeographyMedia.tsx`, edits to `docs/OG_IMAGE_SYSTEM.md`.
-- **X.4** — `supabase/functions/_shared/ai-provider.ts`, `src/pages/admin/GeographyMedia.tsx`, new `src/hooks/useAdminJobHistory.ts`, edits to `src/pages/admin/Analytics.tsx` (if it exists; else a new card), new `docs/AI_PROVIDER_OPTIMIZATION.md`.
+- **X.5** — `supabase/functions/extract-purana-references/index.ts`, `supabase/functions/_shared/ai-provider.ts` (add `aiExtractCitations`), `supabase/functions/_shared/jobs.ts` (1-line `JobKind` union extension), `src/pages/admin/PuranaReferences.tsx`, `src/hooks/usePuranaReferences.ts` (extend with `useAdminJob('purana_extract')` rehydrate). Reuse existing `src/components/admin/JobProgressCard.tsx` and `src/hooks/useAdminJob.ts` **unchanged**. New `docs/PURANIC_EXTRACTION.md`; edits to `docs/ADMIN_JOBS.md` and `docs/RELIABILITY_AUDIT.md`.
+- **X.6** — one new migration (3 views + 1 SECURITY DEFINER function + EXECUTE grant), new `src/pages/admin/CorpusCorrelations.tsx`, new `src/hooks/useCorpusCorrelations.ts`, route registration line in `src/App.tsx` only. New `docs/CORPUS_CORRELATION.md`; edits to `docs/SCALABILITY_ROADMAP.md`.
 
-Zero edits anywhere outside `src/pages/admin/**`, `src/components/admin/**`, `src/hooks/useAdmin*`, `supabase/functions/**`, `supabase/migrations/**`, and `docs/**`. Public routes, public components, public RLS, end-user UI: **untouched**.
-
-
----
-
-## Phase X.1 — Resumable, observable admin jobs (frozen baseline 2026-05-28)
-
-Shipped. See `docs/ADMIN_JOBS.md` for the full contract. Summary:
-
-- `srangam_admin_jobs.heartbeat_at` column + `reconcile_stuck_admin_jobs()` watchdog (pg_cron every 5 min).
-- `backfill-article-pins` and `generate-article-og` learned `_pump: true` mode; browser kicks off chunk 0 only, server self-reinvokes via `EdgeRuntime.waitUntil`.
-- `reportItem` stamps heartbeat and accumulates `params.tier_totals = {a,b,c}` when the worker reports per-item tier deltas (pin backfill does).
-- `GeographyMedia.tsx` rehydrates the most-recent running job on mount; `JobProgressCard` renders the A/B/C confidence breakdown.
-- Auth: user kick-off via `requireAdmin`; self-pump via service-role bearer + valid `job_id`.
-
-Next (awaits explicit go-ahead): X.4 → X.2 → X.3 per the approved roll-out order.
+Everything stays inside `src/pages/admin/**`, `src/components/admin/**`, `src/hooks/useAdmin*` / `usePurana*` / `useCorpus*`, `supabase/functions/**`, `supabase/migrations/**`, `docs/**`, plus one route line in `src/App.tsx`. Public site behaviour, `srangam_correlation_matrix`, and Phases X.1–X.4 invariants are preserved.

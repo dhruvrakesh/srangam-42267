@@ -312,8 +312,148 @@ export async function aiExtractPlaces(
 }
 
 // =============================================================================
-// Phase H.3 — Image generation (Gemini-first, OpenAI fallback)
+// Phase X.5 — Generic JSON extraction (Gemini-first, OpenAI fallback)
+//
+// Used by the Puranic citation extractor (and any future structured-output
+// caller) so we get the same provider order, retry semantics, telemetry and
+// cost-accounting as `aiExtractPlaces`. Caller supplies the system + user
+// prompt; we return both the raw JSON string and a parsed object so the
+// caller can apply its own Zod / shape validation.
+//
+// Implicit-cache-friendly ordering: system text first, then the per-chunk
+// user text last (Gemini caches the prefix automatically when repeated).
 // =============================================================================
+
+export interface AIJsonResult {
+  provider: 'gemini' | 'openai';
+  model: string;
+  raw: string;
+  parsed: unknown;
+  prompt_tokens: number;
+  completion_tokens: number;
+  latency_ms: number;
+  cost_usd_estimate: number;
+}
+
+interface JsonCallOpts extends CallOpts {
+  system: string;
+  user: string;
+  /** Cap on tokens we send (defensive). Defaults to 60k chars of user text. */
+  maxUserChars?: number;
+}
+
+async function callGeminiJson(apiKey: string, o: JsonCallOpts): Promise<AIJsonResult> {
+  const model = 'gemini-2.5-flash';
+  const url =
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent` +
+    `?key=${encodeURIComponent(apiKey)}`;
+  const body = {
+    systemInstruction: { parts: [{ text: o.system }] },
+    contents: [{ role: 'user', parts: [{ text: o.user }] }],
+    generationConfig: {
+      temperature: 0.2,
+      responseMimeType: 'application/json',
+    },
+  };
+  const t0 = performance.now();
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal: withTimeout(o.signal, o.timeoutMs ?? DEFAULT_TIMEOUT_MS),
+  });
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '');
+    throw new Error(`gemini ${res.status}: ${detail.slice(0, 300)}`);
+  }
+  const data = await res.json();
+  const latency_ms = Math.round(performance.now() - t0);
+  const raw =
+    data?.candidates?.[0]?.content?.parts?.[0]?.text ??
+    data?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join('') ??
+    '{}';
+  let parsed: unknown = null;
+  try { parsed = JSON.parse(raw); } catch { parsed = null; }
+  const prompt_tokens = Number(data?.usageMetadata?.promptTokenCount ?? 0);
+  const completion_tokens = Number(data?.usageMetadata?.candidatesTokenCount ?? 0);
+  return {
+    provider: 'gemini', model, raw, parsed,
+    prompt_tokens, completion_tokens, latency_ms,
+    cost_usd_estimate: estimateCost(model, prompt_tokens, completion_tokens),
+  };
+}
+
+async function callOpenAIJson(apiKey: string, o: JsonCallOpts): Promise<AIJsonResult> {
+  const model = 'gpt-4o-mini';
+  const body = {
+    model,
+    temperature: 0.2,
+    messages: [
+      { role: 'system', content: o.system },
+      { role: 'user', content: o.user },
+    ],
+    response_format: { type: 'json_object' },
+  };
+  const t0 = performance.now();
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal: withTimeout(o.signal, o.timeoutMs ?? DEFAULT_TIMEOUT_MS),
+  });
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '');
+    throw new Error(`openai ${res.status}: ${detail.slice(0, 300)}`);
+  }
+  const data = await res.json();
+  const latency_ms = Math.round(performance.now() - t0);
+  const raw = data?.choices?.[0]?.message?.content ?? '{}';
+  let parsed: unknown = null;
+  try { parsed = JSON.parse(raw); } catch { parsed = null; }
+  const prompt_tokens = Number(data?.usage?.prompt_tokens ?? 0);
+  const completion_tokens = Number(data?.usage?.completion_tokens ?? 0);
+  return {
+    provider: 'openai', model, raw, parsed,
+    prompt_tokens, completion_tokens, latency_ms,
+    cost_usd_estimate: estimateCost(model, prompt_tokens, completion_tokens),
+  };
+}
+
+/**
+ * Generic structured-JSON extraction. Tries Gemini first (cheap + uses the
+ * tenant's own key), falls back to OpenAI on 429/5xx/timeout. 4xx on the
+ * primary is terminal — we do NOT silently double-bill on a malformed
+ * request.
+ */
+export async function aiExtractCitations(opts: JsonCallOpts): Promise<AIJsonResult> {
+  const gemini = Deno.env.get('GEMINI_API_KEY');
+  const openai = Deno.env.get('OPENAI_API_KEY');
+  if (!gemini && !openai) throw new NoAIProviderError();
+
+  const maxChars = opts.maxUserChars ?? 60_000;
+  const user = opts.user.length > maxChars ? opts.user.slice(0, maxChars) : opts.user;
+  const call = { ...opts, user };
+
+  if (gemini) {
+    try {
+      return await callGeminiJson(gemini, call);
+    } catch (e) {
+      if (isTransient(e)) {
+        try {
+          await new Promise((r) => setTimeout(r, 800));
+          return await callGeminiJson(gemini, call);
+        } catch (e2) {
+          if (!openai) throw e2;
+        }
+      } else if (!openai) {
+        throw e;
+      }
+    }
+  }
+  if (openai) return await callOpenAIJson(openai, call);
+  throw new NoAIProviderError();
+}
+
 
 export interface AIImageResult {
   bytes: Uint8Array;

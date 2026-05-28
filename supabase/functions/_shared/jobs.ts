@@ -21,7 +21,7 @@
 
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 
-export type JobKind = 'pin_backfill' | 'og_generate' | 'og_force';
+export type JobKind = 'pin_backfill' | 'og_generate' | 'og_force' | 'purana_extract';
 export type JobStatus = 'queued' | 'running' | 'succeeded' | 'failed' | 'cancelled';
 
 export interface JobRow {
