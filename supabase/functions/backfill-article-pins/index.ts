@@ -371,26 +371,50 @@ Deno.serve(async (req) => {
         .from('srangam_articles')
         .select('id,slug,content')
         .or(`slug.eq.${body.slug},slug_alias.eq.${body.slug}`)
-        .maybeSingle();
-      if (data) articles = [data as any];
-      totalCandidates = articles.length;
     } else if (body.all_published) {
       const limit = Math.min(Math.max(body.limit ?? 25, 1), 200);
 
-      const { count } = await admin
-        .from('srangam_articles')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'published');
-      totalCandidates = Math.min(count ?? 0, limit);
+      // Phase Z.3 — when `only_zero_pin` is set, restrict to published articles
+      // that currently have NO pins. Implemented as a two-step query to avoid
+      // PostgREST limitations on NOT-EXISTS joins.
+      let zeroPinIds: string[] | null = null;
+      if (body.only_zero_pin) {
+        const { data: pinned } = await admin
+          .from('srangam_article_pins')
+          .select('article_id');
+        const pinnedSet = new Set((pinned ?? []).map((r: any) => r.article_id));
+        const { data: pubIds } = await admin
+          .from('srangam_articles')
+          .select('id')
+          .eq('status', 'published');
+        zeroPinIds = (pubIds ?? [])
+          .map((r: any) => r.id)
+          .filter((id: string) => !pinnedSet.has(id));
+        totalCandidates = Math.min(zeroPinIds.length, limit);
+      } else {
+        const { count } = await admin
+          .from('srangam_articles')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'published');
+        totalCandidates = Math.min(count ?? 0, limit);
+      }
 
       const sliceEnd = Math.min(chunkOffset + chunkSize, totalCandidates);
       if (chunkOffset < totalCandidates) {
-        const { data } = await admin
+        let query = admin
           .from('srangam_articles')
           .select('id,slug,content')
-          .eq('status', 'published')
-          .order('updated_at', { ascending: false })
-          .range(chunkOffset, sliceEnd - 1);
+          .eq('status', 'published');
+        if (zeroPinIds) {
+          const slice = zeroPinIds.slice(chunkOffset, sliceEnd);
+          query = query.in('id', slice);
+        } else {
+          query = query.order('updated_at', { ascending: false }).range(chunkOffset, sliceEnd - 1);
+        }
+        const { data } = await query;
+        articles = (data ?? []) as any;
+      }
+    }
         articles = (data ?? []) as any;
       }
     }
