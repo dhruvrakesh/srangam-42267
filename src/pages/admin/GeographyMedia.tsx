@@ -200,7 +200,7 @@ export default function GeographyMedia() {
           total: limit,
           started_at: new Date().toISOString(),
           created_by: user?.id ?? null,
-          params: { all_published: true, limit, chunk_size: chunkSize },
+          params: { all_published: true, only_zero_pin: true, limit, chunk_size: chunkSize },
         })
         .select('id')
         .single();
@@ -208,12 +208,13 @@ export default function GeographyMedia() {
 
       const jobId = jobRow.id as string;
       setActiveJobId(jobId);
-      log(`▶ Started pin backfill job ${jobId.slice(0, 8)} (server-pumped, chunks of ${chunkSize})`);
+      log(`▶ Started pin backfill job ${jobId.slice(0, 8)} (zero-pin only, chunks of ${chunkSize})`);
 
-      // Single kick-off for chunk 0. The edge function will self-reinvoke
-      // for every chunk after this and finishJob() when done.
+      // Phase 1 (idempotency): only_zero_pin:true skips articles that already
+      // have at least one pin — re-running the bulk button becomes a near-noop
+      // and we don't re-bill the AI scan on already-enriched articles.
       const { data, error } = await supabase.functions.invoke('backfill-article-pins', {
-        body: { all_published: true, limit, offset: 0, chunk_size: chunkSize, job_id: jobId },
+        body: { all_published: true, only_zero_pin: true, limit, offset: 0, chunk_size: chunkSize, job_id: jobId },
       });
       if (error) throw error;
       if (typeof data?.total === 'number' && data.total !== limit) {
