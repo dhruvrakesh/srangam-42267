@@ -493,7 +493,7 @@ Deno.serve(async (req) => {
             });
           }
         } catch (e) {
-          const msg = e instanceof Error ? e.message : String(e);
+          const msg = serializeErr(e);
           console.error(`[backfill-article-pins] ${a.slug} failed:`, msg);
           results.push({ slug: a.slug, error: msg });
           if (body.job_id) {
