@@ -525,7 +525,7 @@ Deno.serve(async (req) => {
             schedulePumpReinvoke(pumpUrl, { ...body, offset: nextOffset });
           }
         } catch (e) {
-          const msg = e instanceof Error ? e.message : String(e);
+          const msg = serializeErr(e);
           console.error('[backfill-article-pins] background chunk failed:', msg);
           try { await finishJob(admin, body.job_id!, 'failed', msg); } catch { /* noop */ }
         }
