@@ -48,6 +48,9 @@ export const OceanicArticlePage: React.FC = () => {
   const { currentLanguage } = useLanguage();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showMethodsDialog, setShowMethodsDialog] = useState(false);
+  // Phase 3 — hero image lightbox + observable failure state.
+  const [heroError, setHeroError] = useState(false);
+  const [heroOpen, setHeroOpen] = useState(false);
   // Phase G2 — map now auto-mounts via IntersectionObserver; no manual toggle.
 
   // Phase 1.4: Unified data hook (parallel fetching)
