@@ -450,6 +450,8 @@ export default function GeographyMedia() {
                     <th className="py-2 pr-3">Title</th>
                     <th className="py-2 pr-3">Theme</th>
                     <th className="py-2 pr-3">Pins</th>
+                    <th className="py-2 pr-3">EV</th>
+                    <th className="py-2 pr-3">BIB</th>
                     <th className="py-2 pr-3">OG</th>
                     <th className="py-2 pr-3">Actions</th>
                   </tr>
@@ -457,6 +459,7 @@ export default function GeographyMedia() {
                 <tbody>
                   {filtered.map((a) => {
                     const busy = busyArticleId === a.id;
+                    const ogThumb = a.og_image_url ? getProxiedImageUrl(a.og_image_url) : '';
                     return (
                       <tr
                         key={a.id}
@@ -473,13 +476,39 @@ export default function GeographyMedia() {
                           <Badge variant="outline">{a.theme}</Badge>
                         </td>
                         <td className="py-2 pr-3">
-                          <Badge variant={a.pin_count > 0 ? 'default' : 'secondary'}>
+                          <Badge variant={a.pin_count > 0 ? 'default' : 'destructive'}>
                             {a.pin_count}
                           </Badge>
                         </td>
                         <td className="py-2 pr-3">
+                          <Badge variant={a.evidence_count > 0 ? 'default' : 'destructive'}>
+                            {a.evidence_count}
+                          </Badge>
+                        </td>
+                        <td className="py-2 pr-3">
+                          <Badge variant={a.biblio_count > 0 ? 'default' : 'destructive'}>
+                            {a.biblio_count}
+                          </Badge>
+                        </td>
+                        <td className="py-2 pr-3">
                           {a.og_image_url ? (
-                            <Badge>v{a.og_image_version ?? 1}</Badge>
+                            <button
+                              type="button"
+                              onClick={() => setOgPreview({ url: ogThumb, title: getEnglishTitle(a.title) })}
+                              className="flex items-center gap-2 group focus:outline-none focus:ring-2 focus:ring-primary/60 rounded"
+                              aria-label="Preview OG image"
+                            >
+                              <img
+                                src={ogThumb}
+                                alt=""
+                                className="h-10 w-16 object-cover rounded border border-border group-hover:opacity-80"
+                                loading="lazy"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                }}
+                              />
+                              <Badge variant="secondary">v{a.og_image_version ?? 1}</Badge>
+                            </button>
                           ) : (
                             <Badge variant="outline">none</Badge>
                           )}
@@ -497,6 +526,14 @@ export default function GeographyMedia() {
                             </Button>
                             {a.og_image_url ? (
                               <>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => setOgPreview({ url: ogThumb, title: getEnglishTitle(a.title) })}
+                                  disabled={busy}
+                                >
+                                  <Eye className="h-3 w-3 mr-1" /> View
+                                </Button>
                                 <Button size="sm" variant="secondary" onClick={() => runOnRow('og_force', a)} disabled={busy}>
                                   <RotateCcw className="h-3 w-3 mr-1" /> Regen
                                 </Button>
