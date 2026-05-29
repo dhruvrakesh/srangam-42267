@@ -31,7 +31,7 @@ export default function Articles() {
   );
 
   // Fetch database articles
-  const { data: dbArticles, isLoading } = useAllArticles(currentLanguage);
+  const { data: dbArticles, isLoading, isFetching, error: dbError } = useAllArticles(currentLanguage);
 
   // Merge JSON and database articles
   const allArticles = useMemo(() => {
