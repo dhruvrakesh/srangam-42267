@@ -26,12 +26,62 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Gather current system statistics
+    // ─── CX.1: Authoritative counts (head:true, count:'exact'). Never derived from .limit() slices. ───
+    const [
+      { count: articlesCount, error: aErr },
+      { count: termsCount, error: tErr },
+      { count: tagsCount, error: gErr },
+      { count: crossRefsCount, error: xErr },
+    ] = await Promise.all([
+      supabase.from('srangam_articles').select('id', { head: true, count: 'exact' }).eq('status', 'published'),
+      supabase.from('srangam_cultural_terms').select('id', { head: true, count: 'exact' }),
+      supabase.from('srangam_tags').select('id', { head: true, count: 'exact' }),
+      supabase.from('srangam_cross_references').select('id', { head: true, count: 'exact' }),
+    ]);
+    if (aErr) throw aErr;
+    if (tErr) throw tErr;
+    if (gErr) throw gErr;
+    if (xErr) throw xErr;
+
+    // Distinct modules — paginate over the full cultural_terms.module column.
+    // CX.2 will lift this into _shared/context-metrics.ts.
+    const countDistinctModules = async (): Promise<number> => {
+      const modules = new Set<string>();
+      const pageSize = 1000;
+      let from = 0;
+      // Hard ceiling to protect against runaway loops.
+      while (from < 50_000) {
+        const { data, error } = await supabase
+          .from('srangam_cultural_terms')
+          .select('module')
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        for (const r of data) if (r.module) modules.add(r.module);
+        if (data.length < pageSize) break;
+        from += pageSize;
+      }
+      return modules.size;
+    };
+    const modulesCount = await countDistinctModules();
+
+    // Themes — fetch theme column for ALL published articles (single light column, no limit).
+    const { data: allThemes, error: themesErr } = await supabase
+      .from('srangam_articles')
+      .select('theme')
+      .eq('status', 'published');
+    if (themesErr) throw themesErr;
+    const themesObject: Record<string, number> = {};
+    for (const a of allThemes ?? []) {
+      if (a.theme) themesObject[a.theme] = (themesObject[a.theme] ?? 0) + 1;
+    }
+
+    // ─── Top-N samples for the human-readable markdown body. NEVER fed into persisted counts. ───
     const { data: articles, error: articlesError } = await supabase
       .from('srangam_articles')
       .select('id, slug, theme, tags, status')
-      .eq('status', 'published');
-
+      .eq('status', 'published')
+      .order('published_date', { ascending: false });
     if (articlesError) throw articlesError;
 
     const { data: terms, error: termsError } = await supabase
@@ -39,7 +89,6 @@ serve(async (req) => {
       .select('term, module, usage_count')
       .order('usage_count', { ascending: false })
       .limit(100);
-
     if (termsError) throw termsError;
 
     const { data: crossRefs, error: crossRefsError } = await supabase
@@ -47,7 +96,6 @@ serve(async (req) => {
       .select('reference_type, strength')
       .order('created_at', { ascending: false })
       .limit(100);
-
     if (crossRefsError) throw crossRefsError;
 
     const { data: tags, error: tagsError } = await supabase
@@ -55,42 +103,96 @@ serve(async (req) => {
       .select('tag_name, category, usage_count')
       .order('usage_count', { ascending: false })
       .limit(50);
-
     if (tagsError) throw tagsError;
 
-    // Generate context snapshot document
+    // ─── Correlation summary from srangam_corpus_correlations_snapshot (latest job). ───
+    const { data: latestCorrelation } = await supabase
+      .from('srangam_corpus_correlations_snapshot')
+      .select('job_id, computed_at')
+      .order('computed_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    let topCorrelationPairs: Array<{ article_a: string; article_b: string; jaccard: number; shared_total: number; slug_a?: string; slug_b?: string }> = [];
+    let correlationPairCount = 0;
+    let correlationComputedAt: string | null = null;
+    if (latestCorrelation?.job_id) {
+      correlationComputedAt = latestCorrelation.computed_at;
+      const { count } = await supabase
+        .from('srangam_corpus_correlations_snapshot')
+        .select('article_a', { head: true, count: 'exact' })
+        .eq('job_id', latestCorrelation.job_id);
+      correlationPairCount = count ?? 0;
+
+      const { data: topPairs } = await supabase
+        .from('srangam_corpus_correlations_snapshot')
+        .select('article_a, article_b, jaccard, shared_total')
+        .eq('job_id', latestCorrelation.job_id)
+        .order('jaccard', { ascending: false })
+        .limit(5);
+
+      if (topPairs && topPairs.length > 0) {
+        const ids = Array.from(new Set(topPairs.flatMap((p: any) => [p.article_a, p.article_b])));
+        const { data: slugLookup } = await supabase
+          .from('srangam_articles')
+          .select('id, slug')
+          .in('id', ids);
+        const idToSlug = new Map<string, string>((slugLookup ?? []).map((r: any) => [r.id, r.slug]));
+        topCorrelationPairs = topPairs.map((p: any) => ({
+          article_a: p.article_a,
+          article_b: p.article_b,
+          jaccard: Number(p.jaccard),
+          shared_total: p.shared_total,
+          slug_a: idToSlug.get(p.article_a),
+          slug_b: idToSlug.get(p.article_b),
+        }));
+      }
+    }
+
+    // ─── Markdown body (CX.1 — authoritative counts + correlation block). ───
     const timestamp = new Date().toISOString();
+    const correlationSection = latestCorrelation
+      ? `## Corpus Correlations
+
+- Pair count: ${correlationPairCount}
+- Computed at: ${correlationComputedAt}
+- Top 5 by Jaccard:
+${topCorrelationPairs.map((p, i) => `  ${i + 1}. ${p.slug_a ?? p.article_a} ↔ ${p.slug_b ?? p.article_b} — jaccard=${p.jaccard.toFixed(3)}, shared=${p.shared_total}`).join('\n')}
+
+`
+      : '';
+
     const contextDocument = `# Srangam Platform Context Snapshot
 Generated: ${timestamp}
+Generated with: CX.1 (authoritative counts; samples labelled)
 
 ## System Statistics
 
 ### Articles
-- Total Published: ${articles?.length || 0}
-- Themes: ${[...new Set(articles?.map(a => a.theme))].length}
-- Total Tags Used: ${articles?.reduce((acc, a) => acc + (a.tags?.length || 0), 0)}
+- Total Published: ${articlesCount ?? 0}
+- Distinct Themes: ${Object.keys(themesObject).length}
 
 ### Cultural Terms
-- Total Terms: ${terms?.length || 0}
-- Total Occurrences: ${terms?.reduce((acc, t) => acc + (t.usage_count || 0), 0)}
-- Top 10 Terms:
-${terms?.slice(0, 10).map((t, i) => `  ${i + 1}. ${t.term} (${t.module}) - ${t.usage_count} uses`).join('\n')}
+- Total Terms: ${termsCount ?? 0}
+- Distinct Modules: ${modulesCount}
+- Top 10 Terms (sampled from top 100 by usage):
+${(terms ?? []).slice(0, 10).map((t, i) => `  ${i + 1}. ${t.term} (${t.module}) - ${t.usage_count} uses`).join('\n')}
 
 ### Cross-References
-- Total References: ${crossRefs?.length || 0}
-- Reference Types: ${[...new Set(crossRefs?.map(r => r.reference_type))].join(', ')}
-- Average Strength: ${(crossRefs?.reduce((acc, r) => acc + r.strength, 0) / (crossRefs?.length || 1)).toFixed(2)}
+- Total References: ${crossRefsCount ?? 0}
+- Reference Types (sampled from latest 100): ${[...new Set((crossRefs ?? []).map(r => r.reference_type))].join(', ')}
+- Average Strength (sampled from latest 100): ${((crossRefs ?? []).reduce((acc, r) => acc + (r.strength ?? 0), 0) / ((crossRefs?.length || 1))).toFixed(2)}
 
 ### Tag Taxonomy
-- Total Tags: ${tags?.length || 0}
-- Categories: ${[...new Set(tags?.map(t => t.category).filter(Boolean))].join(', ')}
-- Top 10 Tags:
-${tags?.slice(0, 10).map((t, i) => `  ${i + 1}. ${t.tag_name} (${t.category || 'uncategorized'}) - ${t.usage_count} uses`).join('\n')}
+- Total Tags: ${tagsCount ?? 0}
+- Categories (sampled from top 50): ${[...new Set((tags ?? []).map(t => t.category).filter(Boolean))].join(', ')}
+- Top 10 Tags (sampled from top 50 by usage):
+${(tags ?? []).slice(0, 10).map((t, i) => `  ${i + 1}. ${t.tag_name} (${t.category || 'uncategorized'}) - ${t.usage_count} uses`).join('\n')}
 
-## Recent Activity
+${correlationSection}## Recent Activity
 
 ### Latest Articles
-${articles?.slice(0, 5).map((a, i) => `${i + 1}. [${a.slug}] - Tags: ${a.tags?.join(', ') || 'none'}`).join('\n')}
+${(articles ?? []).slice(0, 5).map((a, i) => `${i + 1}. [${a.slug}] - Tags: ${a.tags?.join(', ') || 'none'}`).join('\n')}
 
 ## Database Schema Summary
 
@@ -99,36 +201,17 @@ Tables:
 - srangam_cultural_terms: Sanskrit/Indic terminology database
 - srangam_cross_references: Knowledge graph connections
 - srangam_tags: Tag taxonomy with categorization
+- srangam_corpus_correlations_snapshot: Cross-article overlap (places/puranas/terms/tags/biblio) with jaccard
 - srangam_audio_narrations: TTS audio cache with Google Drive integration
 - srangam_markdown_sources: Original markdown preservation
 - srangam_purana_references: Scriptural citation tracking
 
-## Implementation Status
-
-✅ **Fully Operational**
-- Markdown import pipeline with AI tag generation
-- Cultural term extraction and tooltip system
-- Cross-reference detection (thematic, explicit, same-theme)
-- Knowledge graph visualization
-- Admin dashboard with management tools
-- TTS narration with Google Drive storage
-
-🚧 **In Progress**
-- Analytics data collection
-- Semantic search with embeddings
-- Advanced metadata enrichment
-
-📋 **Planned**
-- Chapter compilation system
-- Bibliography consolidation
-- PDF export functionality
-- AI translation pipeline
-
 ---
 
 This snapshot represents the current state of the Srangam platform.
-Generated automatically by context-save-drive edge function.
+Generated automatically by context-save-drive edge function (CX.1).
 `;
+
 
     // Parse service account credentials
     const serviceAccount = JSON.parse(serviceAccountJson);
