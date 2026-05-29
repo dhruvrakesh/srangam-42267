@@ -70,38 +70,62 @@ serve(async (req) => {
       }
     };
 
-    // Detailed article changes (if stats_detail is available)
-    const detailedChanges = {
+    // CX.2: consume structured stats_detail shape. Falls back to mode:'count_only'
+    // when either snapshot is pre-CX.2 (themes/top_tags shipped as flat arrays via _compat,
+    // or stats_detail missing entirely). Never crashes on legacy snapshots — frozen baseline
+    // snapshots prior to 2026-05-29 are immutable by policy.
+    const detailedChanges: {
+      mode: 'identity' | 'count_only';
+      addedArticles: any[];
+      updatedArticles: any[];
+      removedArticles: any[];
+      addedTerms: any[];
+      addedTags: any[];
+      newThemes: string[];
+      reason?: string;
+    } = {
+      mode: 'identity',
       addedArticles: [],
       updatedArticles: [],
       removedArticles: [],
       addedTerms: [],
       addedTags: [],
+      newThemes: [],
     };
 
-    // Extract new tags and themes if available in stats_detail
-    if (current.stats_detail && previous.stats_detail) {
-      const currentDetail = current.stats_detail as any;
-      const previousDetail = previous.stats_detail as any;
+    const currentDetail = (current.stats_detail ?? {}) as any;
+    const previousDetail = (previous.stats_detail ?? {}) as any;
 
-      if (currentDetail.themes && previousDetail.themes) {
-        const newThemes = currentDetail.themes.filter(
-          (theme: string) => !previousDetail.themes.includes(theme)
-        );
-        if (newThemes.length > 0) {
-          detailedChanges.addedArticles = newThemes.map((theme: string) => ({
-            theme,
-            note: 'New theme detected'
-          }));
-        }
-      }
+    // Themes: structured shape is Record<string, number>; pre-CX.2 was a flat string[].
+    const currentThemes = currentDetail.themes;
+    const previousThemes = previousDetail.themes;
+    const themesAreStructured =
+      currentThemes && typeof currentThemes === 'object' && !Array.isArray(currentThemes) &&
+      previousThemes && typeof previousThemes === 'object' && !Array.isArray(previousThemes);
 
-      if (currentDetail.top_tags && previousDetail.top_tags) {
-        const newTags = currentDetail.top_tags.filter(
-          (tag: string) => !previousDetail.top_tags.includes(tag)
-        );
-        detailedChanges.addedTags = newTags;
-      }
+    // Tags: structured shape is Array<{name, usage_count}>; pre-CX.2 was a flat string[].
+    const currentTags = currentDetail.top_tags;
+    const previousTags = previousDetail.top_tags;
+    const tagsAreStructured =
+      Array.isArray(currentTags) && currentTags.every((t: any) => t && typeof t === 'object' && 'name' in t) &&
+      Array.isArray(previousTags) && previousTags.every((t: any) => t && typeof t === 'object' && 'name' in t);
+
+    if (themesAreStructured && tagsAreStructured) {
+      const newThemes = Object.keys(currentThemes).filter((t) => !(t in previousThemes));
+      detailedChanges.newThemes = newThemes;
+      detailedChanges.addedArticles = newThemes.map((theme: string) => ({
+        theme,
+        note: 'New theme detected',
+      }));
+
+      const prevTagNames = new Set(previousTags.map((t: any) => t.name));
+      detailedChanges.addedTags = currentTags
+        .filter((t: any) => !prevTagNames.has(t.name))
+        .map((t: any) => t.name);
+    } else {
+      detailedChanges.mode = 'count_only';
+      detailedChanges.reason =
+        'One or both snapshots predate CX.2 structured stats_detail (frozen baseline). Only count-based deltas are available.';
     }
 
     const summary = {
