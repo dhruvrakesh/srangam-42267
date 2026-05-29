@@ -45,6 +45,9 @@ interface RequestBody {
   limit?: number;
   /** Skip the AI NER pass (deterministic-only run). Default false. */
   skip_ai?: boolean;
+  /** Phase Z.3 — only target published articles that currently have ZERO pins.
+   *  Used by the nightly pg_cron sweep so manual bulk-runs keep current behaviour. */
+  only_zero_pin?: boolean;
 
   // ---- Phase H.4 chunked-job mode ----
   /** Existing job row id from `srangam_admin_jobs`. When set, the worker
