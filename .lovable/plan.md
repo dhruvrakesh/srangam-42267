@@ -145,3 +145,27 @@ Phase 2  →  Phase 3  →  Phase 4  →  Phase 5
 - No new gazetteer rows in this plan (Phase G3 baseline stays at 112; expand in a dedicated content PR).
 
 Approve to proceed with Phase 2 first.
+
+---
+
+## Status (2026-05-29 — Phases 2–5 SHIPPED)
+
+- **Phase 2 — Evidence honesty:** truthful empty states in `SourcesAndPins`, `EV/BIB/PINS` admin badges in `GeographyMedia`, grouped `console.warn` on slug resolver miss. ✅
+- **Phase 3 — OG lightbox:** hero image wrapped in `<Dialog>` with full 1200×630 + download, admin thumbnail + View action, `gdriveProxy.ts` guarded against missing `VITE_SUPABASE_URL`. ✅
+- **Phase 4 — CX.2 dedup:** `context-bundle-generator` now imports `loadServiceAccount` / `getDriveAccessToken` / `uploadToDrive` from `_shared/google-drive.ts`; inline ~160-line JWT/upload block removed. Both `context-save-drive` and `context-bundle-generator` are now shared-helper-only. ✅
+- **Phase 5 — CX.3 identity diffing:**
+  - Migration: `srangam_context_snapshots.identity_sets jsonb` + `srangam_context_snapshots_identity_sets_gin` GIN index. Nullable. Frozen baseline untouched. ✅
+  - `context-save-drive` computes five sorted sets (`article_slugs`, `term_keys='module:term'`, `tag_names`, `theme_names`, `module_names`), writes them and stamps `stats_detail.generated_with='CX.3'`. ✅
+  - `context-diff-generator` mode precedence: `identity` → `structured` (CX.2) → `count_only` (pre-CX.2). Per-set added/removed for articles/terms/tags/themes/modules. Fallbacks carry a `reason`. ✅
+- All three edge functions deployed.
+
+### Verification gates remaining (user-driven)
+1. Trigger one snapshot via the admin Context dashboard. Confirm new row has `identity_sets` populated and `stats_detail.generated_with='CX.3'`.
+2. Trigger a second snapshot immediately (no corpus changes) and run `context-diff-generator` between them. Expect `mode:'identity'` with every `added`/`removed` array empty.
+3. Run a diff between the new CX.3 snapshot and any pre-2026-05-29 baseline row. Expect `mode:'count_only'` (or `'structured'` if the baseline already had CX.2 shape) with `reason` populated, no crash.
+
+### Rollback (per phase)
+- Phase 2/3: revert frontend commits — no DB/state impact.
+- Phase 4: redeploy previous `context-bundle-generator` if Drive uploads start failing (shared helper is the same code path `context-save-drive` already used successfully).
+- Phase 5: `ALTER TABLE srangam_context_snapshots DROP COLUMN identity_sets;` — safe; no other code path requires the column (diff-generator gracefully falls back to CX.2 mode when null).
+
