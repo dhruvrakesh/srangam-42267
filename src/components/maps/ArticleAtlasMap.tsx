@@ -58,6 +58,13 @@ export interface ArticleAtlasMapProps {
   onPlaceCount?: (count: number) => void;
   /** Mapbox style id; defaults to outdoors. Falls back to OSM when no token. */
   mapStyle?: MapStyle;
+  /**
+   * Phase G2 — when set (from `/maps-data?focus=<slug>`), clusters that
+   * contain at least one article matching this slug or slug_alias are rendered
+   * at full opacity; all other clusters dim to give the reader a clear visual
+   * read of the focused article's geographic reach.
+   */
+  focusSlug?: string | null;
 }
 
 export const ArticleAtlasMap: React.FC<ArticleAtlasMapProps> = ({
@@ -66,6 +73,7 @@ export const ArticleAtlasMap: React.FC<ArticleAtlasMapProps> = ({
   confidenceFilter,
   onPlaceCount,
   mapStyle = 'outdoors-v12',
+  focusSlug,
 }) => {
   const tiles = useMemo(() => getTileLayer(mapStyle), [mapStyle]);
   const [openPlaceId, setOpenPlaceId] = useState<string | null>(null);
@@ -109,6 +117,16 @@ export const ArticleAtlasMap: React.FC<ArticleAtlasMapProps> = ({
     onPlaceCount?.(out.length);
     return out;
   }, [rows, themeFilter, confidenceFilter, onPlaceCount]);
+
+  // Phase G2 — determine which clusters belong to the focused article (if any).
+  const focusedPlaceIds = useMemo(() => {
+    if (!focusSlug) return null;
+    const ids = new Set<string>();
+    for (const c of clusters) {
+      if (c.articles.some((a) => a.slug === focusSlug)) ids.add(c.place_id);
+    }
+    return ids;
+  }, [clusters, focusSlug]);
 
   if (clusters.length === 0) {
     return (
