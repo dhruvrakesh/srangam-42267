@@ -171,6 +171,7 @@ async function backfillOne(
   gaz: GazetteerRow[],
   gazIdx: { re: RegExp; index: Map<string, string> },
   skipAi: boolean,
+  jobId?: string,
 ): Promise<{
   inserted: number;
   pins_a: number;
