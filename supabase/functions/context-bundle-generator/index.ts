@@ -115,87 +115,35 @@ serve(async (req) => {
     if (includeSchema) {
       bundle += `## Database Schema Overview\n\n`;
 
-      // CX.1: destructure `count` (not `data`) from head:true queries.
-      const [
-        { count: articleCount },
-        { count: termCount },
-        { count: tagCount },
-        { count: crossRefCount },
-      ] = await Promise.all([
-        supabase.from('srangam_articles').select('id', { head: true, count: 'exact' }).eq('status', 'published'),
-        supabase.from('srangam_cultural_terms').select('id', { head: true, count: 'exact' }),
-        supabase.from('srangam_tags').select('id', { head: true, count: 'exact' }),
-        supabase.from('srangam_cross_references').select('id', { head: true, count: 'exact' }),
-      ]);
-
-      // CX.1: derive distinct modules (CX.2 will lift into _shared/context-metrics.ts).
-      const moduleSet = new Set<string>();
-      {
-        const pageSize = 1000;
-        let from = 0;
-        while (from < 50_000) {
-          const { data } = await supabase
-            .from('srangam_cultural_terms')
-            .select('module')
-            .range(from, from + pageSize - 1);
-          if (!data || data.length === 0) break;
-          for (const r of data) if (r.module) moduleSet.add(r.module);
-          if (data.length < pageSize) break;
-          from += pageSize;
-        }
-      }
-      const modulesCount = moduleSet.size;
+      // CX.2: authoritative counts + correlation summary via shared module.
+      const counts = await countAuthoritative(supabase);
+      const correlation = await latestCorrelationSummary(supabase);
 
       bundle += `### Key Tables:\n\n`;
-      bundle += `- **srangam_articles** (published): ${articleCount ?? 0} records\n`;
+      bundle += `- **srangam_articles** (published): ${counts.articles_count} records\n`;
       bundle += `  - Multilingual content (9 languages)\n`;
       bundle += `  - Status-based publishing workflow\n`;
       bundle += `  - Tag-based categorization\n\n`;
-      bundle += `- **srangam_cultural_terms**: ${termCount ?? 0} records\n`;
-      bundle += `  - Organized across ${modulesCount} modules\n`;
+      bundle += `- **srangam_cultural_terms**: ${counts.terms_count} records\n`;
+      bundle += `  - Organized across ${counts.modules_count} modules\n`;
       bundle += `  - Usage tracking\n`;
       bundle += `  - Multilingual translations\n\n`;
-      bundle += `- **srangam_tags**: ${tagCount ?? 0} records\n`;
+      bundle += `- **srangam_tags**: ${counts.tags_count} records\n`;
       bundle += `  - AI-generated with taxonomy\n`;
       bundle += `  - Usage count tracking\n\n`;
-      bundle += `- **srangam_cross_references**: ${crossRefCount ?? 0} records\n`;
+      bundle += `- **srangam_cross_references**: ${counts.cross_refs_count} records\n`;
       bundle += `  - Knowledge graph connections\n`;
       bundle += `  - Strength-based relationships\n\n`;
 
-      // CX.1: Corpus correlations summary (read-only; bundle never writes DB).
-      const { data: latestCorrelation } = await supabase
-        .from('srangam_corpus_correlations_snapshot')
-        .select('job_id, computed_at')
-        .order('computed_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (latestCorrelation?.job_id) {
-        const { count: pairCount } = await supabase
-          .from('srangam_corpus_correlations_snapshot')
-          .select('article_a', { head: true, count: 'exact' })
-          .eq('job_id', latestCorrelation.job_id);
-        const { data: topPairs } = await supabase
-          .from('srangam_corpus_correlations_snapshot')
-          .select('article_a, article_b, jaccard, shared_total')
-          .eq('job_id', latestCorrelation.job_id)
-          .order('jaccard', { ascending: false })
-          .limit(5);
-
-        const ids = Array.from(new Set((topPairs ?? []).flatMap((p: any) => [p.article_a, p.article_b])));
-        const { data: slugLookup } = ids.length > 0
-          ? await supabase.from('srangam_articles').select('id, slug').in('id', ids)
-          : { data: [] as any[] };
-        const idToSlug = new Map<string, string>((slugLookup ?? []).map((r: any) => [r.id, r.slug]));
-
+      if (correlation.computed_at) {
         bundle += `## Corpus Correlations\n\n`;
-        bundle += `- Pair count: ${pairCount ?? 0}\n`;
-        bundle += `- Computed at: ${latestCorrelation.computed_at}\n`;
+        bundle += `- Pair count: ${correlation.pair_count}\n`;
+        bundle += `- Computed at: ${correlation.computed_at}\n`;
         bundle += `- Top 5 by Jaccard:\n`;
-        (topPairs ?? []).forEach((p: any, i: number) => {
-          const a = idToSlug.get(p.article_a) ?? p.article_a;
-          const b = idToSlug.get(p.article_b) ?? p.article_b;
-          bundle += `  ${i + 1}. ${a} ↔ ${b} — jaccard=${Number(p.jaccard).toFixed(3)}, shared=${p.shared_total}\n`;
+        correlation.top_pairs.forEach((p, i) => {
+          const a = p.slug_a ?? p.article_a;
+          const b = p.slug_b ?? p.article_b;
+          bundle += `  ${i + 1}. ${a} ↔ ${b} — jaccard=${p.jaccard.toFixed(3)}, shared=${p.shared_total}\n`;
         });
         bundle += `\n`;
       }
@@ -203,7 +151,7 @@ serve(async (req) => {
       bundle += `\n---\n\n`;
 
       // Stash for the docs section.
-      (globalThis as any).__cx1ModulesCount = modulesCount;
+      (globalThis as any).__cx1ModulesCount = counts.modules_count;
     }
 
     // Include Documentation Links
