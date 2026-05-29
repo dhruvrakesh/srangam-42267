@@ -58,6 +58,8 @@ export default function GeographyMedia() {
   const cancelledJobRef = useRef<Set<string>>(new Set());
   const [logs, setLogs] = useState<string[]>([]);
   const [flashedRowId, setFlashedRowId] = useState<string | null>(null);
+  // Phase 3 — OG image lightbox state.
+  const [ogPreview, setOgPreview] = useState<{ url: string; title: string } | null>(null);
 
   function log(s: string) {
     setLogs((prev) => [`[${new Date().toLocaleTimeString()}] ${s}`, ...prev].slice(0, 200));
