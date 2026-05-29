@@ -117,17 +117,27 @@ export default function GeographyMedia() {
       if (error) throw error;
 
       const ids = (data ?? []).map((a) => a.id);
-      let pinCounts: Record<string, number> = {};
+      const pinCounts: Record<string, number> = {};
+      const evCounts: Record<string, number> = {};
+      const bibCounts: Record<string, number> = {};
       if (ids.length > 0) {
-        const { data: pins } = await supabase
-          .from('srangam_article_pins')
-          .select('article_id')
-          .in('article_id', ids);
-        for (const p of pins ?? []) {
-          pinCounts[p.article_id] = (pinCounts[p.article_id] ?? 0) + 1;
-        }
+        // Phase 2 — single batched fetch per related table; tally in JS so
+        // we get exact counts without N+1 head:true round-trips.
+        const [{ data: pins }, { data: ev }, { data: bib }] = await Promise.all([
+          supabase.from('srangam_article_pins').select('article_id').in('article_id', ids),
+          supabase.from('srangam_article_evidence').select('article_id').in('article_id', ids),
+          supabase.from('srangam_article_bibliography').select('article_id').in('article_id', ids),
+        ]);
+        for (const p of pins ?? []) pinCounts[p.article_id] = (pinCounts[p.article_id] ?? 0) + 1;
+        for (const e of ev ?? []) evCounts[(e as any).article_id] = (evCounts[(e as any).article_id] ?? 0) + 1;
+        for (const b of bib ?? []) bibCounts[(b as any).article_id] = (bibCounts[(b as any).article_id] ?? 0) + 1;
       }
-      return (data ?? []).map((a: any) => ({ ...a, pin_count: pinCounts[a.id] ?? 0 }));
+      return (data ?? []).map((a: any) => ({
+        ...a,
+        pin_count: pinCounts[a.id] ?? 0,
+        evidence_count: evCounts[a.id] ?? 0,
+        biblio_count: bibCounts[a.id] ?? 0,
+      }));
     },
   });
 
