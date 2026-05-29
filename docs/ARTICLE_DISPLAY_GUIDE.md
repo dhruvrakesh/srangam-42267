@@ -295,3 +295,55 @@ console.log('Has Hindi:', 'hi' in article.data.content);
 
 **Maintained By**: Srangam Development Team  
 **Last Reviewed**: 2025-12-28
+
+---
+
+## Phase AR.1–AR.3 — Article Rendering Contract (2026-05-29)
+
+Surgical healing of `src/components/articles/enhanced/ProfessionalTextFormatter.tsx`.
+Each phase ships and reverts independently. No backend, edge, schema, or route changes.
+
+### AR.1 — Single-pass rendering (P0 fix)
+
+The body is parsed by **exactly one** `<ReactMarkdown>` instance. Cultural-term
+tokens `{{cultural:term}}` are resolved inside leaf renderers via
+`resolveCulturalTokens`, which walks `React.Children` and only replaces tokens
+when the child is a `string`. Pre-rendered React elements pass through untouched;
+their own renderer (if any) handles tokens inside their children.
+
+Renderers that resolve tokens: `p`, `li`, `blockquote`, `strong`, `em`, `h1`,
+`td`, `th`, plus the inner text span of `h2` / `h3` (never the §/◆ icon span).
+
+**The `code` renderer deliberately does not resolve tokens.**
+`src/lib/culturalTermEnhancer.ts` protects HTML and markdown tables but does
+not skip fenced code/mermaid blocks, so a stray token may land inside a
+fence; leaving it as literal text inside `<code>` is the correct fallback
+and keeps the block structurally intact.
+
+**Do not** re-introduce the previous line-split rendering — it tore tables,
+mermaid, blockquotes, and nested lists across separate ReactMarkdown parses.
+
+### AR.2 — Drop cap scoped to the opening paragraph
+
+`enableDropCap` adds the `article-dropcap` class to the outer container only.
+The styling lives in `src/index.css` under
+`.article-content.article-dropcap > p:first-of-type::first-letter`. Never
+re-attach `first-letter:*` Tailwind utilities to the `p` renderer
+(`::first-letter` is per-block, so every paragraph would render with the
+giant initial — the bug we fixed).
+
+### AR.3 — Whitespace, anchors, log hygiene
+
+- `getText()` only collapses `\n{3,}` → `\n\n`. Per-line leading-whitespace
+  stripping is forbidden (it flattens nested lists & corrupts fenced code).
+- Heading anchor ids come from `slugifyHeading()` in `src/lib/headingSlug.ts`,
+  used by **both** the formatter (`h1`/`h2`/`h3` `id={...}`) and
+  `StickyTableOfContents.extractTableOfContents`. If these two diverge, TOC
+  clicks silently no-op (`getElementById` returns `null`).
+- `[TableExtraction]` console output is gated by `import.meta.env.DEV`.
+
+### Frozen baseline
+
+Prior baseline (line-split rendering, per-paragraph drop cap, line-leading
+whitespace stripping, slug forks, production table logs) is frozen as
+"pre-AR.1" — do not restore any of those behaviours.
