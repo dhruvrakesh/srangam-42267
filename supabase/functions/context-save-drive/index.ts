@@ -351,12 +351,13 @@ Generated automatically by context-save-drive edge function (CX.1).
 
     const shareUrl = `https://drive.google.com/file/d/${fileId}/view`;
 
-    // Save snapshot metadata to database
+    // ─── CX.1 authoritative snapshot stats ───
     const snapshotStats = {
-      articles_count: articles?.length || 0,
-      terms_count: terms?.length || 0,
-      tags_count: tags?.length || 0,
-      cross_refs_count: crossRefs?.length || 0,
+      articles_count: articlesCount ?? 0,
+      terms_count: termsCount ?? 0,
+      tags_count: tagsCount ?? 0,
+      cross_refs_count: crossRefsCount ?? 0,
+      modules_count: modulesCount,
     };
 
     console.log('Successfully uploaded context snapshot to Google Drive:', {
@@ -366,13 +367,26 @@ Generated automatically by context-save-drive edge function (CX.1).
       stats: snapshotStats,
     });
 
-    // Save snapshot metadata to database
     const snapshotStatsDetail = {
-      themes: Array.from(new Set((articles || []).map((a: any) => a.theme))),
-      top_tags: (tags || []).slice(0, 20).map((t: any) => t.tag_name),
-      avg_cross_ref_strength: crossRefs && crossRefs.length > 0
+      generated_with: 'CX.1',
+      sample_sizes: { terms: 100, tags: 50, cross_refs: 100 },
+      themes: themesObject, // { theme: count } — structured, with counts.
+      top_tags: (tags ?? []).map((t: any) => ({ name: t.tag_name, usage_count: t.usage_count })),
+      top_terms: (terms ?? []).map((t: any) => ({ term: t.term, module: t.module, usage_count: t.usage_count })),
+      avg_cross_ref_strength_sampled: crossRefs && crossRefs.length > 0
         ? crossRefs.reduce((acc: number, ref: any) => acc + (ref.strength || 0), 0) / crossRefs.length
-        : 0
+        : null,
+      correlation: {
+        pair_count: correlationPairCount,
+        computed_at: correlationComputedAt,
+        top_pairs: topCorrelationPairs,
+      },
+      // CX.1-only compat shim. context-diff-generator currently reads these as flat arrays.
+      // CX.2 retires both fields when it rewires the diff to read the structured shape above.
+      _compat: {
+        themes: Object.keys(themesObject),
+        top_tags: (tags ?? []).map((t: any) => t.tag_name),
+      },
     };
 
     const { error: snapshotError } = await supabase
@@ -382,11 +396,11 @@ Generated automatically by context-save-drive edge function (CX.1).
         google_drive_share_url: shareUrl,
         file_size_bytes: contextDocument.length,
         document_length: contextDocument.length,
-        articles_count: articles?.length || 0,
-        terms_count: terms?.length || 0,
-        tags_count: tags?.length || 0,
-        cross_refs_count: crossRefs?.length || 0,
-        modules_count: terms ? new Set(terms.map((t: any) => t.module)).size : 0,
+        articles_count: articlesCount ?? 0,
+        terms_count: termsCount ?? 0,
+        tags_count: tagsCount ?? 0,
+        cross_refs_count: crossRefsCount ?? 0,
+        modules_count: modulesCount,
         stats_detail: snapshotStatsDetail,
         triggered_by: 'manual',
         status: 'success'
@@ -397,6 +411,7 @@ Generated automatically by context-save-drive edge function (CX.1).
     } else {
       console.log('Snapshot metadata saved to database');
     }
+
 
     return new Response(
       JSON.stringify({
