@@ -259,7 +259,7 @@ async function backfillOne(
       article_id: article.id,
       gazetteer_id,
       confidence,
-      source: confidence === 'A' ? 'evidence' : confidence === 'B' ? 'content_scan' : 'ai_ner',
+      source: confidence === 'A' ? 'evidence_table' : confidence === 'B' ? 'content_scan' : 'ai_extract',
       display_order,
     }));
 
