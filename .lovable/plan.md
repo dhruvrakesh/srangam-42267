@@ -114,40 +114,30 @@ Total: **~80 new rows**, taking the gazetteer from 32 → ~112. Conservative; ca
 
 ---
 
-### Phase CX.2 — Shared metrics + GDrive helpers (no migration)
+### Phase CX.2 — Shared metrics + GDrive helpers (no migration) — SHIPPED 2026-05-29
 
-**Goal:** retire duplication between `context-save-drive`, `context-bundle-generator`, **and `tts-save-drive`**; let `context-diff-generator` drop the `_compat` shim safely.
+**Status:** Deployed. Snapshots from `/admin/context` now write `generated_with:'CX.2'` and no `_compat` key.
 
-**New shared modules:**
-1. `supabase/functions/_shared/google-drive.ts`
-   - `getAccessToken(serviceAccount, scope?)` → cached `{ access_token, expires_at }` (5-min TTL within the same function instance).
-   - `uploadFile({ name, mimeType, body, parentFolderId? })` → `{ fileId, webViewLink }`.
-   - `setAnyoneReader(fileId)` → permissions call.
-   - Lifts the **identical** ~120-line block currently in both `context-save-drive` (lines 251–345) and `tts-save-drive` (lines 44–170).
-2. `supabase/functions/_shared/context-metrics.ts`
-   - `countAuthoritative(supabase)` → `{ articles, terms, tags, crossRefs, modules }` using `head:true, count:'exact'` for the four `srangam_*` tables, plus the paginated `countDistinctModules` helper.
-   - `topThemes(supabase, sampleSize=200)`, `topTags(supabase, n=20)`, `topTerms(supabase, n=20)` — structured rows with counts.
-   - `latestCorrelationSummary(supabase)` → `{ pair_count, computed_at, top_pairs[] }` from `srangam_corpus_correlations_snapshot`.
-   - Every helper takes the client as a parameter — keeps them Deno-testable.
+**Shipped modules:**
+1. `supabase/functions/_shared/google-drive.ts` — `loadServiceAccount()`, `getDriveAccessToken()`, `uploadToDrive()` (handles base64 + text bodies, anyone-with-link sharing, Shared Drive parent). Lifted the duplicated RS256 JWT + multipart-upload block out of both `context-save-drive` and `tts-save-drive`.
+2. `supabase/functions/_shared/context-metrics.ts` — `countAuthoritative()` (head:true, count:'exact' for the four tables + paginated `countDistinctModules`), `topThemes()`, `topTags()`, `topTerms()`, `recentCrossRefs()`, `latestCorrelationSummary()`. Every helper takes the client as a parameter.
 
-**Edits (behavior identical, lines shrink):**
-- `context-save-drive/index.ts` → import both helpers, delete the inline GDrive block (~120 lines) and inline metrics blocks (~80 lines).
-- `tts-save-drive/index.ts` → import `_shared/google-drive.ts`, delete its inline copy (~120 lines).
-- `context-bundle-generator/index.ts` → import `_shared/context-metrics.ts`, delete the duplicate count/correlation block (~80 lines).
-- `context-diff-generator/index.ts` → consume structured `themes` / `top_tags` objects with a 1-line `Array.isArray(...)` fallback to handle any pre-CX.1 row (returns `{ mode:'count_only' }`).
-- After diff generator stops reading `_compat`, **remove the `_compat` arrays** from `stats_detail` in `context-save-drive`. Bump `stats_detail.generated_with` to `'CX.2'`.
+**Refactors (behavior identical):**
+- `context-save-drive/index.ts` → uses both helpers; `_compat` removed; `generated_with` bumped to `'CX.2'`.
+- `tts-save-drive/index.ts` → uses `_shared/google-drive.ts`; inline JWT/upload block deleted.
+- `context-bundle-generator/index.ts` → uses `_shared/context-metrics.ts` for counts + correlation; inline blocks deleted.
+- `context-diff-generator/index.ts` → consumes structured `themes` (Record) + `top_tags` (Array<{name,...}>); falls back to `mode:'count_only'` with a `reason` when either snapshot predates CX.2 (frozen baseline).
 
-**Verification:**
+**Verification (user-side, post-deploy):**
 1. Trigger a new snapshot from `/admin/context`; row has `generated_with:'CX.2'`, no `_compat` key, counts identical to last CX.1 row.
-2. Diff CX.2 vs CX.1 → succeeds with structured changes.
-3. Diff CX.2 vs a pre-2026-05-29 snapshot → succeeds with `mode:'count_only'`.
-4. Smoke-test one narration via the existing admin "Generate narration" button → `tts-save-drive` still uploads, GDrive share URL returned.
-5. `wc -l` after refactor: ~200-line shrinkage in `context-save-drive`, ~120 in `tts-save-drive`, ~80 in `context-bundle-generator`.
+2. Diff CX.2 vs CX.1 → succeeds with structured changes + `mode:'identity'`.
+3. Diff CX.2 vs a pre-2026-05-29 snapshot → succeeds with `mode:'count_only'` + a `reason` (no crash).
+4. Smoke-test one narration via admin "Generate narration" button → `tts-save-drive` still uploads, GDrive share URL returned.
 
-**Documentation deliverables:**
-- `docs/CONTEXT_MANAGEMENT_GUIDE.md` → mark `_compat` retired; document the `_shared/context-metrics.ts` API surface.
-- `docs/TTS_ARCHITECTURE.md` → cross-link the GDrive helper.
-- Core memory invariant: bump `generated_with` to `'CX.2'`; note "GDrive JWT + multipart upload lives in `_shared/google-drive.ts` — never re-inline in a new function."
+**Documentation deliverables (this loop):**
+- `docs/CONTEXT_MANAGEMENT_GUIDE.md` → mark `_compat` retired; document the shared module API surface.
+- Core memory invariant updated: "GDrive JWT + multipart upload lives in `_shared/google-drive.ts` — never re-inline in a new function. Snapshot counts come from `_shared/context-metrics.ts:countAuthoritative()`."
+
 
 ---
 
