@@ -118,10 +118,6 @@ export const ArticleMiniMap: React.FC<Props> = ({ slug, pins, mapStyle = 'light-
         if (!cancelled) setError('Map failed to load');
       }
     })();
-        console.warn('[ArticleMiniMap] failed:', e);
-        if (!cancelled) setError('Map failed to load');
-      }
-    })();
 
     return () => {
       cancelled = true;
