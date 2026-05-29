@@ -64,7 +64,7 @@ export async function resolveArticleId(slug: string): Promise<ResolvedSlug | nul
     }
 
     if (!data) {
-      console.log(`[slugResolver] No article found for slug: ${slug}`);
+      console.warn(`[slugResolver] No article found for slug: "${slug}" (checked slug + slug_alias; verify the article was published or the URL is correct)`);
       return null;
     }
     

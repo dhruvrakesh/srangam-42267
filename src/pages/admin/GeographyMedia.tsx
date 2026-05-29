@@ -21,8 +21,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Loader2, MapPin, Image as ImageIcon, RotateCcw, Trash2, Sparkles, RefreshCcw } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Loader2, MapPin, Image as ImageIcon, RotateCcw, Trash2, Sparkles, RefreshCcw, Eye } from 'lucide-react';
 import { JobProgressCard } from '@/components/admin/JobProgressCard';
+import { getProxiedImageUrl } from '@/lib/gdriveProxy';
 
 interface ArticleRow {
   id: string;
@@ -34,6 +36,8 @@ interface ArticleRow {
   og_image_version: number | null;
   og_image_status: string | null;
   pin_count: number;
+  evidence_count: number;
+  biblio_count: number;
   status: string;
 }
 
@@ -54,6 +58,8 @@ export default function GeographyMedia() {
   const cancelledJobRef = useRef<Set<string>>(new Set());
   const [logs, setLogs] = useState<string[]>([]);
   const [flashedRowId, setFlashedRowId] = useState<string | null>(null);
+  // Phase 3 — OG image lightbox state.
+  const [ogPreview, setOgPreview] = useState<{ url: string; title: string } | null>(null);
 
   function log(s: string) {
     setLogs((prev) => [`[${new Date().toLocaleTimeString()}] ${s}`, ...prev].slice(0, 200));
@@ -111,17 +117,27 @@ export default function GeographyMedia() {
       if (error) throw error;
 
       const ids = (data ?? []).map((a) => a.id);
-      let pinCounts: Record<string, number> = {};
+      const pinCounts: Record<string, number> = {};
+      const evCounts: Record<string, number> = {};
+      const bibCounts: Record<string, number> = {};
       if (ids.length > 0) {
-        const { data: pins } = await supabase
-          .from('srangam_article_pins')
-          .select('article_id')
-          .in('article_id', ids);
-        for (const p of pins ?? []) {
-          pinCounts[p.article_id] = (pinCounts[p.article_id] ?? 0) + 1;
-        }
+        // Phase 2 — single batched fetch per related table; tally in JS so
+        // we get exact counts without N+1 head:true round-trips.
+        const [{ data: pins }, { data: ev }, { data: bib }] = await Promise.all([
+          supabase.from('srangam_article_pins').select('article_id').in('article_id', ids),
+          supabase.from('srangam_article_evidence').select('article_id').in('article_id', ids),
+          supabase.from('srangam_article_bibliography').select('article_id').in('article_id', ids),
+        ]);
+        for (const p of pins ?? []) pinCounts[p.article_id] = (pinCounts[p.article_id] ?? 0) + 1;
+        for (const e of ev ?? []) evCounts[(e as any).article_id] = (evCounts[(e as any).article_id] ?? 0) + 1;
+        for (const b of bib ?? []) bibCounts[(b as any).article_id] = (bibCounts[(b as any).article_id] ?? 0) + 1;
       }
-      return (data ?? []).map((a: any) => ({ ...a, pin_count: pinCounts[a.id] ?? 0 }));
+      return (data ?? []).map((a: any) => ({
+        ...a,
+        pin_count: pinCounts[a.id] ?? 0,
+        evidence_count: evCounts[a.id] ?? 0,
+        biblio_count: bibCounts[a.id] ?? 0,
+      }));
     },
   });
 
@@ -434,6 +450,8 @@ export default function GeographyMedia() {
                     <th className="py-2 pr-3">Title</th>
                     <th className="py-2 pr-3">Theme</th>
                     <th className="py-2 pr-3">Pins</th>
+                    <th className="py-2 pr-3">EV</th>
+                    <th className="py-2 pr-3">BIB</th>
                     <th className="py-2 pr-3">OG</th>
                     <th className="py-2 pr-3">Actions</th>
                   </tr>
@@ -441,6 +459,7 @@ export default function GeographyMedia() {
                 <tbody>
                   {filtered.map((a) => {
                     const busy = busyArticleId === a.id;
+                    const ogThumb = a.og_image_url ? getProxiedImageUrl(a.og_image_url) : '';
                     return (
                       <tr
                         key={a.id}
@@ -457,13 +476,39 @@ export default function GeographyMedia() {
                           <Badge variant="outline">{a.theme}</Badge>
                         </td>
                         <td className="py-2 pr-3">
-                          <Badge variant={a.pin_count > 0 ? 'default' : 'secondary'}>
+                          <Badge variant={a.pin_count > 0 ? 'default' : 'destructive'}>
                             {a.pin_count}
                           </Badge>
                         </td>
                         <td className="py-2 pr-3">
+                          <Badge variant={a.evidence_count > 0 ? 'default' : 'destructive'}>
+                            {a.evidence_count}
+                          </Badge>
+                        </td>
+                        <td className="py-2 pr-3">
+                          <Badge variant={a.biblio_count > 0 ? 'default' : 'destructive'}>
+                            {a.biblio_count}
+                          </Badge>
+                        </td>
+                        <td className="py-2 pr-3">
                           {a.og_image_url ? (
-                            <Badge>v{a.og_image_version ?? 1}</Badge>
+                            <button
+                              type="button"
+                              onClick={() => setOgPreview({ url: ogThumb, title: getEnglishTitle(a.title) })}
+                              className="flex items-center gap-2 group focus:outline-none focus:ring-2 focus:ring-primary/60 rounded"
+                              aria-label="Preview OG image"
+                            >
+                              <img
+                                src={ogThumb}
+                                alt=""
+                                className="h-10 w-16 object-cover rounded border border-border group-hover:opacity-80"
+                                loading="lazy"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                }}
+                              />
+                              <Badge variant="secondary">v{a.og_image_version ?? 1}</Badge>
+                            </button>
                           ) : (
                             <Badge variant="outline">none</Badge>
                           )}
@@ -481,6 +526,14 @@ export default function GeographyMedia() {
                             </Button>
                             {a.og_image_url ? (
                               <>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => setOgPreview({ url: ogThumb, title: getEnglishTitle(a.title) })}
+                                  disabled={busy}
+                                >
+                                  <Eye className="h-3 w-3 mr-1" /> View
+                                </Button>
                                 <Button size="sm" variant="secondary" onClick={() => runOnRow('og_force', a)} disabled={busy}>
                                   <RotateCcw className="h-3 w-3 mr-1" /> Regen
                                 </Button>
@@ -504,6 +557,43 @@ export default function GeographyMedia() {
           )}
         </CardContent>
       </Card>
+
+      {/* Phase 3 — OG image lightbox (shared by row thumbnail + View button) */}
+      <Dialog open={!!ogPreview} onOpenChange={(open) => !open && setOgPreview(null)}>
+        <DialogContent className="max-w-5xl p-2 sm:p-4">
+          <DialogHeader className="px-2">
+            <DialogTitle className="text-sm font-medium">
+              OG image — {ogPreview?.title}
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              1200×630 generated illustration. Click "Open original" to download.
+            </DialogDescription>
+          </DialogHeader>
+          {ogPreview && (
+            <>
+              <div className="w-full bg-muted/20 rounded">
+                <img
+                  src={ogPreview.url}
+                  alt={`Full-size OG image for ${ogPreview.title}`}
+                  className="w-full h-auto max-h-[75vh] object-contain rounded"
+                />
+              </div>
+              <div className="flex justify-end pt-2">
+                <a
+                  href={ogPreview.url}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+                >
+                  <ImageIcon className="h-4 w-4" />
+                  Open original
+                </a>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

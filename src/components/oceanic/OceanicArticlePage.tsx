@@ -48,6 +48,9 @@ export const OceanicArticlePage: React.FC = () => {
   const { currentLanguage } = useLanguage();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showMethodsDialog, setShowMethodsDialog] = useState(false);
+  // Phase 3 — hero image lightbox + observable failure state.
+  const [heroError, setHeroError] = useState(false);
+  const [heroOpen, setHeroOpen] = useState(false);
   // Phase G2 — map now auto-mounts via IntersectionObserver; no manual toggle.
 
   // Phase 1.4: Unified data hook (parallel fetching)
@@ -244,27 +247,76 @@ export const OceanicArticlePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Hero Image */}
+          {/* Hero Image — Phase 3: clickable lightbox with download, visible
+              fallback on load failure (no more silent classList.add('hidden')). */}
           {article.og_image_url && (
             <div className="mb-6 relative">
               <div className="overflow-hidden rounded-lg shadow-md bg-muted/20">
-                <img
-                  src={ogImageUrl}
-                  alt={`Visual illustration for ${articleTitle}`}
-                  className="w-full h-48 md:h-64 lg:h-72 object-cover transition-opacity duration-500"
-                  loading="lazy"
-                  onError={(e) => {
-                    console.warn('[OceanicArticlePage] Hero image failed to load:', ogImageUrl);
-                    const container = (e.target as HTMLImageElement).parentElement?.parentElement;
-                    if (container) container.classList.add('hidden');
-                  }}
-                />
+                {heroError ? (
+                  <div className="w-full h-48 md:h-64 lg:h-72 flex items-center justify-center text-sm text-muted-foreground bg-muted/40">
+                    Header image unavailable
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setHeroOpen(true)}
+                    className="block w-full group focus:outline-none focus:ring-2 focus:ring-primary/60"
+                    aria-label={`View full-size header image for ${articleTitle}`}
+                  >
+                    <img
+                      src={ogImageUrl}
+                      alt={`Visual illustration for ${articleTitle}`}
+                      width={1200}
+                      height={630}
+                      className="w-full h-48 md:h-64 lg:h-72 object-cover transition-transform duration-500 group-hover:scale-[1.01]"
+                      loading="lazy"
+                      onError={() => {
+                        console.warn('[OceanicArticlePage] Hero image failed to load:', ogImageUrl);
+                        setHeroError(true);
+                      }}
+                    />
+                  </button>
+                )}
               </div>
               <p className="text-xs text-muted-foreground/60 mt-2 text-center italic">
-                AI-generated illustration based on article themes
+                AI-generated illustration based on article themes — click to enlarge
               </p>
             </div>
           )}
+
+          {/* Hero lightbox dialog */}
+          <Dialog open={heroOpen} onOpenChange={setHeroOpen}>
+            <DialogContent className="max-w-5xl p-2 sm:p-4">
+              <DialogHeader className="px-2">
+                <DialogTitle className="text-sm font-medium">
+                  Header image — {articleTitle}
+                </DialogTitle>
+                <DialogDescription className="text-xs">
+                  1200×630 AI-generated illustration
+                </DialogDescription>
+              </DialogHeader>
+              <div className="w-full bg-muted/20 rounded">
+                <img
+                  src={ogImageUrl}
+                  alt={`Full-size header image for ${articleTitle}`}
+                  className="w-full h-auto max-h-[75vh] object-contain rounded"
+                />
+              </div>
+              <div className="flex justify-end pt-2">
+                <a
+                  href={ogImageUrl}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Open original
+                </a>
+              </div>
+            </DialogContent>
+          </Dialog>
+
 
           {/* Main Content */}
           <div className={cn(

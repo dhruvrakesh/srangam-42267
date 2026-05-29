@@ -254,11 +254,28 @@ const SourcesAndPinsContent: React.FC<{
           </div>
         )}
 
-        {/* No Data Message */}
+        {/* Empty Bibliography */}
         {!showEvidence && (!bibliography || bibliography.length === 0) && (
           <div className="text-center py-6 text-muted-foreground">
             <BookOpen className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">No structured bibliography available</p>
+            <p className="text-sm">No structured bibliography rows for this article yet.</p>
+            <p className="text-xs mt-1 opacity-75">
+              Bibliography is populated when the article is imported from a markdown source
+              with a citations table. Switch to <strong>Evidence</strong> to see geographic claims.
+            </p>
+          </div>
+        )}
+
+        {/* Empty Evidence — Phase 2 honesty: surface that no evidence rows exist
+            instead of rendering a blank panel that looks broken. */}
+        {showEvidence && (!evidence || evidence.length === 0) && (
+          <div className="text-center py-6 text-muted-foreground">
+            <MapPin className="h-8 w-8 mx-auto mb-2 opacity-50" />
+            <p className="text-sm">No structured evidence rows for this article yet.</p>
+            <p className="text-xs mt-1 opacity-75">
+              Evidence is extracted from the article's place/date/significance table during
+              markdown import. Switch to <strong>Bibliography</strong> to see citation sources.
+            </p>
           </div>
         )}
 
@@ -322,11 +339,12 @@ const SourcesAndPinsContent: React.FC<{
   // Legacy fallback (original implementation)
   return (
     <div className="space-y-6">
-      {/* Legacy Notice */}
-      <div className="flex items-center gap-2 p-2 rounded bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-        <AlertCircle className="h-4 w-4 text-amber-600" />
+      {/* Legacy Notice — Phase 2 honesty: explain what the user is actually seeing. */}
+      <div className="flex items-start gap-2 p-2 rounded bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+        <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
         <span className="text-xs text-amber-700 dark:text-amber-300">
-          Using cached sources. Re-import article for structured bibliography.
+          No structured evidence or bibliography rows are stored for this article in the database yet —
+          showing the curated legacy correlation snapshot instead.
         </span>
       </div>
 
@@ -353,18 +371,25 @@ const SourcesAndPinsContent: React.FC<{
         <h4 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
           Key Claims
         </h4>
-        {legacyData.claims.map((claim, index) => (
-          <div key={index} className="p-3 rounded-lg bg-muted/30 border-l-2 border-l-primary/40">
-            <p className="text-sm">{claim.text}</p>
-            {showEvidence && claim.needs_citation && (
-              <Badge variant="outline" className="mt-2 gap-1">
-                <Flag className="h-3 w-3" />
-                Needs citation
-              </Badge>
-            )}
-          </div>
-        ))}
+        {legacyData.claims.length === 0 ? (
+          <p className="text-sm text-muted-foreground italic">
+            No key claims have been indexed for this page in the legacy correlation snapshot.
+          </p>
+        ) : (
+          legacyData.claims.map((claim, index) => (
+            <div key={index} className="p-3 rounded-lg bg-muted/30 border-l-2 border-l-primary/40">
+              <p className="text-sm">{claim.text}</p>
+              {showEvidence && claim.needs_citation && (
+                <Badge variant="outline" className="mt-2 gap-1">
+                  <Flag className="h-3 w-3" />
+                  Needs citation
+                </Badge>
+              )}
+            </div>
+          ))
+        )}
       </div>
+
 
       {/* Primary Sources */}
       {legacyData.primary_sources.length > 0 && (

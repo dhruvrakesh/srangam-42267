@@ -55,7 +55,16 @@ export function getProxiedImageUrl(ogImageUrl: string | null | undefined): strin
     console.warn('[gdriveProxy] Could not extract file ID from:', ogImageUrl);
     return ogImageUrl;  // Fallback to original
   }
-  
+
+  // Phase 3 — if Supabase URL is missing at build time, do NOT emit a
+  // proxy URL like "undefined/functions/v1/..." which silently fails the
+  // <img onError> path. Fall back to the raw GDrive URL so the browser at
+  // least attempts a render and any failure is observable.
+  if (!SUPABASE_URL) {
+    console.warn('[gdriveProxy] VITE_SUPABASE_URL missing — returning raw GDrive URL');
+    return ogImageUrl;
+  }
+
   return `${SUPABASE_URL}/functions/v1/gdrive-image-proxy?id=${fileId}`;
 }
 
