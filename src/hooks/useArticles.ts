@@ -28,6 +28,18 @@ export interface DisplayArticle {
   author: string;
   date: string;
   source: 'json' | 'database';
+  /**
+   * Phase AA (2026-05-29) — Languages with non-empty body content.
+   * Computed at fetch/merge time so cards don't have to ship the full
+   * `content` JSONB. Defaults to `['en']` if unknown.
+   */
+  bodyLanguages?: SupportedLanguage[];
+  /**
+   * Phase AB (2026-05-29) — Stable secondary identifiers used by the
+   * list-page merge to dedupe across JSON and DB sources.
+   */
+  slugAlias?: string;
+  rawSlug?: string;
 }
 
 /**
@@ -45,8 +57,16 @@ export class ArticleFetchTimeoutError extends Error {
 
 const FETCH_TIMEOUT_MS = 12_000;
 
+const computeBodyLanguages = (content: unknown): SupportedLanguage[] => {
+  if (!content || typeof content !== 'object') return ['en'];
+  const langs = Object.entries(content as Record<string, unknown>)
+    .filter(([, v]) => typeof v === 'string' && (v as string).trim().length > 0)
+    .map(([k]) => k as SupportedLanguage);
+  return langs.length > 0 ? langs : ['en'];
+};
+
 export const useAllArticles = (language: SupportedLanguage = 'en') => {
-  return useQuery({
+  const query = useQuery({
     queryKey: ['all-articles', language],
     queryFn: async ({ signal }) => {
       const t0 = performance.now();
@@ -56,7 +76,9 @@ export const useAllArticles = (language: SupportedLanguage = 'en') => {
           .from('srangam_articles')
           .select('*')
           .eq('status', 'published')
+          // Phase AB.3 — deterministic ordering so same-day rows don't flip.
           .order('published_date', { ascending: false })
+          .order('created_at', { ascending: false })
           .abortSignal(signal);
 
         if (error) {
@@ -73,9 +95,12 @@ export const useAllArticles = (language: SupportedLanguage = 'en') => {
             ? article.dek as { [key: string]: string }
             : { en: '' };
 
+          const slugAlias = (article as any).slug_alias as string | undefined;
+          const rawSlug = article.slug;
+
           return {
             id: article.id,
-            slug: `/articles/${(article as any).slug_alias || article.slug}`,
+            slug: `/articles/${slugAlias || rawSlug}`,
             title,
             excerpt,
             theme: article.theme,
@@ -84,6 +109,9 @@ export const useAllArticles = (language: SupportedLanguage = 'en') => {
             author: article.author,
             date: article.published_date,
             source: 'database' as const,
+            bodyLanguages: computeBodyLanguages(article.content),
+            slugAlias: slugAlias || undefined,
+            rawSlug,
           };
         });
       })();
@@ -129,4 +157,14 @@ export const useAllArticles = (language: SupportedLanguage = 'en') => {
     networkMode: 'offlineFirst',
     refetchOnWindowFocus: false,
   });
+
+  /**
+   * Phase AB.4 — `isDegraded` is true when the DB list never landed
+   * (timeout/abort/error) and the page is currently serving cached or
+   * JSON-only data. Does not gate render; pages use it to surface a
+   * non-blocking "syncing latest…" pill with a manual Retry.
+   */
+  const isDegraded = !query.isFetching && !!query.error && !query.data;
+
+  return { ...query, isDegraded };
 };

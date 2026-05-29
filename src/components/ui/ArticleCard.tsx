@@ -20,7 +20,10 @@ interface MultilingualArticle {
   author: string;
   date: string;
   source?: 'json' | 'database';
+  /** Phase AA — languages with real body content (preferred over title keys). */
+  bodyLanguages?: SupportedLanguage[];
 }
+
 
 interface ArticleCardProps {
   article: MultilingualArticle;
@@ -68,8 +71,10 @@ export function ArticleCard({ article }: ArticleCardProps) {
               <LanguageAvailabilityBadge
                 content={normalizedTitle}
                 currentLanguage={currentLanguage}
+                availableLanguagesOverride={article.bodyLanguages}
                 className="text-xs"
               />
+
               <Globe size={12} className="text-muted-foreground" />
             </div>
           </div>
