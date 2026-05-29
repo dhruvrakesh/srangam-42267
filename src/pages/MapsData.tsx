@@ -224,7 +224,7 @@ export default function MapsData() {
         <ImagingHubCallout />
 
         {/* Phase H.3 — Article Atlas (every published article's pinned places) */}
-        <Card className="bg-card border-border mb-8">
+        <Card ref={atlasRef} className="bg-card border-border mb-8 scroll-mt-24">
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
@@ -238,6 +238,11 @@ export default function MapsData() {
                   {atlasPlaceCount !== null && (
                     <span className="ml-1 text-foreground font-medium">
                       {atlasPlaceCount} place{atlasPlaceCount === 1 ? '' : 's'} mapped.
+                    </span>
+                  )}
+                  {focusSlug && (
+                    <span className="ml-1 text-primary font-medium">
+                      · Highlighting article: {focusSlug}
                     </span>
                   )}
                 </p>
@@ -262,6 +267,7 @@ export default function MapsData() {
                   rows={geoRows}
                   mapStyle={atlasStyle}
                   onPlaceCount={setAtlasPlaceCount}
+                  focusSlug={focusSlug}
                 />
               </Suspense>
             )}
