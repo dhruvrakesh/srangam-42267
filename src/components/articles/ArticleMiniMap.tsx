@@ -111,7 +111,13 @@ export const ArticleMiniMap: React.FC<Props> = ({ slug, pins, mapStyle = 'light-
         } catch {
           /* noop */
         }
+        // Phase Y.3 — observability heartbeat
+        console.info({ evt: 'article_map_rendered', slug, pin_count: pins.length });
       } catch (e) {
+        console.warn('[ArticleMiniMap] failed:', e);
+        if (!cancelled) setError('Map failed to load');
+      }
+    })();
         console.warn('[ArticleMiniMap] failed:', e);
         if (!cancelled) setError('Map failed to load');
       }
