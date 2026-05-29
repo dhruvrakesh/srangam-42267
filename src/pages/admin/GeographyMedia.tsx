@@ -21,8 +21,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Loader2, MapPin, Image as ImageIcon, RotateCcw, Trash2, Sparkles, RefreshCcw } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Loader2, MapPin, Image as ImageIcon, RotateCcw, Trash2, Sparkles, RefreshCcw, Eye } from 'lucide-react';
 import { JobProgressCard } from '@/components/admin/JobProgressCard';
+import { getProxiedImageUrl } from '@/lib/gdriveProxy';
 
 interface ArticleRow {
   id: string;
