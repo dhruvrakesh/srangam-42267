@@ -254,11 +254,28 @@ const SourcesAndPinsContent: React.FC<{
           </div>
         )}
 
-        {/* No Data Message */}
+        {/* Empty Bibliography */}
         {!showEvidence && (!bibliography || bibliography.length === 0) && (
           <div className="text-center py-6 text-muted-foreground">
             <BookOpen className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">No structured bibliography available</p>
+            <p className="text-sm">No structured bibliography rows for this article yet.</p>
+            <p className="text-xs mt-1 opacity-75">
+              Bibliography is populated when the article is imported from a markdown source
+              with a citations table. Switch to <strong>Evidence</strong> to see geographic claims.
+            </p>
+          </div>
+        )}
+
+        {/* Empty Evidence — Phase 2 honesty: surface that no evidence rows exist
+            instead of rendering a blank panel that looks broken. */}
+        {showEvidence && (!evidence || evidence.length === 0) && (
+          <div className="text-center py-6 text-muted-foreground">
+            <MapPin className="h-8 w-8 mx-auto mb-2 opacity-50" />
+            <p className="text-sm">No structured evidence rows for this article yet.</p>
+            <p className="text-xs mt-1 opacity-75">
+              Evidence is extracted from the article's place/date/significance table during
+              markdown import. Switch to <strong>Bibliography</strong> to see citation sources.
+            </p>
           </div>
         )}
 
