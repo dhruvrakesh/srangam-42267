@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { slugifyHeading } from '@/lib/headingSlug';
 
 interface TableOfContentsItem {
   id: string;
@@ -112,7 +113,10 @@ export const StickyTableOfContents: React.FC<StickyTableOfContentsProps> = ({
   );
 };
 
-// Helper function to extract TOC items from article content
+// Helper function to extract TOC items from article content.
+// Phase AR.3 — ids are produced by the SHARED `slugifyHeading` so the formatter's
+// heading <h1/h2/h3 id={...}> and these TOC ids cannot drift. If you fork the
+// slugger, TOC clicks silently no-op (getElementById returns null).
 export const extractTableOfContents = (content: string): TableOfContentsItem[] => {
   const headingRegex = /^(#{1,3})\s+(.+)$/gm;
   const items: TableOfContentsItem[] = [];
@@ -121,13 +125,8 @@ export const extractTableOfContents = (content: string): TableOfContentsItem[] =
   while ((match = headingRegex.exec(content)) !== null) {
     const level = match[1].length;
     const title = match[2].trim();
-    const id = title
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, '')
-      .replace(/\s+/g, '-')
-      .substring(0, 50);
-
-    items.push({ id, title, level });
+    const id = slugifyHeading(title);
+    if (id) items.push({ id, title, level });
   }
 
   return items;
