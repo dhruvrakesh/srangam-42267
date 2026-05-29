@@ -17,7 +17,7 @@
     "searchPlaceholder": "Search articles..."
   },
   "common": {
-    "readMore": "Read More",
+    "readMore": "Read full article",
     "loading": "Loading...",
     "error": "An error occurred",
     "search": "Search",
@@ -29,7 +29,7 @@
     "previous": "Previous"
   },
   "hero": {
-    "title": "Srangam",
+    "title": "Srangam — Histories of the Indian Ocean World",
     "sanskritBlessing": "ॐ सरस्वत्यै नमः",
     "sanskritSubtitle": "सागर इतिहास संग्रह",
     "subtitle": "Histories of the Indian Ocean World",

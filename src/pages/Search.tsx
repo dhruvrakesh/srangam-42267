@@ -14,6 +14,7 @@ import { searchArticles, getAvailableThemes, getSearchSuggestions, exportSearchR
 import { isSanskritTerm, getSanskritContext } from "@/lib/sanskritUtils";
 import { useLanguage } from "@/components/language/LanguageProvider";
 import { useSearchArticles } from "@/hooks/useSearchArticles";
+import { Helmet } from "react-helmet-async";
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -96,6 +97,16 @@ export default function Search() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Search the Srangam Archive — Articles, Terms & Sources</title>
+        <meta name="description" content="Full-text search across Srangam's scholarly articles, Sanskrit cultural terms, tags, and primary sources on Indian Ocean world history." />
+        <link rel="canonical" href="https://srangam.nartiang.org/search" />
+        <meta property="og:title" content="Search the Srangam Archive" />
+        <meta property="og:description" content="Full-text search across scholarly articles, Sanskrit cultural terms, and primary sources." />
+        <meta property="og:url" content="https://srangam.nartiang.org/search" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://srangam.nartiang.org/brand/og-image.png" />
+      </Helmet>
       {/* Hero Section */}
       <div className="bg-gradient-to-b from-muted/30 to-background border-b">
         <div className="container mx-auto px-4 py-8">

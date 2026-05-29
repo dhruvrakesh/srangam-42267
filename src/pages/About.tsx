@@ -1,5 +1,6 @@
 import { Users, Mail, MapPin, BookOpen, Globe, Target, Award, Network, Database, Mountain, Map, Waves } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { IconMonsoon, IconScript, IconBasalt, IconDharmaChakra, IconSarnathLion } from "@/components/icons";
@@ -193,6 +194,16 @@ Phone: +91-11-4567-8901
 
   return (
     <div className="min-h-screen relative overflow-hidden">
+      <Helmet>
+        <title>About Srangam — Mission, Research Programme & Fellowships</title>
+        <meta name="description" content="Srangam's mission, research themes, fellowship programme, and partnerships advancing dharmic scholarship on the Indian Ocean world." />
+        <link rel="canonical" href="https://srangam.nartiang.org/about" />
+        <meta property="og:title" content="About Srangam — Mission & Research Programme" />
+        <meta property="og:description" content="Mission, research themes, fellowships, and partnerships advancing dharmic scholarship on the Indian Ocean world." />
+        <meta property="og:url" content="https://srangam.nartiang.org/about" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://srangam.nartiang.org/brand/og-image.png" />
+      </Helmet>
       {/* Dharmic Ashram Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-sandalwood/20 via-cream to-saffron/10" />
       <div className="absolute inset-0 opacity-[0.04]" 

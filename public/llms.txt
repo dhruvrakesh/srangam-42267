@@ -1,0 +1,48 @@
+# Srangam
+
+> Dharmic scholarship for the digital age — exploring interconnected histories of the Indian Ocean world through archaeology, epigraphy, Sanskrit sources, and deep-time geology.
+
+Srangam is a research project publishing peer-reviewed long-form articles, cross-referenced primary sources, interactive atlases, and multilingual evidence tables on Ancient India, maritime trade networks, Sanskrit literature, and cultural continuity.
+
+## Pages
+
+- [Home](/): Overview of the project, featured articles, and research themes.
+- [About](/about): Mission, research programme, fellowships, and partnerships.
+- [Begin Journey](/begin-journey): Guided introduction to the corpus for new readers.
+- [Articles](/articles): Full archive of scholarly articles with theme and language filters.
+- [Search](/search): Full-text search across articles, cultural terms, and tags.
+- [Reading Room](/reading-room): Curated reading lists and book compilations.
+- [Sources & Method](/sources-method): Methodology, citation standards, and source hierarchy.
+- [Atlas](/atlas): Interactive map of ports, routes, and cultural-exchange centres of the Indian Ocean world.
+- [Maps & Data](/maps): GeoJSON datasets and visualisations.
+- [Field Notes](/field-notes): Short-form observations and ongoing research notes.
+- [Data Visualisation](/data-visualization): Correlation matrices and network graphs.
+- [Research Network](/research-network): Collaborator and institution network.
+- [Sitemap](/sitemap): Human-readable site index.
+
+## Themes
+
+- [Ancient India](/themes/ancient-india): Vedic, epic, and early-historic India.
+- [Indian Ocean World](/themes/indian-ocean-world): Maritime trade, ports, and diasporic exchange.
+- [Scripts & Inscriptions](/themes/scripts-inscriptions): Epigraphy from Brahmi to Grantha.
+- [Geology & Deep Time](/themes/geology-deep-time): Geomythology and paleo-landscape evidence.
+- [Empires & Exchange](/themes/empires-exchange): Polities, treaties, and trade-network histories.
+
+## Sources
+
+- [Edicts](/sources/edicts): Ashokan and successor edicts.
+- [Epigraphy](/sources/epigraphy): Inscriptions across South and Southeast Asia.
+- [Trade Documents](/sources/trade-docs): Periplus, Tamil Sangam, and Arab traveller accounts.
+- [Sanskrit Terminology](/sources/sanskrit-terminology): Glossary of dharmic and technical terms.
+
+## Tools
+
+- [Sanskrit Translator](/sanskrit-translator): Pāṇinian-grounded Sanskrit ↔ English pipeline.
+- [Jyotish Horoscope](/jyotish): Vedanga Jyotisha as mathematical astronomy and chronology.
+
+## Optional
+
+- [Partnership](/partnership): Institutional collaboration enquiries.
+- [Support Research](/support-research): Fellowship and patron information.
+- [Research Submission](/research-submission): Submit work for editorial review.
+- [Brand](/brand): Visual identity and citation guidelines.
