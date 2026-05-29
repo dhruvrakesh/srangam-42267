@@ -1,176 +1,192 @@
-## Phase CX.1 — Accurate context metrics (both edge functions, no schema change)
 
-**Single goal:** the context system stops lying. Every count rendered or persisted reflects the live database. Touches two edge functions plus documentation. No migration. No client change. No RLS change. No GDrive auth change. CX.2 (pipeline unification) and CX.3 (identity diffs + migration) stay deferred until CX.1 is verified in production.
+## Revived context (all verified live, 2026-05-29)
 
-### Pre-flight findings (verified against live DB + code, 2026-05-29)
+### Why "11 / 45 with pins" is correct — and what the real bottleneck is
 
-| Bug | Location | Evidence |
-|---|---|---|
-| `terms_count` capped at 100 forever | `context-save-drive` line ~41 `.limit(100)` + line ~303 `terms?.length` | Last 4 snapshots all report `terms_count=100` |
-| `tags_count` capped at 50 forever | `context-save-drive` line ~57 `.limit(50)` + line ~304 `tags?.length` | Last 4 snapshots all report `tags_count=50` |
-| `cross_refs_count` capped at 100 forever | `context-save-drive` line ~49 `.limit(100)` + line ~305 `crossRefs?.length` | Last 4 snapshots all report `cross_refs_count=100` |
-| `modules_count` capped at modules-in-top-100-terms | `context-save-drive` line ~306 `new Set(terms.map(...))` | Always ≤6 |
-| `avg_cross_ref_strength` biased to latest 100 | `context-save-drive` line ~290 | Sample-only |
-| Every count renders "N/A" in bundle | `context-bundle-generator` lines ~112-126 — destructures `data` from `head:true` query (always `null`) | Bundle markdown ships with "N/A records" placeholders |
-| Wrong language list in bundle | `context-bundle-generator` line ~156 — claims "Pali"; omits "Pnar" | Diverges from `src/lib/i18n.ts` (`pn = Pnar`) |
-| Hardcoded "12 modules" in bundle | `context-bundle-generator` line ~157 | Should derive |
-| Correlation model invisible | both functions | `srangam_corpus_correlations_snapshot` is never read |
+The pin pipeline executed cleanly on every published article (edge logs show `pin_complete` for all 45). The numbers in the admin UI are honest:
 
-### Code changes
-
-**File 1: `supabase/functions/context-save-drive/index.ts`**
-
-Add a clean "authoritative counts" block before any content fetches:
-```ts
-// Authoritative counts — head:true, count:'exact' is cheap and not row-bounded.
-const [
-  { count: articlesCount },
-  { count: termsCount },
-  { count: tagsCount },
-  { count: crossRefsCount },
-] = await Promise.all([
-  supabase.from('srangam_articles').select('id', { head: true, count: 'exact' }).eq('status', 'published'),
-  supabase.from('srangam_cultural_terms').select('id', { head: true, count: 'exact' }),
-  supabase.from('srangam_tags').select('id', { head: true, count: 'exact' }),
-  supabase.from('srangam_cross_references').select('id', { head: true, count: 'exact' }),
-]);
-
-// Distinct modules — paginate `module` (no schema helper allowed in CX.1).
-const modulesCount = await countDistinctModules(supabase); // 1000-row pages until exhausted
-
-// Latest correlation snapshot — small, single row + 5-row companion query.
-const { data: latestCorrelation } = await supabase
-  .from('srangam_corpus_correlations_snapshot')
-  .select('job_id, computed_at')
-  .order('computed_at', { ascending: false })
-  .limit(1)
-  .maybeSingle();
-
-let topCorrelationPairs: any[] = [];
-let correlationPairCount = 0;
-if (latestCorrelation?.job_id) {
-  const { count } = await supabase
-    .from('srangam_corpus_correlations_snapshot')
-    .select('article_a', { head: true, count: 'exact' })
-    .eq('job_id', latestCorrelation.job_id);
-  correlationPairCount = count ?? 0;
-  const { data: top } = await supabase
-    .from('srangam_corpus_correlations_snapshot')
-    .select('article_a, article_b, jaccard, shared_total')
-    .eq('job_id', latestCorrelation.job_id)
-    .order('jaccard', { ascending: false })
-    .limit(5);
-  topCorrelationPairs = top ?? [];
-}
+```text
+published articles ............... 45
+distinct articles with ≥1 pin .... 11
+total pins ....................... 27
+gazetteer rows ................... 32
 ```
 
-Keep the existing limited fetches (`articles` for top-5 list, `terms .limit(100)`, `tags .limit(50)`, `crossRefs .limit(100)`) — but **only** to render the human-readable top-N sections of the markdown. They no longer feed any persisted count.
+The DB-backed gazetteer is **maritime-only**. Every one of the 32 rows is `feature_type ∈ {port, harbour, inscription_site, city}` along the Indian Ocean rim — Aden, Muziris, Tāmralipti, Kāveripattinam, Berenike, Quanzhou, Kedukan Bukit, Võ Cảnh, Kandahar, Bujang Valley, Zanzibar, etc. There is **not a single** Śakti Pīṭha, Jyotirliṅga, Mahājanapada capital, Janajāti cave, Indo-Iranian site, Vedic-period city, or Kashmir/Kangra sacred-geography entry. So:
 
-Rebuild `stats_detail` as a structured object:
-```ts
-const themesObject: Record<string, number> = {};
-for (const a of (allPublishedArticlesForThemes ?? [])) {
-  themesObject[a.theme] = (themesObject[a.theme] ?? 0) + 1;
-}
-// allPublishedArticlesForThemes = a separate slim fetch of just `theme` for ALL published
-// articles (no .limit) — already cheap because we only select one column.
+- All 11 articles that produced pins are the maritime / inscription / Indian-Ocean ones (`scripts-that-sailed-ii` → 8 pins, `untitled-article` (Ocean as Archive) → 7 pins, `vishnu-shiva-hari-hara` → 2, etc.).
+- Inland sacred-geo articles (`hinglaj-kamakhya`, `somn-tha-prabh-sa`, `mah-vidy-s-mountains`, `the-saffron-and-the-blue` (Ayodhya), `sat-sar-springs`, `gop-dri-k-yapa-and-var-ham-la`, `dashanami-ascetics-n-th-yogis`, `indo-iranian-schism…-dwaraka`, `the-asura-exiles`, `under-the-sacred-tree`, etc.) return `inserted:0` because their places aren't in the gazetteer.
+- Both the deterministic name-variant scan and the AI NER pass match against the same 32 rows, so AI cannot rescue what the gazetteer doesn't know.
 
-const statsDetail = {
-  generated_with: 'CX.1',
-  sample_sizes: { terms: 100, tags: 50, cross_refs: 100 },
-  themes: themesObject,                                  // { theme: count }
-  top_tags: (tags ?? []).map(t => ({ name: t.tag_name, usage_count: t.usage_count })),
-  top_terms: (terms ?? []).map(t => ({ term: t.term, module: t.module, usage_count: t.usage_count })),
-  avg_cross_ref_strength_sampled:
-    crossRefs && crossRefs.length > 0
-      ? crossRefs.reduce((acc, r) => acc + (r.strength ?? 0), 0) / crossRefs.length
-      : null,
-  correlation: {
-    pair_count: correlationPairCount,
-    computed_at: latestCorrelation?.computed_at ?? null,
-    top_pairs: topCorrelationPairs,                      // [{article_a, article_b, jaccard, shared_total}]
-  },
-  // CX.1-only compat shim. context-diff-generator currently reads these as flat arrays.
-  // CX.2 retires both fields when it rewires the diff to read the structured shape above.
-  _compat: {
-    themes: Object.keys(themesObject),
-    top_tags: (tags ?? []).map(t => t.tag_name),
-  },
-};
-```
+`GeographyMedia.tsx` is wired correctly (`pin_count = COUNT(pins) per article_id`, `withPins = pin_count > 0`). The "0 pins" badge on Hinglaj/Naga-Compact/Somnātha rows is the truth, not a UI bug.
 
-Use the authoritative counts in **both** the markdown body and the `.insert(...)` payload:
-```ts
-.insert({
-  ...existingFields,
-  articles_count: articlesCount ?? 0,
-  terms_count:    termsCount    ?? 0,
-  tags_count:     tagsCount     ?? 0,
-  cross_refs_count: crossRefsCount ?? 0,
-  modules_count:  modulesCount,
-  stats_detail:   statsDetail,
-  triggered_by:   'manual',
-  status:         'success',
-})
-```
+Article pages already auto-mount `ArticleMiniMap` (lazy-loaded in `OceanicArticlePage.tsx:556`) whenever `pins.length > 0` — so the moment the DB has pins for an article, the in-article map appears with no client changes.
 
-Add a "## Corpus Correlations" section to the markdown body (pair count, `computed_at`, top-5 pairs by jaccard with the two slug placeholders — resolved by a small `id → slug` lookup over the 10 distinct article ids in the top-5; one extra cheap `.in('id', [...])` query). Section is **omitted** cleanly if `latestCorrelation` is null.
+### CX.1 — fully shipped, verified
 
-**File 2: `supabase/functions/context-bundle-generator/index.ts`**
+Latest snapshot row `2026-05-29 12:32:52`:
+`articles=45, terms=1724, tags=185, cross_refs=1273, modules=13`, `stats_detail.generated_with='CX.1'`, populated `correlation` object, structured `top_terms` array. Bundle uses the same authoritative path and the corrected 9-language list (Pnar in, Pali out). No CX.1 follow-up required.
 
-Three surgical fixes, nothing else:
-1. Destructure `count` (not `data`) from every `head:true` count query:
-   ```ts
-   const { count: articleCount } = await supabase.from('srangam_articles')…
-   ```
-   Apply to all four counts. Stale `data` variable goes.
-2. Replace the languages line:
-   ```
-   - **Languages Supported**: 9 (English, Tamil, Telugu, Kannada, Bengali, Assamese, Pnar, Hindi, Punjabi)
-   ```
-   (Order matches `supportedLanguages` declaration in `src/lib/i18n.ts`.)
-3. Replace the hardcoded `"12 specialized cultural term modules"` with a derived value from the same `countDistinctModules()` helper used in CX.1 (the helper goes into CX.1; bundle-generator imports the duplicated logic inline for now — CX.2 lifts it to `_shared/`).
-4. Append the same "## Corpus Correlations" markdown block as CX.1 (read-only — bundle-generator continues to write nothing to DB).
+### GDrive duplication — confirmed bigger than I claimed
 
-**No edits** to GDrive auth/upload code in either function. **No edits** to `context-diff-generator` (the `_compat` shim keeps it running unchanged; CX.2 rewires it). **No edits** to `src/pages/admin/ContextManagement.tsx`. **No edits** to `supabase/config.toml`.
-
-### Out of scope for CX.1 (carried forward)
-
-- Extracting `_shared/google-drive.ts` and `_shared/context-markdown.ts` → **CX.2**.
-- Auto-invoking diff after snapshot insert + updating `changes_from_previous` → **CX.2**.
-- Recording `status:'failed'` rows on error → **CX.2**.
-- Demoting bundle-generator to export-only + relabelling admin button → **CX.2**.
-- `article_slugs`/`tag_names`/`term_keys jsonb` migration + identity-based set diffs → **CX.3**.
-- AI executive summary populating `context_summary` → **CX.4** (user-flagged).
-- Cron wiring for daily snapshots → **CX.5** (user-flagged).
-- Backfilling historic rows → out of scope permanently. RLS has no UPDATE policy on `srangam_context_snapshots` (admin INSERT + SELECT only). Per the standing "treat production data as immutable" rule, pre-CX.1 rows stay as a frozen baseline.
-
-### Documentation deliverables (documentation-first, written before code ships)
-
-- `.lovable/plan.md` — append "CX.1 (2026-05-29)" entry: scope, frozen-baseline note, rollback recipe (`git revert` of the two edge functions).
-- `docs/CONTEXT_MANAGEMENT_GUIDE.md` — new "Phase CX.1 (2026-05-29) — accurate metrics" section documenting: the two count-cap bugs, the bundle destructuring bug, the language/modules constants bug, the missing correlation surface, the new `stats_detail` shape, the `_compat` shim and its planned CX.2 retirement, and a temporal note that snapshots dated ≤ 2026-05-29 are the frozen pre-CX.1 baseline whose `terms_count/tags_count/cross_refs_count` are capped sample limits, not true totals.
-- `mem://index.md` Core invariant to add after CX.1 ships:
-  > "Context snapshot `*_count` columns and bundle counts are populated by `head:true, count:'exact'` queries; never by `.length` on a `.limit()`-bounded fetch and never by destructuring `data` from a `head:true` query. `stats_detail` carries `generated_with`, `sample_sizes`, structured `themes`/`top_tags`/`top_terms` with counts, and a `correlation` block (pair_count, computed_at, top 5 by jaccard) from `srangam_corpus_correlations_snapshot`. `_compat` flat arrays exist solely to keep `context-diff-generator` running until CX.2 retires them. The bundle markdown's language list mirrors `src/lib/i18n.ts` exactly — never hardcode 'Pali' or omit 'Pnar'. Historic snapshots before 2026-05-29 are a frozen baseline with capped counts — do not retro-fix."
-
-### Verification gate (must pass before CX.2 is planned)
-
-1. Deploy. Trigger one snapshot via `/admin/context` → "Sync Now".
-2. Run `SELECT articles_count, terms_count, tags_count, cross_refs_count, modules_count, stats_detail->'correlation'->'pair_count' FROM srangam_context_snapshots ORDER BY snapshot_date DESC LIMIT 1` — confirm every value matches a freshly-executed `SELECT count(*)` against the source tables.
-3. Open the GDrive markdown the snapshot uploaded — confirm headline counts match the row; top-N sections labelled "sampled"; "## Corpus Correlations" present with non-null `computed_at`.
-4. Click "Generate Bundle" — confirm bundle markdown shows real numbers (no "N/A"), language list reads `… Bengali, Assamese, Pnar, Hindi, Punjabi`, modules line shows the derived count, and "## Corpus Correlations" section is present.
-5. Invoke `context-diff-generator` between the new row and the previous one — must not throw, thanks to the `_compat` shim. Diff numbers will look enormous (real total vs old capped sample); this is **expected** and explicitly noted in the docs ("first CX.1 vs last pre-CX.1 diff is a category jump, not real corpus surge").
-6. `/admin/context` snapshot history card for the new row renders the new honest badges; older rows continue to render their historic (capped) values without UI breakage.
-
-### Risk + rollback
-
-Two edge function file edits. Zero DB writes outside the normal `.insert(...)` path. `_compat` shim guarantees existing diff calls keep working. Rollback = redeploy previous versions of the two `index.ts` files. Zero schema risk, zero migration, zero client risk.
+`tts-save-drive/index.ts` (lines 44–170) re-implements the **identical** RS256 JWT + `oauth2.googleapis.com/token` exchange + `upload/drive/v3/files?uploadType=multipart` + `permissions` flow that `context-save-drive/index.ts` (lines 251–345) uses. CX.2's `_shared/google-drive.ts` will collapse both. No third caller exists today.
 
 ---
 
-### Forward sketch (NOT part of this plan — for context only)
+## Enterprise sequencing — one phase per turn
 
-**CX.2 — Unify the pipeline (no schema change).** Extract `_shared/google-drive.ts` (uploadMarkdownToDrive) and `_shared/context-markdown.ts` (the rich markdown builder + the count/correlation gatherers from CX.1). `context-save-drive` becomes the single source of truth: builds the rich markdown, uploads, inserts the snapshot, fetches the immediately-previous snapshot, invokes `context-diff-generator`, and **UPDATEs** the new row's `changes_from_previous` (uses `SERVICE_ROLE_KEY` — bypasses the missing UPDATE policy; documented as an intentional service-role-only write path). On any failure, inserts a `status:'failed'` row with `error_message`. `context-bundle-generator` demoted to export-only — calls the same shared builder, never writes to `srangam_context_snapshots`. `context-diff-generator` rewired to read structured `stats_detail` (themes object, top_tags with counts); `_compat` shim retired. Admin UI: "Sync Now" stays primary; "Generate Bundle" relabelled "Download Context Bundle".
+Each phase is additive, independently revertible, gated by verification, and never breaks the previous behaviour (a fallback path stays alive until the new path is confirmed).
 
-**CX.3 — Identity-based diffs (one additive migration).** Migration adds three nullable jsonb columns to `srangam_context_snapshots`: `article_slugs`, `tag_names`, `term_keys`. CX.2 pipeline populates them from full (unsliced) fetches at snapshot time. Diff generator rewritten as set operations (added = current \ previous; removed = previous \ current) per identifier. Reports real `added`/`removed` slug arrays; drops the bogus `updated` field; new themes go under correctly-named `addedThemes` (not `addedArticles`). Falls back to count-only with `{ mode: 'count_only' }` when either snapshot pre-dates the migration. Persists the full diff to `changes_from_previous` so it's durable, not just returned.
+---
 
-Both forward phases will get their own plan + verification gate at the appropriate time.
+### Phase G3 — Gazetteer expansion (the UI-visible fix)
+
+**Surgical, additive, no schema change.** One INSERT-only migration; one admin-button re-run of `backfill-article-pins`.
+
+**Coverage targets (audited against actual published slugs, not invented):**
+
+| Category | Rows | Articles unblocked |
+|---|---|---|
+| Śakti Pīṭhas (10) | Hinglaj, Kāmākhyā, Vindhyāchal, Kālīghāt, Jvālāmukhī (Kangra), Naina Devi, Tārā Tāriṇī, Chinnamastā (Rajrappa), Bagalāmukhī (Datia), Mātaṅgī | `hinglaj-kamakhya`, `mah-vidy-s-mountains-and-mysteries`, `from-dev-s-kta-to-dev-m-h-tmya` |
+| Jyotirliṅgas (12) | Somnātha, Mahākāleśvara (Ujjain), Omkāreśvara, Kedārnāth, Bhīmaśankar, Kāśī Viśvanāth, Tryambakeśvar, Vaidyanāth (Deoghar), Nāgeśvar, Rāmeśvaram, Ghṛṣṇeśvar, Mallikārjuna | `somn-tha-prabh-sa`, `dashanami-ascetics-n-th-yogis`, `vishnu-shiva-interplay`, `har-har-hari-hari` |
+| Janapada capitals / sacred cities (15) | Ayodhyā, Mathurā, Vārāṇasī, Hastināpura, Indraprastha, Pāṭaliputra, Kauśāmbī, Ujjain, Vidiśā, Sanchi, Nālandā, Takṣaśilā, Dvārakā, Prabhāsa, Gwalior, Patiala | `the-saffron-and-the-blue`, `reassessing-ashoka-s-legacy`, `indo-iranian-schism…-dwaraka`, `the-gwalior-interface`, `baba-ala-singh`, `ancient-tribes-of-bh-ratavar-a`, `where-civilization-never-slept`, `tracing-ancient-k-atriya-tribes` |
+| Kashmir sacred geography (8) | Satīsar (Anantnag), Gopādri (Gwalior hill, distinct), Varāhamūla (Baramulla), Mārtāṇḍ, Śaṅkarācārya Hill (Srinagar), Jakhbar, Nartiang Monoliths, Kheer Bhawani | `sat-sar-springs`, `gop-dri-k-yapa-and-var-ham-la`, `srangam-project-research-report-on-jakhbar`, `n-ga-compact-across-kashmir-kerala-and-bali` |
+| Indus / Iron-Age archaeology (7) | Mehrgarh, Mohenjo-daro, Harappa, Dholavira, Kalibangan, Rakhigarhi, Bhirrana | `reassessing-the-antiquity-of-the-rigveda`, `deep-dive-indo-iranian-origins-and-zoroastrianism`, `geomythological-research-dossier`, `the-anu-and-the-druhyu` |
+| Indo-Iranian / BMAC (5) | Gonur Tepe (BMAC), Tell Halaf (Mitanni heartland), Nausharo, Shahr-i Sokhta, Ganj Dareh | `the-asura-exiles`, `deep-dive-indo-iranian-origins`, `indo-iranian-schism…-dwaraka` |
+| Janajāti / petroglyph / megalith (8) | Bhimbetka, Edakkal, Kupgal (Bellary), Sanganakallu, Konthagai, Adichanallur, Pattanam, Khasi-Jaintia plateau (Nartiang already above) | `stone-song-and-sea`, `ringing-rocks-and-rhythmic-cosmology`, `janaj-tiya-oral-traditions`, `graphic-transmission-from-rock-art` |
+| Maritime gaps to fill alongside existing rim (8) | Borneo (Sambas), Champa (Mỹ Sơn), Srivijaya (Palembang already as city — add inscription-site row), Bali (Pejeng / Goa Gajah), Java (Prambanan), Funan (Óc Eo), Angkor, Kedah inscription (already in DB) | `scripts-that-sailed-ii`, `untitled-article` (Ocean as Archive), `jambudvipa-connected`, `n-ga-compact-across-kashmir-kerala-and-bali` |
+| Acoustic / temple / harvest tree (6) | Hampi, Sittannavasal, Tigawa, Belur, Halebidu, Lepakshi | `ringing-rocks-and-rhythmic-cosmology`, `under-the-sacred-tree` |
+| Australia (1) | Bunjils Shelter (Black Range, Victoria) | `shiva-bunjil-altair-connections`, `the-celestial-bridge` |
+
+Total: **~80 new rows**, taking the gazetteer from 32 → ~112. Conservative; can grow later via the same channel.
+
+**Per-row content contract:**
+- `canonical_name`: most-common English form, with disambiguator if needed (e.g. `Gopādri (Mathurā / Govardhana hill)`).
+- `name_variants`: array containing IAST diacritic form, common ASCII fallback, Devanagari (where unambiguous), and 1–2 historic exonyms (e.g. `[Pāṭaliputra, Pataliputra, Patna, पाटलिपुत्र]`).
+- `latitude` / `longitude`: from public sources (Wikidata / OpenStreetMap), rounded to 4 decimals — atlas-level precision is sufficient.
+- `feature_type`: extend the existing taxonomy strictly — `pitha`, `jyotirlinga`, `capital`, `city`, `port`, `harbour`, `inscription_site`, `archaeological_site`, `cave_shelter`, `temple_complex`, `mountain`, `monolith_site`.
+- `era_tags`: `['vedic'|'puranic'|'maurya'|'gupta'|'medieval'|'mughal'|'colonial'|'prehistoric']` subset; powers future filtering.
+- `country`: ISO English name. `precision = 'point'` for everything in this batch.
+- `external_refs`: `{ wikidata: 'Qxxxxx' }` when known; empty `{}` otherwise.
+
+**Execution (build-mode):**
+1. **Migration** — single transactional INSERT block, idempotent via `ON CONFLICT (canonical_name) DO NOTHING`. No schema change. (Will need a one-line additive `ALTER TABLE … ADD CONSTRAINT srangam_gazetteer_canonical_name_key UNIQUE (canonical_name)` if it doesn't already exist — check first; harmless if it does.)
+2. **Re-run backfill** — admin clicks "Backfill all published (50 max)" with `only_zero_pin:true` (or call the function with that body directly). Phase Z's nightly cap of 20/night does not apply to manual runs. Estimated cost @ ≤ $0.001/article × ~34 zero-pin articles ≈ **$0.034**.
+3. **Cache invalidation** — none required. `GeographyMedia.tsx` uses TanStack Query keyed `['admin', 'geography-media', 'articles']`; the "Refresh stats" button already calls `refetch()`. Same for public article pages — they re-query pins through `articleResolver`/`articlePins` on next load.
+
+**Verification (must pass before phase is declared done):**
+1. `SELECT count(*) FROM srangam_gazetteer` → ≥ 110.
+2. Job row in `srangam_admin_jobs`: `status='succeeded'`, `processed=total`, `failed=0`.
+3. `SELECT count(DISTINCT article_id), count(*) FROM srangam_article_pins` → ≥ 30 / ≥ 100.
+4. Admin · Geography & Media stat card → `With pins` ≥ 30 / 45; spot-check rows for Hinglaj, Somnātha, Saffron-and-Blue.
+5. Public `/articles/hinglaj-k-m-khy-…` → `ArticleMiniMap` mounts under "Geographical Context".
+6. `/maps-data?focus=hinglaj-k-m-khy-…` → cluster on the public Article Atlas dims correctly.
+
+**Documentation deliverables:**
+- `docs/CONTENT_ARCHITECTURE.md` → new "Gazetteer governance" subsection (canonical_name uniqueness, IAST + Devanagari variants required, feature_type taxonomy frozen, era_tags vocabulary, "never delete a gazetteer row referenced by `srangam_article_pins` — soft-mark via `notes` instead").
+- `docs/SYSTEM_FLOWCHARTS.md` → update the pin-backfill flow to show the gazetteer as a first-class input, not implicit.
+- `.lovable/plan.md` → append G3 entry with before/after counts and the per-article delta.
+- New memory file `mem://geo/gazetteer-coverage-baseline-2026-05` capturing the 112-row baseline, the taxonomy, and the deletion guard.
+
+---
+
+### Phase CX.2 — Shared metrics + GDrive helpers (no migration)
+
+**Goal:** retire duplication between `context-save-drive`, `context-bundle-generator`, **and `tts-save-drive`**; let `context-diff-generator` drop the `_compat` shim safely.
+
+**New shared modules:**
+1. `supabase/functions/_shared/google-drive.ts`
+   - `getAccessToken(serviceAccount, scope?)` → cached `{ access_token, expires_at }` (5-min TTL within the same function instance).
+   - `uploadFile({ name, mimeType, body, parentFolderId? })` → `{ fileId, webViewLink }`.
+   - `setAnyoneReader(fileId)` → permissions call.
+   - Lifts the **identical** ~120-line block currently in both `context-save-drive` (lines 251–345) and `tts-save-drive` (lines 44–170).
+2. `supabase/functions/_shared/context-metrics.ts`
+   - `countAuthoritative(supabase)` → `{ articles, terms, tags, crossRefs, modules }` using `head:true, count:'exact'` for the four `srangam_*` tables, plus the paginated `countDistinctModules` helper.
+   - `topThemes(supabase, sampleSize=200)`, `topTags(supabase, n=20)`, `topTerms(supabase, n=20)` — structured rows with counts.
+   - `latestCorrelationSummary(supabase)` → `{ pair_count, computed_at, top_pairs[] }` from `srangam_corpus_correlations_snapshot`.
+   - Every helper takes the client as a parameter — keeps them Deno-testable.
+
+**Edits (behavior identical, lines shrink):**
+- `context-save-drive/index.ts` → import both helpers, delete the inline GDrive block (~120 lines) and inline metrics blocks (~80 lines).
+- `tts-save-drive/index.ts` → import `_shared/google-drive.ts`, delete its inline copy (~120 lines).
+- `context-bundle-generator/index.ts` → import `_shared/context-metrics.ts`, delete the duplicate count/correlation block (~80 lines).
+- `context-diff-generator/index.ts` → consume structured `themes` / `top_tags` objects with a 1-line `Array.isArray(...)` fallback to handle any pre-CX.1 row (returns `{ mode:'count_only' }`).
+- After diff generator stops reading `_compat`, **remove the `_compat` arrays** from `stats_detail` in `context-save-drive`. Bump `stats_detail.generated_with` to `'CX.2'`.
+
+**Verification:**
+1. Trigger a new snapshot from `/admin/context`; row has `generated_with:'CX.2'`, no `_compat` key, counts identical to last CX.1 row.
+2. Diff CX.2 vs CX.1 → succeeds with structured changes.
+3. Diff CX.2 vs a pre-2026-05-29 snapshot → succeeds with `mode:'count_only'`.
+4. Smoke-test one narration via the existing admin "Generate narration" button → `tts-save-drive` still uploads, GDrive share URL returned.
+5. `wc -l` after refactor: ~200-line shrinkage in `context-save-drive`, ~120 in `tts-save-drive`, ~80 in `context-bundle-generator`.
+
+**Documentation deliverables:**
+- `docs/CONTEXT_MANAGEMENT_GUIDE.md` → mark `_compat` retired; document the `_shared/context-metrics.ts` API surface.
+- `docs/TTS_ARCHITECTURE.md` → cross-link the GDrive helper.
+- Core memory invariant: bump `generated_with` to `'CX.2'`; note "GDrive JWT + multipart upload lives in `_shared/google-drive.ts` — never re-inline in a new function."
+
+---
+
+### Phase CX.3 — Identity-set diffs (the only CX phase with a migration)
+
+**Goal:** turn diff reports from count-deltas into real "these slugs / tags / terms were added/removed" lists — what the diff UI implicitly promises.
+
+**Migration (additive, reversible):**
+```sql
+ALTER TABLE public.srangam_context_snapshots
+  ADD COLUMN IF NOT EXISTS identity_sets jsonb NOT NULL DEFAULT '{}'::jsonb;
+CREATE INDEX IF NOT EXISTS idx_srangam_context_snapshots_identity_sets
+  ON public.srangam_context_snapshots USING gin (identity_sets jsonb_path_ops);
+```
+Shape:
+```json
+{
+  "article_slugs": ["slug-a", "slug-b", "…"],
+  "tag_names":     ["…"],
+  "term_slugs":    ["…"],
+  "module_names":  ["vedic-puranic", "…"]
+}
+```
+No new GRANTs / RLS — the table is already admin-read/admin-insert; the column inherits. No public exposure. No UPDATE policy added — snapshots stay immutable.
+
+**Edge-function changes:**
+- `context-save-drive` (already CX.2 at this point) populates `identity_sets` from paginated `select('slug')` / `select('tag_name')` / `select('slug')` / `select('module' DISTINCT)`. Bump `generated_with` to `'CX.3'`.
+- `context-diff-generator` performs set-diff per dimension and returns:
+  ```ts
+  {
+    mode: 'identity' | 'count_only',
+    articles: { added: string[], removed: string[], unchanged_count: number },
+    tags:     { … },
+    terms:    { … },
+    modules:  { … },
+  }
+  ```
+  Falls back to `mode:'count_only'` when `previous.identity_sets` is `{}` (pre-CX.3) — never raises.
+
+**Verification:**
+1. Snapshot → publish one new article → snapshot again → diff returns `articles.added=['new-slug']`.
+2. Diff CX.3 ↔ CX.2 → `mode:'count_only'` (no crash).
+3. `SELECT pg_column_size(identity_sets) FROM srangam_context_snapshots ORDER BY snapshot_date DESC LIMIT 5;` → expect a few KB per row (≪ 100 KB), well within Postgres TOAST defaults.
+
+**Documentation deliverables:**
+- `docs/CONTEXT_MANAGEMENT_GUIDE.md` → CX.3 section + diff UX explanation + screenshot of new diff payload.
+- `docs/DATABASE_SCHEMA.md` → add `identity_sets jsonb` to the `srangam_context_snapshots` table card.
+- Memory invariant: "Snapshots ≥ CX.3 carry `identity_sets`; diff generator tries identity-diff first, count-only fallback never raises."
+
+---
+
+## Out of scope (deferred deliberately)
+
+- **CX.4** — AI executive summary into the existing-but-unused `context_summary` column.
+- **Daily snapshot cron** — separate small phase once CX.3 lands and the diff UI is trusted.
+- **G4** — standardising other background jobs (correlate-corpus, batch-enrich-terms, backfill-bibliography) on the Phase Z self-pump+heartbeat pattern.
+- **G5** — Playwright e2e for the pin + atlas flow.
+- **Imaging-handoff visual QA** — orthogonal to context/geo.
+
+## Suggested order
+
+1. **G3** — immediate user-visible fix, 1 migration + 1 admin click, ~$0.04.
+2. **CX.2** — pure refactor, no migration, drops ~320 LOC.
+3. **CX.3** — 1 additive migration, unlocks the diff UI.
+
+Each phase is independently shippable. The previous behaviour stays alive at every step via explicit fallbacks (`_compat` array, `mode:'count_only'`, idempotent INSERT, `loadArticlePins` already tolerates an empty pin set). Nothing here changes the public RLS surface or the article rendering contract (Phase AR.1–AR.3 invariants).
