@@ -13,6 +13,7 @@ import { useLanguage } from "@/components/language/LanguageProvider";
 import { ArticleThemeChips } from "@/components/articles/ArticleThemeChips";
 import { IconConch, IconLotus } from "@/components/icons";
 import { Search, BookOpen, Filter, Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useDynamicSEO } from "@/hooks/useDynamicSEO";
 
 export default function Articles() {
@@ -30,7 +31,7 @@ export default function Articles() {
   );
 
   // Fetch database articles
-  const { data: dbArticles, isLoading } = useAllArticles(currentLanguage);
+  const { data: dbArticles, isLoading, isFetching, error: dbError } = useAllArticles(currentLanguage);
 
   // Merge JSON and database articles
   const allArticles = useMemo(() => {
@@ -175,16 +176,22 @@ export default function Articles() {
           </div>
         </div>
 
-        {/* Loading State */}
-        {isLoading && (
-          <div className="flex justify-center items-center py-16">
-            <Loader2 className="animate-spin text-peacock-blue" size={32} />
-            <span className="ml-3 text-muted-foreground">Loading articles...</span>
+        {/* Phase X.8.1 — Render-first, hydrate-second. */}
+        {isFetching && filteredArticles.length > 0 && (
+          <div className="flex justify-end mb-3">
+            <span className="inline-flex items-center gap-2 text-xs text-muted-foreground bg-muted/60 px-3 py-1 rounded-full">
+              <Loader2 className="animate-spin" size={12} />
+              Refreshing…
+            </span>
+          </div>
+        )}
+        {dbError && !isFetching && filteredArticles.length > 0 && (
+          <div className="mb-4 text-xs text-muted-foreground bg-muted/50 border border-border rounded-md px-3 py-2 text-center">
+            Live database unreachable — showing offline archive.
           </div>
         )}
 
-        {/* Articles Grid */}
-        {!isLoading && filteredArticles && filteredArticles.length > 0 ? (
+        {filteredArticles && filteredArticles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredArticles.map((article, index) => (
               <div key={article.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}>
@@ -192,7 +199,13 @@ export default function Articles() {
               </div>
             ))}
           </div>
-        ) : !isLoading ? (
+        ) : isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} className="h-64 w-full rounded-lg" />
+            ))}
+          </div>
+        ) : (
           <div className="text-center py-16">
             <IconLotus size={48} className="mx-auto text-muted-foreground mb-4" />
             <p className="text-lg text-muted-foreground">{t('search.noResults')}</p>
@@ -208,7 +221,7 @@ export default function Articles() {
               {t('actions.clearFilters')}
             </Button>
           </div>
-        ) : null}
+        )}
       </div>
     </div>
   );

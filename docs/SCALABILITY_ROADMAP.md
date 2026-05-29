@@ -287,3 +287,19 @@ USING ivfflat (content_embedding vector_cosine_ops);
 - **Monthly:** Review performance metrics
 - **Quarterly:** Assess bottleneck thresholds
 - **Bi-annually:** Full architecture review
+
+## Frontend resilience (Phase X.8, 2026-05-29)
+
+**Pattern: Render-first, hydrate-second.** List pages must paint the synchronous JSON-backed corpus immediately. The Supabase DB call is *enrichment*, never a render gate. Applied to `src/pages/Home.tsx` and `src/pages/Articles.tsx`; enforced in the shared `useAllArticles` hook (`src/hooks/useArticles.ts`).
+
+Hook contract:
+- `AbortSignal` wired into the Supabase query (`.abortSignal(signal)`) so unmount/navigation cancels the request.
+- `retry: 2` with capped exponential backoff (`min(1s·2^n, 8s)`).
+- `networkMode: 'offlineFirst'` so cached data paints instantly on revisit.
+- 12s `Promise.race` watchdog; on breach raises `ArticleFetchTimeoutError`, React Query settles, JSON corpus renders.
+- Emits a structured `articles_fetch_degraded` warn line (`{ evt, reason, duration_ms, language, message, ts }`) on timeout/abort/error — shape mirrors `supabase/functions/_shared/observability.ts` for future ingestion into `srangam_event_log`.
+
+UI degradation ladder:
+1. Corpus available → grid renders, inline "Refreshing…" pill while `isFetching`.
+2. Corpus available + DB errored → dismissible inline notice "Live database unreachable — showing offline archive".
+3. Corpus empty + still loading → 3–6 skeleton cards (never a full-screen blocking spinner).
