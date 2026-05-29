@@ -1,111 +1,212 @@
-## Verified context (from DB + codebase, 2026-05-29)
+## Read-only findings revived from docs, code, database, and logs (2026-05-29)
 
-Before changing anything, I re-ran the truth checks:
+- Lovable Cloud backend is healthy; not a platform outage.
+- DB truth right now:
+  - `srangam_articles` published = **60**, articles with pins = **11**, total pins = **27** (all confidence `B`, source `content_scan`).
+  - `srangam_gazetteer` rows = **32** — heavily oceanic/port/inscription, almost no Kashmir / Śakti-pīṭha / Jyotirlinga / inland sacred-geography nodes.
+  - Admin screenshot shows **44 published / 24 of 44 stuck**. Live DB shows 60. Either the admin page used a stale snapshot or your admin view is scoped (e.g. cached React Query result for the original 44-article cohort). Must be reconciled in Phase G0 before any code change.
+- Pin Backfill jobs (`srangam_admin_jobs`, kind=`pin_backfill`) failure pattern confirmed in edge logs:
+  - `pin_ai` for one article reached **110 807 ms** (longest seen). Several articles take 19–50 s.
+  - The self-pump fetch then hits Supabase Edge runtime **504 IDLE_TIMEOUT (150 s)**.
+  - Heartbeat is updated only after `reportItem()` per article, so during a long AI call the UI correctly flags “No heartbeat for 90s” and the watchdog reaps the row.
+  - Multiple recent jobs ended with `last_error = 'watchdog: no heartbeat'`. Latest one was Cancelled by the user mid-run at 24/44.
+  - Nightly cron `srangam-pin-enrichment-nightly` is scheduled and enqueues `enqueue_pin_backfill_sweep_job(20, 3)` — but the same single-invocation chunk pattern means the same 504/heartbeat reaping happens silently overnight.
+- Article pages: `OceanicArticlePage` only renders the “Geographical Context” section when `article.pins.length > 0`, and even then the Leaflet map is gated behind a manual “View Interactive Map” click. The article in your second screenshot (`satisar-springs-sacred-flow`) has **0 pins**, so the reader sees only the `Maps, Imagery & Astronomy` launcher card — which is correct given current data but feels empty.
+- `/maps-data?focus=<slug>` is linked from `ImagingLabLauncher`, but `MapsData.tsx` does not currently read `focus`; the Article Atlas does not filter or scroll to the article’s places.
+- `/atlas?id=...` deep-links (used in `ArticleMiniMap` popups) target the static `public/atlas/atlas_nodes.json` registry, which is unrelated to `srangam_gazetteer` IDs — so those links can dead-end.
+- RLS + GRANTs verified: public can `SELECT` pins/gazetteer/admin_jobs; only admin can write; service_role used by edge functions. No security change is implied by any phase below.
 
-- **DB titles & bodies are English-only.** All 44 published rows in `srangam_articles` have `title_langs = [en]` and `content_keys = en` (verified via `jsonb_object_keys`). The two newest rows are `2026-05-27` and `2026-05-25`.
-- **JSON articles ship multilingual titles.** `src/data/articles/*.ts` files declare ~9 locale keys per `title` (e.g. `maritime-memories-south-india-complete.ts` has 36 locale-key occurrences across title/dek/tags). Newest JSON `date` is `2025-10-29`.
-- **Badge math today** (`LanguageAvailabilityBadge.tsx` line 21–23): `Object.keys(content).length / 9`. `ArticleCard.tsx` line 68 passes `normalizedTitle`. ⇒ JSON cards print **9/9** even though only the title is translated; DB cards print **1/9**.
-- **Dedup keys are asymmetric** (`unifiedArticleUtils.ts`): DB rows key on `normalizeSlugKey(article.slug)` = `slug_alias`; JSON rows key on `article.id`. The `SLUG_TO_ID_MAP` in `src/data/articles/index.ts` proves the two namespaces don't agree (e.g. JSON id `maritime-memories-south-india` vs DB `slug_alias` `…-complete-…`). Same article appears twice → with `limit:6` on Home, the older JSON dupe can push the DB dupe below the fold.
-- **`useAllArticles` watchdog is silent** (`src/hooks/useArticles.ts` line 70 → 12 s timeout, lines 92–112). On degraded settle the page renders JSON-only (newest 2025-10-29), which is exactly the "latest not on top" symptom on slow mobile (user's viewport is 384 × 737).
-- **Phase Y/Z invariants are live** (per Core memory). Render-first/hydrate-second contract must not regress. Resolver attaches pins; consumer never re-fetches. Both are respected by this plan.
+## Enterprise recovery principle
 
-Nothing about the badge or sort regression requires DB, RLS, edge functions, or schema. This is a frontend healing exercise.
+Heal the existing architecture, do not rebuild it.
 
----
+```text
+Existing durable job table + existing pins + existing mini-map + existing atlas
+        ↓
+make background jobs truly async, bounded, observable
+        ↓
+show geography to readers only when truthful
+        ↓
+expand gazetteer deterministically; AI curates, never expands unattended
+```
 
-## Phase AA — Body-aware language badge (presentation only)
-
-### AA.1 Documentation-first
-- Append a temporal note to `.lovable/plan.md` and `docs/MULTILINGUAL_IMPLEMENTATION.md`:  *"As of 2026-05-29, only `en` body content is stored in `srangam_articles.content`; multilingual titles in JSON corpus must not be conflated with translation coverage. Badge truth = body keys, not title keys."*
-- New `mem://i18n/coverage-badge-truth` memory referenced from index Core.
-
-### AA.2 Make the badge body-aware (non-breaking)
-`src/components/language/LanguageAvailabilityBadge.tsx`:
-- Add optional `bodyContent?: MultilingualContent` **and** optional `availableLanguagesOverride?: SupportedLanguage[]`. When either is provided, compute availability from those (filter for non-empty trimmed strings). When neither is provided, retain today's behaviour (title-keys), so other callers (`MultilingualSearchResults.tsx`) are unaffected.
-- Tooltip line under the chip ("body translated in N/9 languages") to disambiguate from title coverage. Title languages still surface in the `showDetails` grid as a secondary signal but no longer drive the headline number.
-
-### AA.3 Carry body coverage cheaply on every card
-`src/hooks/useArticles.ts`:
-- Add `bodyLanguages: SupportedLanguage[]` to `DisplayArticle`. Compute once in the `.map(...)` projection: `Object.keys(article.content).filter(k => typeof article.content[k] === 'string' && (article.content[k] as string).trim().length > 0)`.
-- Keep returned payload small — we project, we don't ship the full `content` JSONB to the card.
-
-### AA.4 JSON-side coverage parity
-`src/lib/unifiedArticleUtils.ts` + `src/lib/multilingualArticleUtils.ts`:
-- When merging JSON entries, attach `bodyLanguages` derived from `getArticleCoverageMap(article.id)` (already present in `src/lib/i18n/coverageData.ts`). For JSON articles with no coverage record, default to `['en']`. This stops the 9/9 lie for JSON dupes too.
-
-### AA.5 Wire it in
-`src/components/ui/ArticleCard.tsx`:
-- Pass `availableLanguagesOverride={article.bodyLanguages}` to `<LanguageAvailabilityBadge>`. Keep `content={normalizedTitle}` so the existing per-language grid (in `showDetails`) still works.
-
-**Blast radius:** 4 files, all presentation/data-shape. JSON-only callers untouched. No tests need rewriting; add one targeted unit test that an English-only DB article reports `1/9`.
+No broad rewrite. No new framework. No public write access. No change to the slug/article resolver hierarchy. No destructive deletes on production rows.
 
 ---
 
-## Phase AB — Restore "newest first" on Home and Articles (logic + observability)
+## Phase G0 — Documentation-first freeze and parity check
 
-### AB.1 Documentation-first
-- Append to `.lovable/plan.md` and `docs/architecture/SYSTEM_ARCHITECTURE.md`:  *"List-page merge uses a cross-source alias index. Same article from JSON and DB must collapse to one card. DB wins on tie-break."*
-- Add `mem://articles/cross-source-alias-dedup` and update existing `mem://articles/unified-source-deduplication` with a "Phase AB amendment" cross-link.
+**Docs**
+- `.lovable/plan.md`: dated “Geo Automation Recovery” section pointing at this plan.
+- `docs/ADMIN_JOBS.md`: add the observed failure mode (single AI call can exceed self-pump 150 s window; per-article heartbeat is too coarse).
+- `docs/architecture/SOURCES_PINS_SYSTEM.md`: state the current truth — maps render only when pins exist; empty-pin articles need enrichment, not UI pretending.
 
-### AB.2 Cross-source alias dedup (no behaviour change for unique rows)
-`src/lib/unifiedArticleUtils.ts`:
-- Build `dbIdentifiers: Set<string>` by walking DB rows and inserting **all** of `{normalizeSlugKey(slug), slug_alias, id}` (lowercased, trimmed, trailing-punctuation stripped — matches `src/lib/slugResolver.ts`).
-- When walking JSON rows, derive candidate keys `{id, normalizeSlugKey(slug), SLUG_TO_ID_MAP[slug]}` (re-uses the existing alias table). Skip if any candidate is already in `dbIdentifiers`.
-- Tie-break the sort: when two rows share the same `date`, prefer `source === 'database'`.
+**Read-only validation before any edit**
+- Re-confirm: published count (60), with-pins (11), total pins (27), latest job statuses, active cron rows.
+- Reconcile the **44 vs 60** mismatch: is the admin page scoped (e.g. theme filter, React Query stale cache, only counting `og_image_status='active'`), or is it a deploy lag? Document the answer; do not patch UI counts until cause is named.
 
-### AB.3 Deterministic DB ordering
-`src/hooks/useArticles.ts`:
-- Chain `.order('published_date', { ascending: false }).order('created_at', { ascending: false })` so two same-day rows never flip between renders.
-
-### AB.4 Make degradation visible (don't break render-first/hydrate-second)
-`src/hooks/useArticles.ts`:
-- Export an `isDegraded: boolean` (true when the watchdog timed out / aborted on the last attempt). React Query already settles; this is read off the existing structured `articles_fetch_degraded` log line.
-- `src/pages/Home.tsx` and `src/pages/Articles.tsx`: when `isDegraded`, render a small `bg-card` pill near the sort controls: *"Showing cached articles — syncing latest…"* with a single "Retry" button calling `refetch()`. Pill disappears as soon as `dbArticles` arrives. **Does not gate the grid** — the Phase X.8 invariant still holds.
-
-### AB.5 Observability
-- Lift the existing `articles_fetch_degraded` console.warn into `srangam_event_log` via a small fire-and-forget `supabase.from('srangam_event_log').insert(...)` (table already exists, RLS already accepts public inserts). Same JSON shape, now durable. Cost: 1 row per degraded session; well under noise floor.
-- Add `articles_merge_dedup` event once per session with `{ db_count, json_count, merged_count, dedup_drops }` so we can verify in production that the dedup change is doing real work.
-
-**Blast radius:** 4 files + 1 optional log row insert. No DB migration. Reverts independently per file.
+**Rollback**: docs only.
 
 ---
 
-## Phase AC — Regression guardrails (test only)
+## Phase G1 — Stabilize Pin Backfill (no schema change)
 
-`src/__tests__/responsive/` already houses targeted tests. Add:
-- `articles-merge-dedup.test.ts` — given DB row with `slug_alias='maritime-memories-…-complete'` and JSON row with `id='maritime-memories-south-india'`, expect **one** merged card and DB wins.
-- `language-badge-body-truth.test.tsx` — DB-source row with `bodyLanguages=['en']` renders `1/9`; JSON-source row with `bodyLanguages=['en','ta','hi']` renders `3/9`.
-- `articles-sort-determinism.test.ts` — two rows with identical `date`, DB row first.
+**Goal**: stop stalling, make cron + UI runs reliable end-to-end, preserve idempotency.
 
-No production code changes here; tests pin the invariants from AA and AB so future refactors fail loudly.
+**Files**
+- `supabase/functions/backfill-article-pins/index.ts`
+- `supabase/functions/_shared/jobs.ts` (only if a tiny reusable heartbeat helper is justified)
+- `src/pages/admin/GeographyMedia.tsx`
+- `docs/ADMIN_JOBS.md`
+
+**Surgical changes**
+1. **True async pump**: the HTTP entry validates auth, claims the chunk, returns `202 Accepted` immediately, and runs `EdgeRuntime.waitUntil(processChunkAndPump(...))`. The next self-pump is scheduled only after the chunk completes (or aborts cleanly), so the outer 150 s budget no longer caps cumulative AI latency across articles.
+2. **Chunk size = 1 in AI mode** for both UI bulk runs and the nightly cron. Deterministic-only runs may keep chunk_size=3.
+3. **Heartbeat during long AI**:
+   - `touchHeartbeat()` before evidence scan, after deterministic scan, immediately before AI call, and on a setInterval (~25 s) while the AI promise is pending. Cleared on settle.
+   - This kills the 90 s false-stall banner and the 5-minute watchdog reap during real work.
+4. **Bound AI input/latency**:
+   - Keep deterministic regex scan over the full text.
+   - For AI, feed a spatially focused window (paragraphs containing existing gazetteer hits ± neighbours; capped at e.g. 20–25 k chars) rather than the whole 75–85 k char article.
+   - Tighten per-article AI timeout (e.g. 45 s) inside `aiExtractPlaces` opts. If it trips, log + continue with deterministic-only pins. Never let one article eat the pump.
+5. **Idempotency preserved**: keep `upsert` on `(article_id, gazetteer_id)`, never delete; reruns are safe.
+6. **Fix admin totals**: when the UI inserts the job row it uses `limit` as `total`. Have the worker patch `total` to the real candidate count returned (already partially in place — make it the first action of chunk 0). Display `processed / actual_total`.
+7. **Re-entrancy guard hygiene**: the SQL guard already blocks fresh sweeps inside 30 min; document that a long manual run will skip the next nightly cron, which is the desired safety.
+
+**No DB schema migration expected.** All `srangam_admin_jobs` fields used by the code already exist in the live schema (verified).
+
+**Validation**
+- Run one zero-pin article manually → succeeds, heartbeat steady, no 504.
+- Run a 3-article bulk → all three terminal, no watchdog reap.
+- Confirm no duplicate rows in `srangam_article_pins` for any article.
+- Confirm admin “Total pins” and “With pins” counters climb after a run.
+- Tail logs for `IDLE_TIMEOUT` — expect zero.
+
+**Rollback**: revert two files; pin data is untouched.
 
 ---
 
-## What is explicitly NOT in this plan
+## Phase G2 — Make article geography visible to readers, only when truthful
 
-- No DB migration, no RLS change, no edge-function deploy.
-- No new tables, no schema bump on `srangam_articles`.
-- No change to `slugResolver`, `articleResolver`, or the article-detail page rendering.
-- No change to render-first/hydrate-second invariant (Phase X.8) or per-article pin map (Phase Y).
-- No mobile typography or layout changes (Phase P invariants untouched).
-- No restructuring of `MULTILINGUAL_ARTICLES`, `SLUG_TO_ID_MAP`, or the JSON corpus.
-- No re-introduction of any of the rejected approaches from previous rounds.
+**Goal**: readers immediately grasp Bharatvarsha reach; performance budgets intact; no fake maps.
 
-## Rollout & rollback
+**Files**
+- `src/components/oceanic/OceanicArticlePage.tsx`
+- `src/components/articles/ArticleMiniMap.tsx`
+- `src/components/imaging/ImagingLabLauncher.tsx`
+- `src/pages/MapsData.tsx`
+- `src/components/maps/ArticleAtlasMap.tsx`
+- `docs/architecture/SOURCES_PINS_SYSTEM.md`
 
-| Phase | Files | Revert cost | User-visible signal |
-|------|------|------|------|
-| AA | 4 files | per-file revert | badge reads body truth (1/9 today) |
-| AB | 4 files + 1 log insert | per-file revert | newest DB articles back on top; degraded pill on slow networks |
-| AC | tests only | drop file | CI red on regression |
+**Surgical UX**
+1. **Articles with pins**:
+   - Keep “Geographical Context” where it is (after main content) but render a compact summary strip immediately: `N places · confidence legend · top 3 place chips` — no Leaflet bundle needed for this.
+   - Lazy-mount `ArticleMiniMap` when the section enters viewport (IntersectionObserver) instead of only on click. Click can still toggle expand/collapse.
+2. **Articles without pins**:
+   - No empty map, no skeleton pretending. Keep universal Atlas / Map Explorer links and (admin only) the “Add geo-pins” deep-link. Today’s behaviour is correct; only add a small italic “Geography not yet mapped — opening soon as gazetteer expands” line if you approve.
+3. **Wire `/maps-data?focus=<slug>` for real**:
+   - `MapsData.tsx` reads `focus`, scrolls to the Article Atlas, and passes a filter into `ArticleAtlasMap` that highlights only that article’s places (others dim, not removed). On click of a focused marker, popup opens by default.
+4. **Fix deep-link semantics in `ArticleMiniMap` popups**:
+   - Replace `/atlas?id=<gazetteer_id>` (which keys against `public/atlas/atlas_nodes.json`, a different namespace) with `/maps-data?focus=<articleSlug>#place=<gazetteer_id>`, so the link lands on the live DB-driven atlas, not the static one.
+5. **Corpus reach signal on `/maps-data`**: one quiet line — `27 places mapped across 11 articles` (numbers pulled from `useArticleGeography`), no admin warnings exposed publicly.
 
-Each phase is independently shippable in the order AA → AB → AC. AA is the cheapest visible win and unblocks a truthful translation-roadmap discussion; AB restores the "latest on top" expectation without changing the merge contract elsewhere in the app.
+**Performance invariants** (must hold)
+- No Leaflet/Mapbox bundle on articles with zero pins.
+- No new per-article DB roundtrip — `ResolvedArticle.pins` remains the single source.
+- Phase X.8 render-first/hydrate-second contract untouched.
+- Phase Y “every pinned article surfaces ArticleMiniMap” invariant preserved.
+
+**Rollback**: presentation-only file reverts.
 
 ---
 
-## Phase AA + AB execution log (2026-05-29)
+## Phase G3 — Curated gazetteer expansion (additive only)
 
-- AA shipped: `LanguageAvailabilityBadge` now accepts `bodyContent` / `availableLanguagesOverride`; `useArticles` projects `bodyLanguages` from each DB row's `content` JSONB; `unifiedArticleUtils.mergeArticleSources` derives `bodyLanguages` for JSON rows from `getArticleCoverageMap()` (default `['en']`); `ArticleCard` plumbs the override through. Title-key fallback preserved for `MultilingualSearchResults` and other callers.
-- AB shipped: cross-source alias dedup in `mergeArticleSources` uses every DB identifier (`slug`, `slug_alias`, `id`) and every JSON candidate (`id`, normalised slug, `SLUG_TO_ID_MAP[slug]`); slug normalisation lowercased + trailing-punctuation stripped to match `slugResolver` policy. `filterUnifiedArticles` ties on date by preferring `source === 'database'`. `useAllArticles` adds secondary `.order('created_at', desc)` and exports `isDegraded`. Home + Articles render a single "Showing cached articles — syncing latest…" pill with a Retry button when `isDegraded || dbError`. Existing "Refreshing…" pill kept for the normal hydration path.
-- AB.5 partial: `articles_merge_dedup` event emitted to `console.info` on every merge that actually drops dupes. The DB-side `srangam_event_log` table does not exist in this project (verified), so durable logging is deferred to a future migration; no new table created in this phase (curation over expansion).
-- Verified facts that drove the fix: all 44 published DB rows have `content_keys = [en]`; JSON titles ship up to 9 locales; newest DB `published_date = 2026-05-27`, newest JSON `date = 2025-10-29`.
+**Goal**: pin counts cannot meaningfully grow if the gazetteer is missing the places articles actually discuss.
+
+**Approach**
+- Audit the 49 zero-pin published articles to extract the **recurring** place names (Satīsar, Srinagar, Pahalgam, Varāhamūla/Baramulla, Gopādri, Hinglaj, Kamakhya, Jakhbar, Dwārakā, Prabhāsa, Somnātha, the 12 Jyotirliṅga loci, Sapta-Sindhu sites, etc.).
+- Insert curated rows into `srangam_gazetteer` with `canonical_name`, full `name_variants[]` (including IAST + Hunterian + vernacular), `latitude/longitude`, `precision`, `era_tags`, `feature_type`, `country`, `external_refs` (Wikidata Q-id when available).
+- Use the **data-change tool** (insert) with explicit description rows per batch (no schema migration; production data is additive and immutable per your rule).
+- Keep AI as **curation support only**: the existing `pin_ai` path may *suggest* candidates, but only reviewed canonical rows become durable gazetteer entries. A later optional phase can add an `unmatched_candidates` queue; not in this pass.
+
+**Validation**
+- Re-run pin backfill with `skip_ai: true` on a small set first; expect pin growth driven by deterministic matches (confidence `B`), not noisy `C`.
+- Confirm new pins point at correct lat/lon by spot-check on the Article Atlas.
+
+**Rollback**: rows are additive; if one is wrong, curate (update) in a follow-up — never destructive delete.
+
+---
+
+## Phase G4 — Standardize the other background jobs to the G1 pattern
+
+**Surfaces to audit/standardize after G1 ships**
+- `extract-purana-references` (already chunked; needs same heartbeat-during-AI guarantee, true async pump, chunk_size=1 in AI mode).
+- `generate-article-og` (bulk branch already self-pumps per article; verify async pump + heartbeat before image API call).
+- `correlate-corpus` (single-shot; verify it heartbeats during the in-DB RPC and chunked inserts).
+- Any future deterministic analyzer.
+
+**Each must have**
+- Durable `srangam_admin_jobs` row.
+- Bounded chunk size.
+- Heartbeat during long AI/network waits, not just per-item.
+- Cancellation check between chunks.
+- Terminal `succeeded | failed | cancelled` always reached.
+- Cron re-entrancy guard at the SQL boundary.
+- Visible admin progress via existing `JobProgressCard`.
+
+**Cron handling**
+- Update schedules only after code is stable. Keep the current 20-article nightly pin cap until you approve a higher one. Document costs in `docs/ADMIN_JOBS.md`.
+
+**Rollback**: per-function, no coupled rollout.
+
+---
+
+## Phase G5 — Tests and observability guardrails
+
+**Tests**
+- Edge-function unit tests (Deno):
+  - chunk target selection (`only_zero_pin` branch returns expected set).
+  - idempotent upsert payload shape.
+  - pump continuation decision (done vs. not done).
+  - heartbeat wrapper fires at the right boundaries.
+- Frontend tests (Vitest):
+  - article with pins → summary strip + lazy `ArticleMiniMap` render.
+  - article without pins → no map bundle import.
+  - `/maps-data?focus=slug` → Article Atlas receives filter + scrolls into view.
+
+**Operational checks after each phase**
+- `srangam_admin_jobs`: latest jobs reach a terminal state, no `watchdog: no heartbeat`.
+- Edge logs: zero `IDLE_TIMEOUT` for pin backfill.
+- Public article pages: no Leaflet in critical path for zero-pin articles.
+
+---
+
+## Out of scope (explicitly)
+
+- No rewrite of the article system, resolver, or list pages.
+- No edits to `src/integrations/supabase/{client,types}.ts` or `.env`.
+- No new public-write RLS policies.
+- No placeholder maps for zero-pin articles.
+- No uncontrolled AI expansion of the gazetteer.
+- No nightly cap increase without an explicit cost note in `docs/ADMIN_JOBS.md`.
+- No changes to Phase X.8 / Phase Y / Phase AA-AB invariants.
+
+## Recommended implementation order
+
+1. **G0 + G1** — unblock the stuck pipeline; this is the only phase that fixes the live symptom in the screenshot.
+2. **G2** — make geography visible to readers truthfully; wires `/maps-data?focus=`.
+3. **G3** — curated gazetteer expansion so G1 starts producing real pin growth.
+4. **G4** — apply the G1 pattern to the other background jobs.
+5. **G5** — lock the invariants with tests and post-deploy checks.
+
+## Risk and rollback summary
+
+| Phase | Files touched | Risk | Rollback |
+|------|---------------|------|----------|
+| G0 | docs only | none | discard doc edits |
+| G1 | 1 edge function + 1 admin page + 1 shared helper (maybe) | medium (async semantics) | revert files; pin data intact |
+| G2 | 5 frontend files + 1 doc | low (presentation) | per-file revert |
+| G3 | data inserts into `srangam_gazetteer` | low (additive) | curate, never delete |
+| G4 | per-edge-function | medium | per-function revert |
+| G5 | new test files | none | drop test files |
