@@ -70,18 +70,24 @@ serve(async (req) => {
       }
     };
 
-    // CX.2: consume structured stats_detail shape. Falls back to mode:'count_only'
-    // when either snapshot is pre-CX.2 (themes/top_tags shipped as flat arrays via _compat,
-    // or stats_detail missing entirely). Never crashes on legacy snapshots — frozen baseline
-    // snapshots prior to 2026-05-29 are immutable by policy.
+    // CX.3: identity-set diffing when both snapshots carry identity_sets.
+    // Falls back to CX.2 structured-shape mode, then to mode:'count_only' for
+    // pre-CX.2 snapshots. Frozen baseline snapshots prior to 2026-05-29 stay
+    // immutable by policy — never UPDATE old rows.
+    type DiffMode = 'identity' | 'structured' | 'count_only';
     const detailedChanges: {
-      mode: 'identity' | 'count_only';
+      mode: DiffMode;
       addedArticles: any[];
       updatedArticles: any[];
       removedArticles: any[];
       addedTerms: any[];
+      removedTerms: any[];
       addedTags: any[];
+      removedTags: any[];
       newThemes: string[];
+      removedThemes: string[];
+      newModules: string[];
+      removedModules: string[];
       reason?: string;
     } = {
       mode: 'identity',
@@ -89,44 +95,82 @@ serve(async (req) => {
       updatedArticles: [],
       removedArticles: [],
       addedTerms: [],
+      removedTerms: [],
       addedTags: [],
+      removedTags: [],
       newThemes: [],
+      removedThemes: [],
+      newModules: [],
+      removedModules: [],
     };
 
     const currentDetail = (current.stats_detail ?? {}) as any;
     const previousDetail = (previous.stats_detail ?? {}) as any;
+    const currentIdentity = (current as any).identity_sets as Record<string, string[]> | null;
+    const previousIdentity = (previous as any).identity_sets as Record<string, string[]> | null;
 
-    // Themes: structured shape is Record<string, number>; pre-CX.2 was a flat string[].
-    const currentThemes = currentDetail.themes;
-    const previousThemes = previousDetail.themes;
-    const themesAreStructured =
-      currentThemes && typeof currentThemes === 'object' && !Array.isArray(currentThemes) &&
-      previousThemes && typeof previousThemes === 'object' && !Array.isArray(previousThemes);
+    const diffSets = (curr: string[] = [], prev: string[] = []) => {
+      const prevSet = new Set(prev);
+      const currSet = new Set(curr);
+      return {
+        added: curr.filter((x) => !prevSet.has(x)),
+        removed: prev.filter((x) => !currSet.has(x)),
+      };
+    };
 
-    // Tags: structured shape is Array<{name, usage_count}>; pre-CX.2 was a flat string[].
-    const currentTags = currentDetail.top_tags;
-    const previousTags = previousDetail.top_tags;
-    const tagsAreStructured =
-      Array.isArray(currentTags) && currentTags.every((t: any) => t && typeof t === 'object' && 'name' in t) &&
-      Array.isArray(previousTags) && previousTags.every((t: any) => t && typeof t === 'object' && 'name' in t);
-
-    if (themesAreStructured && tagsAreStructured) {
-      const newThemes = Object.keys(currentThemes).filter((t) => !(t in previousThemes));
-      detailedChanges.newThemes = newThemes;
-      detailedChanges.addedArticles = newThemes.map((theme: string) => ({
-        theme,
-        note: 'New theme detected',
-      }));
-
-      const prevTagNames = new Set(previousTags.map((t: any) => t.name));
-      detailedChanges.addedTags = currentTags
-        .filter((t: any) => !prevTagNames.has(t.name))
-        .map((t: any) => t.name);
+    if (currentIdentity && previousIdentity) {
+      const a = diffSets(currentIdentity.article_slugs, previousIdentity.article_slugs);
+      const t = diffSets(currentIdentity.term_keys, previousIdentity.term_keys);
+      const g = diffSets(currentIdentity.tag_names, previousIdentity.tag_names);
+      const th = diffSets(currentIdentity.theme_names, previousIdentity.theme_names);
+      const m = diffSets(currentIdentity.module_names, previousIdentity.module_names);
+      detailedChanges.mode = 'identity';
+      detailedChanges.addedArticles = a.added.map((slug) => ({ slug }));
+      detailedChanges.removedArticles = a.removed.map((slug) => ({ slug }));
+      detailedChanges.addedTerms = t.added;
+      detailedChanges.removedTerms = t.removed;
+      detailedChanges.addedTags = g.added;
+      detailedChanges.removedTags = g.removed;
+      detailedChanges.newThemes = th.added;
+      detailedChanges.removedThemes = th.removed;
+      detailedChanges.newModules = m.added;
+      detailedChanges.removedModules = m.removed;
     } else {
-      detailedChanges.mode = 'count_only';
-      detailedChanges.reason =
-        'One or both snapshots predate CX.2 structured stats_detail (frozen baseline). Only count-based deltas are available.';
+      // CX.2 structured-shape fallback.
+      const currentThemes = currentDetail.themes;
+      const previousThemes = previousDetail.themes;
+      const themesAreStructured =
+        currentThemes && typeof currentThemes === 'object' && !Array.isArray(currentThemes) &&
+        previousThemes && typeof previousThemes === 'object' && !Array.isArray(previousThemes);
+
+      const currentTags = currentDetail.top_tags;
+      const previousTags = previousDetail.top_tags;
+      const tagsAreStructured =
+        Array.isArray(currentTags) && currentTags.every((t: any) => t && typeof t === 'object' && 'name' in t) &&
+        Array.isArray(previousTags) && previousTags.every((t: any) => t && typeof t === 'object' && 'name' in t);
+
+      if (themesAreStructured && tagsAreStructured) {
+        detailedChanges.mode = 'structured';
+        const newThemes = Object.keys(currentThemes).filter((t) => !(t in previousThemes));
+        detailedChanges.newThemes = newThemes;
+        detailedChanges.addedArticles = newThemes.map((theme: string) => ({
+          theme,
+          note: 'New theme detected (sample-based; identity diff unavailable)',
+        }));
+
+        const prevTagNames = new Set(previousTags.map((t: any) => t.name));
+        detailedChanges.addedTags = currentTags
+          .filter((t: any) => !prevTagNames.has(t.name))
+          .map((t: any) => t.name);
+        detailedChanges.reason =
+          'One or both snapshots predate CX.3 identity_sets. Showing sample-based deltas only.';
+      } else {
+        detailedChanges.mode = 'count_only';
+        detailedChanges.reason =
+          'One or both snapshots predate CX.2 structured stats_detail (frozen baseline). Only count-based deltas are available.';
+      }
     }
+
 
     const summary = {
       changes,

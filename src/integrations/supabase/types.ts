@@ -765,6 +765,7 @@ export type Database = {
           google_drive_file_id: string | null
           google_drive_share_url: string | null
           id: string
+          identity_sets: Json | null
           modules_count: number | null
           snapshot_date: string
           stats_detail: Json | null
@@ -787,6 +788,7 @@ export type Database = {
           google_drive_file_id?: string | null
           google_drive_share_url?: string | null
           id?: string
+          identity_sets?: Json | null
           modules_count?: number | null
           snapshot_date?: string
           stats_detail?: Json | null
@@ -809,6 +811,7 @@ export type Database = {
           google_drive_file_id?: string | null
           google_drive_share_url?: string | null
           id?: string
+          identity_sets?: Json | null
           modules_count?: number | null
           snapshot_date?: string
           stats_detail?: Json | null
