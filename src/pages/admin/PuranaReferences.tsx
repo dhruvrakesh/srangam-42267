@@ -355,42 +355,44 @@ export default function PuranaReferences() {
             <div className="text-center py-8 text-muted-foreground">Loading references...</div>
           ) : references && references.length > 0 ? (
             <div className="overflow-x-auto">
-              <Table>
+              <Table className="min-w-[1100px]">
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Article</TableHead>
-                    <TableHead>Purana</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Citation</TableHead>
-                    <TableHead>Confidence</TableHead>
-                    <TableHead>Claim</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead className="w-[220px]">Article</TableHead>
+                    <TableHead className="w-[140px]">Purana</TableHead>
+                    <TableHead className="w-[120px]">Category</TableHead>
+                    <TableHead className="w-[140px]">Citation</TableHead>
+                    <TableHead className="w-[110px]">Confidence</TableHead>
+                    <TableHead className="min-w-[280px]">Claim</TableHead>
+                    <TableHead className="w-[110px]">Status</TableHead>
+                    <TableHead className="w-[120px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {references.map((ref) => (
+                  {references.map((ref) => {
+                    const articleTitle = ref.srangam_articles?.title?.en || ref.srangam_articles?.slug || 'Unknown';
+                    return (
                     <TableRow key={ref.id}>
-                      <TableCell className="font-medium">
-                        {ref.srangam_articles?.title?.en || ref.srangam_articles?.slug || 'Unknown'}
+                      <TableCell className="font-medium w-[220px]">
+                        <span className="block truncate" title={articleTitle}>{articleTitle}</span>
                       </TableCell>
-                      <TableCell>{ref.purana_name}</TableCell>
-                      <TableCell>
+                      <TableCell className="w-[140px]">{ref.purana_name}</TableCell>
+                      <TableCell className="w-[120px]">
                         <PuranaCategoryBadge category={ref.purana_category || 'Other'} />
                       </TableCell>
-                      <TableCell className="font-mono text-sm">
+                      <TableCell className="font-mono text-sm w-[140px]">
                         {ref.reference_text || '-'}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="w-[110px]">
                         <ConfidenceBadge score={ref.confidence_score || 0} />
                       </TableCell>
-                      <TableCell className="max-w-xs">
+                      <TableCell className="min-w-[280px]">
                         <TooltipProvider>
                           <Tooltip>
-                            <TooltipTrigger>
-                              <p className="truncate text-sm text-muted-foreground">
+                            <TooltipTrigger asChild>
+                              <span className="block line-clamp-2 break-words text-sm text-muted-foreground text-left">
                                 {ref.claim_made || 'No claim recorded'}
-                              </p>
+                              </span>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-md">
                               <p>{ref.claim_made || 'No claim recorded'}</p>
@@ -398,7 +400,7 @@ export default function PuranaReferences() {
                           </Tooltip>
                         </TooltipProvider>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="w-[110px]">
                         <Badge variant={
                           ref.validation_status === 'verified' ? 'default' :
                           ref.validation_status === 'rejected' ? 'destructive' : 
@@ -407,8 +409,8 @@ export default function PuranaReferences() {
                           {ref.validation_status || 'pending'}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
+                      <TableCell className="w-[120px]">
+                        <div className="flex gap-2 whitespace-nowrap">
                           {ref.validation_status === 'pending' && (
                             <>
                               <Button
@@ -440,7 +442,8 @@ export default function PuranaReferences() {
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))}
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
