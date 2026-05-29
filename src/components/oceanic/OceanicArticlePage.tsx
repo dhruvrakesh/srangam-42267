@@ -296,7 +296,10 @@ export const OceanicArticlePage: React.FC = () => {
               </Card>
 
 
-              {/* Pins Map — Phase H.2: hide entirely when no pins, lazy-load Leaflet on demand */}
+              {/* Geographical Context — Phase G2: auto-mount Leaflet via
+                  IntersectionObserver so readers immediately see the map when
+                  they scroll near it, instead of hiding it behind a click.
+                  Bundle remains lazy: no Leaflet on articles with zero pins. */}
               {article.pins.length > 0 && (
                 <Card>
                   <CardHeader>
@@ -304,6 +307,16 @@ export const OceanicArticlePage: React.FC = () => {
                       <MapPin className="h-5 w-5" />
                       Geographical Context
                     </CardTitle>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {article.pins.length} place{article.pins.length === 1 ? '' : 's'} referenced ·
+                      {' '}
+                      <Link
+                        to={`/maps-data?focus=${article.slug_alias || article.slug}`}
+                        className="text-primary hover:underline"
+                      >
+                        View in Article Atlas →
+                      </Link>
+                    </p>
                   </CardHeader>
                   <CardContent>
                     <div className="grid sm:grid-cols-2 gap-3 mb-4">
@@ -329,26 +342,7 @@ export const OceanicArticlePage: React.FC = () => {
                         </Button>
                       ))}
                     </div>
-                    <Button
-                      variant="secondary"
-                      className="w-full gap-2"
-                      onClick={() => setShowInteractiveMap((v) => !v)}
-                      aria-expanded={showInteractiveMap}
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      {showInteractiveMap ? 'Hide Interactive Map' : 'View Interactive Map'}
-                    </Button>
-                    {showInteractiveMap && (
-                      <div className="mt-4">
-                        <React.Suspense
-                          fallback={
-                            <div className="w-full h-[360px] rounded-md border border-border bg-muted/20 animate-pulse" />
-                          }
-                        >
-                          <ArticleMiniMap slug={article.slug} pins={article.pins} />
-                        </React.Suspense>
-                      </div>
-                    )}
+                    <LazyArticleMap slug={article.slug} pins={article.pins} />
                   </CardContent>
                 </Card>
               )}
