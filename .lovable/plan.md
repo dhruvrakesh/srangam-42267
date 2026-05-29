@@ -1,159 +1,176 @@
-## Article Rendering Healing — Phases AR.1 → AR.3 (enterprise-grade, surgical)
+## Phase CX.1 — Accurate context metrics (both edge functions, no schema change)
 
-Scope is intentionally narrow: three independently shippable, independently revertable phases against `src/components/articles/enhanced/ProfessionalTextFormatter.tsx`, with one companion edit in `StickyTableOfContents.tsx` (AR.3 only) and one CSS rule in `src/index.css` (AR.2 only). **No DB migration, no edge-function change, no route change, no schema change, no Tailwind class churn beyond what each phase strictly requires.**
+**Single goal:** the context system stops lying. Every count rendered or persisted reflects the live database. Touches two edge functions plus documentation. No migration. No client change. No RLS change. No GDrive auth change. CX.2 (pipeline unification) and CX.3 (identity diffs + migration) stay deferred until CX.1 is verified in production.
 
-Pre-flight context (verified, not assumed):
-- `ProfessionalTextFormatter` is consumed by `src/components/articles/ArticlePage.tsx` (`enableDropCap={true}`) and `src/components/oceanic/OceanicArticlePage.tsx` (`enableDropCap={false}`). AR.2 fixes a visible bug on the former; the latter is untouched in behaviour.
-- `StickyTableOfContents` is only mounted by `src/pages/articles/JambudvipaConnected.tsx` with `items={[]}` today. AR.3's TOC anchor work is **enablement** for future curated TOCs — it does not change current rendered output until a caller supplies real items.
-- `src/lib/culturalTermEnhancer.ts` protects HTML and markdown tables but **does not skip fenced code/mermaid blocks**, so stray `{{cultural:…}}` tokens can land in fences. AR.1's exclusion of the `code` renderer from token resolution is the safety net for that case (tokens render as literal text inside `<code>` instead of corrupting the block).
-- Memory invariants honoured: MV-02 mobile prose (`prose-lg sm:prose-xl`, `inline` cultural chips, `overflow-x-clip min-w-0`), Phase O `rehype-sanitize` schema, EvidenceTable detection, lazy `ArticleMiniMap`, Phase Z pin automation — all out of scope and untouched.
+### Pre-flight findings (verified against live DB + code, 2026-05-29)
 
-Documentation-first per user preference: each phase appends a dated entry to `.lovable/plan.md` and `docs/IMPLEMENTATION_STATUS.md` (frozen-baseline note + what changed), and AR.3 closes with a `mem://index.md` Core invariant update.
+| Bug | Location | Evidence |
+|---|---|---|
+| `terms_count` capped at 100 forever | `context-save-drive` line ~41 `.limit(100)` + line ~303 `terms?.length` | Last 4 snapshots all report `terms_count=100` |
+| `tags_count` capped at 50 forever | `context-save-drive` line ~57 `.limit(50)` + line ~304 `tags?.length` | Last 4 snapshots all report `tags_count=50` |
+| `cross_refs_count` capped at 100 forever | `context-save-drive` line ~49 `.limit(100)` + line ~305 `crossRefs?.length` | Last 4 snapshots all report `cross_refs_count=100` |
+| `modules_count` capped at modules-in-top-100-terms | `context-save-drive` line ~306 `new Set(terms.map(...))` | Always ≤6 |
+| `avg_cross_ref_strength` biased to latest 100 | `context-save-drive` line ~290 | Sample-only |
+| Every count renders "N/A" in bundle | `context-bundle-generator` lines ~112-126 — destructures `data` from `head:true` query (always `null`) | Bundle markdown ships with "N/A records" placeholders |
+| Wrong language list in bundle | `context-bundle-generator` line ~156 — claims "Pali"; omits "Pnar" | Diverges from `src/lib/i18n.ts` (`pn = Pnar`) |
+| Hardcoded "12 modules" in bundle | `context-bundle-generator` line ~157 | Should derive |
+| Correlation model invisible | both functions | `srangam_corpus_correlations_snapshot` is never read |
 
----
+### Code changes
 
-### Phase AR.1 — Single-pass article rendering (P0, structural corruption)
+**File 1: `supabase/functions/context-save-drive/index.ts`**
 
-**Problem (verified).** `renderWithCulturalTerms()` splits the body by `\n` and starts a *new* `<ReactMarkdown>` whenever a line contains `{{cultural:…}}`. Any block whose syntax spans multiple lines — GFM tables, fenced ```mermaid / ```code, multi-line blockquotes, nested lists, multi-paragraph list items — is torn across separate parses and mis-rendered. With `autoHighlightTerms=true` (default) this fires on essentially every article. The non-cultural branch already renders through a single `<ReactMarkdown>`, so the cultural branch is the only divergent path.
-
-**Fix — let ReactMarkdown parse blocks once; resolve tokens in leaf renderers.**
-
-1. Replace the body of `renderWithCulturalTerms(text)` with a single render (both branches collapse):
-   ```tsx
-   return (
-     <ReactMarkdown components={customRenderers} rehypePlugins={ARTICLE_REHYPE_PLUGINS}>
-       {text}
-     </ReactMarkdown>
-   );
-   ```
-   Delete `segments[]`, `currentMarkdown`, the line loop, the `parse(htmlFragment)` calls, and all per-line heading/list/blockquote re-wrapping.
-
-2. Add a leaf-level token resolver in the component body:
-   ```tsx
-   const CULTURAL_RE = /\{\{cultural:([^}]+)\}\}/g;
-   const resolveCulturalTokens = (children: React.ReactNode): React.ReactNode => {
-     if (!enableCulturalTerms) return children;
-     return React.Children.map(children, (child, i) => {
-       if (typeof child !== 'string') return child;        // pre-rendered elements pass through
-       if (child.indexOf('{{cultural:') === -1) return child;
-       const out: React.ReactNode[] = [];
-       let last = 0, m: RegExpExecArray | null;
-       const re = new RegExp(CULTURAL_RE.source, 'g');     // fresh per call (no lastIndex state)
-       while ((m = re.exec(child)) !== null) {
-         if (m.index > last) out.push(child.slice(last, m.index));
-         const term = m[1].trim().toLowerCase();
-         out.push(
-           <CulturalTermTooltip key={`ct-${i}-${m.index}`} term={term}>
-             <span className="cultural-term-highlight">{toTitleCase(term)}</span>
-           </CulturalTermTooltip>
-         );
-         last = re.lastIndex;
-       }
-       if (last < child.length) out.push(child.slice(last));
-       return <>{out}</>;
-     });
-   };
-   ```
-
-3. Apply `resolveCulturalTokens(children)` **only** inside these renderers: `p`, `li`, `blockquote`, `strong`, `em`, `h1`, `td`, `th`. For `h2`/`h3` wrap **only** the inner `<span className="min-w-0 flex-1 …">{children}</span>` — never the `§`/`◆` icon span. **Do not** modify the `code` renderer (safety net for the enhancer's fence-unaware behaviour confirmed in context revival).
-
-4. In `extractTextFromNode()`, strip token wrappers so EvidenceTable detection and table cells see clean text:
-   ```ts
-   if (typeof node === 'string') return node.replace(/\{\{cultural:([^}]+)\}\}/g, '$1');
-   ```
-
-5. Remove the now-dead `import parse from 'html-react-parser'` (only the line-split path used it). Leave the dependency in `package.json` untouched — out of scope, and other code may import it elsewhere; verify before deleting in a later cleanup pass.
-
-**Strictly do not change.** `getText()` pipeline, `enhanceTextWithCulturalTerms`, `ARTICLE_REHYPE_PLUGINS` / sanitize schema, `EvidenceTable` / `isEvidenceTable` / `MermaidBlock`, any Tailwind class on any renderer, drop-cap classes (AR.2 territory).
-
-**Acceptance.** Author a private preview article containing all four blocks, each with ≥1 cultural term:
-(a) 6-column evidence table, (b) fenced ```mermaid block, (c) 3-line blockquote, (d) nested bulleted list. All four render structurally intact; `EvidenceTable` still triggers; hover tooltips work on prose terms; mermaid/code show literal `{{cultural:…}}` if any token lands inside (no break); console has no new warnings.
-
-**Risk + rollback.** Single-file change, ~120 lines removed and ~25 added. Revert = restore the file. Zero data implications.
-
----
-
-### Phase AR.2 — Drop cap on the opening paragraph only
-
-**Problem (verified visible bug on `/articles/*` rendered by `ArticlePage.tsx`).** `enableDropCap` attaches `first-letter:*` utilities to the `p` renderer; since `::first-letter` is per-block, every paragraph gets a giant burgundy initial.
-
-**Fix.**
-1. Remove the three `enableDropCap && 'first-letter:*'` lines from the `p` renderer (formatter ~lines 343–345).
-2. On the outer prose container (formatter line ~624), gate via class:
-   ```tsx
-   className={cn('prose prose-lg sm:prose-xl max-w-none article-content min-w-0', enableDropCap && 'article-dropcap', className)}
-   ```
-3. Add to `src/index.css` (single rule, scoped — does not bleed):
-   ```css
-   .article-content.article-dropcap > p:first-of-type::first-letter {
-     font-family: var(--font-serif, ui-serif, Georgia, serif);
-     font-size: 3.75rem;
-     font-weight: 700;
-     color: hsl(var(--burgundy));
-     float: left;
-     margin-right: 0.75rem;
-     margin-top: 0.25rem;
-     line-height: 1;
-   }
-   ```
-
-**Acceptance.** `/articles/*` (ArticlePage) shows the drop cap on the article's first paragraph only; subsequent paragraphs render normally. Oceanic article pages (drop cap disabled) unchanged.
-
-**Risk + rollback.** Two-file change. Revert = restore `p` renderer + delete CSS rule.
-
----
-
-### Phase AR.3 — Whitespace-safe normalization, TOC anchors (enablement), log cleanup
-
-Three independent micro-fixes; each can be cherry-shipped.
-
-**1. Whitespace (formatter line 85).** `text.trim().replace(/^\s+/gm, '')` strips every line's leading whitespace, flattening nested list indentation and corrupting indented/fenced code on the input side. Replace with a blank-line collapser only:
+Add a clean "authoritative counts" block before any content fetches:
 ```ts
-text = text.trim().replace(/\n{3,}/g, '\n\n');
+// Authoritative counts — head:true, count:'exact' is cheap and not row-bounded.
+const [
+  { count: articlesCount },
+  { count: termsCount },
+  { count: tagsCount },
+  { count: crossRefsCount },
+] = await Promise.all([
+  supabase.from('srangam_articles').select('id', { head: true, count: 'exact' }).eq('status', 'published'),
+  supabase.from('srangam_cultural_terms').select('id', { head: true, count: 'exact' }),
+  supabase.from('srangam_tags').select('id', { head: true, count: 'exact' }),
+  supabase.from('srangam_cross_references').select('id', { head: true, count: 'exact' }),
+]);
+
+// Distinct modules — paginate `module` (no schema helper allowed in CX.1).
+const modulesCount = await countDistinctModules(supabase); // 1000-row pages until exhausted
+
+// Latest correlation snapshot — small, single row + 5-row companion query.
+const { data: latestCorrelation } = await supabase
+  .from('srangam_corpus_correlations_snapshot')
+  .select('job_id, computed_at')
+  .order('computed_at', { ascending: false })
+  .limit(1)
+  .maybeSingle();
+
+let topCorrelationPairs: any[] = [];
+let correlationPairCount = 0;
+if (latestCorrelation?.job_id) {
+  const { count } = await supabase
+    .from('srangam_corpus_correlations_snapshot')
+    .select('article_a', { head: true, count: 'exact' })
+    .eq('job_id', latestCorrelation.job_id);
+  correlationPairCount = count ?? 0;
+  const { data: top } = await supabase
+    .from('srangam_corpus_correlations_snapshot')
+    .select('article_a, article_b, jaccard, shared_total')
+    .eq('job_id', latestCorrelation.job_id)
+    .order('jaccard', { ascending: false })
+    .limit(5);
+  topCorrelationPairs = top ?? [];
+}
 ```
 
-**2. TOC anchors (enablement).** Today, headings emit no `id`, so `StickyTableOfContents.scrollToSection` silently no-ops. The only mount today passes `items={[]}` (dormant), so this change is risk-free *and* future-enabling. Centralise slugging so formatter ids and TOC ids cannot drift:
-- Add `src/lib/headingSlug.ts`:
-  ```ts
-  export const slugifyHeading = (s: string): string =>
-    s.normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
-     .toLowerCase().replace(/[^a-z0-9]+/g, '-')
-     .replace(/^-+|-+$/g, '').slice(0, 50);
-  ```
-- In the formatter add a small `extractHeadingText(children)` mirroring `extractTextFromNode` (string-coercion only; strips `{{cultural:…}}` wrapper to inner text so id matches what readers see).
-- In the `h1` renderer, `h2` renderer's outer `<h2>` (not the wrapping `<div>`), and `h3` renderer, set `id={slugifyHeading(extractHeadingText(children))}`.
-- In `StickyTableOfContents.extractTableOfContents`, replace the inline slug with `slugifyHeading(title)` so both sides match by construction.
-- Document the single-source-of-truth contract in `docs/ARTICLE_DISPLAY_GUIDE.md`.
+Keep the existing limited fetches (`articles` for top-5 list, `terms .limit(100)`, `tags .limit(50)`, `crossRefs .limit(100)`) — but **only** to render the human-readable top-N sections of the markdown. They no longer feed any persisted count.
 
-**3. Log cleanup.** Guard the per-table `console.log('[TableExtraction]', …)` (formatter ~lines 595–599) behind `if (import.meta.env.DEV)`. Keep the `console.error` in the `catch` (observability).
+Rebuild `stats_detail` as a structured object:
+```ts
+const themesObject: Record<string, number> = {};
+for (const a of (allPublishedArticlesForThemes ?? [])) {
+  themesObject[a.theme] = (themesObject[a.theme] ?? 0) + 1;
+}
+// allPublishedArticlesForThemes = a separate slim fetch of just `theme` for ALL published
+// articles (no .limit) — already cheap because we only select one column.
 
-**Acceptance.** Nested lists and fenced code retain indentation in rendered output; if a consumer supplies a non-empty `items` array, clicking entries scrolls to the matching `<h2>` / `<h3>` and the active-section highlight tracks scroll; production console no longer prints `[TableExtraction]`.
+const statsDetail = {
+  generated_with: 'CX.1',
+  sample_sizes: { terms: 100, tags: 50, cross_refs: 100 },
+  themes: themesObject,                                  // { theme: count }
+  top_tags: (tags ?? []).map(t => ({ name: t.tag_name, usage_count: t.usage_count })),
+  top_terms: (terms ?? []).map(t => ({ term: t.term, module: t.module, usage_count: t.usage_count })),
+  avg_cross_ref_strength_sampled:
+    crossRefs && crossRefs.length > 0
+      ? crossRefs.reduce((acc, r) => acc + (r.strength ?? 0), 0) / crossRefs.length
+      : null,
+  correlation: {
+    pair_count: correlationPairCount,
+    computed_at: latestCorrelation?.computed_at ?? null,
+    top_pairs: topCorrelationPairs,                      // [{article_a, article_b, jaccard, shared_total}]
+  },
+  // CX.1-only compat shim. context-diff-generator currently reads these as flat arrays.
+  // CX.2 retires both fields when it rewires the diff to read the structured shape above.
+  _compat: {
+    themes: Object.keys(themesObject),
+    top_tags: (tags ?? []).map(t => t.tag_name),
+  },
+};
+```
 
-**Risk + rollback.** Touches two files + one new tiny lib file. Revert each item independently.
+Use the authoritative counts in **both** the markdown body and the `.insert(...)` payload:
+```ts
+.insert({
+  ...existingFields,
+  articles_count: articlesCount ?? 0,
+  terms_count:    termsCount    ?? 0,
+  tags_count:     tagsCount     ?? 0,
+  cross_refs_count: crossRefsCount ?? 0,
+  modules_count:  modulesCount,
+  stats_detail:   statsDetail,
+  triggered_by:   'manual',
+  status:         'success',
+})
+```
+
+Add a "## Corpus Correlations" section to the markdown body (pair count, `computed_at`, top-5 pairs by jaccard with the two slug placeholders — resolved by a small `id → slug` lookup over the 10 distinct article ids in the top-5; one extra cheap `.in('id', [...])` query). Section is **omitted** cleanly if `latestCorrelation` is null.
+
+**File 2: `supabase/functions/context-bundle-generator/index.ts`**
+
+Three surgical fixes, nothing else:
+1. Destructure `count` (not `data`) from every `head:true` count query:
+   ```ts
+   const { count: articleCount } = await supabase.from('srangam_articles')…
+   ```
+   Apply to all four counts. Stale `data` variable goes.
+2. Replace the languages line:
+   ```
+   - **Languages Supported**: 9 (English, Tamil, Telugu, Kannada, Bengali, Assamese, Pnar, Hindi, Punjabi)
+   ```
+   (Order matches `supportedLanguages` declaration in `src/lib/i18n.ts`.)
+3. Replace the hardcoded `"12 specialized cultural term modules"` with a derived value from the same `countDistinctModules()` helper used in CX.1 (the helper goes into CX.1; bundle-generator imports the duplicated logic inline for now — CX.2 lifts it to `_shared/`).
+4. Append the same "## Corpus Correlations" markdown block as CX.1 (read-only — bundle-generator continues to write nothing to DB).
+
+**No edits** to GDrive auth/upload code in either function. **No edits** to `context-diff-generator` (the `_compat` shim keeps it running unchanged; CX.2 rewires it). **No edits** to `src/pages/admin/ContextManagement.tsx`. **No edits** to `supabase/config.toml`.
+
+### Out of scope for CX.1 (carried forward)
+
+- Extracting `_shared/google-drive.ts` and `_shared/context-markdown.ts` → **CX.2**.
+- Auto-invoking diff after snapshot insert + updating `changes_from_previous` → **CX.2**.
+- Recording `status:'failed'` rows on error → **CX.2**.
+- Demoting bundle-generator to export-only + relabelling admin button → **CX.2**.
+- `article_slugs`/`tag_names`/`term_keys jsonb` migration + identity-based set diffs → **CX.3**.
+- AI executive summary populating `context_summary` → **CX.4** (user-flagged).
+- Cron wiring for daily snapshots → **CX.5** (user-flagged).
+- Backfilling historic rows → out of scope permanently. RLS has no UPDATE policy on `srangam_context_snapshots` (admin INSERT + SELECT only). Per the standing "treat production data as immutable" rule, pre-CX.1 rows stay as a frozen baseline.
+
+### Documentation deliverables (documentation-first, written before code ships)
+
+- `.lovable/plan.md` — append "CX.1 (2026-05-29)" entry: scope, frozen-baseline note, rollback recipe (`git revert` of the two edge functions).
+- `docs/CONTEXT_MANAGEMENT_GUIDE.md` — new "Phase CX.1 (2026-05-29) — accurate metrics" section documenting: the two count-cap bugs, the bundle destructuring bug, the language/modules constants bug, the missing correlation surface, the new `stats_detail` shape, the `_compat` shim and its planned CX.2 retirement, and a temporal note that snapshots dated ≤ 2026-05-29 are the frozen pre-CX.1 baseline whose `terms_count/tags_count/cross_refs_count` are capped sample limits, not true totals.
+- `mem://index.md` Core invariant to add after CX.1 ships:
+  > "Context snapshot `*_count` columns and bundle counts are populated by `head:true, count:'exact'` queries; never by `.length` on a `.limit()`-bounded fetch and never by destructuring `data` from a `head:true` query. `stats_detail` carries `generated_with`, `sample_sizes`, structured `themes`/`top_tags`/`top_terms` with counts, and a `correlation` block (pair_count, computed_at, top 5 by jaccard) from `srangam_corpus_correlations_snapshot`. `_compat` flat arrays exist solely to keep `context-diff-generator` running until CX.2 retires them. The bundle markdown's language list mirrors `src/lib/i18n.ts` exactly — never hardcode 'Pali' or omit 'Pnar'. Historic snapshots before 2026-05-29 are a frozen baseline with capped counts — do not retro-fix."
+
+### Verification gate (must pass before CX.2 is planned)
+
+1. Deploy. Trigger one snapshot via `/admin/context` → "Sync Now".
+2. Run `SELECT articles_count, terms_count, tags_count, cross_refs_count, modules_count, stats_detail->'correlation'->'pair_count' FROM srangam_context_snapshots ORDER BY snapshot_date DESC LIMIT 1` — confirm every value matches a freshly-executed `SELECT count(*)` against the source tables.
+3. Open the GDrive markdown the snapshot uploaded — confirm headline counts match the row; top-N sections labelled "sampled"; "## Corpus Correlations" present with non-null `computed_at`.
+4. Click "Generate Bundle" — confirm bundle markdown shows real numbers (no "N/A"), language list reads `… Bengali, Assamese, Pnar, Hindi, Punjabi`, modules line shows the derived count, and "## Corpus Correlations" section is present.
+5. Invoke `context-diff-generator` between the new row and the previous one — must not throw, thanks to the `_compat` shim. Diff numbers will look enormous (real total vs old capped sample); this is **expected** and explicitly noted in the docs ("first CX.1 vs last pre-CX.1 diff is a category jump, not real corpus surge").
+6. `/admin/context` snapshot history card for the new row renders the new honest badges; older rows continue to render their historic (capped) values without UI breakage.
+
+### Risk + rollback
+
+Two edge function file edits. Zero DB writes outside the normal `.insert(...)` path. `_compat` shim guarantees existing diff calls keep working. Rollback = redeploy previous versions of the two `index.ts` files. Zero schema risk, zero migration, zero client risk.
 
 ---
 
-### Verification protocol (ship-by-ship)
+### Forward sketch (NOT part of this plan — for context only)
 
-1. AR.1 → preview the four-block test article (table / mermaid / blockquote / nested list, each with a cultural term). Tick: structural integrity, EvidenceTable detection log gone after AR.3, tooltips working, no console errors. Sanity-check one production article (e.g. *Jambudvīpa Connected*) renders identically minus the structural breaks.
-2. AR.2 → `/articles/<any>` shows drop cap on first paragraph only; an Oceanic article page is unchanged.
-3. AR.3 → indentation preserved in rendered nested lists/fenced code; manual smoke with a temp `items={[…]}` supplying real heading text confirms TOC navigation; production build console clean of `[TableExtraction]`.
+**CX.2 — Unify the pipeline (no schema change).** Extract `_shared/google-drive.ts` (uploadMarkdownToDrive) and `_shared/context-markdown.ts` (the rich markdown builder + the count/correlation gatherers from CX.1). `context-save-drive` becomes the single source of truth: builds the rich markdown, uploads, inserts the snapshot, fetches the immediately-previous snapshot, invokes `context-diff-generator`, and **UPDATEs** the new row's `changes_from_previous` (uses `SERVICE_ROLE_KEY` — bypasses the missing UPDATE policy; documented as an intentional service-role-only write path). On any failure, inserts a `status:'failed'` row with `error_message`. `context-bundle-generator` demoted to export-only — calls the same shared builder, never writes to `srangam_context_snapshots`. `context-diff-generator` rewired to read structured `stats_detail` (themes object, top_tags with counts); `_compat` shim retired. Admin UI: "Sync Now" stays primary; "Generate Bundle" relabelled "Download Context Bundle".
 
-Each phase passes its own acceptance gate before the next merges. No phase blocks Phase Z (pin automation), G3–G5 (geo), or CX.1–CX.3 (context evolution) — those continue on their own thread.
+**CX.3 — Identity-based diffs (one additive migration).** Migration adds three nullable jsonb columns to `srangam_context_snapshots`: `article_slugs`, `tag_names`, `term_keys`. CX.2 pipeline populates them from full (unsliced) fetches at snapshot time. Diff generator rewritten as set operations (added = current \ previous; removed = previous \ current) per identifier. Reports real `added`/`removed` slug arrays; drops the bogus `updated` field; new themes go under correctly-named `addedThemes` (not `addedArticles`). Falls back to count-only with `{ mode: 'count_only' }` when either snapshot pre-dates the migration. Persists the full diff to `changes_from_previous` so it's durable, not just returned.
 
-### Documentation deliverables
-
-- `.lovable/plan.md` — append "AR.1/AR.2/AR.3 (2026-05-29)" entry per phase: what shipped, dated baseline, rollback note.
-- `docs/IMPLEMENTATION_STATUS.md` — flip article rendering row to "AR.1/2/3 healed (2026-05-29)" with link to plan entry.
-- `docs/ARTICLE_DISPLAY_GUIDE.md` — document the single-pass render contract, drop-cap CSS hook, and `slugifyHeading` source-of-truth.
-- `mem://index.md` Core invariant (after AR.3):
-  > "Article body renders through exactly one `<ReactMarkdown>`; `{{cultural:…}}` tokens resolve inside leaf renderers via `resolveCulturalTokens`. Never re-introduce line-split rendering — it corrupts tables, mermaid, blockquotes, and nested lists. Drop cap lives in `.article-content.article-dropcap > p:first-of-type::first-letter`, not on the `p` renderer. Heading `id`s come from a shared `slugifyHeading()` used by both the formatter and the TOC."
-
-### Out of scope (deferred, deliberately)
-
-- CX.1–CX.3 context-evolution pipeline (queue after AR ships).
-- G3 gazetteer expansion, G4 standardising other background jobs, G5 tests.
-- Per-paragraph language coverage recompute (Phase Y i18n).
-- `culturalTermEnhancer` fence-skipping (orthogonal hardening; AR.1's code-renderer exclusion is already sufficient).
-- Removing `html-react-parser` dependency (audit other consumers first).
-- Touching merge/dedup contract (`mem://articles/cross-source-alias-dedup`).
+Both forward phases will get their own plan + verification gate at the appropriate time.
