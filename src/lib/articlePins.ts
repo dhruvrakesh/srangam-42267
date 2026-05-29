@@ -41,17 +41,18 @@ interface PinJoinRow {
 export async function loadArticlePins(articleId: string | undefined): Promise<ArticlePin[]> {
   if (!articleId) return [];
 
-  const queryPromise = supabase
-    .from('srangam_article_pins')
-    .select(
       `confidence,
        display_order,
+       gazetteer_id,
        srangam_gazetteer:gazetteer_id (
          canonical_name,
          latitude,
          longitude,
          precision
        )`,
+    )
+    .eq('article_id', articleId)
+    .order('display_order', { ascending: true });
     )
     .eq('article_id', articleId)
     .order('display_order', { ascending: true });
