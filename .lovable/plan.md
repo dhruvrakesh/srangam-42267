@@ -1,3 +1,27 @@
+## Phase G3 — Gazetteer expansion (shipped 2026-05-29)
+
+**Before:** 32 rows (maritime-only). 11/45 articles with pins, 27 total pins.
+**After migration:** 112 rows. UNIQUE(canonical_name) constraint added; ~80 inland places inserted idempotently (Śakti Pīṭhas 10, Jyotirliṅgas 12, Janapada capitals/cities 16, Kashmir 8, Indus/Iron-Age 7, Indo-Iranian/BMAC 5, Janajāti 7, SE-Asia 8, acoustic/temple 6, Australia 1).
+
+**User action required to complete:** open Admin → Geography & Media → click "Backfill all published" with `only_zero_pin:true`, `limit:50`. Phase Z's nightly cron also picks up the rest at 03:00 UTC at 20/night. Expected cost ≤ $0.04.
+
+**Acceptance gates (verify after backfill run):**
+1. `SELECT count(*) FROM srangam_gazetteer` → 112. ✅ (already true).
+2. `srangam_admin_jobs` row for the run: `status='succeeded'`, `failed=0`.
+3. `SELECT count(DISTINCT article_id), count(*) FROM srangam_article_pins` → expect ≥ 30 / ≥ 100.
+4. Admin · Geography & Media stat card → "With pins" ≥ 30 / 45; spot-check Hinglaj, Somnātha, Saffron-and-Blue, Sat-Sar Springs rows.
+5. Public `/articles/hinglaj-…` → `ArticleMiniMap` auto-mounts (IntersectionObserver, 200px rootMargin) under "Geographical Context".
+6. `/maps-data?focus=<slug>` → cluster dims non-matching to 0.15 opacity.
+
+**Documentation deliverables (done in this turn):**
+- `docs/CONTENT_ARCHITECTURE.md` → new "Gazetteer Governance" section (taxonomy frozen, deletion guard, baseline).
+- `mem://geo/gazetteer-coverage-baseline` → 112-row baseline + rules.
+- `mem://index.md` → Core invariant updated.
+
+---
+
+## Approved roadmap (one phase per turn)
+
 
 ## Revived context (all verified live, 2026-05-29)
 
