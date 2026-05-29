@@ -36,9 +36,20 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
-    // ─── CX.2: Authoritative counts + structured samples via shared metrics module. ───
+    // ─── CX.2/CX.3: Authoritative counts + structured samples + identity sets. ───
     const counts = await countAuthoritative(supabase);
-    const [themesObject, tags, terms, crossRefs, correlation, latestArticles] = await Promise.all([
+    const [
+      themesObject,
+      tags,
+      terms,
+      crossRefs,
+      correlation,
+      latestArticles,
+      allPublishedArticles,
+      allTags,
+      allTermsForIdentity,
+      allModulesRows,
+    ] = await Promise.all([
       topThemes(supabase),
       topTags(supabase, 50),
       topTerms(supabase, 100),
@@ -51,7 +62,57 @@ serve(async (req) => {
         .order('published_date', { ascending: false })
         .limit(5)
         .then((r) => r.data ?? []),
+      // Identity sets — full population (bounded by counts above).
+      supabase
+        .from('srangam_articles')
+        .select('slug')
+        .eq('status', 'published')
+        .then((r) => (r.data ?? []).map((a: any) => a.slug).filter(Boolean) as string[]),
+      supabase
+        .from('srangam_tags')
+        .select('tag_name')
+        .then((r) => (r.data ?? []).map((t: any) => t.tag_name).filter(Boolean) as string[]),
+      // term identity = "module:term" so name collisions across modules don't collapse.
+      (async () => {
+        const keys: string[] = [];
+        const pageSize = 1000;
+        let from = 0;
+        while (from < 100_000) {
+          const { data, error } = await supabase
+            .from('srangam_cultural_terms')
+            .select('term, module')
+            .range(from, from + pageSize - 1);
+          if (error) throw error;
+          if (!data || data.length === 0) break;
+          for (const r of data as Array<{ term: string; module: string | null }>) {
+            if (r.term) keys.push(`${r.module ?? ''}:${r.term}`);
+          }
+          if (data.length < pageSize) break;
+          from += pageSize;
+        }
+        return keys;
+      })(),
+      (async () => {
+        const set = new Set<string>();
+        const pageSize = 1000;
+        let from = 0;
+        while (from < 50_000) {
+          const { data, error } = await supabase
+            .from('srangam_cultural_terms')
+            .select('module')
+            .range(from, from + pageSize - 1);
+          if (error) throw error;
+          if (!data || data.length === 0) break;
+          for (const r of data as Array<{ module: string | null }>) {
+            if (r.module) set.add(r.module);
+          }
+          if (data.length < pageSize) break;
+          from += pageSize;
+        }
+        return Array.from(set);
+      })(),
     ]);
+
 
     const avgCrossRefStrengthSampled = crossRefs.length > 0
       ? crossRefs.reduce((acc, r) => acc + (r.strength ?? 0), 0) / crossRefs.length
