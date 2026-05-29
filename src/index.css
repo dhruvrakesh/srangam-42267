@@ -164,6 +164,27 @@ All colors MUST be HSL.
     width: 100% !important;
   }
 
+  /*
+   * Phase AR.2 — Drop cap applies ONLY to the opening paragraph of an article.
+   * Previously the formatter attached `first-letter:*` Tailwind utilities to
+   * the <p> renderer, but ::first-letter is per-block, so every paragraph
+   * rendered with a giant burgundy initial. The drop cap is now gated by
+   * the `.article-dropcap` class on the outer container (added by
+   * ProfessionalTextFormatter when `enableDropCap` is true) and scoped to
+   * the first paragraph child only.
+   */
+  .article-content.article-dropcap > p:first-of-type::first-letter {
+    font-family: var(--font-serif, ui-serif, Georgia, "Times New Roman", serif);
+    font-size: 3.75rem;
+    font-weight: 700;
+    color: hsl(var(--burgundy));
+    float: left;
+    margin-right: 0.75rem;
+    margin-top: 0.25rem;
+    line-height: 1;
+  }
+
+
   /* Ensure proper word breaking in article content */
   .article-content p,
   .article-content li {
