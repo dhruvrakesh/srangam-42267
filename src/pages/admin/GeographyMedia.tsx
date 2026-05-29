@@ -557,6 +557,43 @@ export default function GeographyMedia() {
           )}
         </CardContent>
       </Card>
+
+      {/* Phase 3 — OG image lightbox (shared by row thumbnail + View button) */}
+      <Dialog open={!!ogPreview} onOpenChange={(open) => !open && setOgPreview(null)}>
+        <DialogContent className="max-w-5xl p-2 sm:p-4">
+          <DialogHeader className="px-2">
+            <DialogTitle className="text-sm font-medium">
+              OG image — {ogPreview?.title}
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              1200×630 generated illustration. Click "Open original" to download.
+            </DialogDescription>
+          </DialogHeader>
+          {ogPreview && (
+            <>
+              <div className="w-full bg-muted/20 rounded">
+                <img
+                  src={ogPreview.url}
+                  alt={`Full-size OG image for ${ogPreview.title}`}
+                  className="w-full h-auto max-h-[75vh] object-contain rounded"
+                />
+              </div>
+              <div className="flex justify-end pt-2">
+                <a
+                  href={ogPreview.url}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+                >
+                  <ImageIcon className="h-4 w-4" />
+                  Open original
+                </a>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
