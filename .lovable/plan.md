@@ -219,3 +219,34 @@ order by created_at desc limit 3;
 6. Phase 5 (CX.3 additive migration + identity diff)
 
 Each phase is independently shippable, independently revertible, and each has an idempotency gate that must pass before the next phase starts.
+---
+
+## Execution log
+
+### 2026-05-29 — Phase 1 (Pin pipeline surgical healing) — shipped
+
+Surgical edits, no DB migration, no row writes:
+
+- `src/pages/admin/GeographyMedia.tsx`: bulk "Backfill pins" button now sends `only_zero_pin:true` (both in the kick-off body and in `srangam_admin_jobs.params`). Re-running the bulk button on a stable corpus is now a near-noop instead of re-billing the AI on all 45 articles.
+- `supabase/functions/_shared/errors.ts` (new): `serializeErr(e)` returns `message | code=… | status=… | details=… | hint=…` for Postgrest / fetch / Error / unknown shapes. Replaces every `String(e)` site that was producing `[object Object]` in `srangam_admin_jobs.last_error`.
+- `supabase/functions/backfill-article-pins/index.ts`:
+  - source enum aligned with the existing `srangam_article_pins_source_check` CHECK constraint: `A → evidence_table`, `B → content_scan`, `C → ai_extract`. Unblocks A/C-tier pins that were silently failing.
+  - all three catch blocks (per-article, background pump, fatal handler) now use `serializeErr`.
+
+Idempotency gates (to verify in the next bulk run):
+
+```sql
+-- duplicates: must still be zero
+select article_id, gazetteer_id, count(*) from srangam_article_pins
+group by 1,2 having count(*)>1;
+
+-- second consecutive bulk run should report processed≈0
+select id, processed, succeeded, failed, last_error
+from srangam_admin_jobs where kind='pin_backfill' order by created_at desc limit 2;
+
+-- A/C pins should appear after the first run on articles with evidence/AI hits
+select source, confidence, count(*) from srangam_article_pins
+group by 1,2 order by 1,2;
+```
+
+Next: Phase 2 (evidence empty state + admin counts).
