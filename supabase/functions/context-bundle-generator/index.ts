@@ -108,53 +108,106 @@ serve(async (req) => {
     // Include Database Schema
     if (includeSchema) {
       bundle += `## Database Schema Overview\n\n`;
-      
-      const { data: articleCount } = await supabase
-        .from('srangam_articles')
-        .select('id', { count: 'exact', head: true });
-      
-      const { data: termCount } = await supabase
-        .from('srangam_cultural_terms')
-        .select('id', { count: 'exact', head: true });
-      
-      const { data: tagCount } = await supabase
-        .from('srangam_tags')
-        .select('id', { count: 'exact', head: true });
-      
-      const { data: crossRefCount } = await supabase
-        .from('srangam_cross_references')
-        .select('id', { count: 'exact', head: true });
+
+      // CX.1: destructure `count` (not `data`) from head:true queries.
+      const [
+        { count: articleCount },
+        { count: termCount },
+        { count: tagCount },
+        { count: crossRefCount },
+      ] = await Promise.all([
+        supabase.from('srangam_articles').select('id', { head: true, count: 'exact' }).eq('status', 'published'),
+        supabase.from('srangam_cultural_terms').select('id', { head: true, count: 'exact' }),
+        supabase.from('srangam_tags').select('id', { head: true, count: 'exact' }),
+        supabase.from('srangam_cross_references').select('id', { head: true, count: 'exact' }),
+      ]);
+
+      // CX.1: derive distinct modules (CX.2 will lift into _shared/context-metrics.ts).
+      const moduleSet = new Set<string>();
+      {
+        const pageSize = 1000;
+        let from = 0;
+        while (from < 50_000) {
+          const { data } = await supabase
+            .from('srangam_cultural_terms')
+            .select('module')
+            .range(from, from + pageSize - 1);
+          if (!data || data.length === 0) break;
+          for (const r of data) if (r.module) moduleSet.add(r.module);
+          if (data.length < pageSize) break;
+          from += pageSize;
+        }
+      }
+      const modulesCount = moduleSet.size;
 
       bundle += `### Key Tables:\n\n`;
-      bundle += `- **srangam_articles**: ${articleCount || 'N/A'} records\n`;
+      bundle += `- **srangam_articles** (published): ${articleCount ?? 0} records\n`;
       bundle += `  - Multilingual content (9 languages)\n`;
       bundle += `  - Status-based publishing workflow\n`;
-      bundle += `  - Tag-based categorization\n`;
-      bundle += `\n`;
-      bundle += `- **srangam_cultural_terms**: ${termCount || 'N/A'} records\n`;
-      bundle += `  - Organized by modules (12 total)\n`;
+      bundle += `  - Tag-based categorization\n\n`;
+      bundle += `- **srangam_cultural_terms**: ${termCount ?? 0} records\n`;
+      bundle += `  - Organized across ${modulesCount} modules\n`;
       bundle += `  - Usage tracking\n`;
-      bundle += `  - Multilingual translations\n`;
-      bundle += `\n`;
-      bundle += `- **srangam_tags**: ${tagCount || 'N/A'} records\n`;
+      bundle += `  - Multilingual translations\n\n`;
+      bundle += `- **srangam_tags**: ${tagCount ?? 0} records\n`;
       bundle += `  - AI-generated with taxonomy\n`;
-      bundle += `  - Usage count tracking\n`;
-      bundle += `\n`;
-      bundle += `- **srangam_cross_references**: ${crossRefCount || 'N/A'} records\n`;
+      bundle += `  - Usage count tracking\n\n`;
+      bundle += `- **srangam_cross_references**: ${crossRefCount ?? 0} records\n`;
       bundle += `  - Knowledge graph connections\n`;
-      bundle += `  - Strength-based relationships\n`;
-      bundle += `\n`;
+      bundle += `  - Strength-based relationships\n\n`;
+
+      // CX.1: Corpus correlations summary (read-only; bundle never writes DB).
+      const { data: latestCorrelation } = await supabase
+        .from('srangam_corpus_correlations_snapshot')
+        .select('job_id, computed_at')
+        .order('computed_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (latestCorrelation?.job_id) {
+        const { count: pairCount } = await supabase
+          .from('srangam_corpus_correlations_snapshot')
+          .select('article_a', { head: true, count: 'exact' })
+          .eq('job_id', latestCorrelation.job_id);
+        const { data: topPairs } = await supabase
+          .from('srangam_corpus_correlations_snapshot')
+          .select('article_a, article_b, jaccard, shared_total')
+          .eq('job_id', latestCorrelation.job_id)
+          .order('jaccard', { ascending: false })
+          .limit(5);
+
+        const ids = Array.from(new Set((topPairs ?? []).flatMap((p: any) => [p.article_a, p.article_b])));
+        const { data: slugLookup } = ids.length > 0
+          ? await supabase.from('srangam_articles').select('id, slug').in('id', ids)
+          : { data: [] as any[] };
+        const idToSlug = new Map<string, string>((slugLookup ?? []).map((r: any) => [r.id, r.slug]));
+
+        bundle += `## Corpus Correlations\n\n`;
+        bundle += `- Pair count: ${pairCount ?? 0}\n`;
+        bundle += `- Computed at: ${latestCorrelation.computed_at}\n`;
+        bundle += `- Top 5 by Jaccard:\n`;
+        (topPairs ?? []).forEach((p: any, i: number) => {
+          const a = idToSlug.get(p.article_a) ?? p.article_a;
+          const b = idToSlug.get(p.article_b) ?? p.article_b;
+          bundle += `  ${i + 1}. ${a} ↔ ${b} — jaccard=${Number(p.jaccard).toFixed(3)}, shared=${p.shared_total}\n`;
+        });
+        bundle += `\n`;
+      }
 
       bundle += `\n---\n\n`;
+
+      // Stash for the docs section.
+      (globalThis as any).__cx1ModulesCount = modulesCount;
     }
 
     // Include Documentation Links
     if (includeDocs) {
+      const modulesCount = (globalThis as any).__cx1ModulesCount ?? 'N/A';
       bundle += `## Platform Documentation\n\n`;
       bundle += `### Architecture\n`;
       bundle += `- **Technology Stack**: React, Vite, Tailwind CSS, TypeScript, Supabase\n`;
-      bundle += `- **Languages Supported**: 9 (English, Tamil, Telugu, Kannada, Bengali, Assamese, Punjabi, Hindi, Pali)\n`;
-      bundle += `- **Content Modules**: 12 specialized cultural term modules\n`;
+      bundle += `- **Languages Supported**: 9 (English, Tamil, Telugu, Kannada, Bengali, Assamese, Pnar, Hindi, Punjabi)\n`;
+      bundle += `- **Content Modules**: ${modulesCount} cultural term modules\n`;
       bundle += `\n`;
       bundle += `### Key Features\n`;
       bundle += `- Multilingual article system with JSON-based content\n`;
@@ -172,6 +225,7 @@ serve(async (req) => {
       bundle += `- \`context-bundle-generator\`: Generate AI context bundles (this function)\n`;
       bundle += `\n`;
     }
+
 
     bundle += `---\n\n`;
     bundle += `## Usage Instructions for AI Tools\n\n`;
