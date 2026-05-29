@@ -20,6 +20,8 @@ export interface ArticlePin {
   lon: number;
   approximate?: boolean;
   confidence?: PinConfidence;
+  /** Phase Y.3 — used to deep-link from popup to /atlas?id=… */
+  gazetteer_id?: string;
 }
 
 const PIN_TIMEOUT_MS = 4000;
@@ -27,6 +29,7 @@ const PIN_TIMEOUT_MS = 4000;
 interface PinJoinRow {
   confidence: PinConfidence | null;
   display_order: number | null;
+  gazetteer_id: string | null;
   srangam_gazetteer: {
     canonical_name: string;
     latitude: number | string;
