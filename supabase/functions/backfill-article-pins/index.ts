@@ -563,7 +563,7 @@ Deno.serve(async (req) => {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
+    const msg = serializeErr(e);
     console.error('[backfill-article-pins] fatal:', msg);
     try {
       if (body?.job_id) {
