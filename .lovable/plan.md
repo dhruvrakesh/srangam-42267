@@ -1,109 +1,93 @@
-# Phase X.8 — Surgical Heal: "Loading articles…" Stall
 
-## Diagnosis (verified against code, DB, and logs)
+# Verified context (database + logs, not assumed)
 
-**Symptom:** On `srangam.nartiang.org/`, theme chips render with full counts and "Show All (28 articles)" is visible, but the article grid is replaced by an indefinite "Loading articles…" spinner.
-
-**Root cause — confirmed, not assumed:**
-
-1. **Render gate too aggressive.** `src/pages/Home.tsx` lines 253–270 and `src/pages/Articles.tsx` lines 178–184 gate the entire grid on `useAllArticles().isLoading`. JSON articles from `getDisplayArticles(currentLanguage)` are synchronous and already merged into `allArticles` — but the spinner hides them while the DB call is pending.
-2. **JSON-only fallback proves DB never resolved.** "(28 articles)" equals exactly the JSON corpus size. `mergeArticleSources` returned the synchronous JSON list; `dbArticles` is `undefined` at render time.
-3. **Backend is healthy.** `select count(*) from srangam_articles where status='published'` → **44 rows**. ACL: `anon=arwdDxtm/postgres` present on `public.srangam_articles`. No Postgres `ERROR/FATAL/PANIC` in recent logs. No edge-function 4xx/5xx.
-4. **`useAllArticles` has no resilience contract.** No `retry` cap, no `networkMode`, no `AbortSignal`, no timeout, no error surfacing. On flaky mobile 5G (per screenshot) + adblocker, React Query stays `pending` indefinitely and the UI offers no escape hatch.
-5. **Secondary cosmetic bug** (out of scope here): theme chips show raw i18n keys `themes.sacredecology`, `themes.acoustic-archaeology`, `themes.sacred-geography` — missing entries in `src/locales/*/common.json`. Logged for Phase X.9.
-
-## Guiding principles (per Surgical Healing memory)
-
-- Surgical, additive, reversible. No schema/RLS/edge changes. No Phase X.1–X.7 invariants touched.
-- Render what we have **immediately**; treat DB as **enrichment**, not a gate.
-- Bounded round-trip budget; degrade gracefully on timeout.
-- Documentation-first: `.lovable/plan.md` and `docs/SCALABILITY_ROADMAP.md` updated alongside code.
-
-## Sub-phases
-
-### X.8.1 — Unblock the grid (user-visible fix)
-
-- `src/pages/Home.tsx` lines 253–270: drop the full-screen spinner branch. Render the grid whenever `filteredArticles.length > 0`. When `isLoading && allArticles.length === 0` → 3-card `<Skeleton/>` placeholder, never a blocking spinner. When `!isLoading && isFetching` (background refresh) → tiny inline "Refreshing…" pill above the grid, non-blocking, no layout shift.
-- `src/pages/Articles.tsx` lines 178–194: identical treatment. Preserve the genuine empty-state branch (zero-result filters).
-- Reuse existing `@/components/ui/skeleton`. No new dependencies.
-
-### X.8.2 — Harden `useAllArticles` (durability fix)
-
-`src/hooks/useArticles.ts`:
-
-- `queryFn` accepts React Query's `signal`; pass to `.abortSignal(signal)` so navigation/unmount cancels the in-flight request.
-- `retry: 2`, `retryDelay: attempt => Math.min(1000 * 2 ** attempt, 8000)`.
-- `networkMode: 'offlineFirst'` so cached payload paints instantly on revisit.
-- 12 s `Promise.race` watchdog rejecting with a typed `ArticleFetchTimeoutError`; React Query then settles, JSON-only grid renders, no infinite spinner.
-- Return `isFetching` and `error` alongside existing `{ data, isLoading }` (additive — no breakage for `Search`, `ArticleHealthDashboard`, or other consumers).
-- **Do not** touch `select('*')` shape. **Do not** edit `types.ts` (auto-generated).
-
-### X.8.3 — Lightweight observability (no infra)
-
-- On timeout/abort, emit one `console.warn(JSON.stringify({ evt: 'articles_fetch_degraded', duration_ms, reason, count_json, count_db }))`. Shape mirrors `supabase/functions/_shared/observability.ts` so it slots into the future `srangam_event_log` table without rework.
-- No new tables, no new deps.
-
-### X.8.4 — Docs + memory
-
-- Append "Render-first, hydrate-second" pattern to `docs/SCALABILITY_ROADMAP.md` under "Frontend resilience", with temporal note `(Phase X.8, 2026-05-29)`.
-- Add Core rule to `mem://index.md`: *"List pages must render JSON-backed corpus immediately; DB fetches enrich, never gate."*
-- Append Phase X.8 section to `.lovable/plan.md` (diagnosis → resolution → validation → rollback).
-- Log Phase X.9 candidate: theme-chip i18n key leakage.
-
-## Blast radius
-
-| File | Change | Risk |
-|---|---|---|
-| `src/pages/Home.tsx` | swap loading gate, add skeleton | low — presentation only |
-| `src/pages/Articles.tsx` | swap loading gate, add skeleton | low — presentation only |
-| `src/hooks/useArticles.ts` | abort + retry + timeout + networkMode + additive returns | medium — shared hook, but contract preserved |
-| `docs/SCALABILITY_ROADMAP.md` | append section | none |
-| `.lovable/plan.md` | append Phase X.8 | none |
-| `mem://index.md` | add 1 Core line | none |
-
-**Untouched:** routes, RLS, GRANTs, migrations, edge functions, `types.ts`, admin pages, correlation engine, Phase X.7 work, slug resolver, narration, OG pipeline, `useArticlesPaginated`, `useSearchArticles`, `useArticle`, article detail rendering.
-
-## Explicitly NOT doing in this phase
-
-- No global React Query default-config rewrite.
-- No service worker / offline cache.
-- No change to `mergeArticleSources` precedence (DB still wins on arrival).
-- No homepage pagination/virtualization.
-- No i18n key fixes.
-
-## Validation
-
-1. DevTools "Slow 3G" + reload `/` → JSON grid paints within ~200 ms, no blocking spinner.
-2. DevTools block `*.supabase.co` → grid paints from JSON, degraded inline banner appears after 12 s, no infinite spinner.
-3. Normal load → JSON paints first, DB hydrates within ~500 ms, the extra 16 DB-only articles fade in without layout jump.
-4. Theme filter → counts/union unchanged vs. current behavior.
-5. `/articles` route → URL params preserved, identical behavior.
-
-## Rollback
-
-Each file revertable independently. Hook keeps the `{ data, isLoading }` contract; new `error`/`isFetching` fields are additive — downstream consumers unaffected if they ignore them.
-
-## Out of scope (queued for Phase X.9 if approved)
-
-- Theme-chip i18n key leakage (`themes.sacredecology`, etc.).
-- Project-wide `QueryClient` defaults audit.
-- Wiring `articles_fetch_degraded` warnings into `srangam_event_log`.
+- **Published articles:** 44. **Articles with ≥1 pin:** 11. **Zero-pin published:** 33. **Total pins:** 27. The Geography & Media table is correct — the backlog is real.
+- **Edge logs `backfill-article-pins` (last hour):** the `pin_ai` stage repeatedly hits `timeout 15000ms` (e.g. articles `46c2177c…`, `03a92e0f…`); when AI does complete it often returns `inserted: 0` (e.g. `69071b66…`, `9e8d420f…`). One pump reinvoke died with `504 IDLE_TIMEOUT (150s)`. Net effect: bulk runs stall and most articles never get pins inserted.
+- **Scheduled jobs (cron.job):** only one — `srangam-admin-jobs-watchdog` every 5 min. **No cron pumps pin enrichment.** You are correct: the correlation pipeline has no heartbeat.
+- **Phase Y findings still valid:** `/admin/data-health` route is unregistered in `src/App.tsx` (DataHealth imported line 81, no `<Route>` in `/admin` block lines 219–233); `geography-media` route duplicated lines 230 & 232; `PuranaReferences.tsx` table (lines 357–445) overflows on laptop widths; `ArticleMiniMap.tsx` is imported nowhere — resolver attaches `pins` to every article but the sidebar never renders them.
 
 ---
 
-## Phase X.8 — Implementation Log (2026-05-29)
+# Phase Y — UI healing (presentation-only, no logic change)
 
-**Status:** Implemented.
+### Y.1 — Register missing admin route
+`src/App.tsx`: add `<Route path="data-health" element={<DataHealth />} />` inside the `/admin` block; delete duplicate `geography-media` route on line 232. **Blast radius:** one file, one line added + one line removed.
 
-**Files edited:**
-- `src/hooks/useArticles.ts` — added `ArticleFetchTimeoutError`, AbortSignal, 12s watchdog, retry:2, `networkMode:'offlineFirst'`, structured `articles_fetch_degraded` log on timeout/abort/error.
-- `src/pages/Home.tsx` — replaced full-screen spinner with render-first grid + 3-card skeleton fallback + inline "Refreshing…" pill + offline-archive notice. Added `Skeleton` import.
-- `src/pages/Articles.tsx` — same treatment with 6-card skeleton; preserved genuine empty-state branch for zero-result filters.
-- `docs/SCALABILITY_ROADMAP.md` — appended "Frontend resilience" section documenting the render-first / hydrate-second pattern and hook contract.
-- `mem://index.md` — added Core rule: "Render-first, hydrate-second (Phase X.8)".
+### Y.2 — Heal `/admin/purana-refs` table
+`src/pages/admin/PuranaReferences.tsx` lines 357–445 only:
+- `<Table>` gets `min-w-[1100px]` so the existing `overflow-x-auto` wrapper actually scrolls.
+- Per-column widths: Article 220, Purana 140, Category 120, Citation 140, Confidence 110, Claim `min-w-[280px]`, Status 110, Actions 120.
+- Claim cell: replace `max-w-xs truncate` with `block line-clamp-2 break-words` (tooltip preserved).
+- Actions cell: add `whitespace-nowrap`.
+- Article cell: `truncate` + `title={…}` for hover-free a11y.
+- Honours mobile invariant **MV-01** (wrapper `overflow-x-auto`, `min-w` ≥ 360).
 
-**Untouched:** RLS, GRANTs, migrations, edge functions, `types.ts`, admin pages, correlation engine, slug resolver, narration, OG pipeline, `useArticlesPaginated`, `useSearchArticles`, `useArticle`.
+### Y.3 — Surface pins on every article (the map gap you flagged)
+- `src/components/articles/enhanced/ContextualSidebar.tsx`: add collapsible **"Places referenced"** section gated on `pins.length > 0`, renders `<ArticleMiniMap slug={slug} pins={pins} />` via `React.lazy` + Suspense (keeps Leaflet off the article critical path).
+- `src/components/articles/ArticlePage.tsx`: pass already-resolved `article.pins` and `article.slug` down. **No new fetch.**
+- `pins.length === 0` → render nothing (no empty-state noise).
+- Marker popup gets **"Open in Atlas →"** linking to `/atlas?id=<gazetteer_id>` (Atlas already accepts `?id=`).
+- One-line `console.info({ evt: 'article_map_rendered', slug, pin_count })` on mount.
+- Feature flag `SHOW_INLINE_ARTICLE_MAP = false` reserved for a future below-fold body map; not enabled in this phase.
 
-**Hook return shape:** additive — `{ data, isLoading, isFetching, error, ... }`. Existing consumers (`Search`, `ArticleHealthDashboard`, etc.) that only destructure `{ data, isLoading }` continue to work unchanged.
+### Y.4 — Documentation
+- Append Phase Y block to `.lovable/plan.md` and `docs/SCALABILITY_ROADMAP.md`.
+- New Core memory rule: *"Pins are user-facing (Phase Y, 2026-05-29): every published article with `pins.length > 0` MUST render `ArticleMiniMap` in its sidebar. Resolver attaches pins; sidebar consumes them; never re-fetch."*
 
-**Phase X.9 candidates:** theme-chip i18n key leakage (`themes.sacredecology`, `themes.acoustic-archaeology`, `themes.sacred-geography`); project-wide `QueryClient` defaults audit; `articles_fetch_degraded` → `srangam_event_log` materialization.
+---
+
+# Phase Z — Automated pin enrichment (answers your cron question)
+
+This is the missing heartbeat. The correlation/gazetteer/pin scaffolding only pays off when zero-pin published articles are continuously revisited.
+
+### Z.1 — Lift the `pin_ai` timeout (root cause of empty results)
+`supabase/functions/backfill-article-pins/index.ts`: raise the AI call timeout from **15 000 ms → 60 000 ms** and add one retry on timeout with a smaller article chunk (truncate to 30 000 chars on retry). Logs prove 15s is too tight for ~45–80 KB articles; AI either times out or returns 0. This single change should unlock most of the 33-article backlog without any other plumbing.
+
+### Z.2 — `pg_cron` nightly enrichment loop
+New migration:
+- Enable `pg_cron` + `pg_net` (already present per `pg_extension` check).
+- New SECURITY DEFINER RPC `public.enqueue_pin_backfill_sweep()`: counts zero-pin published articles, inserts one `srangam_admin_jobs` row (`kind='pin_backfill'`, `params={ all_published:false, only_zero_pin:true, limit:20, chunk_size:3 }`), and `net.http_post`s `backfill-article-pins` with `{ job_id, only_zero_pin:true, limit:20, offset:0, chunk_size:3 }` exactly the same way the admin button does.
+- Cron schedule: `0 3 * * *` (03:00 UTC nightly), capped at 20 articles/night to keep AI cost predictable (~$0.04/night at observed gpt-4o-mini rates).
+- Re-entrancy guard: if a `pin_backfill` job with `status='running'` and `started_at > now() - interval '30 min'` exists, skip this tick.
+- Hook into the existing `srangam-admin-jobs-watchdog` (already runs every 5 min) — no change needed; it'll auto-reconcile any stuck nightly job.
+
+### Z.3 — `backfill-article-pins` edge function: add `only_zero_pin` filter
+Single LEFT JOIN change in the article-selection query: `WHERE status='published' AND NOT EXISTS (SELECT 1 FROM srangam_article_pins p WHERE p.article_id = a.id)`. Existing admin "bulk" button keeps working unchanged when `only_zero_pin` is absent or false.
+
+### Z.4 — Surface the heartbeat on `/admin/geography-media`
+`src/pages/admin/GeographyMedia.tsx`: add two stat cards near the existing ones — **"Last nightly sweep"** (max `finished_at` where `kind='pin_backfill'` and `params->>'only_zero_pin'='true'`) and **"Next sweep"** (next 03:00 UTC). No new fetch path: extend the existing admin-jobs read.
+
+### Z.5 — Observability
+- Edge function emits `{ evt: 'pin_sweep_complete', scheduled:true, processed, inserted, zero_pin_remaining, cost_usd }` to existing `srangam_event_log`.
+- Watchdog already covers stuck jobs.
+
+### Z.6 — Documentation + memory
+- Append Phase Z to `.lovable/plan.md` and `docs/SCALABILITY_ROADMAP.md` (note the $0.04/night ceiling and the 20-article cap as the explicit scalability trigger to revisit).
+- New Core memory rule: *"Pin enrichment is automated (Phase Z, 2026-05-29): nightly pg_cron sweep at 03:00 UTC processes ≤20 zero-pin published articles via `enqueue_pin_backfill_sweep()`. Never re-add manual-only flows; never raise the cap without a corresponding cost note."*
+
+---
+
+# What is explicitly NOT in this plan
+
+- No rebuild of the resolver, gazetteer, RLS, narration, OG pipeline, or `useAllArticles`.
+- No change to admin write policies or `has_role`.
+- No new tables. `srangam_admin_jobs`, `srangam_article_pins`, `srangam_event_log` already exist.
+- No inline below-fold article-body map (feature flag stays false).
+- No mobile-collapsed Purana table (current overflow-x-auto satisfies MV-01).
+- Lighthouse, GSC OAuth, theme-chip i18n leakage, React Query global defaults — still queued, untouched.
+
+---
+
+# Validation after build mode
+
+1. `/admin/data-health` returns the dashboard (no 404).
+2. `/admin/purana-refs` at 859×638: no header clipping, claim wraps to 2 lines, status badge isolated, actions never wrap; horizontal scroll only below ~1100 px.
+3. An article with pins (e.g. `scripts-that-sailed-ii…` has 8 B-tier pins) shows the sidebar map; Leaflet loads on-demand; "Open in Atlas →" navigates correctly. An article with zero pins shows no section.
+4. Trigger `select public.enqueue_pin_backfill_sweep();` manually once — within 5 min `articles_with_pins` rises and `zero_pin_articles` drops; `srangam_event_log` shows `pin_sweep_complete`.
+5. `select * from cron.job;` shows the new nightly entry alongside the watchdog.
+
+---
+
+# Rollback story
+
+Each sub-phase reverts independently. Y.1/Y.2/Y.3 are file edits. Z.1 is a constant change. Z.2 is a one-line `cron.unschedule('pin-enrichment-nightly')`. Z.3/Z.4 are additive feature flags / extra columns in a query. No destructive DDL.
