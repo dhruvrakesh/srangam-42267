@@ -508,4 +508,59 @@ export const OceanicArticlePage: React.FC = () => {
   );
 };
 
+/**
+ * Phase G2 — lazy-mount the Leaflet article map when the container scrolls
+ * near the viewport. Keeps the ~150kB Leaflet bundle off the article critical
+ * path while removing the click-to-reveal step that was hiding geography
+ * from readers. Articles with zero pins never reach this code path.
+ */
+const LazyArticleMap: React.FC<{
+  slug: string;
+  pins: Array<{ name: string; lat: number; lon: number; approximate?: boolean }>;
+}> = ({ slug, pins }) => {
+  const ref = React.useRef<HTMLDivElement | null>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (visible) return;
+    const el = ref.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === 'undefined') {
+      setVisible(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            setVisible(true);
+            io.disconnect();
+            break;
+          }
+        }
+      },
+      { rootMargin: '200px' },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [visible]);
+
+  return (
+    <div ref={ref} className="mt-2">
+      {visible ? (
+        <React.Suspense
+          fallback={
+            <div className="w-full h-[360px] rounded-md border border-border bg-muted/20 animate-pulse" />
+          }
+        >
+          <ArticleMiniMap slug={slug} pins={pins} />
+        </React.Suspense>
+      ) : (
+        <div className="w-full h-[360px] rounded-md border border-border bg-muted/10" aria-hidden />
+      )}
+    </div>
+  );
+};
+
 export default OceanicArticlePage;
+
