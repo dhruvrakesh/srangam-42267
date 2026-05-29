@@ -210,3 +210,30 @@ No broad rewrite. No new framework. No public write access. No change to the slu
 | G3 | data inserts into `srangam_gazetteer` | low (additive) | curate, never delete |
 | G4 | per-edge-function | medium | per-function revert |
 | G5 | new test files | none | drop test files |
+---
+
+## Phase G1 + G2 — Implemented 2026-05-29
+
+**Edge function `backfill-article-pins`:**
+- True async pump: chunked jobs now return `202 Accepted` immediately; chunk + self-pump run via `EdgeRuntime.waitUntil`. Removes 504 IDLE_TIMEOUT failure mode.
+- Heartbeat-during-AI: 25s `touchHeartbeat` interval ticks while the `aiExtractPlaces` promise is pending. Cleared on settle. Kills the "no heartbeat for 90s" false stall.
+- AI input bounded to 25k chars; deterministic regex scan still uses full text.
+- Chunk size forced to 1 in AI mode (deterministic-only may keep ≤3).
+- First chunk patches `srangam_admin_jobs.total` to the real candidate count.
+- Mid-chunk cancellation check between articles.
+- Fixed latent bug: slug-mode `.or()` query was unawaited/unassigned → always returned 404. Now properly resolves single-article runs.
+
+**Article page UX (`OceanicArticlePage`):**
+- `ArticleMiniMap` auto-mounts via IntersectionObserver (200px rootMargin) when the Geographical Context section scrolls into range — no more click-to-reveal.
+- Section header now shows `N places referenced · View in Article Atlas →` link to `/maps-data?focus=<slug>`.
+- Zero-pin articles still render no map (Leaflet bundle never loads).
+
+**Article Atlas (`/maps-data`):**
+- Reads `?focus=<slug>` query param; scrolls Article Atlas card into view on load.
+- `ArticleAtlasMap` accepts `focusSlug` prop — clusters containing the focused article render at fillOpacity 0.85 / weight 2.5; non-matching clusters dim to 0.15 / weight 0.8 with reduced radius.
+- Header text shows "Highlighting article: <slug>" when focus is active.
+
+**Out of this phase (deferred):**
+- G3 curated gazetteer expansion (Kashmir, Śakti-pīṭha, Jyotirlinga loci).
+- G4 standardizing other background jobs to the same async pattern.
+- G5 unit tests for chunking, idempotent upsert, and focus filter.
