@@ -1740,6 +1740,10 @@ export type Database = {
         | { Args: { schema_name: string; table_name: string }; Returns: string }
         | { Args: { table_name: string }; Returns: string }
       enablelongtransactions: { Args: never; Returns: string }
+      enqueue_pin_backfill_sweep_job: {
+        Args: { p_chunk?: number; p_limit?: number }
+        Returns: string
+      }
       equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
       geometry: { Args: { "": string }; Returns: unknown }
       geometry_above: {
