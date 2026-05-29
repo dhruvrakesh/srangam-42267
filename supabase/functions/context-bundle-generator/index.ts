@@ -6,11 +6,18 @@ import {
   countAuthoritative,
   latestCorrelationSummary,
 } from '../_shared/context-metrics.ts';
+import {
+  loadServiceAccount,
+  getDriveAccessToken,
+  uploadToDrive,
+} from '../_shared/google-drive.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+
 
 
 serve(async (req) => {
