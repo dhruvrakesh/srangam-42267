@@ -600,3 +600,57 @@ COPY (
 
 **Last Updated**: 2025-11-23  
 **Next Review**: After Sprint 1 completion (diff generator + AI summary)
+
+---
+
+## Phase CX.1 (2026-05-29) — Accurate metrics
+
+Two edge functions (`context-save-drive`, `context-bundle-generator`) had silent count bugs that made every snapshot and bundle dishonest. CX.1 fixes both surgically; no migration, no client change, no GDrive auth touch.
+
+### Bugs fixed
+
+| Function | Bug | Fix |
+|---|---|---|
+| `context-save-drive` | `terms_count`, `tags_count`, `cross_refs_count` derived from `.limit(N).length` — capped forever at 100/50/100 | Authoritative `head:true, count:'exact'` queries; `.limit()` slices remain only for human-readable top-N lists |
+| `context-save-drive` | `modules_count = new Set(top-100 terms.map(module)).size` | New `countDistinctModules()` paginates the full `srangam_cultural_terms.module` column |
+| `context-save-drive` | `stats_detail.themes` stored as a flat de-duped array (no counts) | Restructured to `{ theme: count }` object; `top_tags`/`top_terms` now carry counts |
+| `context-save-drive` | `avg_cross_ref_strength` averaged only the latest 100 | Renamed `avg_cross_ref_strength_sampled` to make the bias explicit |
+| `context-bundle-generator` | `const { data: articleCount } = …{ count:'exact', head:true }` — `data` is always `null` on `head:true`, every bundle count rendered "N/A" | Destructure `count` instead |
+| `context-bundle-generator` | Hardcoded `"9 (… Punjabi, Hindi, Pali)"` — wrong (Pali is not a UI locale; Pnar is missing) | Mirrors `src/lib/i18n.ts`: `"… Bengali, Assamese, Pnar, Hindi, Punjabi"` |
+| `context-bundle-generator` | Hardcoded `"12 specialized cultural term modules"` | Derived from the same `countDistinctModules()` logic |
+| both | `srangam_corpus_correlations_snapshot` was never read — the snapshot/bundle did not reflect the correlation model | New `## Corpus Correlations` section (pair count, computed_at, top 5 by jaccard); also persisted in `stats_detail.correlation` |
+
+### New `stats_detail` shape (CX.1+)
+
+```jsonc
+{
+  "generated_with": "CX.1",
+  "sample_sizes": { "terms": 100, "tags": 50, "cross_refs": 100 },
+  "themes": { "Bharatvarsha": 14, "Oceanic": 8, ... },         // counts, not flat array
+  "top_tags":  [{ "name": "...", "usage_count": 12 }, ...],   // top 50
+  "top_terms": [{ "term": "...", "module": "...", "usage_count": 9 }, ...], // top 100
+  "avg_cross_ref_strength_sampled": 0.42,                      // sampled, not full corpus
+  "correlation": {
+    "pair_count": 1234,
+    "computed_at": "2026-05-…",
+    "top_pairs": [{ "article_a": "<uuid>", "article_b": "<uuid>", "jaccard": 0.41, "shared_total": 9, "slug_a": "...", "slug_b": "..." }, ...]
+  },
+  "_compat": {                                                 // CX.1-only shim; retired in CX.2
+    "themes":   ["Bharatvarsha", "Oceanic", ...],
+    "top_tags": ["...", "..."]
+  }
+}
+```
+
+The `_compat` block exists solely to keep the existing `context-diff-generator` (which still reads `themes` and `top_tags` as flat arrays) running unchanged until CX.2 rewires it to read the structured shape above. **Do not remove `_compat` until CX.2 ships.**
+
+### Temporal note — frozen baseline
+
+Snapshots with `snapshot_date ≤ 2026-05-29` carry capped sample counts (`terms_count=100`, `tags_count=50`, `cross_refs_count=100`, undersized `modules_count`) — not real corpus totals. These rows are an **immutable historical baseline** and are not back-filled (`srangam_context_snapshots` has no UPDATE policy; per project policy, production data is treated as immutable). The first CX.1-vs-pre-CX.1 diff produced by `context-diff-generator` will look like an enormous corpus surge — it is a measurement-regime jump, not real growth.
+
+### Out of scope for CX.1 (carried forward)
+
+- **CX.2** — extract `_shared/google-drive.ts` + `_shared/context-markdown.ts`; auto-invoke diff after snapshot insert and UPDATE `changes_from_previous` (uses `SERVICE_ROLE_KEY` to bypass the missing UPDATE policy — an intentional service-role-only write path); record `status:'failed'` rows on error; demote `context-bundle-generator` to export-only; retire the `_compat` shim.
+- **CX.3** — additive migration: `article_slugs`, `tag_names`, `term_keys jsonb` columns on `srangam_context_snapshots`; identity-based set diffs; `mode: 'count_only'` fallback for pre-migration rows.
+- **CX.4** — AI executive summary populating `context_summary`.
+- **CX.5** — `pg_cron` wiring for automated daily snapshots.
