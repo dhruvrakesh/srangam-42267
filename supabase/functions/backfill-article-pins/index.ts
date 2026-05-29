@@ -372,7 +372,10 @@ Deno.serve(async (req) => {
     let articles: { id: string; slug: string; content: unknown }[] = [];
     let totalCandidates = 0;          // population size for chunked mode
     const chunkOffset = body.offset ?? 0;
-    const chunkSize = Math.min(Math.max(body.chunk_size ?? 5, 1), 10);
+    // Phase G1 — when AI is on, force chunk_size=1 so a single long AI call
+    // cannot starve the chunk budget. Deterministic-only runs may stay at 3.
+    const requestedChunk = Math.min(Math.max(body.chunk_size ?? 5, 1), 10);
+    const chunkSize = body.skip_ai === true ? requestedChunk : 1;
 
     if (body.article_id) {
       const { data } = await admin
@@ -383,10 +386,15 @@ Deno.serve(async (req) => {
       if (data) articles = [data as any];
       totalCandidates = articles.length;
     } else if (body.slug) {
+      // Phase G1 — fix latent bug: previous code never awaited or assigned
+      // the result of the .or() query, so slug-mode always returned 404.
       const { data } = await admin
         .from('srangam_articles')
         .select('id,slug,content')
         .or(`slug.eq.${body.slug},slug_alias.eq.${body.slug}`)
+        .limit(1);
+      if (data && data.length > 0) articles = [data[0] as any];
+      totalCandidates = articles.length;
     } else if (body.all_published) {
       const limit = Math.min(Math.max(body.limit ?? 25, 1), 200);
 
