@@ -27,6 +27,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 import { stage } from '../_shared/observability.ts';
 import { aiExtractPlaces, NoAIProviderError } from '../_shared/ai-provider.ts';
 import { reportItem, isCancelled, finishJob, touchHeartbeat } from '../_shared/jobs.ts';
+import { serializeErr } from '../_shared/errors.ts';
 
 import { requireAdmin } from '../_shared/auth-gate.ts';
 const corsHeaders = {
