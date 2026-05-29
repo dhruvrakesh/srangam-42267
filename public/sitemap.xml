@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://srangam.nartiang.org/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://srangam.nartiang.org/about</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://srangam.nartiang.org/begin-journey</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://srangam.nartiang.org/articles</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://srangam.nartiang.org/search</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://srangam.nartiang.org/reading-room</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://srangam.nartiang.org/sources-method</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://srangam.nartiang.org/atlas</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://srangam.nartiang.org/maps</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://srangam.nartiang.org/field-notes</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://srangam.nartiang.org/data-visualization</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://srangam.nartiang.org/research-network</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://srangam.nartiang.org/sitemap</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://srangam.nartiang.org/themes/ancient-india</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://srangam.nartiang.org/themes/indian-ocean-world</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://srangam.nartiang.org/themes/scripts-inscriptions</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://srangam.nartiang.org/themes/geology-deep-time</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://srangam.nartiang.org/themes/empires-exchange</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://srangam.nartiang.org/sources/edicts</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://srangam.nartiang.org/sources/epigraphy</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://srangam.nartiang.org/sources/trade-docs</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://srangam.nartiang.org/sources/sanskrit-terminology</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://srangam.nartiang.org/sanskrit-translator</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://srangam.nartiang.org/jyotish</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://srangam.nartiang.org/partnership</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://srangam.nartiang.org/support-research</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://srangam.nartiang.org/research-submission</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://srangam.nartiang.org/brand</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+</urlset>
