@@ -13,6 +13,7 @@ import { useLanguage } from "@/components/language/LanguageProvider";
 import { ArticleThemeChips } from "@/components/articles/ArticleThemeChips";
 import { IconConch, IconLotus } from "@/components/icons";
 import { Search, BookOpen, Filter, Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useDynamicSEO } from "@/hooks/useDynamicSEO";
 
 export default function Articles() {
