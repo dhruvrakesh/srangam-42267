@@ -78,6 +78,9 @@ export const ArticleMiniMap: React.FC<Props> = ({ slug, pins, mapStyle = 'light-
 
         for (const p of pins) {
           const colour = p.confidence ? CONFIDENCE_COLOR[p.confidence] : 'hsl(217 91% 60%)';
+          const atlasLink = p.gazetteer_id
+            ? `<br/><a href="/atlas?id=${encodeURIComponent(p.gazetteer_id)}" style="color:hsl(217 91% 60%);text-decoration:underline;">Open in Atlas →</a>`
+            : '';
           L.circleMarker([p.lat, p.lon], {
             radius: p.approximate ? 6 : 8,
             color: colour,
@@ -89,7 +92,8 @@ export const ArticleMiniMap: React.FC<Props> = ({ slug, pins, mapStyle = 'light-
               `<strong>${escapeHtml(p.name)}</strong><br/>` +
                 `${p.lat.toFixed(3)}°, ${p.lon.toFixed(3)}°` +
                 (p.approximate ? '<br/><em>approximate</em>' : '') +
-                (p.confidence ? `<br/><small>confidence ${p.confidence}</small>` : ''),
+                (p.confidence ? `<br/><small>confidence ${p.confidence}</small>` : '') +
+                atlasLink,
             )
             .addTo(map);
         }
@@ -107,6 +111,8 @@ export const ArticleMiniMap: React.FC<Props> = ({ slug, pins, mapStyle = 'light-
         } catch {
           /* noop */
         }
+        // Phase Y.3 — observability heartbeat
+        console.info({ evt: 'article_map_rendered', slug, pin_count: pins.length });
       } catch (e) {
         console.warn('[ArticleMiniMap] failed:', e);
         if (!cancelled) setError('Map failed to load');

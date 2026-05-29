@@ -229,7 +229,7 @@ const App = () => (
                     <Route path="context" element={<ContextManagement />} />
                     <Route path="geography-media" element={<GeographyMedia />} />
                     <Route path="corpus-correlations" element={<CorpusCorrelations />} />
-                    <Route path="geography-media" element={<GeographyMedia />} />
+                    <Route path="data-health" element={<DataHealth />} />
                   </Route>
                   
                   <Route path="*" element={<NotFound />} />
