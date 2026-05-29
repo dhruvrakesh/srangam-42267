@@ -48,7 +48,7 @@ export const OceanicArticlePage: React.FC = () => {
   const { currentLanguage } = useLanguage();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showMethodsDialog, setShowMethodsDialog] = useState(false);
-  const [showInteractiveMap, setShowInteractiveMap] = useState(false);
+  // Phase G2 — map now auto-mounts via IntersectionObserver; no manual toggle.
 
   // Phase 1.4: Unified data hook (parallel fetching)
   const { 
