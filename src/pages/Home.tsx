@@ -14,6 +14,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Waves, Mountain, BookOpen, Map, Users, Network, Loader2 } from "lucide-react";
 import GeomythologySection from "@/components/home/GeomythologySection";
 import ToolsSection from "@/components/home/ToolsSection";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Home() {
   const { t } = useTranslation();
