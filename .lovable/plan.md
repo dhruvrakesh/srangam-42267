@@ -88,3 +88,22 @@ Each file revertable independently. Hook keeps the `{ data, isLoading }` contrac
 - Theme-chip i18n key leakage (`themes.sacredecology`, etc.).
 - Project-wide `QueryClient` defaults audit.
 - Wiring `articles_fetch_degraded` warnings into `srangam_event_log`.
+
+---
+
+## Phase X.8 — Implementation Log (2026-05-29)
+
+**Status:** Implemented.
+
+**Files edited:**
+- `src/hooks/useArticles.ts` — added `ArticleFetchTimeoutError`, AbortSignal, 12s watchdog, retry:2, `networkMode:'offlineFirst'`, structured `articles_fetch_degraded` log on timeout/abort/error.
+- `src/pages/Home.tsx` — replaced full-screen spinner with render-first grid + 3-card skeleton fallback + inline "Refreshing…" pill + offline-archive notice. Added `Skeleton` import.
+- `src/pages/Articles.tsx` — same treatment with 6-card skeleton; preserved genuine empty-state branch for zero-result filters.
+- `docs/SCALABILITY_ROADMAP.md` — appended "Frontend resilience" section documenting the render-first / hydrate-second pattern and hook contract.
+- `mem://index.md` — added Core rule: "Render-first, hydrate-second (Phase X.8)".
+
+**Untouched:** RLS, GRANTs, migrations, edge functions, `types.ts`, admin pages, correlation engine, slug resolver, narration, OG pipeline, `useArticlesPaginated`, `useSearchArticles`, `useArticle`.
+
+**Hook return shape:** additive — `{ data, isLoading, isFetching, error, ... }`. Existing consumers (`Search`, `ArticleHealthDashboard`, etc.) that only destructure `{ data, isLoading }` continue to work unchanged.
+
+**Phase X.9 candidates:** theme-chip i18n key leakage (`themes.sacredecology`, `themes.acoustic-archaeology`, `themes.sacred-geography`); project-wide `QueryClient` defaults audit; `articles_fetch_degraded` → `srangam_event_log` materialization.
