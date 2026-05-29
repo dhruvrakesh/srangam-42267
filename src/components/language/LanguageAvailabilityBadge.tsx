@@ -6,24 +6,50 @@ import { Globe, Check, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface LanguageAvailabilityBadgeProps {
+  /** Title (or any) multilingual content — used as a fallback when no override/body is provided. */
   content: MultilingualContent;
   currentLanguage: SupportedLanguage;
   className?: string;
   showDetails?: boolean;
+  /**
+   * Phase AA (2026-05-29) — Body-aware override.
+   * When provided, availability is computed from the article body's locale
+   * keys rather than from the title. This stops the "9/9" lie on cards
+   * whose title is translated but whose body is not.
+   */
+  bodyContent?: MultilingualContent;
+  /**
+   * Pre-computed list of languages with non-empty body content.
+   * Preferred over passing the full body JSONB to avoid shipping payload.
+   */
+  availableLanguagesOverride?: SupportedLanguage[];
 }
+
+const nonEmptyKeys = (c: MultilingualContent): SupportedLanguage[] =>
+  Object.entries(c)
+    .filter(([, v]) => typeof v === 'string' && (v as string).trim().length > 0)
+    .map(([k]) => k as SupportedLanguage);
 
 export const LanguageAvailabilityBadge: React.FC<LanguageAvailabilityBadgeProps> = ({
   content,
   currentLanguage,
   className,
-  showDetails = false
+  showDetails = false,
+  bodyContent,
+  availableLanguagesOverride,
 }) => {
-  const availableLanguages = Object.keys(content) as SupportedLanguage[];
+  // Phase AA: prefer override → body → title (legacy fallback)
+  const availableLanguages: SupportedLanguage[] = availableLanguagesOverride
+    ? availableLanguagesOverride
+    : bodyContent
+      ? nonEmptyKeys(bodyContent)
+      : (Object.keys(content) as SupportedLanguage[]);
+
   const totalLanguages = Object.keys(supportedLanguages).length;
   const completionPercentage = Math.round((availableLanguages.length / totalLanguages) * 100);
-  
+
   const isCurrentLanguageAvailable = availableLanguages.includes(currentLanguage);
-  
+
   const getCompletionColor = () => {
     if (completionPercentage === 100) return 'bg-emerald-500 text-white';
     if (completionPercentage >= 70) return 'bg-amber-500 text-white';
@@ -36,27 +62,33 @@ export const LanguageAvailabilityBadge: React.FC<LanguageAvailabilityBadgeProps>
     return <AlertCircle size={12} />;
   };
 
+  const titleLanguageCount = Object.keys(content).length;
+  const tooltip = `Body translated in ${availableLanguages.length}/${totalLanguages} languages` +
+    (titleLanguageCount > availableLanguages.length
+      ? ` (title available in ${titleLanguageCount})`
+      : '');
+
   if (showDetails) {
     return (
       <div className={cn('flex flex-col gap-2', className)}>
-        <Badge variant="outline" className={cn('flex items-center gap-1', getCompletionColor())}>
+        <Badge variant="outline" className={cn('flex items-center gap-1', getCompletionColor())} title={tooltip}>
           {getCompletionIcon()}
           {completionPercentage}% Complete
         </Badge>
-        
+
         <div className="grid grid-cols-3 gap-1">
           {Object.entries(supportedLanguages).map(([code, lang]) => {
             const isAvailable = availableLanguages.includes(code as SupportedLanguage);
             const isCurrent = code === currentLanguage;
-            
+
             return (
               <Badge
                 key={code}
-                variant={isAvailable ? "default" : "outline"}
+                variant={isAvailable ? 'default' : 'outline'}
                 className={cn(
                   'text-xs px-1 py-0.5 h-6 justify-center',
                   isAvailable ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'text-muted-foreground',
-                  isCurrent && 'ring-2 ring-primary ring-offset-1'
+                  isCurrent && 'ring-2 ring-primary ring-offset-1',
                 )}
               >
                 {lang.nativeName.substring(0, 3)}
@@ -64,7 +96,7 @@ export const LanguageAvailabilityBadge: React.FC<LanguageAvailabilityBadgeProps>
             );
           })}
         </div>
-        
+
         {!isCurrentLanguageAvailable && (
           <p className="text-xs text-muted-foreground">
             Content not available in {supportedLanguages[currentLanguage].nativeName}
@@ -75,13 +107,10 @@ export const LanguageAvailabilityBadge: React.FC<LanguageAvailabilityBadgeProps>
   }
 
   return (
-    <Badge 
-      variant="outline" 
-      className={cn(
-        'flex items-center gap-1 text-xs',
-        getCompletionColor(),
-        className
-      )}
+    <Badge
+      variant="outline"
+      className={cn('flex items-center gap-1 text-xs', getCompletionColor(), className)}
+      title={tooltip}
     >
       {getCompletionIcon()}
       {availableLanguages.length}/{totalLanguages}
