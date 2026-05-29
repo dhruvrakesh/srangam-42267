@@ -25,7 +25,7 @@ export default function Home() {
   const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'longest' | 'shortest' | 'title'>('recent');
 
   // Fetch database articles
-  const { data: dbArticles, isLoading } = useAllArticles(currentLanguage);
+  const { data: dbArticles, isLoading, isFetching, error: dbError } = useAllArticles(currentLanguage);
 
   // Merge JSON and database articles
   const allArticles = useMemo(() => {
