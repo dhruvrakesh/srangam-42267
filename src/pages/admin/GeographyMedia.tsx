@@ -36,6 +36,8 @@ interface ArticleRow {
   og_image_version: number | null;
   og_image_status: string | null;
   pin_count: number;
+  evidence_count: number;
+  biblio_count: number;
   status: string;
 }
 
