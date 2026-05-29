@@ -208,9 +208,22 @@ async function backfillOne(
   // ---- Stage 3: AI NER (confidence C) ----
   let aiStats: PerArticleAiStats | undefined;
   if (!skipAi && flat.length > 200) {
+    // Phase G1 — heartbeat-during-AI: tick every 25s while the AI promise is
+    // pending so the watchdog does not reap a job that is making real progress
+    // on a single long article. Cleared on settle in finally block.
+    let hbTimer: number | undefined;
+    if (jobId) {
+      try { await touchHeartbeat(supabase, jobId); } catch { /* noop */ }
+      hbTimer = setInterval(() => {
+        touchHeartbeat(supabase, jobId).catch(() => { /* noop */ });
+      }, 25_000) as unknown as number;
+    }
     try {
       await stage('pin_ai', { article_id: article.id }, async () => {
-        const result = await aiExtractPlaces(flat);
+        // Phase G1 — bound AI input to keep one article from consuming the
+        // entire pump slot. Deterministic scan already used the full text.
+        const aiInput = flat.length > 25_000 ? flat.slice(0, 25_000) : flat;
+        const result = await aiExtractPlaces(aiInput);
         aiStats = {
           provider: result.provider,
           model: result.model,
@@ -233,6 +246,8 @@ async function backfillOne(
       } else {
         // already logged by stage(), swallow so deterministic pins still write
       }
+    } finally {
+      if (hbTimer !== undefined) clearInterval(hbTimer);
     }
   }
 
