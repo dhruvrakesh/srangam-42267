@@ -648,9 +648,38 @@ The `_compat` block exists solely to keep the existing `context-diff-generator` 
 
 Snapshots with `snapshot_date ≤ 2026-05-29` carry capped sample counts (`terms_count=100`, `tags_count=50`, `cross_refs_count=100`, undersized `modules_count`) — not real corpus totals. These rows are an **immutable historical baseline** and are not back-filled (`srangam_context_snapshots` has no UPDATE policy; per project policy, production data is treated as immutable). The first CX.1-vs-pre-CX.1 diff produced by `context-diff-generator` will look like an enormous corpus surge — it is a measurement-regime jump, not real growth.
 
-### Out of scope for CX.1 (carried forward)
+## Phase CX.2 (2026-05-29) — Shared modules + `_compat` retired
 
-- **CX.2** — extract `_shared/google-drive.ts` + `_shared/context-markdown.ts`; auto-invoke diff after snapshot insert and UPDATE `changes_from_previous` (uses `SERVICE_ROLE_KEY` to bypass the missing UPDATE policy — an intentional service-role-only write path); record `status:'failed'` rows on error; demote `context-bundle-generator` to export-only; retire the `_compat` shim.
-- **CX.3** — additive migration: `article_slugs`, `tag_names`, `term_keys jsonb` columns on `srangam_context_snapshots`; identity-based set diffs; `mode: 'count_only'` fallback for pre-migration rows.
+CX.2 is a pure refactor (no migration, no schema change, no client touch). It collapses duplicated logic into two shared modules and retires the `_compat` shim now that `context-diff-generator` reads the structured shape directly.
+
+### Shared modules
+
+| Module | Exports | Used by |
+| --- | --- | --- |
+| `supabase/functions/_shared/google-drive.ts` | `loadServiceAccount(envVar?)`, `getDriveAccessToken(sa, scope?)`, `uploadToDrive({ accessToken, fileName, mimeType, body: {kind:'base64'\|'text', data}, parentFolderId?, shareAnyone? })` | `context-save-drive`, `tts-save-drive` |
+| `supabase/functions/_shared/context-metrics.ts` | `countAuthoritative(supabase)`, `countDistinctModules(supabase)`, `topThemes(supabase)`, `topTags(supabase, limit?)`, `topTerms(supabase, limit?)`, `recentCrossRefs(supabase, limit?)`, `latestCorrelationSummary(supabase)` | `context-save-drive`, `context-bundle-generator` |
+
+**Invariant**: never re-inline either block in a new edge function. Always import the shared helper. Counts and GDrive auth have exactly one source of truth per concern.
+
+### `stats_detail` shape (CX.2+)
+
+```json
+{
+  "generated_with": "CX.2",
+  "sample_sizes": { "terms": 100, "tags": 50, "cross_refs": 100 },
+  "themes": { "Ancient India": 41, "Geomythology": 4 },
+  "top_tags":  [ { "name": "...", "usage_count": 12 }, ... ],
+  "top_terms": [ { "term": "...", "module": "...", "usage_count": 9 }, ... ],
+  "avg_cross_ref_strength_sampled": 0.42,
+  "correlation": { "pair_count": 1273, "computed_at": "...", "top_pairs": [...] }
+}
+```
+
+`_compat` is **removed**. `context-diff-generator` now branches on shape: when both snapshots expose `themes` as a `Record` and `top_tags` as `Array<{name,...}>`, it returns `mode:'identity'` with structured deltas; otherwise it returns `mode:'count_only'` with a `reason` and never crashes. This is the safe fallback for the frozen pre-2026-05-29 baseline.
+
+### Out of scope for CX.2 (carried forward)
+
+- **CX.3** — additive migration: `identity_sets jsonb` column on `srangam_context_snapshots`; identity-based set diffs (added/removed slugs, tags, terms, modules); `mode: 'count_only'` fallback for pre-migration rows.
 - **CX.4** — AI executive summary populating `context_summary`.
 - **CX.5** — `pg_cron` wiring for automated daily snapshots.
+
