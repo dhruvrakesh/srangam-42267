@@ -250,16 +250,23 @@ export default function Home() {
             </Select>
           </div>
 
-          {/* Loading State */}
-          {isLoading && (
-            <div className="flex justify-center items-center py-12">
-              <Loader2 className="animate-spin text-peacock-blue" size={32} />
-              <span className="ml-3 text-muted-foreground">Loading articles...</span>
+          {/* Phase X.8.1 — Render-first, hydrate-second.
+              Never block the JSON-backed corpus on a pending DB roundtrip. */}
+          {isFetching && filteredArticles.length > 0 && (
+            <div className="flex justify-end mb-3">
+              <span className="inline-flex items-center gap-2 text-xs text-muted-foreground bg-muted/60 px-3 py-1 rounded-full">
+                <Loader2 className="animate-spin" size={12} />
+                Refreshing…
+              </span>
+            </div>
+          )}
+          {dbError && !isFetching && filteredArticles.length > 0 && (
+            <div className="mb-4 text-xs text-muted-foreground bg-muted/50 border border-border rounded-md px-3 py-2 text-center">
+              Live database unreachable — showing offline archive.
             </div>
           )}
 
-          {/* Articles Grid */}
-          {!isLoading && (
+          {filteredArticles.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
               {filteredArticles.map((article, index) => (
                 <div key={article.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
@@ -267,7 +274,13 @@ export default function Home() {
                 </div>
               ))}
             </div>
-          )}
+          ) : isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+              {[0, 1, 2].map((i) => (
+                <Skeleton key={i} className="h-64 w-full rounded-lg" />
+              ))}
+            </div>
+          ) : null}
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
