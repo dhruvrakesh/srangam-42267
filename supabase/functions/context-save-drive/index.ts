@@ -133,7 +133,7 @@ ${correlation.top_pairs.map((p, i) => `  ${i + 1}. ${p.slug_a ?? p.article_a} �
 
     const contextDocument = `# Srangam Platform Context Snapshot
 Generated: ${timestamp}
-Generated with: CX.2 (shared metrics module; authoritative counts; samples labelled)
+Generated with: CX.3 (identity-set diffing; shared metrics module; authoritative counts; samples labelled)
 
 ## System Statistics
 
@@ -178,7 +178,7 @@ Tables:
 ---
 
 This snapshot represents the current state of the Srangam platform.
-Generated automatically by context-save-drive edge function (CX.2).
+Generated automatically by context-save-drive edge function (CX.3).
 `;
 
     // ─── Upload via shared Google Drive helper. ───
@@ -192,15 +192,22 @@ Generated automatically by context-save-drive edge function (CX.2).
     });
 
     const snapshotStatsDetail = {
-      generated_with: 'CX.2',
+      generated_with: 'CX.3',
       sample_sizes: { terms: 100, tags: 50, cross_refs: 100 },
       themes: themesObject,
       top_tags: tags.map((t) => ({ name: t.tag_name, usage_count: t.usage_count })),
       top_terms: terms.map((t) => ({ term: t.term, module: t.module, usage_count: t.usage_count })),
       avg_cross_ref_strength_sampled: avgCrossRefStrengthSampled,
       correlation,
-      // CX.2 retires the _compat shim. context-diff-generator now reads the structured shape directly,
-      // and falls back to mode:'count_only' for older snapshots that still carry _compat.
+    };
+
+    // CX.3 identity sets — sorted for deterministic diffing.
+    const identitySets = {
+      article_slugs: allPublishedArticles.slice().sort(),
+      term_keys: allTermsForIdentity.slice().sort(),
+      tag_names: allTags.slice().sort(),
+      theme_names: Object.keys(themesObject).slice().sort(),
+      module_names: allModulesRows.slice().sort(),
     };
 
     const { error: snapshotError } = await supabase
@@ -216,6 +223,7 @@ Generated automatically by context-save-drive edge function (CX.2).
         cross_refs_count: counts.cross_refs_count,
         modules_count: counts.modules_count,
         stats_detail: snapshotStatsDetail,
+        identity_sets: identitySets,
         triggered_by: 'manual',
         status: 'success',
       });
@@ -223,8 +231,15 @@ Generated automatically by context-save-drive edge function (CX.2).
     if (snapshotError) {
       console.error('Error saving snapshot metadata:', snapshotError);
     } else {
-      console.log('CX.2 snapshot metadata saved');
+      console.log('CX.3 snapshot metadata saved (identity sets:', {
+        articles: identitySets.article_slugs.length,
+        terms: identitySets.term_keys.length,
+        tags: identitySets.tag_names.length,
+        themes: identitySets.theme_names.length,
+        modules: identitySets.module_names.length,
+      }, ')');
     }
+
 
     return new Response(
       JSON.stringify({
