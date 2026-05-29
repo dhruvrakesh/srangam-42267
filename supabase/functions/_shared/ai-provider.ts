@@ -27,7 +27,9 @@
  *   }
  */
 
-const DEFAULT_TIMEOUT_MS = 15_000;
+// Phase Z.1 (2026-05-29): raised from 15s → 60s. Pin-extraction logs showed
+// repeated `pin_ai` timeouts on 45–80 KB articles producing inserted:0.
+const DEFAULT_TIMEOUT_MS = 60_000;
 
 // Public list-price snapshot, USD per 1M tokens (text models)
 // or USD per generated image (image models). Update here only — no caller
