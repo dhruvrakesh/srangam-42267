@@ -289,8 +289,29 @@ User Requests Narration
 
 ---
 
+## Gazetteer Governance (Phase G3, 2026-05-29)
+
+`public.srangam_gazetteer` is the single source of truth for atlas pins. Both the deterministic name-variant scan and the AI NER pass in `backfill-article-pins` match article text against `[canonical_name, ...name_variants]`. If a place isn't in the gazetteer, no pin can be generated for it — that is the **only** reason a published article can show 0 pins after a successful backfill.
+
+**Schema invariants:**
+
+- `canonical_name` is **UNIQUE** (constraint `srangam_gazetteer_canonical_name_key`, added Phase G3). All ingest paths must use `ON CONFLICT (canonical_name) DO NOTHING` — never duplicate a row.
+- `name_variants TEXT[]` should carry the IAST diacritic form, an ASCII fallback, the Devanagari (or appropriate script) form when unambiguous, and 1–2 historic exonyms.
+- `feature_type` is a controlled vocabulary: `port`, `harbour`, `city`, `capital`, `pitha`, `jyotirlinga`, `temple_complex`, `inscription_site`, `archaeological_site`, `cave_shelter`, `mountain`, `monolith_site`. Do not introduce ad-hoc values without updating this list.
+- `era_tags TEXT[]` vocabulary: `prehistoric`, `vedic`, `puranic`, `maurya`, `gupta`, `medieval`, `mughal`, `colonial`.
+- `precision` is `'point'` for atlas-level entries (±0.05° is acceptable).
+- `external_refs` is `jsonb` keyed by source (e.g. `{ "wikidata": "Q…" }`).
+
+**Deletion guard:** Never `DELETE` a gazetteer row referenced by `srangam_article_pins` — it would orphan pin rows and corrupt the public map. To retire a place, soft-mark it via `notes` and leave the row in place. To rename, `UPDATE` the row; do not delete-and-reinsert.
+
+**Coverage baseline (2026-05-29):** 112 rows. Phase G3 expanded the original 32-row maritime-only set with ~80 inland places (Śakti Pīṭhas, Jyotirliṅgas, Mahājanapada capitals, Kashmir sacred geography, Indus/BMAC archaeology, Janajāti petroglyph shelters, SE-Asian temple complexes, and Bunjils Shelter). Future growth happens additively through the same INSERT … ON CONFLICT pattern.
+
+---
+
 ## Related Documentation
 
 - `docs/CURRENT_STATUS.md` - Platform status
 - `docs/ADMIN_DASHBOARD.md` - Admin capabilities
 - `docs/ARTICLE_DISPLAY_GUIDE.md` - Markdown authoring
+- `docs/CONTEXT_MANAGEMENT_GUIDE.md` - Context snapshots & bundles
+
