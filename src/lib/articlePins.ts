@@ -88,6 +88,7 @@ export async function loadArticlePins(articleId: string | undefined): Promise<Ar
           lon,
           approximate: g.precision !== 'point',
           confidence: row.confidence ?? undefined,
+          gazetteer_id: row.gazetteer_id ?? undefined,
         };
       })
       .filter((p): p is ArticlePin => p !== null);
