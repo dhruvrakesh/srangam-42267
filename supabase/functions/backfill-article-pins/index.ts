@@ -27,6 +27,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 import { stage } from '../_shared/observability.ts';
 import { aiExtractPlaces, NoAIProviderError } from '../_shared/ai-provider.ts';
 import { reportItem, isCancelled, finishJob, touchHeartbeat } from '../_shared/jobs.ts';
+import { serializeErr } from '../_shared/errors.ts';
 
 import { requireAdmin } from '../_shared/auth-gate.ts';
 const corsHeaders = {
@@ -259,7 +260,7 @@ async function backfillOne(
       article_id: article.id,
       gazetteer_id,
       confidence,
-      source: confidence === 'A' ? 'evidence' : confidence === 'B' ? 'content_scan' : 'ai_ner',
+      source: confidence === 'A' ? 'evidence_table' : confidence === 'B' ? 'content_scan' : 'ai_extract',
       display_order,
     }));
 
@@ -492,7 +493,7 @@ Deno.serve(async (req) => {
             });
           }
         } catch (e) {
-          const msg = e instanceof Error ? e.message : String(e);
+          const msg = serializeErr(e);
           console.error(`[backfill-article-pins] ${a.slug} failed:`, msg);
           results.push({ slug: a.slug, error: msg });
           if (body.job_id) {
@@ -524,7 +525,7 @@ Deno.serve(async (req) => {
             schedulePumpReinvoke(pumpUrl, { ...body, offset: nextOffset });
           }
         } catch (e) {
-          const msg = e instanceof Error ? e.message : String(e);
+          const msg = serializeErr(e);
           console.error('[backfill-article-pins] background chunk failed:', msg);
           try { await finishJob(admin, body.job_id!, 'failed', msg); } catch { /* noop */ }
         }
@@ -562,7 +563,7 @@ Deno.serve(async (req) => {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
+    const msg = serializeErr(e);
     console.error('[backfill-article-pins] fatal:', msg);
     try {
       if (body?.job_id) {

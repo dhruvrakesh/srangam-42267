@@ -1,206 +1,252 @@
-## Phase G3 — Gazetteer expansion (shipped 2026-05-29)
+## Revived, evidence-based assessment (idempotency-first)
 
-**Before:** 32 rows (maritime-only). 11/45 articles with pins, 27 total pins.
-**After migration:** 112 rows. UNIQUE(canonical_name) constraint added; ~80 inland places inserted idempotently (Śakti Pīṭhas 10, Jyotirliṅgas 12, Janapada capitals/cities 16, Kashmir 8, Indus/Iron-Age 7, Indo-Iranian/BMAC 5, Janajāti 7, SE-Asia 8, acoustic/temple 6, Australia 1).
-
-**User action required to complete:** open Admin → Geography & Media → click "Backfill all published" with `only_zero_pin:true`, `limit:50`. Phase Z's nightly cron also picks up the rest at 03:00 UTC at 20/night. Expected cost ≤ $0.04.
-
-**Acceptance gates (verify after backfill run):**
-1. `SELECT count(*) FROM srangam_gazetteer` → 112. ✅ (already true).
-2. `srangam_admin_jobs` row for the run: `status='succeeded'`, `failed=0`.
-3. `SELECT count(DISTINCT article_id), count(*) FROM srangam_article_pins` → expect ≥ 30 / ≥ 100.
-4. Admin · Geography & Media stat card → "With pins" ≥ 30 / 45; spot-check Hinglaj, Somnātha, Saffron-and-Blue, Sat-Sar Springs rows.
-5. Public `/articles/hinglaj-…` → `ArticleMiniMap` auto-mounts (IntersectionObserver, 200px rootMargin) under "Geographical Context".
-6. `/maps-data?focus=<slug>` → cluster dims non-matching to 0.15 opacity.
-
-**Documentation deliverables (done in this turn):**
-- `docs/CONTENT_ARCHITECTURE.md` → new "Gazetteer Governance" section (taxonomy frozen, deletion guard, baseline).
-- `mem://geo/gazetteer-coverage-baseline` → 112-row baseline + rules.
-- `mem://index.md` → Core invariant updated.
+This is a running, functional project. Every phase below is **additive, reversible, and idempotent**: re-running it must converge to the same state without duplicating data, double-billing AI calls, or stomping prior work. No rebuilds. No production data deletion.
 
 ---
 
-## Approved roadmap (one phase per turn)
-
-
-## Revived context (all verified live, 2026-05-29)
-
-### Why "11 / 45 with pins" is correct — and what the real bottleneck is
-
-The pin pipeline executed cleanly on every published article (edge logs show `pin_complete` for all 45). The numbers in the admin UI are honest:
+## Live ground truth (verified against the DB just now)
 
 ```text
-published articles ............... 45
-distinct articles with ≥1 pin .... 11
-total pins ....................... 27
-gazetteer rows ................... 32
+published articles        45
+gazetteer rows            112  (Phase G3 baseline; UNIQUE(canonical_name))
+total article pins        135
+articles with pins        34 / 45
+total evidence rows       79
+articles with evidence     6 / 45
+articles with OG images   44 / 45
+duplicate (article_id, gazetteer_id) pin pairs   0
 ```
 
-The DB-backed gazetteer is **maritime-only**. Every one of the 32 rows is `feature_type ∈ {port, harbour, inscription_site, city}` along the Indian Ocean rim — Aden, Muziris, Tāmralipti, Kāveripattinam, Berenike, Quanzhou, Kedukan Bukit, Võ Cảnh, Kandahar, Bujang Valley, Zanzibar, etc. There is **not a single** Śakti Pīṭha, Jyotirliṅga, Mahājanapada capital, Janajāti cave, Indo-Iranian site, Vedic-period city, or Kashmir/Kangra sacred-geography entry. So:
+Pin source/confidence distribution:
 
-- All 11 articles that produced pins are the maritime / inscription / Indian-Ocean ones (`scripts-that-sailed-ii` → 8 pins, `untitled-article` (Ocean as Archive) → 7 pins, `vishnu-shiva-hari-hara` → 2, etc.).
-- Inland sacred-geo articles (`hinglaj-kamakhya`, `somn-tha-prabh-sa`, `mah-vidy-s-mountains`, `the-saffron-and-the-blue` (Ayodhya), `sat-sar-springs`, `gop-dri-k-yapa-and-var-ham-la`, `dashanami-ascetics-n-th-yogis`, `indo-iranian-schism…-dwaraka`, `the-asura-exiles`, `under-the-sacred-tree`, etc.) return `inserted:0` because their places aren't in the gazetteer.
-- Both the deterministic name-variant scan and the AI NER pass match against the same 32 rows, so AI cannot rescue what the gazetteer doesn't know.
+```text
+all 135 pins are confidence=B, source=content_scan
+A (evidence-derived) pins: 0
+C (AI NER) pins:           0
+```
 
-`GeographyMedia.tsx` is wired correctly (`pin_count = COUNT(pins) per article_id`, `withPins = pin_count > 0`). The "0 pins" badge on Hinglaj/Naga-Compact/Somnātha rows is the truth, not a UI bug.
+Last two `pin_backfill` jobs:
 
-Article pages already auto-mount `ArticleMiniMap` (lazy-loaded in `OceanicArticlePage.tsx:556`) whenever `pins.length > 0` — so the moment the DB has pins for an article, the in-article map appears with no client changes.
+```text
+latest:   running, 38/45 processed, 32 succeeded, 6 failed, last_error="[object Object]"
+previous: succeeded, 45/45 processed, 36 succeeded, 9 failed, last_error="[object Object]"
+```
 
-### CX.1 — fully shipped, verified
-
-Latest snapshot row `2026-05-29 12:32:52`:
-`articles=45, terms=1724, tags=185, cross_refs=1273, modules=13`, `stats_detail.generated_with='CX.1'`, populated `correlation` object, structured `top_terms` array. Bundle uses the same authoritative path and the corrected 9-language list (Pnar in, Pali out). No CX.1 follow-up required.
-
-### GDrive duplication — confirmed bigger than I claimed
-
-`tts-save-drive/index.ts` (lines 44–170) re-implements the **identical** RS256 JWT + `oauth2.googleapis.com/token` exchange + `upload/drive/v3/files?uploadType=multipart` + `permissions` flow that `context-save-drive/index.ts` (lines 251–345) uses. CX.2's `_shared/google-drive.ts` will collapse both. No third caller exists today.
-
----
-
-## Enterprise sequencing — one phase per turn
-
-Each phase is additive, independently revertible, gated by verification, and never breaks the previous behaviour (a fallback path stays alive until the new path is confirmed).
+So the row-level constraints already give us idempotency, but the **workflow** around them is not idempotent yet:
+- the admin bulk button re-scans all 45 articles every time;
+- AI/content scans get re-billed on articles that already have pins;
+- A/C pins silently fail because the function writes `source` values the table CHECK constraint rejects;
+- the operator sees `[object Object]` and cannot diagnose.
 
 ---
 
-### Phase G3 — Gazetteer expansion (the UI-visible fix)
+## Root causes (confirmed in code + DB)
 
-**Surgical, additive, no schema change.** One INSERT-only migration; one admin-button re-run of `backfill-article-pins`.
+### RC-1 — Bulk pin backfill is not idempotent at the workflow level
+`src/pages/admin/GeographyMedia.tsx:215` calls `backfill-article-pins` with `all_published:true` but **omits** `only_zero_pin:true`. The function therefore re-scans the full 45 every run. Row-level upsert prevents duplicate rows, but AI calls and CPU are repeated.
 
-**Coverage targets (audited against actual published slugs, not invented):**
+### RC-2 — `source` enum mismatch silently truncates pin tiers
+DB constraint (`srangam_article_pins_source_check`) allows:
 
-| Category | Rows | Articles unblocked |
+```text
+evidence_table | content_scan | ai_extract | manual
+```
+
+`supabase/functions/backfill-article-pins/index.ts:262` writes:
+
+```text
+evidence  |  content_scan  |  ai_ner
+```
+
+→ Only `content_scan` survives. Evidence-tier (A) and AI-tier (C) inserts fail the constraint and are reported as `[object Object]`. This explains both **zero A/C pins** and the recurring failures.
+
+### RC-3 — Error serialization loses all signal
+`backfill-article-pins/index.ts:495` does `e instanceof Error ? e.message : String(e)`. Supabase PostgrestError objects are not `Error` instances, so they stringify to `[object Object]`. Same pattern in `_shared/jobs.ts` last_error handoff.
+
+### RC-4 — Evidence sidebar conflates "no DB rows" with "broken"
+- Live evidence coverage is genuinely 6/45 articles.
+- `OceanicArticlePage.tsx:388` passes `pageOrCard={article.title}` (full multilingual title object) into the legacy correlation engine, which keys by page/theme labels → near-zero match rate.
+- `correlationEngine` loads CSV asynchronously in its constructor but exposes no readiness signal; first render returns empty `claims[]`.
+- Result: yellow "Using cached sources" banner + empty `KEY CLAIMS` block, which reads as a bug.
+
+### RC-5 — Generated image is unreadable, not unusable
+`OceanicArticlePage.tsx:251` force-crops the 1200×630 hero to `h-48/md:h-64/lg:h-72 object-cover` with no click target. Admin `GeographyMedia.tsx` shows only a `vN` badge, no thumbnail, no preview.
+
+### RC-6 — CX.2 is half-shipped
+- `context-save-drive` and `tts-save-drive` use shared `_shared/google-drive.ts` ✅
+- `context-bundle-generator/index.ts:231-389` still re-inlines the full JWT + multipart upload (violates the Phase CX.2 invariant in `mem://index.md`).
+- Latest snapshot row is still `generated_with='CX.1'` (2026-05-29 12:32) — no CX.2 snapshot has actually been written.
+- `srangam_context_snapshots` has no `identity_sets` column yet (confirmed via `information_schema.columns`).
+
+CX.3 must not start until CX.2 is real.
+
+---
+
+## Idempotency contract (binding for every phase)
+
+| Surface | Idempotency mechanism | Verification |
 |---|---|---|
-| Śakti Pīṭhas (10) | Hinglaj, Kāmākhyā, Vindhyāchal, Kālīghāt, Jvālāmukhī (Kangra), Naina Devi, Tārā Tāriṇī, Chinnamastā (Rajrappa), Bagalāmukhī (Datia), Mātaṅgī | `hinglaj-kamakhya`, `mah-vidy-s-mountains-and-mysteries`, `from-dev-s-kta-to-dev-m-h-tmya` |
-| Jyotirliṅgas (12) | Somnātha, Mahākāleśvara (Ujjain), Omkāreśvara, Kedārnāth, Bhīmaśankar, Kāśī Viśvanāth, Tryambakeśvar, Vaidyanāth (Deoghar), Nāgeśvar, Rāmeśvaram, Ghṛṣṇeśvar, Mallikārjuna | `somn-tha-prabh-sa`, `dashanami-ascetics-n-th-yogis`, `vishnu-shiva-interplay`, `har-har-hari-hari` |
-| Janapada capitals / sacred cities (15) | Ayodhyā, Mathurā, Vārāṇasī, Hastināpura, Indraprastha, Pāṭaliputra, Kauśāmbī, Ujjain, Vidiśā, Sanchi, Nālandā, Takṣaśilā, Dvārakā, Prabhāsa, Gwalior, Patiala | `the-saffron-and-the-blue`, `reassessing-ashoka-s-legacy`, `indo-iranian-schism…-dwaraka`, `the-gwalior-interface`, `baba-ala-singh`, `ancient-tribes-of-bh-ratavar-a`, `where-civilization-never-slept`, `tracing-ancient-k-atriya-tribes` |
-| Kashmir sacred geography (8) | Satīsar (Anantnag), Gopādri (Gwalior hill, distinct), Varāhamūla (Baramulla), Mārtāṇḍ, Śaṅkarācārya Hill (Srinagar), Jakhbar, Nartiang Monoliths, Kheer Bhawani | `sat-sar-springs`, `gop-dri-k-yapa-and-var-ham-la`, `srangam-project-research-report-on-jakhbar`, `n-ga-compact-across-kashmir-kerala-and-bali` |
-| Indus / Iron-Age archaeology (7) | Mehrgarh, Mohenjo-daro, Harappa, Dholavira, Kalibangan, Rakhigarhi, Bhirrana | `reassessing-the-antiquity-of-the-rigveda`, `deep-dive-indo-iranian-origins-and-zoroastrianism`, `geomythological-research-dossier`, `the-anu-and-the-druhyu` |
-| Indo-Iranian / BMAC (5) | Gonur Tepe (BMAC), Tell Halaf (Mitanni heartland), Nausharo, Shahr-i Sokhta, Ganj Dareh | `the-asura-exiles`, `deep-dive-indo-iranian-origins`, `indo-iranian-schism…-dwaraka` |
-| Janajāti / petroglyph / megalith (8) | Bhimbetka, Edakkal, Kupgal (Bellary), Sanganakallu, Konthagai, Adichanallur, Pattanam, Khasi-Jaintia plateau (Nartiang already above) | `stone-song-and-sea`, `ringing-rocks-and-rhythmic-cosmology`, `janaj-tiya-oral-traditions`, `graphic-transmission-from-rock-art` |
-| Maritime gaps to fill alongside existing rim (8) | Borneo (Sambas), Champa (Mỹ Sơn), Srivijaya (Palembang already as city — add inscription-site row), Bali (Pejeng / Goa Gajah), Java (Prambanan), Funan (Óc Eo), Angkor, Kedah inscription (already in DB) | `scripts-that-sailed-ii`, `untitled-article` (Ocean as Archive), `jambudvipa-connected`, `n-ga-compact-across-kashmir-kerala-and-bali` |
-| Acoustic / temple / harvest tree (6) | Hampi, Sittannavasal, Tigawa, Belur, Halebidu, Lepakshi | `ringing-rocks-and-rhythmic-cosmology`, `under-the-sacred-tree` |
-| Australia (1) | Bunjils Shelter (Black Range, Victoria) | `shiva-bunjil-altair-connections`, `the-celestial-bridge` |
+| `srangam_article_pins` | PK `(article_id, gazetteer_id)` + `.upsert({onConflict})` | duplicate-pair count = 0 |
+| `srangam_gazetteer` | `UNIQUE(canonical_name)` + `ON CONFLICT DO NOTHING` | row count stable on re-run |
+| Pin bulk workflow | `only_zero_pin:true` skips already-pinned articles | second consecutive bulk run = 0 articles processed |
+| `backfill-article-pins` single-article path | upsert + deterministic `display_order` recompute | re-run leaves row count unchanged |
+| `srangam_admin_jobs` | per-job UUID; cancel/re-attach by id; heartbeat | no orphan "running" rows after watchdog |
+| `srangam_media_assets` (OG) | `prompt_hash` short-circuit in `generate-article-og` | re-run with same prompt returns `skipped` |
+| `srangam_context_snapshots` | append-only (no UPDATE/DELETE policy) | history grows; old rows never mutated |
+| CX.3 `identity_sets` | additive JSONB column, default `'{}'::jsonb` | legacy rows continue to read; diff falls back to count_only |
 
-Total: **~80 new rows**, taking the gazetteer from 32 → ~112. Conservative; can grow later via the same channel.
-
-**Per-row content contract:**
-- `canonical_name`: most-common English form, with disambiguator if needed (e.g. `Gopādri (Mathurā / Govardhana hill)`).
-- `name_variants`: array containing IAST diacritic form, common ASCII fallback, Devanagari (where unambiguous), and 1–2 historic exonyms (e.g. `[Pāṭaliputra, Pataliputra, Patna, पाटलिपुत्र]`).
-- `latitude` / `longitude`: from public sources (Wikidata / OpenStreetMap), rounded to 4 decimals — atlas-level precision is sufficient.
-- `feature_type`: extend the existing taxonomy strictly — `pitha`, `jyotirlinga`, `capital`, `city`, `port`, `harbour`, `inscription_site`, `archaeological_site`, `cave_shelter`, `temple_complex`, `mountain`, `monolith_site`.
-- `era_tags`: `['vedic'|'puranic'|'maurya'|'gupta'|'medieval'|'mughal'|'colonial'|'prehistoric']` subset; powers future filtering.
-- `country`: ISO English name. `precision = 'point'` for everything in this batch.
-- `external_refs`: `{ wikidata: 'Qxxxxx' }` when known; empty `{}` otherwise.
-
-**Execution (build-mode):**
-1. **Migration** — single transactional INSERT block, idempotent via `ON CONFLICT (canonical_name) DO NOTHING`. No schema change. (Will need a one-line additive `ALTER TABLE … ADD CONSTRAINT srangam_gazetteer_canonical_name_key UNIQUE (canonical_name)` if it doesn't already exist — check first; harmless if it does.)
-2. **Re-run backfill** — admin clicks "Backfill all published (50 max)" with `only_zero_pin:true` (or call the function with that body directly). Phase Z's nightly cap of 20/night does not apply to manual runs. Estimated cost @ ≤ $0.001/article × ~34 zero-pin articles ≈ **$0.034**.
-3. **Cache invalidation** — none required. `GeographyMedia.tsx` uses TanStack Query keyed `['admin', 'geography-media', 'articles']`; the "Refresh stats" button already calls `refetch()`. Same for public article pages — they re-query pins through `articleResolver`/`articlePins` on next load.
-
-**Verification (must pass before phase is declared done):**
-1. `SELECT count(*) FROM srangam_gazetteer` → ≥ 110.
-2. Job row in `srangam_admin_jobs`: `status='succeeded'`, `processed=total`, `failed=0`.
-3. `SELECT count(DISTINCT article_id), count(*) FROM srangam_article_pins` → ≥ 30 / ≥ 100.
-4. Admin · Geography & Media stat card → `With pins` ≥ 30 / 45; spot-check rows for Hinglaj, Somnātha, Saffron-and-Blue.
-5. Public `/articles/hinglaj-k-m-khy-…` → `ArticleMiniMap` mounts under "Geographical Context".
-6. `/maps-data?focus=hinglaj-k-m-khy-…` → cluster on the public Article Atlas dims correctly.
-
-**Documentation deliverables:**
-- `docs/CONTENT_ARCHITECTURE.md` → new "Gazetteer governance" subsection (canonical_name uniqueness, IAST + Devanagari variants required, feature_type taxonomy frozen, era_tags vocabulary, "never delete a gazetteer row referenced by `srangam_article_pins` — soft-mark via `notes` instead").
-- `docs/SYSTEM_FLOWCHARTS.md` → update the pin-backfill flow to show the gazetteer as a first-class input, not implicit.
-- `.lovable/plan.md` → append G3 entry with before/after counts and the per-article delta.
-- New memory file `mem://geo/gazetteer-coverage-baseline-2026-05` capturing the 112-row baseline, the taxonomy, and the deletion guard.
+Whenever a phase below changes a write path, the test of correctness is: **run it twice in a row; the second run must be a near-noop with zero new cost.**
 
 ---
 
-### Phase CX.2 — Shared metrics + GDrive helpers (no migration) — SHIPPED 2026-05-29
+## Phase plan (one shippable change per phase)
 
-**Status:** Deployed. Snapshots from `/admin/context` now write `generated_with:'CX.2'` and no `_compat` key.
+### Phase 0 — Stabilize and document (no code change)
+- Confirm whether the currently-running `pin_backfill` job is still heart-beating; if stalled, cancel from the admin UI.
+- Append the ground-truth table above to `.lovable/plan.md` with timestamp so future loops have a frozen baseline.
+- **Idempotency:** observational only.
 
-**Shipped modules:**
-1. `supabase/functions/_shared/google-drive.ts` — `loadServiceAccount()`, `getDriveAccessToken()`, `uploadToDrive()` (handles base64 + text bodies, anyone-with-link sharing, Shared Drive parent). Lifted the duplicated RS256 JWT + multipart-upload block out of both `context-save-drive` and `tts-save-drive`.
-2. `supabase/functions/_shared/context-metrics.ts` — `countAuthoritative()` (head:true, count:'exact' for the four tables + paginated `countDistinctModules`), `topThemes()`, `topTags()`, `topTerms()`, `recentCrossRefs()`, `latestCorrelationSummary()`. Every helper takes the client as a parameter.
+### Phase 1 — Pin pipeline surgical healing
+1. `GeographyMedia.tsx`: bulk button passes `only_zero_pin:true`; persist in `srangam_admin_jobs.params`.
+2. `backfill-article-pins/index.ts:262`: emit `source ∈ {evidence_table, content_scan, ai_extract}` to satisfy the existing CHECK constraint. **No DB migration.**
+3. `_shared/jobs.ts` + `backfill-article-pins`: introduce `serializeErr(e)` that returns `message | code | details | hint` (Postgrest-aware). Replace every `[object Object]` site.
+4. `finishJob()` in `_shared/jobs.ts`: when `failed > 0 && succeeded > 0`, mark `succeeded` but stash `last_error` and a `params.partial=true` flag (constraint already allows `succeeded|failed|cancelled`).
+5. No write to existing pins; nothing deleted.
 
-**Refactors (behavior identical):**
-- `context-save-drive/index.ts` → uses both helpers; `_compat` removed; `generated_with` bumped to `'CX.2'`.
-- `tts-save-drive/index.ts` → uses `_shared/google-drive.ts`; inline JWT/upload block deleted.
-- `context-bundle-generator/index.ts` → uses `_shared/context-metrics.ts` for counts + correlation; inline blocks deleted.
-- `context-diff-generator/index.ts` → consumes structured `themes` (Record) + `top_tags` (Array<{name,...}>); falls back to `mode:'count_only'` with a `reason` when either snapshot predates CX.2 (frozen baseline).
-
-**Verification (user-side, post-deploy):**
-1. Trigger a new snapshot from `/admin/context`; row has `generated_with:'CX.2'`, no `_compat` key, counts identical to last CX.1 row.
-2. Diff CX.2 vs CX.1 → succeeds with structured changes + `mode:'identity'`.
-3. Diff CX.2 vs a pre-2026-05-29 snapshot → succeeds with `mode:'count_only'` + a `reason` (no crash).
-4. Smoke-test one narration via admin "Generate narration" button → `tts-save-drive` still uploads, GDrive share URL returned.
-
-**Documentation deliverables (this loop):**
-- `docs/CONTEXT_MANAGEMENT_GUIDE.md` → mark `_compat` retired; document the shared module API surface.
-- Core memory invariant updated: "GDrive JWT + multipart upload lives in `_shared/google-drive.ts` — never re-inline in a new function. Snapshot counts come from `_shared/context-metrics.ts:countAuthoritative()`."
-
-
----
-
-### Phase CX.3 — Identity-set diffs (the only CX phase with a migration)
-
-**Goal:** turn diff reports from count-deltas into real "these slugs / tags / terms were added/removed" lists — what the diff UI implicitly promises.
-
-**Migration (additive, reversible):**
+**Verification (idempotency gate):**
 ```sql
-ALTER TABLE public.srangam_context_snapshots
-  ADD COLUMN IF NOT EXISTS identity_sets jsonb NOT NULL DEFAULT '{}'::jsonb;
-CREATE INDEX IF NOT EXISTS idx_srangam_context_snapshots_identity_sets
-  ON public.srangam_context_snapshots USING gin (identity_sets jsonb_path_ops);
+-- before
+select count(*), count(distinct article_id) from srangam_article_pins;
+-- run bulk backfill once -> some new A/C pins on zero-pin articles
+-- run bulk backfill again immediately
+-- after second run
+select count(*), count(distinct article_id) from srangam_article_pins;
+-- => second run reports processed=0 (only_zero_pin filter), no new rows, no AI cost
+select article_id, gazetteer_id, count(*) from srangam_article_pins
+group by 1,2 having count(*)>1;  -- still []
 ```
+
+### Phase 2 — Evidence honesty + admin visibility
+1. `SourcesAndPins` (oceanic): when `bibliography.length===0 && evidence.length===0`, render a single explicit empty state ("No structured evidence imported for this article. 6/45 published articles currently have structured evidence rows.") instead of the yellow legacy banner + empty claims block.
+2. Admin-only inline action (gated by `useAuth().isAdmin`): "Re-import via Markdown" deep link.
+3. `correlationEngine.getSourcesAndPins(pageOrCard)`: stop matching against full multilingual `article.title`; key on `article.theme` + tags instead (single-line change in `OceanicArticlePage:388`).
+4. Add a new admin column in `GeographyMedia.tsx` per-article table: `Evidence`, `Bib`, alongside existing `Pins` / `OG` (read-only counts).
+5. **Idempotency:** pure read/UI; no new writes.
+
+### Phase 3 — Generated image inspection UX
+1. Article hero: wrap `<img>` in a button → shadcn `Dialog` lightbox; inside lightbox use `object-contain` on a `max-h-[85vh]` container, plus "Open original" link to the proxied URL.
+2. Aspect-safe outer container (`aspect-[1200/630]`) replaces `h-48/md:h-64/lg:h-72`; image still `loading="lazy"`, still goes through `getProxiedImageUrl`.
+3. `GeographyMedia.tsx` row OG cell: tiny 64×34 thumbnail + "View" button that opens the same Dialog component.
+4. **Idempotency:** no generation, no storage migration. Existing `srangam_media_assets` versioning untouched.
+
+### Phase 4 — Finish CX.2 for real
+1. Refactor `context-bundle-generator/index.ts` to import from `_shared/google-drive.ts` and `_shared/context-metrics.ts`; delete the inline `uploadToGoogleDrive` block (lines 231–389).
+2. Trigger one snapshot from `/admin/context`; verify the new row has `stats_detail->>'generated_with'='CX.2'`.
+3. Doc updates with temporal honesty:
+   - `docs/CONTEXT_MANAGEMENT_GUIDE.md`: mark snapshots ≤ 2026-05-29 12:32 as CX.1 frozen baseline.
+   - `.lovable/plan.md`: append "CX.2 verified" with snapshot id.
+4. **Idempotency:** snapshots are append-only by RLS; re-running save just creates a fresh row, never mutates history.
+
+**Verification:**
+```sql
+select id, snapshot_date, stats_detail->>'generated_with'
+from srangam_context_snapshots
+order by created_at desc limit 3;
+-- top row generated_with='CX.2'
+```
+
+### Phase 5 — CX.3 identity-set diffs (additive)
+Single additive migration:
+```sql
+alter table public.srangam_context_snapshots
+  add column if not exists identity_sets jsonb not null default '{}'::jsonb;
+create index if not exists idx_srangam_context_snapshots_identity_sets
+  on public.srangam_context_snapshots using gin (identity_sets jsonb_path_ops);
+```
+No new RLS, no GRANT change (column inherits table policies; admin-read/admin-insert already in place; still no UPDATE/DELETE policy → snapshots stay immutable).
+
 Shape:
 ```json
 {
-  "article_slugs": ["slug-a", "slug-b", "…"],
-  "tag_names":     ["…"],
-  "term_slugs":    ["…"],
-  "module_names":  ["vedic-puranic", "…"]
+  "article_slugs":   ["…"],
+  "tag_names":       ["…"],
+  "term_slugs":      ["…"],
+  "module_names":    ["…"],
+  "published_article_ids": ["…"]
 }
 ```
-No new GRANTs / RLS — the table is already admin-read/admin-insert; the column inherits. No public exposure. No UPDATE policy added — snapshots stay immutable.
 
-**Edge-function changes:**
-- `context-save-drive` (already CX.2 at this point) populates `identity_sets` from paginated `select('slug')` / `select('tag_name')` / `select('slug')` / `select('module' DISTINCT)`. Bump `generated_with` to `'CX.3'`.
-- `context-diff-generator` performs set-diff per dimension and returns:
-  ```ts
-  {
-    mode: 'identity' | 'count_only',
-    articles: { added: string[], removed: string[], unchanged_count: number },
-    tags:     { … },
-    terms:    { … },
-    modules:  { … },
-  }
-  ```
-  Falls back to `mode:'count_only'` when `previous.identity_sets` is `{}` (pre-CX.3) — never raises.
+Code:
+1. New helpers in `_shared/context-metrics.ts`: `identityArticleSlugs()`, `identityTagNames()`, `identityTermSlugs()`, `identityModules()` — all paginated, never `.limit()`-bounded.
+2. `context-save-drive` populates `identity_sets`, bumps `generated_with` to `'CX.3'`.
+3. `context-diff-generator`:
+   - CX.3 ↔ CX.3 → `mode:'identity'` with `{added,removed,unchanged_count}` per dimension.
+   - CX.3 ↔ CX.2/CX.1 → `mode:'count_only'` with explicit `reason`.
+   - Never throws on missing/empty `identity_sets`.
+
+**Idempotency:** column has default `'{}'`; backfill is only forward (new snapshots only). Old rows untouched (immutable-data principle). Re-running snapshot generation just writes another append row.
 
 **Verification:**
-1. Snapshot → publish one new article → snapshot again → diff returns `articles.added=['new-slug']`.
-2. Diff CX.3 ↔ CX.2 → `mode:'count_only'` (no crash).
-3. `SELECT pg_column_size(identity_sets) FROM srangam_context_snapshots ORDER BY snapshot_date DESC LIMIT 5;` → expect a few KB per row (≪ 100 KB), well within Postgres TOAST defaults.
-
-**Documentation deliverables:**
-- `docs/CONTEXT_MANAGEMENT_GUIDE.md` → CX.3 section + diff UX explanation + screenshot of new diff payload.
-- `docs/DATABASE_SCHEMA.md` → add `identity_sets jsonb` to the `srangam_context_snapshots` table card.
-- Memory invariant: "Snapshots ≥ CX.3 carry `identity_sets`; diff generator tries identity-diff first, count-only fallback never raises."
+```sql
+select pg_column_size(identity_sets),
+       jsonb_array_length(identity_sets->'article_slugs')
+from srangam_context_snapshots
+where stats_detail->>'generated_with' = 'CX.3'
+order by created_at desc limit 3;
+-- expect a few KB per row; article_slugs count ≈ 45 today
+```
 
 ---
 
-## Out of scope (deferred deliberately)
+## What I will explicitly NOT do
 
-- **CX.4** — AI executive summary into the existing-but-unused `context_summary` column.
-- **Daily snapshot cron** — separate small phase once CX.3 lands and the diff UI is trusted.
-- **G4** — standardising other background jobs (correlate-corpus, batch-enrich-terms, backfill-bibliography) on the Phase Z self-pump+heartbeat pattern.
-- **G5** — Playwright e2e for the pin + atlas flow.
-- **Imaging-handoff visual QA** — orthogonal to context/geo.
+- Delete or update existing pins / evidence / snapshots / media_assets.
+- Loosen any CHECK / UNIQUE / RLS / GRANT.
+- Widen AI prompts or relax confidence gates to inflate pin coverage.
+- Mutate the CX.1 frozen snapshots.
+- Bundle multiple phases into one deploy.
+- Start CX.3 before CX.2 produces a verified live snapshot.
 
-## Suggested order
+---
 
-1. **G3** — immediate user-visible fix, 1 migration + 1 admin click, ~$0.04.
-2. **CX.2** — pure refactor, no migration, drops ~320 LOC.
-3. **CX.3** — 1 additive migration, unlocks the diff UI.
+## Suggested execution order
 
-Each phase is independently shippable. The previous behaviour stays alive at every step via explicit fallbacks (`_compat` array, `mode:'count_only'`, idempotent INSERT, `loadArticlePins` already tolerates an empty pin set). Nothing here changes the public RLS surface or the article rendering contract (Phase AR.1–AR.3 invariants).
+1. Phase 0 (observational, ~2 min, zero risk)
+2. Phase 1 (pin idempotency + tier-A/C unlock + readable errors)
+3. Phase 2 (evidence empty state + admin counts)
+4. Phase 3 (image lightbox + admin thumbnail)
+5. Phase 4 (CX.2 actually shipped + verified snapshot)
+6. Phase 5 (CX.3 additive migration + identity diff)
+
+Each phase is independently shippable, independently revertible, and each has an idempotency gate that must pass before the next phase starts.
+---
+
+## Execution log
+
+### 2026-05-29 — Phase 1 (Pin pipeline surgical healing) — shipped
+
+Surgical edits, no DB migration, no row writes:
+
+- `src/pages/admin/GeographyMedia.tsx`: bulk "Backfill pins" button now sends `only_zero_pin:true` (both in the kick-off body and in `srangam_admin_jobs.params`). Re-running the bulk button on a stable corpus is now a near-noop instead of re-billing the AI on all 45 articles.
+- `supabase/functions/_shared/errors.ts` (new): `serializeErr(e)` returns `message | code=… | status=… | details=… | hint=…` for Postgrest / fetch / Error / unknown shapes. Replaces every `String(e)` site that was producing `[object Object]` in `srangam_admin_jobs.last_error`.
+- `supabase/functions/backfill-article-pins/index.ts`:
+  - source enum aligned with the existing `srangam_article_pins_source_check` CHECK constraint: `A → evidence_table`, `B → content_scan`, `C → ai_extract`. Unblocks A/C-tier pins that were silently failing.
+  - all three catch blocks (per-article, background pump, fatal handler) now use `serializeErr`.
+
+Idempotency gates (to verify in the next bulk run):
+
+```sql
+-- duplicates: must still be zero
+select article_id, gazetteer_id, count(*) from srangam_article_pins
+group by 1,2 having count(*)>1;
+
+-- second consecutive bulk run should report processed≈0
+select id, processed, succeeded, failed, last_error
+from srangam_admin_jobs where kind='pin_backfill' order by created_at desc limit 2;
+
+-- A/C pins should appear after the first run on articles with evidence/AI hits
+select source, confidence, count(*) from srangam_article_pins
+group by 1,2 order by 1,2;
+```
+
+Next: Phase 2 (evidence empty state + admin counts).
