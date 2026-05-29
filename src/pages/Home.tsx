@@ -26,7 +26,7 @@ export default function Home() {
   const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'longest' | 'shortest' | 'title'>('recent');
 
   // Fetch database articles
-  const { data: dbArticles, isLoading, isFetching, error: dbError } = useAllArticles(currentLanguage);
+  const { data: dbArticles, isLoading, isFetching, error: dbError, isDegraded, refetch } = useAllArticles(currentLanguage);
 
   // Merge JSON and database articles
   const allArticles = useMemo(() => {
@@ -261,9 +261,16 @@ export default function Home() {
               </span>
             </div>
           )}
-          {dbError && !isFetching && filteredArticles.length > 0 && (
-            <div className="mb-4 text-xs text-muted-foreground bg-muted/50 border border-border rounded-md px-3 py-2 text-center">
-              Live database unreachable — showing offline archive.
+          {(isDegraded || (dbError && !isFetching)) && filteredArticles.length > 0 && (
+            <div className="mb-4 text-xs text-muted-foreground bg-card border border-border rounded-md px-3 py-2 flex items-center justify-center gap-3">
+              <span>Showing cached articles — syncing latest…</span>
+              <button
+                type="button"
+                onClick={() => refetch()}
+                className="text-saffron hover:underline font-medium"
+              >
+                Retry
+              </button>
             </div>
           )}
 
