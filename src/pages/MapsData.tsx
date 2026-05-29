@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { OceanMap } from "@/components/interactive/OceanMap";
 import { LazyMonsoonAnimation } from "@/components/interactive/LazyMonsoonAnimation";
 import { PlateTimeline } from "@/components/interactive/PlateTimeline";
-import { useState, useCallback, useEffect, lazy, Suspense } from "react";
+import React, { useState, useCallback, useEffect, lazy, Suspense } from "react";
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from "react-router-dom";
 import { IconConch, IconDharmaChakra } from "@/components/icons";
@@ -80,7 +80,10 @@ export default function MapsData() {
   const [searchParams] = useSearchParams();
   const layerParam = searchParams.get('layer');
   const layerConfig = layerParam ? LAYER_CONFIGS[layerParam] : null;
-  
+  // Phase G2 — `?focus=<slug>` from article pages: highlight that article's
+  // places in the Article Atlas and scroll the section into view.
+  const focusSlug = searchParams.get('focus');
+
   const [activeModal, setActiveModal] = useState<'ports' | 'monsoon' | 'timeline' | null>(null);
   const [selectedFilters, setSelectedFilters] = useState<string[]>(layerConfig?.filters || []);
   const [showEvidence, setShowEvidence] = useState(false);
@@ -92,6 +95,7 @@ export default function MapsData() {
   const { data: geoRows = [], isLoading: geoLoading, error: geoError } = useArticleGeography();
   const [atlasStyle, setAtlasStyle] = useMapStyle('outdoors-v12');
   const [atlasPlaceCount, setAtlasPlaceCount] = useState<number | null>(null);
+  const atlasRef = React.useRef<HTMLDivElement | null>(null);
 
   // Update filters and layers when URL param changes
   useEffect(() => {
@@ -100,6 +104,16 @@ export default function MapsData() {
       setEnabledLayers(layerConfig.layers);
     }
   }, [layerParam]);
+
+  // Phase G2 — scroll the Article Atlas card into view when ?focus is present,
+  // once the data has loaded so the section is its final height.
+  useEffect(() => {
+    if (!focusSlug || geoLoading) return;
+    const t = setTimeout(() => {
+      atlasRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 150);
+    return () => clearTimeout(t);
+  }, [focusSlug, geoLoading]);
   
   const handleFilterToggle = useCallback((filter: string) => {
     setSelectedFilters(prev => 
@@ -210,7 +224,7 @@ export default function MapsData() {
         <ImagingHubCallout />
 
         {/* Phase H.3 — Article Atlas (every published article's pinned places) */}
-        <Card className="bg-card border-border mb-8">
+        <Card ref={atlasRef} className="bg-card border-border mb-8 scroll-mt-24">
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
@@ -224,6 +238,11 @@ export default function MapsData() {
                   {atlasPlaceCount !== null && (
                     <span className="ml-1 text-foreground font-medium">
                       {atlasPlaceCount} place{atlasPlaceCount === 1 ? '' : 's'} mapped.
+                    </span>
+                  )}
+                  {focusSlug && (
+                    <span className="ml-1 text-primary font-medium">
+                      · Highlighting article: {focusSlug}
                     </span>
                   )}
                 </p>
@@ -248,6 +267,7 @@ export default function MapsData() {
                   rows={geoRows}
                   mapStyle={atlasStyle}
                   onPlaceCount={setAtlasPlaceCount}
+                  focusSlug={focusSlug}
                 />
               </Suspense>
             )}

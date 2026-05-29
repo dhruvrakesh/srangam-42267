@@ -58,6 +58,13 @@ export interface ArticleAtlasMapProps {
   onPlaceCount?: (count: number) => void;
   /** Mapbox style id; defaults to outdoors. Falls back to OSM when no token. */
   mapStyle?: MapStyle;
+  /**
+   * Phase G2 — when set (from `/maps-data?focus=<slug>`), clusters that
+   * contain at least one article matching this slug or slug_alias are rendered
+   * at full opacity; all other clusters dim to give the reader a clear visual
+   * read of the focused article's geographic reach.
+   */
+  focusSlug?: string | null;
 }
 
 export const ArticleAtlasMap: React.FC<ArticleAtlasMapProps> = ({
@@ -66,6 +73,7 @@ export const ArticleAtlasMap: React.FC<ArticleAtlasMapProps> = ({
   confidenceFilter,
   onPlaceCount,
   mapStyle = 'outdoors-v12',
+  focusSlug,
 }) => {
   const tiles = useMemo(() => getTileLayer(mapStyle), [mapStyle]);
   const [openPlaceId, setOpenPlaceId] = useState<string | null>(null);
@@ -110,6 +118,16 @@ export const ArticleAtlasMap: React.FC<ArticleAtlasMapProps> = ({
     return out;
   }, [rows, themeFilter, confidenceFilter, onPlaceCount]);
 
+  // Phase G2 — determine which clusters belong to the focused article (if any).
+  const focusedPlaceIds = useMemo(() => {
+    if (!focusSlug) return null;
+    const ids = new Set<string>();
+    for (const c of clusters) {
+      if (c.articles.some((a) => a.slug === focusSlug)) ids.add(c.place_id);
+    }
+    return ids;
+  }, [clusters, focusSlug]);
+
   if (clusters.length === 0) {
     return (
       <div className="w-full h-[480px] rounded-md border border-border bg-muted/20 flex items-center justify-center text-muted-foreground text-sm">
@@ -135,16 +153,19 @@ export const ArticleAtlasMap: React.FC<ArticleAtlasMapProps> = ({
         />
         {clusters.map((c) => {
           const radius = Math.min(6 + Math.sqrt(c.articles.length) * 3, 18);
+          const isFocused = focusedPlaceIds ? focusedPlaceIds.has(c.place_id) : true;
+          const fillOpacity = focusedPlaceIds ? (isFocused ? 0.85 : 0.15) : 0.55;
+          const weight = isFocused ? (focusedPlaceIds ? 2.5 : 1.5) : 0.8;
           return (
             <CircleMarker
               key={c.place_id}
               center={[c.latitude, c.longitude]}
-              radius={radius}
+              radius={isFocused ? radius : Math.max(4, radius - 2)}
               pathOptions={{
                 color: colorForConfidence(c.bestConfidence),
                 fillColor: colorForConfidence(c.bestConfidence),
-                fillOpacity: 0.55,
-                weight: 1.5,
+                fillOpacity,
+                weight,
               }}
               eventHandlers={{
                 click: () => setOpenPlaceId(c.place_id),

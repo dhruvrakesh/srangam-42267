@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -48,7 +48,7 @@ export const OceanicArticlePage: React.FC = () => {
   const { currentLanguage } = useLanguage();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showMethodsDialog, setShowMethodsDialog] = useState(false);
-  const [showInteractiveMap, setShowInteractiveMap] = useState(false);
+  // Phase G2 — map now auto-mounts via IntersectionObserver; no manual toggle.
 
   // Phase 1.4: Unified data hook (parallel fetching)
   const { 
@@ -296,7 +296,10 @@ export const OceanicArticlePage: React.FC = () => {
               </Card>
 
 
-              {/* Pins Map — Phase H.2: hide entirely when no pins, lazy-load Leaflet on demand */}
+              {/* Geographical Context — Phase G2: auto-mount Leaflet via
+                  IntersectionObserver so readers immediately see the map when
+                  they scroll near it, instead of hiding it behind a click.
+                  Bundle remains lazy: no Leaflet on articles with zero pins. */}
               {article.pins.length > 0 && (
                 <Card>
                   <CardHeader>
@@ -304,6 +307,16 @@ export const OceanicArticlePage: React.FC = () => {
                       <MapPin className="h-5 w-5" />
                       Geographical Context
                     </CardTitle>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {article.pins.length} place{article.pins.length === 1 ? '' : 's'} referenced ·
+                      {' '}
+                      <Link
+                        to={`/maps-data?focus=${article.slug_alias || article.slug}`}
+                        className="text-primary hover:underline"
+                      >
+                        View in Article Atlas →
+                      </Link>
+                    </p>
                   </CardHeader>
                   <CardContent>
                     <div className="grid sm:grid-cols-2 gap-3 mb-4">
@@ -329,26 +342,7 @@ export const OceanicArticlePage: React.FC = () => {
                         </Button>
                       ))}
                     </div>
-                    <Button
-                      variant="secondary"
-                      className="w-full gap-2"
-                      onClick={() => setShowInteractiveMap((v) => !v)}
-                      aria-expanded={showInteractiveMap}
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      {showInteractiveMap ? 'Hide Interactive Map' : 'View Interactive Map'}
-                    </Button>
-                    {showInteractiveMap && (
-                      <div className="mt-4">
-                        <React.Suspense
-                          fallback={
-                            <div className="w-full h-[360px] rounded-md border border-border bg-muted/20 animate-pulse" />
-                          }
-                        >
-                          <ArticleMiniMap slug={article.slug} pins={article.pins} />
-                        </React.Suspense>
-                      </div>
-                    )}
+                    <LazyArticleMap slug={article.slug} pins={article.pins} />
                   </CardContent>
                 </Card>
               )}
@@ -514,4 +508,59 @@ export const OceanicArticlePage: React.FC = () => {
   );
 };
 
+/**
+ * Phase G2 — lazy-mount the Leaflet article map when the container scrolls
+ * near the viewport. Keeps the ~150kB Leaflet bundle off the article critical
+ * path while removing the click-to-reveal step that was hiding geography
+ * from readers. Articles with zero pins never reach this code path.
+ */
+const LazyArticleMap: React.FC<{
+  slug: string;
+  pins: Array<{ name: string; lat: number; lon: number; approximate?: boolean }>;
+}> = ({ slug, pins }) => {
+  const ref = React.useRef<HTMLDivElement | null>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (visible) return;
+    const el = ref.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === 'undefined') {
+      setVisible(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            setVisible(true);
+            io.disconnect();
+            break;
+          }
+        }
+      },
+      { rootMargin: '200px' },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [visible]);
+
+  return (
+    <div ref={ref} className="mt-2">
+      {visible ? (
+        <React.Suspense
+          fallback={
+            <div className="w-full h-[360px] rounded-md border border-border bg-muted/20 animate-pulse" />
+          }
+        >
+          <ArticleMiniMap slug={slug} pins={pins} />
+        </React.Suspense>
+      ) : (
+        <div className="w-full h-[360px] rounded-md border border-border bg-muted/10" aria-hidden />
+      )}
+    </div>
+  );
+};
+
 export default OceanicArticlePage;
+

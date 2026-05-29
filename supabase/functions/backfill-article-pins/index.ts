@@ -26,7 +26,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 import { stage } from '../_shared/observability.ts';
 import { aiExtractPlaces, NoAIProviderError } from '../_shared/ai-provider.ts';
-import { reportItem, isCancelled, finishJob } from '../_shared/jobs.ts';
+import { reportItem, isCancelled, finishJob, touchHeartbeat } from '../_shared/jobs.ts';
 
 import { requireAdmin } from '../_shared/auth-gate.ts';
 const corsHeaders = {
@@ -171,6 +171,7 @@ async function backfillOne(
   gaz: GazetteerRow[],
   gazIdx: { re: RegExp; index: Map<string, string> },
   skipAi: boolean,
+  jobId?: string,
 ): Promise<{
   inserted: number;
   pins_a: number;
@@ -207,9 +208,22 @@ async function backfillOne(
   // ---- Stage 3: AI NER (confidence C) ----
   let aiStats: PerArticleAiStats | undefined;
   if (!skipAi && flat.length > 200) {
+    // Phase G1 — heartbeat-during-AI: tick every 25s while the AI promise is
+    // pending so the watchdog does not reap a job that is making real progress
+    // on a single long article. Cleared on settle in finally block.
+    let hbTimer: number | undefined;
+    if (jobId) {
+      try { await touchHeartbeat(supabase, jobId); } catch { /* noop */ }
+      hbTimer = setInterval(() => {
+        touchHeartbeat(supabase, jobId).catch(() => { /* noop */ });
+      }, 25_000) as unknown as number;
+    }
     try {
       await stage('pin_ai', { article_id: article.id }, async () => {
-        const result = await aiExtractPlaces(flat);
+        // Phase G1 — bound AI input to keep one article from consuming the
+        // entire pump slot. Deterministic scan already used the full text.
+        const aiInput = flat.length > 25_000 ? flat.slice(0, 25_000) : flat;
+        const result = await aiExtractPlaces(aiInput);
         aiStats = {
           provider: result.provider,
           model: result.model,
@@ -232,6 +246,8 @@ async function backfillOne(
       } else {
         // already logged by stage(), swallow so deterministic pins still write
       }
+    } finally {
+      if (hbTimer !== undefined) clearInterval(hbTimer);
     }
   }
 
@@ -356,7 +372,10 @@ Deno.serve(async (req) => {
     let articles: { id: string; slug: string; content: unknown }[] = [];
     let totalCandidates = 0;          // population size for chunked mode
     const chunkOffset = body.offset ?? 0;
-    const chunkSize = Math.min(Math.max(body.chunk_size ?? 5, 1), 10);
+    // Phase G1 — when AI is on, force chunk_size=1 so a single long AI call
+    // cannot starve the chunk budget. Deterministic-only runs may stay at 3.
+    const requestedChunk = Math.min(Math.max(body.chunk_size ?? 5, 1), 10);
+    const chunkSize = body.skip_ai === true ? requestedChunk : 1;
 
     if (body.article_id) {
       const { data } = await admin
@@ -367,10 +386,15 @@ Deno.serve(async (req) => {
       if (data) articles = [data as any];
       totalCandidates = articles.length;
     } else if (body.slug) {
+      // Phase G1 — fix latent bug: previous code never awaited or assigned
+      // the result of the .or() query, so slug-mode always returned 404.
       const { data } = await admin
         .from('srangam_articles')
         .select('id,slug,content')
         .or(`slug.eq.${body.slug},slug_alias.eq.${body.slug}`)
+        .limit(1);
+      if (data && data.length > 0) articles = [data[0] as any];
+      totalCandidates = articles.length;
     } else if (body.all_published) {
       const limit = Math.min(Math.max(body.limit ?? 25, 1), 200);
 
@@ -430,63 +454,110 @@ Deno.serve(async (req) => {
       }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const results: any[] = [];
-    let total_cost = 0;
-    for (const a of articles) {
+    // Phase G1 — patch job.total on the first chunk so the admin UI reflects
+    // the worker's actual candidate count, not the user's optimistic `limit`.
+    if (body.job_id && chunkOffset === 0) {
       try {
-        const r = await backfillOne(admin, a, gaz as GazetteerRow[], gazIdx, skipAi);
-        if (r.ai) total_cost += r.ai.cost_usd_estimate;
-        results.push({ slug: a.slug, ...r });
-
-        if (body.job_id) {
-          await reportItem(admin, body.job_id, {
-            ok: true,
-            item: a.slug,
-            cost_delta_usd: r.ai?.cost_usd_estimate ?? 0,
-            tier_delta: { a: r.pins_a, b: r.pins_b, c: r.pins_c },
-          });
-        }
+        await admin.from('srangam_admin_jobs')
+          .update({ total: totalCandidates, heartbeat_at: new Date().toISOString() })
+          .eq('id', body.job_id);
       } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        console.error(`[backfill-article-pins] ${a.slug} failed:`, msg);
-        results.push({ slug: a.slug, error: msg });
-        if (body.job_id) {
-          await reportItem(admin, body.job_id, { ok: false, item: a.slug, error: msg });
-        }
-        // continue — never fail the whole chunk on one bad article
+        console.error('[backfill-article-pins] failed to patch job total:', e);
       }
     }
 
-    const nextOffset = chunkOffset + articles.length;
-    const done = nextOffset >= totalCandidates;
+    // Phase G1 — extract chunk processing so it can run either inline (single
+    // article / unchunked) or in EdgeRuntime.waitUntil (chunked job mode).
+    const processChunk = async (): Promise<{ processed: number; total_cost: number; results: any[] }> => {
+      const results: any[] = [];
+      let total_cost = 0;
+      for (const a of articles) {
+        // Phase G1 — re-check cancellation between articles so a Cancel click
+        // takes effect within one article instead of one full chunk.
+        if (body.job_id && (await isCancelled(admin, body.job_id))) {
+          console.log(`[backfill-article-pins] cancelled mid-chunk before ${a.slug}`);
+          return { processed: results.length, total_cost, results };
+        }
+        try {
+          const r = await backfillOne(admin, a, gaz as GazetteerRow[], gazIdx, skipAi, body.job_id);
+          if (r.ai) total_cost += r.ai.cost_usd_estimate;
+          results.push({ slug: a.slug, ...r });
 
-    if (body.job_id && done) {
-      await finishJob(admin, body.job_id, 'succeeded');
-    }
+          if (body.job_id) {
+            await reportItem(admin, body.job_id, {
+              ok: true,
+              item: a.slug,
+              cost_delta_usd: r.ai?.cost_usd_estimate ?? 0,
+              tier_delta: { a: r.pins_a, b: r.pins_b, c: r.pins_c },
+            });
+          }
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          console.error(`[backfill-article-pins] ${a.slug} failed:`, msg);
+          results.push({ slug: a.slug, error: msg });
+          if (body.job_id) {
+            await reportItem(admin, body.job_id, { ok: false, item: a.slug, error: msg });
+          }
+          // continue — never fail the whole chunk on one bad article
+        }
+      }
+      return { processed: results.length, total_cost, results };
+    };
 
-    // ---- Phase X.1: server-side self-pump for next chunk ------------------
-    // Only when the job is chunked AND there is more work AND no cancel.
-    if (body.job_id && !done) {
-      // Phase X.5.1 — build pump target from env. `req.url` inside the
-      // Edge Runtime is an internal address that 404s when re-invoked.
-      const pumpUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/backfill-article-pins`;
-      console.log(`[backfill-article-pins] pump target=${pumpUrl} next_offset=${nextOffset}`);
-      schedulePumpReinvoke(pumpUrl, {
-        ...body,
-        offset: nextOffset,
+    // ---- Phase G1: true async pump for chunked jobs ------------------------
+    // When a job_id is present, return 202 Accepted immediately and run the
+    // chunk + pump in the background via EdgeRuntime.waitUntil. This removes
+    // the 504 IDLE_TIMEOUT failure mode that fires when one article's AI call
+    // exceeds the outer 150s HTTP wall-clock.
+    if (body.job_id) {
+      const waitUntil = (globalThis as any).EdgeRuntime?.waitUntil;
+      const work = (async () => {
+        try {
+          const { processed } = await processChunk();
+          const nextOffset = chunkOffset + processed;
+          const done = nextOffset >= totalCandidates;
+          if (done) {
+            await finishJob(admin, body.job_id!, 'succeeded');
+          } else {
+            const pumpUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/backfill-article-pins`;
+            console.log(`[backfill-article-pins] pump target=${pumpUrl} next_offset=${nextOffset}`);
+            schedulePumpReinvoke(pumpUrl, { ...body, offset: nextOffset });
+          }
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          console.error('[backfill-article-pins] background chunk failed:', msg);
+          try { await finishJob(admin, body.job_id!, 'failed', msg); } catch { /* noop */ }
+        }
+      })();
+      if (typeof waitUntil === 'function') waitUntil(work);
+      else work.catch(() => { /* noop */ });
+
+      return new Response(JSON.stringify({
+        ok: true,
+        accepted: true,
+        chunk_offset: chunkOffset,
+        chunk_size: articles.length,
+        total: totalCandidates,
+      }), {
+        status: 202, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
+    // ---- Unchunked path (single article / slug / one-off) ------------------
+    const { processed, total_cost, results } = await processChunk();
+    const nextOffset = chunkOffset + processed;
+    const done = nextOffset >= totalCandidates;
+
     return new Response(JSON.stringify({
       ok: true,
-      processed: articles.length,
+      processed,
       gazetteer_size: gaz.length,
       total_cost_usd_estimate: Number(total_cost.toFixed(6)),
       results,
       total: totalCandidates,
       next_offset: nextOffset,
       done,
-      pumped: !!(body.job_id && !done),
+      pumped: false,
     }), {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
