@@ -153,16 +153,19 @@ export const ArticleAtlasMap: React.FC<ArticleAtlasMapProps> = ({
         />
         {clusters.map((c) => {
           const radius = Math.min(6 + Math.sqrt(c.articles.length) * 3, 18);
+          const isFocused = focusedPlaceIds ? focusedPlaceIds.has(c.place_id) : true;
+          const fillOpacity = focusedPlaceIds ? (isFocused ? 0.85 : 0.15) : 0.55;
+          const weight = isFocused ? (focusedPlaceIds ? 2.5 : 1.5) : 0.8;
           return (
             <CircleMarker
               key={c.place_id}
               center={[c.latitude, c.longitude]}
-              radius={radius}
+              radius={isFocused ? radius : Math.max(4, radius - 2)}
               pathOptions={{
                 color: colorForConfidence(c.bestConfidence),
                 fillColor: colorForConfidence(c.bestConfidence),
-                fillOpacity: 0.55,
-                weight: 1.5,
+                fillOpacity,
+                weight,
               }}
               eventHandlers={{
                 click: () => setOpenPlaceId(c.place_id),
