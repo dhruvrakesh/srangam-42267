@@ -100,3 +100,12 @@ No production code changes here; tests pin the invariants from AA and AB so futu
 | AC | tests only | drop file | CI red on regression |
 
 Each phase is independently shippable in the order AA → AB → AC. AA is the cheapest visible win and unblocks a truthful translation-roadmap discussion; AB restores the "latest on top" expectation without changing the merge contract elsewhere in the app.
+
+---
+
+## Phase AA + AB execution log (2026-05-29)
+
+- AA shipped: `LanguageAvailabilityBadge` now accepts `bodyContent` / `availableLanguagesOverride`; `useArticles` projects `bodyLanguages` from each DB row's `content` JSONB; `unifiedArticleUtils.mergeArticleSources` derives `bodyLanguages` for JSON rows from `getArticleCoverageMap()` (default `['en']`); `ArticleCard` plumbs the override through. Title-key fallback preserved for `MultilingualSearchResults` and other callers.
+- AB shipped: cross-source alias dedup in `mergeArticleSources` uses every DB identifier (`slug`, `slug_alias`, `id`) and every JSON candidate (`id`, normalised slug, `SLUG_TO_ID_MAP[slug]`); slug normalisation lowercased + trailing-punctuation stripped to match `slugResolver` policy. `filterUnifiedArticles` ties on date by preferring `source === 'database'`. `useAllArticles` adds secondary `.order('created_at', desc)` and exports `isDegraded`. Home + Articles render a single "Showing cached articles — syncing latest…" pill with a Retry button when `isDegraded || dbError`. Existing "Refreshing…" pill kept for the normal hydration path.
+- AB.5 partial: `articles_merge_dedup` event emitted to `console.info` on every merge that actually drops dupes. The DB-side `srangam_event_log` table does not exist in this project (verified), so durable logging is deferred to a future migration; no new table created in this phase (curation over expansion).
+- Verified facts that drove the fix: all 44 published DB rows have `content_keys = [en]`; JSON titles ship up to 9 locales; newest DB `published_date = 2026-05-27`, newest JSON `date = 2025-10-29`.
