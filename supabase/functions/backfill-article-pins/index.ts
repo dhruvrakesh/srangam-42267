@@ -415,9 +415,6 @@ Deno.serve(async (req) => {
         articles = (data ?? []) as any;
       }
     }
-        articles = (data ?? []) as any;
-      }
-    }
 
     if (totalCandidates === 0) {
       return new Response(JSON.stringify({ error: 'no articles matched' }), {
