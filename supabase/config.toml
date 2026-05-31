@@ -59,3 +59,6 @@ verify_jwt = false
 
 [functions.gdrive-image-proxy]
 verify_jwt = false
+
+[functions.backfill-article-pins]
+verify_jwt = false
