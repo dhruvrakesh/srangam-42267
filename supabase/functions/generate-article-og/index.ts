@@ -3,7 +3,7 @@ import { sanitizeSnippet } from '../_shared/text-sanitizer.ts';
 import { callImage, NoAIProviderError } from '../_shared/ai-provider.ts';
 import { reportItem, isCancelled, finishJob, touchHeartbeat } from '../_shared/jobs.ts';
 
-import { requireAdmin } from '../_shared/auth-gate.ts';
+import { requireAdmin, requireAdminOrCron } from '../_shared/auth-gate.ts';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -312,7 +312,7 @@ Deno.serve(async (req) => {
       });
     }
   } else {
-    const __gate = await requireAdmin(req);
+    const __gate = await requireAdminOrCron(req, body);
     if (__gate.error) return __gate.error;
   }
 
