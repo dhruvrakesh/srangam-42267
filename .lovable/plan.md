@@ -1,128 +1,154 @@
-## NEW FINDING — OG generation "stuck at 1/2" is a self-reinvoke URL bug
 
-Edge logs (`generate-article-og`, today 08:21–08:22 UTC) show **both** OG images succeeded:
+## Honest state check (verified against live DB + cron logs, just now)
 
-```
-08:22:12 og_image_generated  slug=breached-within-internal-fracture  v1  $0.039  drive_id=1m0t…
-08:22:13 ERROR  pump reinvoke failed: 404 {"error":"requested path is invalid"}
-08:22:44 og_image_generated  slug=stone-sun-vitasta  v2  $0.039  drive_id=1uh1…
-08:22:46 ERROR  pump reinvoke failed: 404 {"error":"requested path is invalid"}
-```
+Before re-planning, I queried `cron.job`, `cron.job_run_details`, and `srangam_admin_jobs` directly. The picture is **not** what the previous plan claimed.
 
-Root cause — `generate-article-og/index.ts:384` calls `schedulePumpReinvoke(req.url, …)`. Inside a Supabase edge worker, `req.url` resolves to the **internal** worker hostname (not `https://<ref>.supabase.co/functions/v1/generate-article-og`). The gateway rejects that path with `404 requested path is invalid`. The work itself completes; only the **progress signalling** loop dies, so the UI is stuck at 50 % even though `srangam_media_assets` and Drive both got the second file.
+### What is actually working
+- `srangam-admin-jobs-watchdog` (jobid 1, `*/5 * * * *`) — running fine; it is in fact the only thing keeping the job board from looking permanently "running".
+- `srangam-pin-enrichment-nightly` (jobid 2, `0 3 * * *`) — **dispatches** every night (last run 2026-05-31 03:00:00 → `succeeded`, return `DO`) but the **work fails**: the `srangam_admin_jobs` row it creates is killed 5 min later by the watchdog with `processed=0, last_error='watchdog: no heartbeat'`. Same story on 2026-05-30. So pg_cron is healthy; the edge invocation path is broken.
+- Manual admin-UI pin runs from 07:29–08:01 today all **succeeded** (processed=4–7, cost ≈ $0.002 each). So `backfill-article-pins` itself works — only the cron-invocation path doesn't.
 
-Surgical fix (Phase 1-FIX-B, 3 lines):
+### What is NOT working (contrary to the previous plan)
+- `srangam-og-nightly` (jobid 6, `30 3 * * *`), `srangam-term-enrichment-nightly` (jobid 7, `45 3 * * *`), `srangam-context-snapshot-nightly` (jobid 8, `0 4 * * *`) — **zero rows** in `cron.job_run_details` so far. They were scheduled after today's 03:30–04:00 window, so we can't even claim they fired once. Marking Phases 3/4/5 "done" was premature.
+- **OG self-reinvoke (Phase 1-FIX-B)** — source carries the `SELF_URL = ${SUPABASE_URL}/functions/v1/generate-article-og` patch (line 387), but the bulk run started by an admin at 08:21:53 today still died at `processed=1/2` with `watchdog: no heartbeat`. Either the function was not redeployed after the edit, or pump death has a second cause. Cannot claim "fixed" until a bulk run completes end-to-end with `status='succeeded'`.
+- **Cron auth contract is observable as broken**: the cron command `SELECT public._cron_invoke_edge('backfill-article-pins', '{"chunk_size":1,"only_zero_pin":true,"limit":20}')` does not include `_cron:true` in the body argument. The helper is supposed to merge it, but the rows it produces still suggest the function rejected the request after the row was created (heartbeat never ticks). Needs a direct trace.
 
-```ts
-// generate-article-og/index.ts:384 — current
-schedulePumpReinvoke(req.url, { job_id: body.job_id, cursor: nextCursor, force });
+### Implications for "enterprise way"
+- The previous plan jumped to building a dashboard and CI guardrails on top of an automation layer that is silently failing in production. That is the wrong order. We must **prove the existing crons green for two consecutive nights** before we layer observability over them, otherwise the dashboard will just be a prettier way to look at red.
+- We also cannot wait until 03:00 tomorrow to learn whether a fix worked. We need an **on-demand smoke harness** that exercises each cron path with a one-minute schedule, watches the resulting `srangam_admin_jobs` row, and tears itself down. This is the enterprise pattern (canary + auto-teardown).
 
-// fixed
-const SELF_URL = `${Deno.env.get('SUPABASE_URL')}/functions/v1/generate-article-og`;
-schedulePumpReinvoke(SELF_URL, { job_id: body.job_id, cursor: nextCursor, force });
-```
+---
 
-Also patch the still-running stale job so the UI un-sticks immediately: a tiny SQL `UPDATE srangam_admin_jobs SET status='succeeded', finished_at=now(), processed=total WHERE kind='og_generate' AND status='running' AND finished_at IS NULL AND heartbeat_at < now()-interval '5 min'` (additive, idempotent, only touches abandoned rows).
+## Revised phased plan — Heal → Observe → Guard
 
-## Why the previous Phase 1-FIX preflight failed (unchanged from last turn)
+Ordering principle (per `mem://~user`: Surgical Healing): fix what is broken first, then add observability, then add guardrails. Never invert.
 
-`vault.secrets` is missing `SUPABASE_SERVICE_ROLE_KEY`. Service-role JWT is **not exposed in the Cloud UI** (your screenshot confirms — no "API keys" subview). Asking you to paste it violates "never display secret values".
+### Phase H — Heal cron automation (must come first, no new surface area)
 
-The Supabase Edge gateway only requires *any* valid project JWT in `apikey`/`Authorization` (anon passes). True authorization happens inside the function via `requireAdminOrCron`. So the actual security boundary is `CRON_SECRET` + `_cron:true`, not the bearer token.
+H1. **Trace the failing nightly pin run end-to-end** with admin-callable diagnostics — no new public surface. New edge function `cron-self-test` (admin/cron-gated, idempotent, returns JSON only). It:
+   - Reads the last `srangam_admin_jobs` row for a given `kind`, returns `{exists, processed, status, last_error, age_seconds, heartbeat_age_seconds}`.
+   - For `kind='cron_probe'`, inserts a row, calls itself again via the same `_cron_invoke_edge` path, and reports whether the second invocation could find and heartbeat the row.
+   This produces a single deterministic test we can run from a one-minute canary cron and from the admin UI.
 
-## Revised Phase 1-FIX — single-secret cron auth
+H2. **Fix `_cron_invoke_edge` body merge** (DB migration): always merge `jsonb_build_object('_cron', true)` into the second argument (currently the helper may or may not — the failing rows suggest not, since `params._cron` is `nil` on the cron-created rows). Pin `search_path = public, vault`, keep `SECURITY DEFINER`, EXECUTE revoked from PUBLIC. Idempotent rewrite.
 
-### 1. Loosen `requireAdminOrCron` (auth-gate.ts lines 121–129)
+H3. **Verify `requireAdminOrCron` accepts the cron path post-fix** (no code change expected; add a unit test in `_shared/auth-gate.test.ts` for the two-condition pair using `Deno.test`).
 
-Two-condition cron path:
-- `x-cron-secret` header equals env `CRON_SECRET`, AND
-- body contains `_cron:true`
+H4. **Re-deploy** `generate-article-og`, `batch-enrich-terms`, `context-save-drive`, `backfill-article-pins` explicitly via `supabase--deploy_edge_functions` so the SELF_URL fix and the `requireAdminOrCron` switch are actually live (source ≠ deployed until we redeploy).
 
-Drop the `Authorization == Bearer <service_role>` requirement. Defense-in-depth preserved (high-entropy `CRON_SECRET`, only ever transits pg_cron → edge function, never in client network logs). `requireAdmin` (admin UI path) untouched.
+H5. **Canary harness** (`srangam-canary-every-min`, schedule `* * * * *`, lifespan ≤ 10 min):
+   - Calls `cron-self-test` with `{kind:'cron_probe'}`.
+   - A second `cron.alter_job` call at T+10 min unschedules it.
+   - Acceptance gate: 5 consecutive green runs → un-schedule canary, mark Phase H green. Without this gate we do not move on.
 
-### 2. Simplify `public._cron_invoke_edge(text, jsonb)`
+H6. **Backfill-failed cleanup**: a one-shot `INSERT … SELECT` that re-queues the zero-pin articles missed by the two failed nightly runs (additive, idempotent, capped at 20). Goes through `enqueue_pin_backfill_sweep_job(20,3)` — no new logic.
 
-Drop `SUPABASE_SERVICE_ROLE_KEY` vault lookup. Read only `CRON_SECRET` from `vault.decrypted_secrets`. Headers:
+H7. **OG self-reinvoke verification**: a single manual `og_force` over 3 known slugs in dry-run mode (`only_missing:true, dry_run:true`) — confirm `processed → total` and `status='succeeded'` without watchdog kill. If it still dies at 1/N, the bug is in the pump fetch (not the URL), and we file Phase H7-bis: replace `EdgeRuntime.waitUntil(fetch(...))` self-pump with an in-process loop bounded by `CPU_TIME_SOFT_LIMIT - 5s` (no extra HTTP hop, no auth needed).
 
-```
-Content-Type:   application/json
-apikey:         <anon JWT — hardcoded literal, same as src/integrations/supabase/client.ts>
-Authorization:  Bearer <anon JWT — same literal>
-x-cron-secret:  <CRON_SECRET from vault>
-```
+H8. **Documentation**: update `docs/ADMIN_JOBS.md` "Auth" section with the verified two-condition cron contract; add a new `docs/AUTH_AND_CRON.md` (small) with the canary recipe and the green-gate definition.
 
-Body: `_body || jsonb_build_object('_cron', true)`. Function stays `SECURITY DEFINER`, `search_path` pinned to `public, vault`.
+**Exit criteria for Phase H** (all must be true before Phase O starts):
+- `cron.job_run_details` shows two consecutive green runs (status='succeeded' AND admin job row reached `status='succeeded'`, not just dispatch-OK) for jobid 2, 6, 7, 8.
+- No `last_error='watchdog: no heartbeat'` from cron-originated rows for 48 h.
+- Canary unschedules itself cleanly.
 
-### 3. Single vault seed you CAN actually do
+### Phase O — Observability ("Cron Ops" admin dashboard)
 
-```sql
-SELECT vault.create_secret('<paste CRON_SECRET — same value as the existing edge-function secret>', 'CRON_SECRET');
-```
+Only after Phase H is green. Surgical, read-mostly.
 
-You generated `CRON_SECRET` yourself (already in Cloud → Secrets). If forgotten: rotate via `secrets--update_secret` to a fresh `openssl rand -hex 32`, paste into both Cloud → Secrets and `vault.create_secret`.
+O1. **Single SECURITY DEFINER RPC** `public.get_recent_cron_runs(_limit int default 50)` returning `(jobid, jobname, schedule, start_time, end_time, status, return_message, duration_ms)` filtered to `jobname ~ '^srangam-'`. EXECUTE granted to `authenticated` only, `search_path = public, cron` pinned.
 
-### 4. Migration: rewire `srangam-pin-enrichment-nightly`
+O2. **Page** `src/pages/admin/CronOps.tsx`, wired into `AdminLayout` + a new `/admin/ops` route under `ProtectedRoute(isAdmin)`. Reads:
+   - `get_recent_cron_runs(50)` (the new RPC).
+   - `srangam_admin_jobs` last 50 rows joined to the cron run by time window (`start_time, end_time + 6 h grace`).
+   - `srangam_event_log` last 20 rows where `category in ('cron','job','og','enrichment','context')`.
+   - `srangam_lighthouse_runs` last 14 days (Phase G).
+   Uses `react-query` poll @ 30 s (no realtime — low-frequency data).
 
-`cron.alter_job` → `public._cron_invoke_edge('backfill-article-pins', {...})` with `chunk_size:1`, `only_zero_pin:true`, `limit:20`. Preflight checks only `CRON_SECRET`.
+O3. **Sections**:
+   - **Cron health** table: one row per `srangam-*` cron, last run start/duration/status, "Open last admin job" link.
+   - **Admin jobs** table: kind, status, progress, duration, cost, `last_error` (truncated with hover).
+   - **Lighthouse trend** chart (Recharts line, LCP per route, budget line at 2500 ms).
+   - **Error tray**: failed admin jobs in last 24 h with one-click "Re-queue" that calls `enqueue_pin_backfill_sweep_job` (pins) or inserts a row consumed by the next cron tick. **Never** invokes the edge function from the browser.
 
-### 5. Verification gate
+O4. **Docs**: new `docs/CRON_OPS_DASHBOARD.md` (data sources, RPC contract, "name your cron `srangam-*` and it auto-appears"). Update `mem://ops/cron-ops-dashboard`.
 
-`cron.schedule('pin-cron-smoke', '* * * * *', …)` for one minute → `srangam_admin_jobs` row with `created_by IS NULL`, `processed > 0`, `status='succeeded'`, no `watchdog: no heartbeat`. Drop the smoke job. Rollback = revert `cron.alter_job` to the snapshotted prior command.
+### Phase G — Guardrails (Lighthouse CI)
 
-## Verified state of all phases (this session)
+Only after Phase O can read perf history. Then we make regressions auto-fail.
 
-| Phase | Status |
-|---|---|
-| 1 — Cron auth helper deployed | Code present, command not yet rewritten. |
-| 1-FIX — Cron command rewrite | Blocked by old vault dependency. Above design removes the block. |
-| **1-FIX-B — OG self-reinvoke URL bug** | **NEW.** 3-line edit in `generate-article-og/index.ts` + 1 stale-job UPDATE. |
-| 2 — Deccan gazetteer +15 | Done (admin tile 43/47). |
-| 3 — OG nightly cron | Not started. `generate-article-og` still on `requireAdmin` (line 315). |
-| 4 — Term enrichment cron | Not started. `batch-enrich-terms` still on `requireAdmin` (line 15). |
-| 5 — CX.3 snapshot cron | Not started. `context-save-drive` still on `requireAdmin` (line 28). |
-| 6 — Counter polish | Done (`Home.tsx`). |
-| 7 — Candidate funnel | Table + harvesting wired (`recordGazetteerCandidates` at `backfill-article-pins/index.ts:165`). Admin UI not built. |
-| LCP — Lighthouse perf finding | Open (hero `fetchpriority`/dimensions, `font-display: swap`). |
+G1. **Lighthouse CI infra**:
+   - `@lhci/cli` as devDependency.
+   - `lighthouserc.json` (desktop, preset=desktop) and `lighthouserc.mobile.json` (mobile preset, devtools throttling), 3 runs each.
+   - Budgets (errors): `largest-contentful-paint ≤ 2500`, `cumulative-layout-shift ≤ 0.1`. (Warnings): `total-blocking-time ≤ 300`, `categories:performance ≥ 0.85`.
+   - Targets: `https://srangam.nartiang.org/`, `/articles`, `/about` (representative routes).
+   - `upload.target: 'temporary-public-storage'` (no infra; report URL in logs).
 
-## Phase order
+G2. **`.github/workflows/lighthouse.yml`** — `workflow_dispatch` + nightly `0 6 * * *` (after Phase H crons settle). Steps: checkout → setup-node 20 → `npm ci` → run both configs. Build fails on budget breach; HTML report uploaded as artifact.
 
-1. **Phase 1-FIX-B** — OG pump URL fix + stale-job unsticker (fastest user-visible relief; un-sticks today's 1/2 progress UI; unblocks any future Phase 3 cron). 5-min change.
-2. **Phase 1-FIX** — auth-gate two-condition path + helper migration + cron-rewrite migration + smoke gate. Needs your one-time `CRON_SECRET` vault seed.
-3. **Phase 3** — flip `generate-article-og` to `requireAdminOrCron`; schedule `srangam-og-backfill-nightly` at `30 3 * * *`, `{only_missing:true, limit:5}`. Re-read function first to confirm `only_missing`/`limit` are accepted body fields.
-4. **Phase 4** — flip `batch-enrich-terms`; cron `0 4 * * *`, `{only_stale:true, limit:10}`. Re-read `enrich-cultural-term` for the actual stale-field set; never fabricate columns.
-5. **Phase 5** — flip `context-save-drive`; cron `30 4 * * *`. Verify first row has `stats_detail->>'generated_with'='CX.3'` + `identity_sets IS NOT NULL`.
-6. **Phase 7-FIX** — `/admin/gazetteer/candidates` page only. Sortable list + Promote (modal pre-filled by new admin-only `gazetteer-variant-suggest` edge function calling Gemini for IAST/ASCII/Devanagari/historic variants; admin reviews before `INSERT … ON CONFLICT (canonical_name) DO NOTHING`) / Reject / Merge actions. No auto-promote.
-7. **Phase 6b** — honest admin counter in `GeographyMedia.tsx`: subtitle "4 conceptual articles · no places to resolve" via additive `tags:['conceptual']` on `srangam_articles`. Pure presentation.
-8. **Phase 6c (LCP fix)** — surgical:
-   - Identify the homepage hero image / H1 in `src/pages/Home.tsx`.
-   - Hero `<img>`: explicit `width`/`height`, remove any `loading="lazy"`, add `fetchpriority="high"`.
-   - Add `font-display: swap` to every `@font-face` rule (`src/index.css` + any `src/styles/*.css`).
-   - Mark SEO finding fixed + trigger publish dialog.
-9. **Phase 2b** — evidence backfill, deferred 48 h after Phases 3/4/5 are green.
+G3. **Local fallback** `scripts/lh-local.sh` documented in `docs/PERFORMANCE_BUDGETS.md`.
 
-## Documentation updates (shipped per phase)
+G4. **Persist headline numbers** for Phase O. New table `public.srangam_lighthouse_runs (id, url, device, perf_score, lcp_ms, cls, tbt_ms, fcp_ms, report_url, recorded_at)`. Migration follows the mandatory `CREATE TABLE → GRANT → ENABLE RLS → CREATE POLICY` order: `GRANT SELECT ON … TO anon` (numbers are non-sensitive, enables a future public badge); admin ALL; service_role ALL. New edge function `lighthouse-ingest` (admin/cron-gated via `requireAdminOrCron`) called by the GitHub job with `x-cron-secret`. The Action will use a `CRON_SECRET` Actions secret (same value as Cloud → Secrets and vault — I'll show the exact `gh secret set` command at implementation time; never echoed).
 
-- `.lovable/plan.md` — phase status + datestamps.
-- `docs/SCALABILITY_ROADMAP.md` — three nightly crons under "Automated intelligence loops" with cost caps.
-- `docs/architecture/SOURCES_PINS_SYSTEM.md` — candidate funnel admin UI + conceptual-articles definition.
-- `docs/CONTEXT_MANAGEMENT_GUIDE.md` — CX.3 nightly.
-- `docs/AUTH_AND_CRON.md` (new, tiny) — two-condition cron auth contract + rationale for keeping service-role JWT out of vault.
-- Memory: update `mem://phase-z/pin-enrichment-automation` (new auth contract, vault seed recipe, smoke recipe, OG pump-URL invariant).
+### Phase T — Testing playbook (lands alongside H/O/G, not after)
 
-## Invariants this plan will NOT touch
+T1. **`docs/TESTING_PLAYBOOK.md`** — three tiers:
+   - **Unit (vitest)**: `mergeArticleSources` (Phase AA+AB cross-source dedup), `slugifyHeading` (AR.1 shared slug), `resolveCulturalTokens` leaf-only (AR.2), `getText` whitespace rules (AR.3).
+   - **Component (vitest + RTL)**: `ArticleMiniMap` mount-on-pins (Phase Y), `LanguageAvailabilityBadge` body-derived N/9 (i18n/coverage-badge-truth), `OceanicArticlePage` exactly-one-`<ReactMarkdown>` invariant.
+   - **E2E (Playwright)**: `/articles` renders within 1 s even with a stubbed 12 s DB delay (Phase X.8 render-first); `/admin/ops` loads for an admin session; atlas `?focus=<slug>` dims non-matching clusters; homepage hero has `fetchpriority="high"` + explicit dims (Phase 6c).
 
-- No widening of AI prompts / no relaxing of confidence gates (Core).
-- No DELETE on gazetteer (G3).
-- No retroactive UPDATE on `≤2026-05-29` CX snapshots (frozen baseline).
-- No edits to `src/integrations/supabase/{client,types}.ts` or `.env`.
-- No re-introduction of manual-only pin flows (Phase Z).
-- No `chunk_size > 1` when AI is on (G1).
-- No change to `articleResolver.ts` JSON-source pin path.
-- `requireAdmin` (user-JWT path) unchanged — admin UI behaviour identical.
+T2. **Edge-function smoke tests** under `supabase/functions/*/index_test.ts` (`Deno.test`), runnable via `supabase--test_edge_functions`:
+   - `backfill-article-pins` `{dry_run:true, limit:1}` → 202 + admin job row.
+   - `generate-article-og` `{slug:'<known>', dry_run:true}` → non-zero cost estimate, no Drive write.
+   - `context-save-drive` `{dry_run:true}` → `identity_sets` shape returned, no Drive write.
+   - `auth-gate` negative: missing `x-cron-secret` → 401; admin JWT → 200.
+
+T3. **Pre-publish checklist** in the same doc: `npm run lint && npm test && npm run test:e2e && npm run test:perf`. After publish: trigger `lighthouse.yml` once. On failure: open `/admin/ops`, identify regression, ship a surgical fix — do not re-trigger blindly.
+
+---
+
+## Documentation & memory updates (per phase, not at the end)
+
+- `docs/AUTH_AND_CRON.md` (new) — verified cron contract, canary recipe, green-gate definition (Phase H).
+- `docs/ADMIN_JOBS.md` — section "Cron invocation path" added with the verified flow (Phase H).
+- `docs/CRON_OPS_DASHBOARD.md` (new) — Phase O.
+- `docs/PERFORMANCE_BUDGETS.md` (new) — Phase G.
+- `docs/TESTING_PLAYBOOK.md` (new) — Phase T.
+- `docs/IMPLEMENTATION_STATUS.md` — append Phase H (Heal), Phase O (Observe), Phase G (Guard), Phase T (Test) with datestamps and the green-gate evidence.
+- `docs/SCALABILITY_ROADMAP.md` — add "Perf budgets enforced in CI" + "Cron canary harness" (Phase G/H).
+- `.lovable/plan.md` — replace the optimistic "all phases done" entries with verified current status from this check, then track H→O→G→T.
+- Memory:
+  - `mem://ops/cron-green-gate` — definition of "green" (two consecutive nights + admin job row succeeded, not just dispatch-OK). Required reading before any future cron addition.
+  - `mem://ops/cron-canary-pattern` — canary one-minute schedule + auto-teardown recipe.
+  - `mem://ops/perf-budgets` — LCP ≤ 2500 ms, CLS ≤ 0.1, where budgets live, how to bump.
+  - `mem://ops/cron-ops-dashboard` — RPC contract, `srangam-*` naming convention.
+  - `mem://testing/three-tier-contract` — unit / component / e2e split + smoke edge tests.
+
+---
+
+## Order of execution
+
+1. **Phase H** (Heal) — proves automation actually runs end-to-end. Two-night green gate.
+2. **Phase O** (Observe) — admin dashboard reads what Phase H now reliably produces.
+3. **Phase G** (Guard) — Lighthouse CI + new table + ingest function; trend chart in O lights up.
+4. **Phase T** (Test) — playbook + missing specs; ratchets the floor under the next change.
+
+## Rollback per phase
+
+- **H**: drop `cron-self-test` function, revert `_cron_invoke_edge` migration (snapshotted before change), unschedule canary. Manual paths remain functional throughout.
+- **O**: remove `/admin/ops` route + drop `get_recent_cron_runs` RPC. Zero impact on public surface.
+- **G**: delete workflow file + drop `srangam_lighthouse_runs` + delete `lighthouse-ingest`. No FKs, no consumers outside the dashboard.
+- **T**: docs and tests are additive; rollback = delete files.
+
+## What this plan will NOT do
+
+- No changes to `requireAdmin` user-JWT path, RLS, gazetteer rows (G3), CX baseline snapshots (≤2026-05-29 frozen), `articleResolver.ts`, `src/integrations/supabase/{client,types}.ts`, `.env`, `supabase/config.toml` project-level keys.
+- No new public-callable surface (`cron-self-test`, `lighthouse-ingest` admin/cron-only).
+- No schema changes in reserved schemas (`cron`, `vault`, `auth`, `storage`) — cron data is read via a `public` RPC.
+- No realtime subscriptions on `/admin/ops`.
+- No widening of AI prompts, no relaxing of confidence gates, no `chunk_size > 1` when AI is on (G1 invariant).
+- No claim of "fixed" without a green canary or two-night green gate. We will not mark anything green by inspection of source code alone again.
 
 ## What I need from you
 
-Reply **"go"** and I'll execute in this order:
-1. Phase 1-FIX-B (no secrets needed, immediate).
-2. Then Phase 1-FIX (you paste `CRON_SECRET` into one `vault.create_secret` call).
-3. Then Phases 3 → 4 → 5 → 7-FIX → 6b → 6c → 2b.
+Reply **"approve"** and I'll start with **Phase H1–H4** (trace + helper fix + redeploys), wait for two green canary runs, then proceed H5→H8→O→G→T. No secrets needed at this step; the `CRON_SECRET` GitHub Actions seed only matters when Phase G ships.
