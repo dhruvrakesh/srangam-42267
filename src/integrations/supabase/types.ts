@@ -1061,6 +1061,66 @@ export type Database = {
         }
         Relationships: []
       }
+      srangam_gazetteer_candidates: {
+        Row: {
+          ai_model: string | null
+          ai_provider: string | null
+          created_at: string
+          first_seen_article_id: string | null
+          first_seen_at: string
+          id: string
+          last_seen_at: string
+          normalized_name: string
+          occurrences: number
+          promoted_gazetteer_id: string | null
+          raw_name: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source_articles: string[]
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          ai_model?: string | null
+          ai_provider?: string | null
+          created_at?: string
+          first_seen_article_id?: string | null
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          normalized_name: string
+          occurrences?: number
+          promoted_gazetteer_id?: string | null
+          raw_name: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_articles?: string[]
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          ai_model?: string | null
+          ai_provider?: string | null
+          created_at?: string
+          first_seen_article_id?: string | null
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          normalized_name?: string
+          occurrences?: number
+          promoted_gazetteer_id?: string | null
+          raw_name?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_articles?: string[]
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       srangam_inscriptions: {
         Row: {
           bibliography: string[] | null
