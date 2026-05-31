@@ -38,8 +38,10 @@ export interface GateResult {
   user?: User;
   userClient?: SupabaseClient;
   isAdmin?: boolean;
+  fromCron?: boolean;
   error?: Response;
 }
+
 
 /**
  * Require a valid Supabase JWT on the incoming request.
@@ -89,4 +91,42 @@ export async function requireAdmin(req: Request): Promise<GateResult> {
   }
 
   return { ...base, isAdmin: true };
+}
+
+/**
+ * Phase Z2 — Cron-or-admin gate.
+ *
+ * Cron path (pg_cron-originated):
+ *   - Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY>
+ *   - x-cron-secret: <CRON_SECRET>   (project env var)
+ *   - body MUST contain `_cron: true`
+ *
+ * All three conditions must match; otherwise fall back to the user-JWT
+ * admin path so the admin UI is unchanged.
+ *
+ * The body flag means a leaked service-role key + secret from a network
+ * log can't accidentally drive a cron-only function with a non-cron body
+ * shape.
+ */
+export async function requireAdminOrCron(
+  req: Request,
+  body: Record<string, unknown> | null | undefined,
+): Promise<GateResult> {
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+  const cronSecret = Deno.env.get('CRON_SECRET') ?? '';
+  const auth = req.headers.get('Authorization') ?? req.headers.get('authorization') ?? '';
+  const headerSecret = req.headers.get('x-cron-secret') ?? '';
+  const bodyFlag = !!(body && (body as { _cron?: boolean })._cron === true);
+
+  if (
+    serviceKey &&
+    cronSecret &&
+    auth === `Bearer ${serviceKey}` &&
+    headerSecret === cronSecret &&
+    bodyFlag
+  ) {
+    return { isAdmin: true, fromCron: true };
+  }
+
+  return requireAdmin(req);
 }
