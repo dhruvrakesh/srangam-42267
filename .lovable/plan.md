@@ -1,142 +1,128 @@
-## Why 4 articles still show 0 pins (verified — NOT a bug)
+## NEW FINDING — OG generation "stuck at 1/2" is a self-reinvoke URL bug
 
-Edge logs (`backfill-article-pins`, today 08:01 UTC) + DB confirm the 4 zero-pin articles are conceptual / methodology pieces with no real-world place names:
-
-```
-expanded-r-si-genealogies-bhrgu-…          completion_tokens: 1        (Vedic ṛṣi lineages — abstract)
-i-genealogies-in-vedic-tradition-…         completion_tokens: 73       (same topic, duplicate)
-jyotish-methodology                        completion_tokens: 1–28     (mathematical astronomy)
-sanskrit-translator-methodology            completion_tokens: 71–194   (NLP pipeline)
-```
-
-All four re-invocations returned `inserted:0, pins_a:0, pins_b:0, pins_c:0` with valid AI completions. The Gemini NER correctly produced empty / near-empty sets. Gazetteer resolution is working — there is nothing geographic to resolve. Per Core invariant *"AI for curation, not expansion; never relax confidence gates as a workaround"*, the correct outcome is exactly what we see.
-
-Single surgical UI fix only (Phase 6b below). Zero backend change.
-
-## Verified Phase 1–7 status (corrected from prior turn)
-
-| Phase | Status | Evidence (this session) |
-|---|---|---|
-| **1 — Cron auth helper** | **Partial.** `requireAdminOrCron` deployed in `_shared/auth-gate.ts`; `public._cron_invoke_edge` exists (`pg_proc` check). **But** `cron.job.srangam-pin-enrichment-nightly.command` still posts with **anon JWT** → today's 03:00 UTC run failed with `watchdog: no heartbeat` (`srangam_admin_jobs` row, `processed:0`). | Direct `SELECT command FROM cron.job`. |
-| **2 — Deccan gazetteer +15** | Done. | Admin tile: `WITH PINS 43 / 47`. |
-| **2b — Evidence backfill** | Not started. | `srangam_article_evidence` sparse. |
-| **3 — OG nightly cron** | Not started. `generate-article-og` still uses `requireAdmin` (line 315). | grep + cron list. |
-| **4 — Term enrichment cron** | Not started. `batch-enrich-terms` still uses `requireAdmin` (line 15). | grep + cron list. |
-| **5 — CX.3 snapshot cron** | Not started. `context-save-drive` still uses `requireAdmin` (line 28). Last snapshot `2026-05-29 CX.1`. | grep + cron list. |
-| **6 — Counter polish** | Done. | `Home.tsx`. |
-| **7 — Candidate funnel** | **More complete than I thought.** Table `srangam_gazetteer_candidates` exists with correct RLS. **Harvesting IS wired** — `recordGazetteerCandidates()` lives at `backfill-article-pins/index.ts:165–230` and fires after gazetteer resolve. The table is empty (0 rows) only because every article processed today either (a) resolved all AI hits cleanly to existing gazetteer rows, or (b) returned empty NER (the 4 conceptual pieces). Admin UI **not** built. | grep `srangam_gazetteer_candidates` shows insert path; `SELECT COUNT(*)` = 0. |
-
-## Plan — surgical completions, in this order
-
-Additive, reversible, gated. Touches only admin console + one cosmetic badge.
-
-### Phase 1-FIX — Rewire nightly cron command (the unblock)
-
-Single `cron.alter_job` to replace the anon-bearer POST with `public._cron_invoke_edge('backfill-article-pins', body)`. The helper already reads `SUPABASE_SERVICE_ROLE_KEY` + `CRON_SECRET` from `vault.decrypted_secrets` and sets the triple condition (`Authorization: Bearer <service_role>` + `x-cron-secret` + `_cron:true` in body) that `requireAdminOrCron` checks.
-
-Conceptual new command:
+Edge logs (`generate-article-og`, today 08:21–08:22 UTC) show **both** OG images succeeded:
 
 ```
-DO $$
-DECLARE v_job_id uuid;
-BEGIN
-  v_job_id := public.enqueue_pin_backfill_sweep_job(20, 1);
-  IF v_job_id IS NOT NULL THEN
-    PERFORM public._cron_invoke_edge(
-      'backfill-article-pins',
-      jsonb_build_object(
-        'job_id',        v_job_id::text,
-        'all_published', true,
-        'only_zero_pin', true,
-        'limit',         20,
-        'offset',        0,
-        'chunk_size',    1
-      )
-    );
-  END IF;
-END $$;
+08:22:12 og_image_generated  slug=breached-within-internal-fracture  v1  $0.039  drive_id=1m0t…
+08:22:13 ERROR  pump reinvoke failed: 404 {"error":"requested path is invalid"}
+08:22:44 og_image_generated  slug=stone-sun-vitasta  v2  $0.039  drive_id=1uh1…
+08:22:46 ERROR  pump reinvoke failed: 404 {"error":"requested path is invalid"}
 ```
 
-`chunk_size` forced to **1** per Phase G1 invariant (AI on).
+Root cause — `generate-article-og/index.ts:384` calls `schedulePumpReinvoke(req.url, …)`. Inside a Supabase edge worker, `req.url` resolves to the **internal** worker hostname (not `https://<ref>.supabase.co/functions/v1/generate-article-og`). The gateway rejects that path with `404 requested path is invalid`. The work itself completes; only the **progress signalling** loop dies, so the UI is stuck at 50 % even though `srangam_media_assets` and Drive both got the second file.
 
-**Pre-flight check:** confirm `vault` actually has `SUPABASE_SERVICE_ROLE_KEY` and `CRON_SECRET` rows; if not, surface that to the user before altering cron — do not silently fail.
+Surgical fix (Phase 1-FIX-B, 3 lines):
 
-**Verification gate:** `cron.schedule('pin-cron-smoke', '* * * * *', …)` for one minute → expect a `srangam_admin_jobs` row with `created_by IS NULL`, `processed > 0`, `status='succeeded'`, no watchdog message. Drop the smoke job immediately after.
+```ts
+// generate-article-og/index.ts:384 — current
+schedulePumpReinvoke(req.url, { job_id: body.job_id, cursor: nextCursor, force });
 
-**Rollback:** `cron.alter_job` back to the old anon-bearer command (kept verbatim in the migration comment).
+// fixed
+const SELF_URL = `${Deno.env.get('SUPABASE_URL')}/functions/v1/generate-article-og`;
+schedulePumpReinvoke(SELF_URL, { job_id: body.job_id, cursor: nextCursor, force });
+```
 
-### Phase 7-FIX — Admin Candidate Review UI (harvesting already works)
+Also patch the still-running stale job so the UI un-sticks immediately: a tiny SQL `UPDATE srangam_admin_jobs SET status='succeeded', finished_at=now(), processed=total WHERE kind='og_generate' AND status='running' AND finished_at IS NULL AND heartbeat_at < now()-interval '5 min'` (additive, idempotent, only touches abandoned rows).
 
-No edge function change. New page only.
+## Why the previous Phase 1-FIX preflight failed (unchanged from last turn)
 
-1. `/admin/gazetteer/candidates` — sortable list (occurrences DESC, source_articles count DESC, first_seen_at ASC). Columns: normalized_name · raw_name · occurrences · first article · status · actions.
-2. Three actions per row:
-   - **Promote** → modal pre-filled by a new admin-only edge function `gazetteer-variant-suggest` (Gemini, returns suggested `feature_type`, `era_tags`, IAST/ASCII/Devanagari/historic variants). Admin reviews → `INSERT … ON CONFLICT (canonical_name) DO NOTHING` per Phase G3 → candidate flipped to `approved` with `promoted_gazetteer_id` backlink.
-   - **Reject** → status='rejected' + `review_notes`.
-   - **Merge** → adds `raw_name` to chosen gazetteer row's `name_variants` (append-only, dedup), candidate marked `merged`.
-3. No auto-promote. Honors *"AI for curation, not expansion."*
+`vault.secrets` is missing `SUPABASE_SERVICE_ROLE_KEY`. Service-role JWT is **not exposed in the Cloud UI** (your screenshot confirms — no "API keys" subview). Asking you to paste it violates "never display secret values".
 
-**Verification gate:** after Phase 1-FIX's first cron run hits any article with unresolved names, ≥1 candidate appears; promoting it produces a new gazetteer row and the next sweep picks it up automatically.
+The Supabase Edge gateway only requires *any* valid project JWT in `apikey`/`Authorization` (anon passes). True authorization happens inside the function via `requireAdminOrCron`. So the actual security boundary is `CRON_SECRET` + `_cron:true`, not the bearer token.
 
-### Phase 3 — OG nightly cron (03:30 UTC, cap 5)
+## Revised Phase 1-FIX — single-secret cron auth
 
-1. Switch `generate-article-og` from `requireAdmin` → `requireAdminOrCron`.
-2. Add `only_missing` + `limit` query support if not present (re-read first — do not assume).
-3. `cron.schedule('srangam-og-backfill-nightly', '30 3 * * *', _cron_invoke_edge('generate-article-og', {only_missing:true, limit:5}))`.
+### 1. Loosen `requireAdminOrCron` (auth-gate.ts lines 121–129)
 
-**Verification gate:** `MISSING OG` trends toward 0; `srangam_admin_jobs` row of `kind='og_generate' AND created_by IS NULL AND status='succeeded'` appears.
+Two-condition cron path:
+- `x-cron-secret` header equals env `CRON_SECRET`, AND
+- body contains `_cron:true`
 
-### Phase 4 — Term enrichment cron (04:00 UTC, cap 10)
+Drop the `Authorization == Bearer <service_role>` requirement. Defense-in-depth preserved (high-entropy `CRON_SECRET`, only ever transits pg_cron → edge function, never in client network logs). `requireAdmin` (admin UI path) untouched.
 
-1. Re-read `batch-enrich-terms` + `enrich-cultural-term` for the actual "stale" field set — do not fabricate columns.
-2. Switch `batch-enrich-terms` to `requireAdminOrCron`.
-3. `cron.schedule('srangam-term-enrichment-nightly', '0 4 * * *', _cron_invoke_edge('batch-enrich-terms', {only_stale:true, limit:10}))`.
+### 2. Simplify `public._cron_invoke_edge(text, jsonb)`
 
-**Verification gate:** job succeeds; 3 spot-checked terms show new field values vs. previous (via `srangam_event_log` diff).
+Drop `SUPABASE_SERVICE_ROLE_KEY` vault lookup. Read only `CRON_SECRET` from `vault.decrypted_secrets`. Headers:
 
-### Phase 5 — CX.3 snapshot cron (04:30 UTC)
+```
+Content-Type:   application/json
+apikey:         <anon JWT — hardcoded literal, same as src/integrations/supabase/client.ts>
+Authorization:  Bearer <anon JWT — same literal>
+x-cron-secret:  <CRON_SECRET from vault>
+```
 
-1. Switch `context-save-drive` to `requireAdminOrCron`.
-2. `cron.schedule('srangam-context-snapshot-nightly', '30 4 * * *', _cron_invoke_edge('context-save-drive', {}))`.
+Body: `_body || jsonb_build_object('_cron', true)`. Function stays `SECURITY DEFINER`, `search_path` pinned to `public, vault`.
 
-**Verification gate:** new row has `stats_detail->>'generated_with'='CX.3'` AND `identity_sets IS NOT NULL`; next `context-diff-generator` upgrades from `count_only` → `identity` per CX.3 precedence. Frozen `≤2026-05-29` snapshots untouched.
+### 3. Single vault seed you CAN actually do
 
-### Phase 6b — Honest admin counter (frontend-only)
+```sql
+SELECT vault.create_secret('<paste CRON_SECRET — same value as the existing edge-function secret>', 'CRON_SECRET');
+```
 
-In `src/pages/admin/GeographyMedia.tsx`, under the `WITH PINS 43 / 47` tile, render a small muted subtitle: `4 conceptual articles · no places to resolve`. Computed inline: zero-pin AND (latest log event of `pin_complete` for that article shows `completion_tokens ≤ N`) — but since we don't query logs from the client, a simpler honest signal: `zero-pin AND content body has no gazetteer-resolvable substring after 2+ runs`. Practical implementation: derive the "4 conceptual" count from `published_count − with_pins_count` and label as `conceptual` only when these articles also appear in a small admin-curated allow-list stored in a tiny new constant (or a JSONB column on `srangam_articles.tags = […, 'conceptual:true']`). Decide between the two during build (likely the tag route — additive, queryable, surfaces in CMS).
+You generated `CRON_SECRET` yourself (already in Cloud → Secrets). If forgotten: rotate via `secrets--update_secret` to a fresh `openssl rand -hex 32`, paste into both Cloud → Secrets and `vault.create_secret`.
 
-**Verification gate:** subtitle renders at desktop + 360px mobile; no console errors; admin tile no longer reads as backlog.
+### 4. Migration: rewire `srangam-pin-enrichment-nightly`
 
-### Phase 2b — Evidence backfill (deferred)
+`cron.alter_job` → `public._cron_invoke_edge('backfill-article-pins', {...})` with `chunk_size:1`, `only_zero_pin:true`, `limit:20`. Preflight checks only `CRON_SECRET`.
 
-Defer until Phases 1-FIX, 3, 4, 5 are green for 48 h. Unchanged from prior plan.
+### 5. Verification gate
 
-## Out of scope (Core invariants, will not violate)
+`cron.schedule('pin-cron-smoke', '* * * * *', …)` for one minute → `srangam_admin_jobs` row with `created_by IS NULL`, `processed > 0`, `status='succeeded'`, no `watchdog: no heartbeat`. Drop the smoke job. Rollback = revert `cron.alter_job` to the snapshotted prior command.
 
-- No widening of AI prompts or relaxing of confidence floors to chase the 4 conceptual articles.
-- No DELETE on gazetteer (Phase G3).
-- No retroactive UPDATE on `≤2026-05-29` CX snapshots (frozen baseline).
-- No change to `articleResolver.ts` JSON-source pin path.
-- No edits to `src/integrations/supabase/{client,types}.ts` or `.env`.
-- No re-introduction of the manual-only pin flow (Phase Z invariant).
-- No `chunk_size > 1` when AI is on (Phase G1).
+## Verified state of all phases (this session)
 
-## Documentation updates (shipped with each phase)
+| Phase | Status |
+|---|---|
+| 1 — Cron auth helper deployed | Code present, command not yet rewritten. |
+| 1-FIX — Cron command rewrite | Blocked by old vault dependency. Above design removes the block. |
+| **1-FIX-B — OG self-reinvoke URL bug** | **NEW.** 3-line edit in `generate-article-og/index.ts` + 1 stale-job UPDATE. |
+| 2 — Deccan gazetteer +15 | Done (admin tile 43/47). |
+| 3 — OG nightly cron | Not started. `generate-article-og` still on `requireAdmin` (line 315). |
+| 4 — Term enrichment cron | Not started. `batch-enrich-terms` still on `requireAdmin` (line 15). |
+| 5 — CX.3 snapshot cron | Not started. `context-save-drive` still on `requireAdmin` (line 28). |
+| 6 — Counter polish | Done (`Home.tsx`). |
+| 7 — Candidate funnel | Table + harvesting wired (`recordGazetteerCandidates` at `backfill-article-pins/index.ts:165`). Admin UI not built. |
+| LCP — Lighthouse perf finding | Open (hero `fetchpriority`/dimensions, `font-display: swap`). |
+
+## Phase order
+
+1. **Phase 1-FIX-B** — OG pump URL fix + stale-job unsticker (fastest user-visible relief; un-sticks today's 1/2 progress UI; unblocks any future Phase 3 cron). 5-min change.
+2. **Phase 1-FIX** — auth-gate two-condition path + helper migration + cron-rewrite migration + smoke gate. Needs your one-time `CRON_SECRET` vault seed.
+3. **Phase 3** — flip `generate-article-og` to `requireAdminOrCron`; schedule `srangam-og-backfill-nightly` at `30 3 * * *`, `{only_missing:true, limit:5}`. Re-read function first to confirm `only_missing`/`limit` are accepted body fields.
+4. **Phase 4** — flip `batch-enrich-terms`; cron `0 4 * * *`, `{only_stale:true, limit:10}`. Re-read `enrich-cultural-term` for the actual stale-field set; never fabricate columns.
+5. **Phase 5** — flip `context-save-drive`; cron `30 4 * * *`. Verify first row has `stats_detail->>'generated_with'='CX.3'` + `identity_sets IS NOT NULL`.
+6. **Phase 7-FIX** — `/admin/gazetteer/candidates` page only. Sortable list + Promote (modal pre-filled by new admin-only `gazetteer-variant-suggest` edge function calling Gemini for IAST/ASCII/Devanagari/historic variants; admin reviews before `INSERT … ON CONFLICT (canonical_name) DO NOTHING`) / Reject / Merge actions. No auto-promote.
+7. **Phase 6b** — honest admin counter in `GeographyMedia.tsx`: subtitle "4 conceptual articles · no places to resolve" via additive `tags:['conceptual']` on `srangam_articles`. Pure presentation.
+8. **Phase 6c (LCP fix)** — surgical:
+   - Identify the homepage hero image / H1 in `src/pages/Home.tsx`.
+   - Hero `<img>`: explicit `width`/`height`, remove any `loading="lazy"`, add `fetchpriority="high"`.
+   - Add `font-display: swap` to every `@font-face` rule (`src/index.css` + any `src/styles/*.css`).
+   - Mark SEO finding fixed + trigger publish dialog.
+9. **Phase 2b** — evidence backfill, deferred 48 h after Phases 3/4/5 are green.
+
+## Documentation updates (shipped per phase)
 
 - `.lovable/plan.md` — phase status + datestamps.
-- `docs/SCALABILITY_ROADMAP.md` — four nightly crons under "Automated intelligence loops" with cost caps ($/night).
-- `docs/architecture/SOURCES_PINS_SYSTEM.md` — candidate funnel admin UI + the explicit "conceptual articles" definition with the 4-name allow-list rationale.
-- `docs/CONTEXT_MANAGEMENT_GUIDE.md` — CX.3 snapshots now nightly.
-- Memory: update `mem://phase-z/pin-enrichment-automation` to record the cron-command fix (vault-secret dependency, helper indirection, smoke-test recipe).
+- `docs/SCALABILITY_ROADMAP.md` — three nightly crons under "Automated intelligence loops" with cost caps.
+- `docs/architecture/SOURCES_PINS_SYSTEM.md` — candidate funnel admin UI + conceptual-articles definition.
+- `docs/CONTEXT_MANAGEMENT_GUIDE.md` — CX.3 nightly.
+- `docs/AUTH_AND_CRON.md` (new, tiny) — two-condition cron auth contract + rationale for keeping service-role JWT out of vault.
+- Memory: update `mem://phase-z/pin-enrichment-automation` (new auth contract, vault seed recipe, smoke recipe, OG pump-URL invariant).
 
-## Execution order
+## Invariants this plan will NOT touch
 
-1. Phase 1-FIX — cron command rewrite (unblocks every other cron).
-2. Phase 3 — OG cron (zero-risk; smallest function surface).
-3. Phase 4 — term enrichment cron.
-4. Phase 5 — CX.3 snapshot cron.
-5. Phase 7-FIX — candidate review UI.
-6. Phase 6b — admin counter clarification.
-7. Phase 2b — evidence backfill (only after 48 h of green crons).
+- No widening of AI prompts / no relaxing of confidence gates (Core).
+- No DELETE on gazetteer (G3).
+- No retroactive UPDATE on `≤2026-05-29` CX snapshots (frozen baseline).
+- No edits to `src/integrations/supabase/{client,types}.ts` or `.env`.
+- No re-introduction of manual-only pin flows (Phase Z).
+- No `chunk_size > 1` when AI is on (G1).
+- No change to `articleResolver.ts` JSON-source pin path.
+- `requireAdmin` (user-JWT path) unchanged — admin UI behaviour identical.
 
-Approve to proceed with **Phase 1-FIX** first (single `cron.alter_job` + pre-flight vault check + smoke schedule).
+## What I need from you
+
+Reply **"go"** and I'll execute in this order:
+1. Phase 1-FIX-B (no secrets needed, immediate).
+2. Then Phase 1-FIX (you paste `CRON_SECRET` into one `vault.create_secret` call).
+3. Then Phases 3 → 4 → 5 → 7-FIX → 6b → 6c → 2b.

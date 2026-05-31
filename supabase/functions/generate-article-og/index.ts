@@ -381,7 +381,11 @@ Deno.serve(async (req) => {
         // pattern preserved from the previous browser loop.
         await new Promise((r) => setTimeout(r, 600));
         // Pump without targets[] in body (already in params) to keep payload small.
-        schedulePumpReinvoke(req.url, { job_id: body.job_id, cursor: nextCursor, force });
+        // Phase 1-FIX-B: req.url resolves to the internal worker hostname inside
+        // the edge runtime and produces 404 "requested path is invalid" at the
+        // gateway. Always rebuild the public function URL from SUPABASE_URL.
+        const SELF_URL = `${Deno.env.get('SUPABASE_URL')}/functions/v1/generate-article-og`;
+        schedulePumpReinvoke(SELF_URL, { job_id: body.job_id, cursor: nextCursor, force });
       }
 
       return new Response(JSON.stringify({
