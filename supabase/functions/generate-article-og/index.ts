@@ -312,7 +312,7 @@ Deno.serve(async (req) => {
       });
     }
   } else {
-    const __gate = await requireAdmin(req);
+    const __gate = await requireAdminOrCron(req, body);
     if (__gate.error) return __gate.error;
   }
 
