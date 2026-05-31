@@ -155,6 +155,69 @@ function matchAiName(name: string, idx: Map<string, string>): string | null {
   return null;
 }
 
+/**
+ * Phase 7 — Persist AI-extracted place names that did NOT resolve to any
+ * existing gazetteer row. Admin-curated promotion happens elsewhere. We
+ * upsert by `normalized_name`, bumping `occurrences` and appending the
+ * article_id to `source_articles` on conflict. Best-effort: failures here
+ * never block pin writes.
+ */
+async function recordGazetteerCandidates(
+  supabase: ReturnType<typeof createClient>,
+  articleId: string,
+  rawNames: string[],
+  provider: string,
+  model: string,
+): Promise<void> {
+  // Dedupe within this run; cap to avoid pathological prompt output.
+  const seen = new Map<string, string>();
+  for (const raw of rawNames) {
+    const trimmed = raw.trim();
+    if (!trimmed) continue;
+    const norm = trimmed.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (!seen.has(norm)) seen.set(norm, trimmed);
+    if (seen.size >= 40) break;
+  }
+  if (seen.size === 0) return;
+
+  for (const [norm, raw] of seen) {
+    // Try update first (cheap path for frequent candidates).
+    const { data: existing } = await supabase
+      .from('srangam_gazetteer_candidates')
+      .select('id, source_articles, occurrences')
+      .eq('normalized_name', norm)
+      .maybeSingle();
+
+    if (existing) {
+      const articles = Array.isArray(existing.source_articles) ? existing.source_articles as string[] : [];
+      const nextArticles = articles.includes(articleId) ? articles : [...articles, articleId];
+      await supabase
+        .from('srangam_gazetteer_candidates')
+        .update({
+          occurrences: (existing.occurrences ?? 0) + 1,
+          source_articles: nextArticles,
+          last_seen_at: new Date().toISOString(),
+          ai_provider: provider,
+          ai_model: model,
+        })
+        .eq('id', existing.id);
+    } else {
+      await supabase
+        .from('srangam_gazetteer_candidates')
+        .insert({
+          normalized_name: norm,
+          raw_name: raw,
+          first_seen_article_id: articleId,
+          source_articles: [articleId],
+          ai_provider: provider,
+          ai_model: model,
+        });
+    }
+  }
+}
+
+
+
 // ---------- core per-article worker ----------
 
 interface PerArticleAiStats {
