@@ -1567,6 +1567,10 @@ export type Database = {
       }
     }
     Functions: {
+      _cron_invoke_edge: {
+        Args: { _body: Json; _function_name: string }
+        Returns: number
+      }
       _postgis_deprecate: {
         Args: { newname: string; oldname: string; version: string }
         Returns: undefined
