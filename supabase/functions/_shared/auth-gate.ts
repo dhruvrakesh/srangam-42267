@@ -38,8 +38,10 @@ export interface GateResult {
   user?: User;
   userClient?: SupabaseClient;
   isAdmin?: boolean;
+  fromCron?: boolean;
   error?: Response;
 }
+
 
 /**
  * Require a valid Supabase JWT on the incoming request.
