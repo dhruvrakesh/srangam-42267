@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-import { requireAdmin } from '../_shared/auth-gate.ts';
+import { requireAdminOrCron } from '../_shared/auth-gate.ts';
 import {
   countAuthoritative,
   topThemes,
@@ -25,7 +25,8 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
-  const __gate = await requireAdmin(req);
+  const body = await req.clone().json().catch(() => ({} as any));
+  const __gate = await requireAdminOrCron(req, body);
   if (__gate.error) return __gate.error;
 
   try {
