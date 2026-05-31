@@ -29,7 +29,7 @@ import { aiExtractPlaces, NoAIProviderError } from '../_shared/ai-provider.ts';
 import { reportItem, isCancelled, finishJob, touchHeartbeat } from '../_shared/jobs.ts';
 import { serializeErr } from '../_shared/errors.ts';
 
-import { requireAdmin } from '../_shared/auth-gate.ts';
+import { requireAdminOrCron } from '../_shared/auth-gate.ts';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
