@@ -214,18 +214,38 @@ export default function Home() {
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-4">
               {t('sections.recentResearchDesc')}
             </p>
-            <div className="flex items-center justify-center gap-6 mb-4">
-              <p className="text-2xl font-semibold text-foreground">
-                <span className="text-saffron">{totalArticles}</span> Published Articles
-              </p>
-              <span className="text-muted-foreground">•</span>
-              <p className="text-sm text-muted-foreground">
-                Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-              </p>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              {filteredArticles.length} {t('filters.articlesShowing')}
-            </p>
+            {(() => {
+              const filterActive = selectedThemes.length > 0;
+              const lastUpdated = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+              if (!filterActive && !showAllArticles && filteredArticles.length < totalArticles) {
+                // No filter, paginated preview: collapse the two counters into one honest line.
+                return (
+                  <p className="text-base sm:text-lg text-foreground mb-4">
+                    Showing <span className="text-saffron font-semibold">{filteredArticles.length}</span>
+                    {' '}of{' '}
+                    <span className="text-saffron font-semibold">{totalArticles}</span> published articles
+                    <span className="text-muted-foreground"> · Last updated {lastUpdated}</span>
+                  </p>
+                );
+              }
+              return (
+                <>
+                  <div className="flex items-center justify-center gap-6 mb-4">
+                    <p className="text-2xl font-semibold text-foreground">
+                      <span className="text-saffron">{totalArticles}</span> Published Articles
+                    </p>
+                    <span className="text-muted-foreground">•</span>
+                    <p className="text-sm text-muted-foreground">Last updated: {lastUpdated}</p>
+                  </div>
+                  {filterActive && (
+                    <p className="text-sm text-muted-foreground">
+                      {filteredArticles.length} {t('filters.articlesShowing')}
+                    </p>
+                  )}
+                </>
+              );
+            })()}
+
           </div>
 
           {/* Filter Chips */}
