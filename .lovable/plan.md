@@ -1,171 +1,168 @@
-# Phases 2–5 — Context-Revived, Audit-Corrected Plan
+# Intelligence-loop stabilization — revised plan (v2)
 
-Each phase is independently shippable, fully reversible, and gated by a concrete verification step. No DB destructive ops. No mass re-renders.
+This plan is additive, surgical, and reversible. Every phase has an explicit verification gate and rollback. Nothing alters the running product surface except by adding data or correcting silent failures.
 
----
+## What changed since v1 (your three new questions)
 
-## What the audit changed vs. the previous proposal
+1. **"Stray 6 articles" on the landing page.** Confirmed in `src/pages/Home.tsx`: the "Recent Research" section renders both `{totalArticles} Published Articles` (large saffron number) and below it `{filteredArticles.length} {t('filters.articlesShowing')}` — and `filteredArticles` is hard-capped at `limit: 6` until "Show all" is clicked (line 42). So the "6 articles" text is real, not a stray: it's the secondary "showing 6 of 46" counter, just sitting on its own line so the cropped screenshot makes it look orphaned. This is a UI polish item, **not a data bug** — folded into Phase 6 below.
 
-| Previous assumption | Audit finding | Plan impact |
-|---|---|---|
-| Pins may be duplicated, need composite UNIQUE | `srangam_article_pins_pkey PRIMARY KEY (article_id, gazetteer_id)` already exists | **Dropped** — upsert is already idempotent. Repetition perception comes from re-running without `only_zero_pin` (fixed in Phase 1) and from articles re-appearing in lists, not from row dupes. |
-| Source enum mismatch blocking A/C pins | CHECK is `evidence_table / content_scan / ai_extract / manual` — Phase 1 mapping was correct | **Confirmed** — A/C-tier inserts are now unblocked. |
-| Evidence empty is mostly a UI bug | Only **6 / 45** published articles have evidence rows; **1 / 45** has bibliography; pins are **135/135 B-tier content_scan** (zero A, zero C) | UX must tell the truth (sparse corpus), AND we must surface that A-tier (evidence → gazetteer) never produced pins because evidence `place` strings don't match `gazetteer.name_variants`. |
-| CX.2 refactor "almost done" | Latest snapshot is still `generated_with: CX.1` — no CX.2 snapshot has ever been written | Phase 4 must finish dedup AND produce a verified CX.2 snapshot before CX.3 migration. |
+2. **"Should we cron AI enhancement with very-high-confidence-only?"** Yes — **but only because the existing C-tier path is already curation-bounded.** A pin is only ever written when the AI's NER output resolves back into `srangam_gazetteer.name_variants` (a row that *we* curated). The AI is a recall booster, not an ontology source. So adding AI to the nightly cron is safe **if** we (a) keep `chunk_size = 1` (Phase G1 invariant), (b) keep the 20-article/night cost cap (Phase Z), (c) write pins only when gazetteer-resolved, (d) raise the per-pin confidence floor that gets persisted. This is consistent with the Core invariant "AI for curation, not expansion."
 
----
+3. **"How do we enhance the gazetteer in a sensible, grounded way?"** A two-loop curation funnel, no auto-insert. New phase 7 below.
 
-## Phase 2 — Evidence Honesty + Slug-Prop Wiring
+## Ground truth from this session (unchanged from v1 audit)
 
-**Goal:** stop the "blank Evidence tab" illusion; make sparse-evidence reality visible to readers and admins.
+- This article (`breached-from-within`, alias `breached-within-internal-fracture`): 1 pin, 0 evidence rows, 0 bibliography rows. Sources & Pins panel is reporting truthfully.
+- Gazetteer = 112 rows. Only one canonical_name (`Aden`) matches inside the body; the rest of the missing pins are the Vijayanagara/Tungabhadra/Deccan cluster that simply isn't in the gazetteer.
+- Two crons exist: `srangam-admin-jobs-watchdog` (working) and `srangam-pin-enrichment-nightly` (broken since launch — uses anon JWT against an `requireAdmin` gate, every nightly run since 2026-05-29 sits at `processed:0, last_error: 'watchdog: no heartbeat'`).
+- No crons exist for OG, term enrichment, or context snapshots. Last context snapshot is `2026-05-29 CX.1` — `CX.2`/`CX.3` columns/code shipped but were never invoked.
+- System-wide pins: 144 B-tier + 6 C-tier + 0 A-tier across 39 / 46 published articles.
 
-### Changes
-1. `src/components/oceanic/SourcesAndPins.tsx`
-   - Add a truthful empty state inside the `showEvidence && evidence.length === 0` branch (currently renders nothing).
-   - Add a guard for `legacyData.claims.length === 0` in legacy fallback.
-   - Change the amber "Using cached sources" copy from a vague warning to: *"No structured evidence/bibliography rows are stored for this article in the database yet — showing legacy correlation snapshot."*
-2. Audit every `<SourcesAndPins …/>` call site; ensure `articleSlug={article.slug_alias ?? article.slug}` is always passed (current optional prop silently disables DB queries).
-3. `src/pages/admin/ArticleManagement.tsx` (and the article table on `DataHealth`) — add three small badges per article: **EV n** / **BIB n** / **PINS n**, with the count colored red at 0. Read from cheap `count: 'exact', head: true` queries batched by `article_id IN (…)`.
-4. `src/lib/slugResolver.ts` — log a single grouped `console.warn` when the resolver returns null (helps the next slug-mismatch hunt).
+## Phase 1 — Cron auth fix (unblocks everything)
 
-### Phase 2 — A-tier pin gap mitigation (additive, no AI cost)
-- In `backfill-article-pins`, when iterating `srangam_article_evidence.place`, also match against `gazetteer.name_variants` with the existing tokenizer (currently only canonical names compared). Counters reported in the job: `evidence_rows_scanned`, `evidence_rows_matched`, `evidence_rows_unmatched_sample[]`. This converts the existing 79 evidence rows into A-tier pins where the gazetteer already knows the place — no AI call.
+Add to `supabase/functions/_shared/auth-gate.ts`:
 
-### Verification gate
-- DB: `SELECT source, count(*) FROM srangam_article_pins GROUP BY 1` shows non-zero `evidence_table` rows.
-- UI: on an article with `evidence_rows = 0`, Evidence tab shows the honest empty state instead of a blank panel; admin row shows `EV 0` red badge.
-
----
-
-## Phase 3 — OG Image Visibility (Reader + Admin Lightbox)
-
-**Goal:** make the generated 1200×630 OG image actually inspectable; stop silent hide on proxy failure.
-
-### Changes
-1. `src/lib/gdriveProxy.ts` — guard: if `import.meta.env.VITE_SUPABASE_URL` is falsy, return the raw URL instead of building `undefined/functions/v1/gdrive-image-proxy?id=…`. Prevents the silent `onError → hidden` cascade.
-2. `src/components/oceanic/OceanicArticlePage.tsx` (lines ~247–267)
-   - Wrap the hero `<img>` in a `<Dialog>` trigger (`shadcn/ui`); dialog content uses `<AspectRatio ratio={1200/630}>` and renders full-resolution image with a Download anchor (`<a href={ogImageUrl} download …/>`).
-   - Replace the `classList.add('hidden')` fallback with a visible neutral placeholder ("Header image unavailable") so failures are observable, not invisible.
-   - Use `loading="lazy"` + explicit `width/height` to preserve CLS.
-3. `src/pages/admin/GeographyMedia.tsx` (OG column, lines ~464–494)
-   - Render a 64×40 thumbnail (`object-cover rounded`) next to the existing version badge. Click → same Dialog as the reader. Add a "Download" menu item alongside Regen/Retire.
-
-### Verification gate
-- Reader: clicking the hero opens the full 1200×630 in a lightbox with a working Download link; if the proxy is misconfigured, the placeholder appears (no silent hide).
-- Admin: thumbnail visible for every row that has `og_image_url`; click opens the same dialog.
-
-No business-logic change, no edge function change.
-
----
-
-## Phase 4 — Finish CX.2: Dedupe GDrive Logic + Produce a Verified CX.2 Snapshot
-
-**Goal:** retire inline GDrive/JWT in `context-bundle-generator`, then write the first real CX.2 snapshot so CX.3 has a valid baseline to diff from.
-
-### Changes
-1. `supabase/functions/context-bundle-generator/index.ts`
-   - Remove the inline `uploadToGoogleDrive`, RS256 signing, multipart helpers (~lines 231–389).
-   - Import from the already-created shared modules:
-     - `loadServiceAccount, getDriveAccessToken, uploadToDrive` from `../_shared/google-drive.ts`
-     - `countAuthoritative, topThemes, topTags, topTerms, recentCrossRefs, latestCorrelationSummary` from `../_shared/context-metrics.ts`
-   - Stamp `stats_detail.generated_with = 'CX.2'` in the row it writes (per Phase CX.2 invariant in memory).
-   - Ensure the bundle markdown language list mirrors `src/lib/i18n.ts` exactly (`en, ta, te, kn, bn, as, pn, hi, pa`) — guarded by a 1-line locale-array import or a comment-pinned constant.
-2. `supabase/functions/_shared/context-metrics.ts`, `google-drive.ts` — already exist; no change. (Re-verified in context.)
-3. After deploy, trigger one bundle from `src/pages/admin/ContextManagement.tsx` (existing button) and verify the new row.
-
-### Verification gate
-- `SELECT stats_detail->>'generated_with', articles_count, terms_count, tags_count, cross_refs_count, modules_count FROM srangam_context_snapshots ORDER BY snapshot_date DESC LIMIT 1` → `CX.2`, `articles=45`, `terms≈1724`, `tags≈185`, `cross_refs≈1273`, `modules=13` (must match prior CX.1 row within ±1%; large drift = regression, roll back).
-- No `[object Object]` in `last_error` for the bundle job (Phase 1 serializeErr is already in place — confirm it's imported by `context-bundle-generator` too; add the import if not).
-
----
-
-## Phase 5 — CX.3: `identity_sets` Migration + Identity-Aware Diff
-
-**Goal:** move snapshot diffs from "count went up by 3" to "these specific slugs/term ids/tag names were added/removed", without touching the immutable frozen baseline.
-
-### Migration (additive only)
-```sql
-ALTER TABLE public.srangam_context_snapshots
-  ADD COLUMN identity_sets jsonb;             -- nullable; old rows stay null
-
-CREATE INDEX srangam_context_snapshots_identity_gin
-  ON public.srangam_context_snapshots USING gin (identity_sets jsonb_path_ops);
-```
-- No data backfill (frozen-baseline invariant).
-- No RLS change (admins-only already).
-- `generated_with` advances to `'CX.3'` only when `identity_sets` is populated.
-
-### `identity_sets` shape (small, bounded — cap each set at the corpus size, no AI cost)
-```jsonb
-{
-  "articles":     ["slug-a", "slug-b", …],          // from srangam_articles.slug
-  "terms":        ["uuid", …],                      // from srangam_cultural_terms.id
-  "tags":         ["tag_name", …],                  // from srangam_tags.tag_name
-  "modules":      ["module-name", …],               // distinct srangam_cultural_terms.module
-  "cross_refs":   ["src_id::tgt_id::reference_type", …]  // composite identity
-}
+```text
+requireAdminOrCron(req): GateResult
+  if Authorization == "Bearer ${SUPABASE_SERVICE_ROLE_KEY}"
+    AND header "x-cron-secret" == Deno.env("CRON_SECRET")
+    AND body._cron === true
+    → return { isAdmin: true, fromCron: true }
+  else
+    → delegate to existing requireAdmin (unchanged for the admin UI)
 ```
 
-### Edge function changes
-- `supabase/functions/context-save-drive/index.ts` — additionally compute and write `identity_sets`, stamp `generated_with='CX.3'`.
-- `supabase/functions/context-diff-generator/index.ts` —
-  - Mode resolution:
-    - both snapshots have `identity_sets` → `mode: 'identity'`, return `{added, removed}` per set (capped at 200 each, plus total counts).
-    - either is null → `mode: 'count_only'` with `reason: 'identity_sets_missing_in_<previous|current>'` (existing CX.2 fallback shape — preserve).
-  - Never UPDATE old rows; never re-run on baseline (`snapshot_date <= 2026-05-29`).
+Switch `backfill-article-pins` (and the three new cron targets in Phases 3–5) from `requireAdmin` → `requireAdminOrCron`. Cron command rewritten to:
 
-### Verification gate
-- Generate two CX.3 snapshots back-to-back; diff returns `mode: 'identity'`, `articles.added=[]`, `articles.removed=[]` for an unchanged corpus.
-- Add a throwaway tag → diff shows `tags.added=['<that-tag>']`. Remove it → next diff shows it in `removed`.
-- Old CX.1/CX.2 → CX.3 diff returns `mode: 'count_only'` with the documented `reason`, no crash.
-
----
-
-## Execution order & rollback
-
-```
-Phase 2  →  Phase 3  →  Phase 4  →  Phase 5
-(UI only)   (UI only)   (edge fn)   (migration + edge fn)
+```text
+Authorization: Bearer <service_role>
+x-cron-secret: <CRON_SECRET>
+body: { ..., _cron: true }
 ```
 
-- Phases 2 and 3 are pure frontend; rollback = revert commits.
-- Phase 4 is edge-function refactor only; rollback = redeploy previous `context-bundle-generator`.
-- Phase 5's migration is additive (new nullable column + GIN index); rollback = `DROP COLUMN identity_sets` — safe because no other code path will reference it until CX.3 ships.
+Three reasons this is safe:
+- Service-role is already accessible to anyone with DB access to `cron.job` (same as today's anon-key leak).
+- The triple-condition (bearer + header + body flag) means a leaked anon key from a network log cannot trigger the cron path.
+- Admin UI continues to go through the user-JWT branch — no privilege change for end users.
 
-## Documentation updates (in the same PRs)
-- `.lovable/plan.md` — append "Phase 2–5 Audit Reconciliation" section noting: PK already existed; A-tier pins enabled via variant-aware evidence scan; CX.2 snapshot finally produced.
-- `docs/CONTEXT_MANAGEMENT_GUIDE.md` — add CX.3 `identity_sets` shape + diff modes.
-- `docs/architecture/SOURCES_PINS_SYSTEM.md` — record the variant-aware evidence→gazetteer matching and the `EV/BIB/PINS` admin badges.
-- Memory: extend the `Geo Automation Recovery (G1+G2)` entry with the A-tier evidence-variant matcher, and add a `Context Metrics Honesty (CX.3)` entry once Phase 5 lands.
+Add `CRON_SECRET` via the secrets tool (single secret, project-wide).
 
-## Out of scope (explicitly)
-- No changes to `articleResolver.ts` JSON-source pin path (separate decision; current behavior is documented).
-- No changes to AI provider keys, prompts, or cost caps.
-- No edits to frozen baseline snapshots (`snapshot_date <= 2026-05-29`).
-- No new gazetteer rows in this plan (Phase G3 baseline stays at 112; expand in a dedicated content PR).
+**Verification gate:** manually `pg_cron.schedule` a one-shot copy of the new entry for the next minute; expect a `srangam_admin_jobs` row with `created_by IS NULL`, `processed > 0`, `status = 'succeeded'`. Then remove the one-shot.
 
-Approve to proceed with Phase 2 first.
+**Rollback:** revert the cron command to the old anon-key form; helper change is dormant once nothing calls it.
 
----
+## Phase 2 — Restore pin coverage on sparse articles (incl. this one)
 
-## Status (2026-05-29 — Phases 2–5 SHIPPED)
+Curated gazetteer migration for the Vijayanagara / medieval Deccan cluster missing today:
+Vijayanagara, Hampi (already in, verify variants), Tungabhadra, Anegundi, Penukonda, Chandragiri, Talikota, Krishna (river), Raichur Doab, Bidar, Bijapur/Vijayapura, Warangal, Devagiri/Daulatabad, Kalyana, Hampi-Vitthala, Kampili. Each row: `canonical_name`, `name_variants` (IAST + ASCII + Devanagari + historic exonym), `feature_type` from the frozen vocabulary, `era_tags = ['medieval']`. Migration uses `ON CONFLICT (canonical_name) DO NOTHING` per Phase G3.
 
-- **Phase 2 — Evidence honesty:** truthful empty states in `SourcesAndPins`, `EV/BIB/PINS` admin badges in `GeographyMedia`, grouped `console.warn` on slug resolver miss. ✅
-- **Phase 3 — OG lightbox:** hero image wrapped in `<Dialog>` with full 1200×630 + download, admin thumbnail + View action, `gdriveProxy.ts` guarded against missing `VITE_SUPABASE_URL`. ✅
-- **Phase 4 — CX.2 dedup:** `context-bundle-generator` now imports `loadServiceAccount` / `getDriveAccessToken` / `uploadToDrive` from `_shared/google-drive.ts`; inline ~160-line JWT/upload block removed. Both `context-save-drive` and `context-bundle-generator` are now shared-helper-only. ✅
-- **Phase 5 — CX.3 identity diffing:**
-  - Migration: `srangam_context_snapshots.identity_sets jsonb` + `srangam_context_snapshots_identity_sets_gin` GIN index. Nullable. Frozen baseline untouched. ✅
-  - `context-save-drive` computes five sorted sets (`article_slugs`, `term_keys='module:term'`, `tag_names`, `theme_names`, `module_names`), writes them and stamps `stats_detail.generated_with='CX.3'`. ✅
-  - `context-diff-generator` mode precedence: `identity` → `structured` (CX.2) → `count_only` (pre-CX.2). Per-set added/removed for articles/terms/tags/themes/modules. Fallbacks carry a `reason`. ✅
-- All three edge functions deployed.
+Then a one-shot admin run of `backfill-article-pins` scoped to: this article's id + the 7 currently zero-pin published articles (`only_zero_pin: true`, AI on, chunk_size 1).
 
-### Verification gates remaining (user-driven)
-1. Trigger one snapshot via the admin Context dashboard. Confirm new row has `identity_sets` populated and `stats_detail.generated_with='CX.3'`.
-2. Trigger a second snapshot immediately (no corpus changes) and run `context-diff-generator` between them. Expect `mode:'identity'` with every `added`/`removed` array empty.
-3. Run a diff between the new CX.3 snapshot and any pre-2026-05-29 baseline row. Expect `mode:'count_only'` (or `'structured'` if the baseline already had CX.2 shape) with `reason` populated, no crash.
+**Verification gate:**
+- `SELECT count(*) FROM srangam_article_pins WHERE article_id='c00947ce-...'` returns ≥ 5.
+- `with_pins` rises from 39/46 toward ≥ 44/46.
+- Per-confidence counts show new C-tier (and any latent A-tier from evidence backfill in Phase 2b below).
 
-### Rollback (per phase)
-- Phase 2/3: revert frontend commits — no DB/state impact.
-- Phase 4: redeploy previous `context-bundle-generator` if Drive uploads start failing (shared helper is the same code path `context-save-drive` already used successfully).
-- Phase 5: `ALTER TABLE srangam_context_snapshots DROP COLUMN identity_sets;` — safe; no other code path requires the column (diff-generator gracefully falls back to CX.2 mode when null).
+**Rollback:** the gazetteer migration is additive (no DELETE — Phase G3 forbids). Generated pins are idempotent; a re-run with `skip_ai:true` will not duplicate.
 
+## Phase 2b — Evidence backfill (small, optional, same release)
+
+`srangam_article_evidence` is empty for this article and most others (6/46 have rows). A-tier pins (the highest-confidence layer) can only emerge from evidence rows. Add a single admin-triggered pass of `backfill-bibliography`-style evidence extraction restricted to articles with structured "Evidence" headings in their markdown. Cost-cap to 5 articles for the verification run. This is the only way A-tier ever populates and is the foundation for the "structured evidence rows" badge in Phase 2 we shipped earlier.
+
+**Verification gate:** at least one published article transitions from 0 → ≥1 evidence rows, and the Sources & Pins panel's `Evidence` tab on that article shows real rows instead of the truthful empty state.
+
+## Phase 3 — OG image nightly cron
+
+`srangam-og-backfill-nightly` (03:30 UTC, cap 5/night, `_cron:true`).
+Calls `generate-article-og` with `{ only_missing: true, limit: 5 }` (add the filter — additive, no schema change).
+Currently only 2 articles are missing OG, so this loop self-empties in a day or two and then sits idle.
+
+**Verification gate:** `published AND og_image_url IS NULL` trends to 0; new `srangam_admin_jobs` row of `kind='og_generate'` succeeds.
+
+## Phase 4 — Cultural-term enrichment nightly cron
+
+`srangam-term-enrichment-nightly` (04:00 UTC, cap 10 terms/night).
+Calls `batch-enrich-terms` with `{ only_stale: true, limit: 10 }`. "Stale" = missing canonical fields (`etymology`, `iast`, `scriptural_refs` — exact field list deferred until `enrich-cultural-term`'s schema is re-read at implementation time so we don't fabricate columns).
+
+**Verification gate:** nightly job row succeeds; spot-check 3 enriched terms vs. their previous state via `srangam_event_log`.
+
+## Phase 5 — Context snapshot nightly cron + first CX.3 write
+
+`srangam-context-snapshot-nightly` (04:30 UTC).
+Calls `context-save-drive` with `{ _cron: true }`. Code already stamps `generated_with='CX.3'` and populates `identity_sets`.
+
+**Verification gate:** first new row has `stats_detail->>'generated_with' = 'CX.3'` AND `identity_sets IS NOT NULL`. `context-diff-generator` next run upgrades from `count_only` → `identity` per the existing three-tier precedence invariant. Frozen `≤2026-05-29` snapshots are not touched.
+
+## Phase 6 — UI polish for the landing-page counter (small, frontend-only)
+
+In `src/pages/Home.tsx` collapse the two separate count lines into one of two forms depending on filter state:
+
+- No filter active and not expanded: `"Showing 6 of 46 published articles · Last updated May 2026"` (single line).
+- Filter active or expanded: `"46 published articles · Last updated May 2026"` above, `"6 articles match Theme X"` below.
+
+This kills the "stray 6 articles" appearance without changing any pagination logic.
+
+**Verification gate:** visual check at desktop + 360px mobile, plus the existing prose-overflow tests must still pass.
+
+## Phase 7 — Continuous, grounded gazetteer growth (the key strategic addition)
+
+Curation funnel, never auto-insert. Two loops:
+
+**Loop A — Candidate harvesting (passive, free).** `backfill-article-pins` already calls AI NER and discards every name that doesn't resolve to a gazetteer row. Instead of discarding, write those unresolved names to a new table:
+
+```text
+srangam_gazetteer_candidates (
+  id, normalized_name, raw_name,
+  first_seen_article_id, first_seen_at,
+  occurrences int default 1,
+  source_articles uuid[],       -- distinct article_ids
+  ai_provider text, ai_model text,
+  status text default 'pending', -- pending|approved|rejected|merged
+  reviewed_by uuid, reviewed_at, review_notes,
+  PRIMARY KEY (id),
+  UNIQUE (normalized_name)
+)
+-- on conflict: occurrences = occurrences + 1, source_articles |= [article_id]
+```
+
+RLS: admin-only read + write. service_role full. No anon.
+
+**Loop B — Admin curation panel (active, manual).** New tab in `/admin` showing the candidate queue, sorted by `occurrences DESC, array_length(source_articles) DESC`. Each row offers:
+
+- "Promote to gazetteer" → opens a modal pre-filled by an admin-only edge function `gazetteer-variant-suggest` that proposes `feature_type`, `era_tags`, IAST, ASCII, Devanagari, and historic exonyms via Gemini, **for admin review**. On save, inserts into `srangam_gazetteer` with `ON CONFLICT (canonical_name) DO NOTHING` and marks the candidate `approved` with `gazetteer_id` backlink.
+- "Reject" → marks `rejected` with reason (e.g. "personal name", "modern company", "duplicate of …").
+- "Merge into existing" → adds the raw_name to that gazetteer row's `name_variants` and marks `merged`.
+
+Cost: zero ambient (Loop A is a side-effect of existing AI calls). Admin time is the only spend.
+
+**Auto-promote threshold? Recommendation: NO.** Honoring the Core invariant "AI for curation, not expansion" and the Phase G3 rule "If 'withPins/N' stays low after a clean backfill, always expand the gazetteer further — never broaden AI prompts or relax confidence gates as a workaround," candidates only enter `srangam_gazetteer` through an admin click. The candidate queue gives us a constantly-replenished, ranked work list so curation has somewhere obvious to start.
+
+**Verification gate:** after the next AI-on cron run completes, `srangam_gazetteer_candidates` has ≥ N new rows. Admin UI lists them with frequency. A test promotion of one candidate produces a new gazetteer row, the candidate flips to `approved`, and the next pin sweep picks the new row up automatically.
+
+## Documentation updates (every phase ships these together)
+
+- `.lovable/plan.md` — phase status with date stamps.
+- `docs/SCALABILITY_ROADMAP.md` — add the four nightly crons under "Automated intelligence loops" with cost caps and ownership.
+- `docs/architecture/SOURCES_PINS_SYSTEM.md` — document candidate funnel and the gazetteer-only pin invariant.
+- `docs/CONTEXT_MANAGEMENT_GUIDE.md` — note that CX.3 snapshots are now nightly.
+- Memory: update `Pin Enrichment Automation` to record the cron-auth fix; new memory `mem://gazetteer/candidate-funnel` describing Loop A/B.
+
+## Out of scope (unchanged)
+
+- No edits to `articleResolver.ts` JSON-source pin path.
+- No retroactive UPDATE on `≤2026-05-29` CX snapshots (frozen baseline).
+- No widening of AI prompts or confidence gates as a coverage shortcut.
+- No watchdog window change (5 min is correct; the fix is upstream auth).
+
+## Execution order (each phase has a stop-and-verify gate before next)
+
+1. Phase 1 — cron auth.
+2. Phase 2 — gazetteer Deccan expansion + targeted resweep.
+3. Phase 2b — evidence backfill (small, optional, can defer).
+4. Phase 6 — landing-page counter polish (pure frontend, parallel-safe).
+5. Phase 3 — OG cron.
+6. Phase 4 — term enrichment cron.
+7. Phase 5 — context snapshot cron.
+8. Phase 7 — gazetteer candidate funnel (table + admin UI).
+
+Phases 1, 6 are the smallest and most foundational. Phase 7 is the strategic one — it's the answer to "how do we stop being limited by gazetteer coverage forever" and turns a one-shot expansion into a continuous, admin-curated growth loop.
