@@ -1,191 +1,142 @@
-# Intelligence-loop stabilization — revised plan (v2)
+## Why 4 articles still show 0 pins (verified — NOT a bug)
 
-This plan is additive, surgical, and reversible. Every phase has an explicit verification gate and rollback. Nothing alters the running product surface except by adding data or correcting silent failures.
+Edge logs (`backfill-article-pins`, today 08:01 UTC) + DB confirm the 4 zero-pin articles are conceptual / methodology pieces with no real-world place names:
 
-## Status snapshot — 2026-05-31
-
-- ✅ **Phase 1 (code path)** — `_shared/auth-gate.ts` now exports `requireAdminOrCron(req, body)`. `backfill-article-pins` uses it. Postgres helper `public._cron_invoke_edge(name, body)` deployed (reads creds from `vault.decrypted_secrets`, posts cron triple). **Blocked on user**: needs `SUPABASE_SERVICE_ROLE_KEY` and `CRON_SECRET` rows in `vault.secrets` before flipping `cron.job.command` for `srangam-pin-enrichment-nightly`.
-- ✅ **Phase 2** — gazetteer expanded by 15 Vijayanagara / medieval-Deccan rows (Vijayanagara, Tungabhadra, Anegundi, Penukonda, Chandragiri, Talikota, Krishna, Raichur, Bidar, Vijayapura, Warangal, Devagiri, Kalyana, Vitthala Temple, Kampili) + Hampi variants widened. Targeted re-sweep deferred until Phase 1 cron is live, OR can be triggered manually from the admin Geography panel.
-- ✅ **Phase 6** — Home.tsx "Recent Research" counter collapsed into single honest line ("Showing 6 of 46 published articles · Last updated …") when no filter is active and pagination is in preview mode. Old two-line layout preserved when a filter is active.
-- ✅ **Phase 7 (data layer)** — `srangam_gazetteer_candidates` table created (admin-only RLS, UNIQUE normalized_name, GIN index on source_articles). `backfill-article-pins` now writes every unresolved AI place name to this queue (Loop A). Admin curation UI (Loop B) deferred to a follow-up commit.
-- ⏳ **Phase 3 (OG nightly cron)** — pending Phase 1 vault seeding.
-- ⏳ **Phase 4 (term enrichment nightly cron)** — pending Phase 1 vault seeding.
-- ⏳ **Phase 5 (context snapshot nightly cron + first CX.3 row)** — pending Phase 1 vault seeding.
-
-### What you need to do to unblock cron phases
-
-Run this in Cloud → Database → SQL Editor (substituting the real values, which you can copy from Project Settings → API and from the existing edge-function secret you just added):
-
-```sql
-SELECT vault.create_secret('eyJhbGciOi...<service_role_jwt>...', 'SUPABASE_SERVICE_ROLE_KEY');
-SELECT vault.create_secret('<the same CRON_SECRET you entered earlier>', 'CRON_SECRET');
+```
+expanded-r-si-genealogies-bhrgu-…          completion_tokens: 1        (Vedic ṛṣi lineages — abstract)
+i-genealogies-in-vedic-tradition-…         completion_tokens: 73       (same topic, duplicate)
+jyotish-methodology                        completion_tokens: 1–28     (mathematical astronomy)
+sanskrit-translator-methodology            completion_tokens: 71–194   (NLP pipeline)
 ```
 
-Once those two rows exist, I'll rewrite `cron.job.command` for the existing nightly entry and add the OG / term / context entries — all in a single follow-up turn, all calling `public._cron_invoke_edge('<function>', '<body>'::jsonb)`.
+All four re-invocations returned `inserted:0, pins_a:0, pins_b:0, pins_c:0` with valid AI completions. The Gemini NER correctly produced empty / near-empty sets. Gazetteer resolution is working — there is nothing geographic to resolve. Per Core invariant *"AI for curation, not expansion; never relax confidence gates as a workaround"*, the correct outcome is exactly what we see.
 
+Single surgical UI fix only (Phase 6b below). Zero backend change.
 
+## Verified Phase 1–7 status (corrected from prior turn)
 
-## What changed since v1 (your three new questions)
+| Phase | Status | Evidence (this session) |
+|---|---|---|
+| **1 — Cron auth helper** | **Partial.** `requireAdminOrCron` deployed in `_shared/auth-gate.ts`; `public._cron_invoke_edge` exists (`pg_proc` check). **But** `cron.job.srangam-pin-enrichment-nightly.command` still posts with **anon JWT** → today's 03:00 UTC run failed with `watchdog: no heartbeat` (`srangam_admin_jobs` row, `processed:0`). | Direct `SELECT command FROM cron.job`. |
+| **2 — Deccan gazetteer +15** | Done. | Admin tile: `WITH PINS 43 / 47`. |
+| **2b — Evidence backfill** | Not started. | `srangam_article_evidence` sparse. |
+| **3 — OG nightly cron** | Not started. `generate-article-og` still uses `requireAdmin` (line 315). | grep + cron list. |
+| **4 — Term enrichment cron** | Not started. `batch-enrich-terms` still uses `requireAdmin` (line 15). | grep + cron list. |
+| **5 — CX.3 snapshot cron** | Not started. `context-save-drive` still uses `requireAdmin` (line 28). Last snapshot `2026-05-29 CX.1`. | grep + cron list. |
+| **6 — Counter polish** | Done. | `Home.tsx`. |
+| **7 — Candidate funnel** | **More complete than I thought.** Table `srangam_gazetteer_candidates` exists with correct RLS. **Harvesting IS wired** — `recordGazetteerCandidates()` lives at `backfill-article-pins/index.ts:165–230` and fires after gazetteer resolve. The table is empty (0 rows) only because every article processed today either (a) resolved all AI hits cleanly to existing gazetteer rows, or (b) returned empty NER (the 4 conceptual pieces). Admin UI **not** built. | grep `srangam_gazetteer_candidates` shows insert path; `SELECT COUNT(*)` = 0. |
 
-1. **"Stray 6 articles" on the landing page.** Confirmed in `src/pages/Home.tsx`: the "Recent Research" section renders both `{totalArticles} Published Articles` (large saffron number) and below it `{filteredArticles.length} {t('filters.articlesShowing')}` — and `filteredArticles` is hard-capped at `limit: 6` until "Show all" is clicked (line 42). So the "6 articles" text is real, not a stray: it's the secondary "showing 6 of 46" counter, just sitting on its own line so the cropped screenshot makes it look orphaned. This is a UI polish item, **not a data bug** — folded into Phase 6 below.
+## Plan — surgical completions, in this order
 
-2. **"Should we cron AI enhancement with very-high-confidence-only?"** Yes — **but only because the existing C-tier path is already curation-bounded.** A pin is only ever written when the AI's NER output resolves back into `srangam_gazetteer.name_variants` (a row that *we* curated). The AI is a recall booster, not an ontology source. So adding AI to the nightly cron is safe **if** we (a) keep `chunk_size = 1` (Phase G1 invariant), (b) keep the 20-article/night cost cap (Phase Z), (c) write pins only when gazetteer-resolved, (d) raise the per-pin confidence floor that gets persisted. This is consistent with the Core invariant "AI for curation, not expansion."
+Additive, reversible, gated. Touches only admin console + one cosmetic badge.
 
-3. **"How do we enhance the gazetteer in a sensible, grounded way?"** A two-loop curation funnel, no auto-insert. New phase 7 below.
+### Phase 1-FIX — Rewire nightly cron command (the unblock)
 
-## Ground truth from this session (unchanged from v1 audit)
+Single `cron.alter_job` to replace the anon-bearer POST with `public._cron_invoke_edge('backfill-article-pins', body)`. The helper already reads `SUPABASE_SERVICE_ROLE_KEY` + `CRON_SECRET` from `vault.decrypted_secrets` and sets the triple condition (`Authorization: Bearer <service_role>` + `x-cron-secret` + `_cron:true` in body) that `requireAdminOrCron` checks.
 
-- This article (`breached-from-within`, alias `breached-within-internal-fracture`): 1 pin, 0 evidence rows, 0 bibliography rows. Sources & Pins panel is reporting truthfully.
-- Gazetteer = 112 rows. Only one canonical_name (`Aden`) matches inside the body; the rest of the missing pins are the Vijayanagara/Tungabhadra/Deccan cluster that simply isn't in the gazetteer.
-- Two crons exist: `srangam-admin-jobs-watchdog` (working) and `srangam-pin-enrichment-nightly` (broken since launch — uses anon JWT against an `requireAdmin` gate, every nightly run since 2026-05-29 sits at `processed:0, last_error: 'watchdog: no heartbeat'`).
-- No crons exist for OG, term enrichment, or context snapshots. Last context snapshot is `2026-05-29 CX.1` — `CX.2`/`CX.3` columns/code shipped but were never invoked.
-- System-wide pins: 144 B-tier + 6 C-tier + 0 A-tier across 39 / 46 published articles.
+Conceptual new command:
 
-## Phase 1 — Cron auth fix (unblocks everything)
-
-Add to `supabase/functions/_shared/auth-gate.ts`:
-
-```text
-requireAdminOrCron(req): GateResult
-  if Authorization == "Bearer ${SUPABASE_SERVICE_ROLE_KEY}"
-    AND header "x-cron-secret" == Deno.env("CRON_SECRET")
-    AND body._cron === true
-    → return { isAdmin: true, fromCron: true }
-  else
-    → delegate to existing requireAdmin (unchanged for the admin UI)
+```
+DO $$
+DECLARE v_job_id uuid;
+BEGIN
+  v_job_id := public.enqueue_pin_backfill_sweep_job(20, 1);
+  IF v_job_id IS NOT NULL THEN
+    PERFORM public._cron_invoke_edge(
+      'backfill-article-pins',
+      jsonb_build_object(
+        'job_id',        v_job_id::text,
+        'all_published', true,
+        'only_zero_pin', true,
+        'limit',         20,
+        'offset',        0,
+        'chunk_size',    1
+      )
+    );
+  END IF;
+END $$;
 ```
 
-Switch `backfill-article-pins` (and the three new cron targets in Phases 3–5) from `requireAdmin` → `requireAdminOrCron`. Cron command rewritten to:
+`chunk_size` forced to **1** per Phase G1 invariant (AI on).
 
-```text
-Authorization: Bearer <service_role>
-x-cron-secret: <CRON_SECRET>
-body: { ..., _cron: true }
-```
+**Pre-flight check:** confirm `vault` actually has `SUPABASE_SERVICE_ROLE_KEY` and `CRON_SECRET` rows; if not, surface that to the user before altering cron — do not silently fail.
 
-Three reasons this is safe:
-- Service-role is already accessible to anyone with DB access to `cron.job` (same as today's anon-key leak).
-- The triple-condition (bearer + header + body flag) means a leaked anon key from a network log cannot trigger the cron path.
-- Admin UI continues to go through the user-JWT branch — no privilege change for end users.
+**Verification gate:** `cron.schedule('pin-cron-smoke', '* * * * *', …)` for one minute → expect a `srangam_admin_jobs` row with `created_by IS NULL`, `processed > 0`, `status='succeeded'`, no watchdog message. Drop the smoke job immediately after.
 
-Add `CRON_SECRET` via the secrets tool (single secret, project-wide).
+**Rollback:** `cron.alter_job` back to the old anon-bearer command (kept verbatim in the migration comment).
 
-**Verification gate:** manually `pg_cron.schedule` a one-shot copy of the new entry for the next minute; expect a `srangam_admin_jobs` row with `created_by IS NULL`, `processed > 0`, `status = 'succeeded'`. Then remove the one-shot.
+### Phase 7-FIX — Admin Candidate Review UI (harvesting already works)
 
-**Rollback:** revert the cron command to the old anon-key form; helper change is dormant once nothing calls it.
+No edge function change. New page only.
 
-## Phase 2 — Restore pin coverage on sparse articles (incl. this one)
+1. `/admin/gazetteer/candidates` — sortable list (occurrences DESC, source_articles count DESC, first_seen_at ASC). Columns: normalized_name · raw_name · occurrences · first article · status · actions.
+2. Three actions per row:
+   - **Promote** → modal pre-filled by a new admin-only edge function `gazetteer-variant-suggest` (Gemini, returns suggested `feature_type`, `era_tags`, IAST/ASCII/Devanagari/historic variants). Admin reviews → `INSERT … ON CONFLICT (canonical_name) DO NOTHING` per Phase G3 → candidate flipped to `approved` with `promoted_gazetteer_id` backlink.
+   - **Reject** → status='rejected' + `review_notes`.
+   - **Merge** → adds `raw_name` to chosen gazetteer row's `name_variants` (append-only, dedup), candidate marked `merged`.
+3. No auto-promote. Honors *"AI for curation, not expansion."*
 
-Curated gazetteer migration for the Vijayanagara / medieval Deccan cluster missing today:
-Vijayanagara, Hampi (already in, verify variants), Tungabhadra, Anegundi, Penukonda, Chandragiri, Talikota, Krishna (river), Raichur Doab, Bidar, Bijapur/Vijayapura, Warangal, Devagiri/Daulatabad, Kalyana, Hampi-Vitthala, Kampili. Each row: `canonical_name`, `name_variants` (IAST + ASCII + Devanagari + historic exonym), `feature_type` from the frozen vocabulary, `era_tags = ['medieval']`. Migration uses `ON CONFLICT (canonical_name) DO NOTHING` per Phase G3.
+**Verification gate:** after Phase 1-FIX's first cron run hits any article with unresolved names, ≥1 candidate appears; promoting it produces a new gazetteer row and the next sweep picks it up automatically.
 
-Then a one-shot admin run of `backfill-article-pins` scoped to: this article's id + the 7 currently zero-pin published articles (`only_zero_pin: true`, AI on, chunk_size 1).
+### Phase 3 — OG nightly cron (03:30 UTC, cap 5)
 
-**Verification gate:**
-- `SELECT count(*) FROM srangam_article_pins WHERE article_id='c00947ce-...'` returns ≥ 5.
-- `with_pins` rises from 39/46 toward ≥ 44/46.
-- Per-confidence counts show new C-tier (and any latent A-tier from evidence backfill in Phase 2b below).
+1. Switch `generate-article-og` from `requireAdmin` → `requireAdminOrCron`.
+2. Add `only_missing` + `limit` query support if not present (re-read first — do not assume).
+3. `cron.schedule('srangam-og-backfill-nightly', '30 3 * * *', _cron_invoke_edge('generate-article-og', {only_missing:true, limit:5}))`.
 
-**Rollback:** the gazetteer migration is additive (no DELETE — Phase G3 forbids). Generated pins are idempotent; a re-run with `skip_ai:true` will not duplicate.
+**Verification gate:** `MISSING OG` trends toward 0; `srangam_admin_jobs` row of `kind='og_generate' AND created_by IS NULL AND status='succeeded'` appears.
 
-## Phase 2b — Evidence backfill (small, optional, same release)
+### Phase 4 — Term enrichment cron (04:00 UTC, cap 10)
 
-`srangam_article_evidence` is empty for this article and most others (6/46 have rows). A-tier pins (the highest-confidence layer) can only emerge from evidence rows. Add a single admin-triggered pass of `backfill-bibliography`-style evidence extraction restricted to articles with structured "Evidence" headings in their markdown. Cost-cap to 5 articles for the verification run. This is the only way A-tier ever populates and is the foundation for the "structured evidence rows" badge in Phase 2 we shipped earlier.
+1. Re-read `batch-enrich-terms` + `enrich-cultural-term` for the actual "stale" field set — do not fabricate columns.
+2. Switch `batch-enrich-terms` to `requireAdminOrCron`.
+3. `cron.schedule('srangam-term-enrichment-nightly', '0 4 * * *', _cron_invoke_edge('batch-enrich-terms', {only_stale:true, limit:10}))`.
 
-**Verification gate:** at least one published article transitions from 0 → ≥1 evidence rows, and the Sources & Pins panel's `Evidence` tab on that article shows real rows instead of the truthful empty state.
+**Verification gate:** job succeeds; 3 spot-checked terms show new field values vs. previous (via `srangam_event_log` diff).
 
-## Phase 3 — OG image nightly cron
+### Phase 5 — CX.3 snapshot cron (04:30 UTC)
 
-`srangam-og-backfill-nightly` (03:30 UTC, cap 5/night, `_cron:true`).
-Calls `generate-article-og` with `{ only_missing: true, limit: 5 }` (add the filter — additive, no schema change).
-Currently only 2 articles are missing OG, so this loop self-empties in a day or two and then sits idle.
+1. Switch `context-save-drive` to `requireAdminOrCron`.
+2. `cron.schedule('srangam-context-snapshot-nightly', '30 4 * * *', _cron_invoke_edge('context-save-drive', {}))`.
 
-**Verification gate:** `published AND og_image_url IS NULL` trends to 0; new `srangam_admin_jobs` row of `kind='og_generate'` succeeds.
+**Verification gate:** new row has `stats_detail->>'generated_with'='CX.3'` AND `identity_sets IS NOT NULL`; next `context-diff-generator` upgrades from `count_only` → `identity` per CX.3 precedence. Frozen `≤2026-05-29` snapshots untouched.
 
-## Phase 4 — Cultural-term enrichment nightly cron
+### Phase 6b — Honest admin counter (frontend-only)
 
-`srangam-term-enrichment-nightly` (04:00 UTC, cap 10 terms/night).
-Calls `batch-enrich-terms` with `{ only_stale: true, limit: 10 }`. "Stale" = missing canonical fields (`etymology`, `iast`, `scriptural_refs` — exact field list deferred until `enrich-cultural-term`'s schema is re-read at implementation time so we don't fabricate columns).
+In `src/pages/admin/GeographyMedia.tsx`, under the `WITH PINS 43 / 47` tile, render a small muted subtitle: `4 conceptual articles · no places to resolve`. Computed inline: zero-pin AND (latest log event of `pin_complete` for that article shows `completion_tokens ≤ N`) — but since we don't query logs from the client, a simpler honest signal: `zero-pin AND content body has no gazetteer-resolvable substring after 2+ runs`. Practical implementation: derive the "4 conceptual" count from `published_count − with_pins_count` and label as `conceptual` only when these articles also appear in a small admin-curated allow-list stored in a tiny new constant (or a JSONB column on `srangam_articles.tags = […, 'conceptual:true']`). Decide between the two during build (likely the tag route — additive, queryable, surfaces in CMS).
 
-**Verification gate:** nightly job row succeeds; spot-check 3 enriched terms vs. their previous state via `srangam_event_log`.
+**Verification gate:** subtitle renders at desktop + 360px mobile; no console errors; admin tile no longer reads as backlog.
 
-## Phase 5 — Context snapshot nightly cron + first CX.3 write
+### Phase 2b — Evidence backfill (deferred)
 
-`srangam-context-snapshot-nightly` (04:30 UTC).
-Calls `context-save-drive` with `{ _cron: true }`. Code already stamps `generated_with='CX.3'` and populates `identity_sets`.
+Defer until Phases 1-FIX, 3, 4, 5 are green for 48 h. Unchanged from prior plan.
 
-**Verification gate:** first new row has `stats_detail->>'generated_with' = 'CX.3'` AND `identity_sets IS NOT NULL`. `context-diff-generator` next run upgrades from `count_only` → `identity` per the existing three-tier precedence invariant. Frozen `≤2026-05-29` snapshots are not touched.
+## Out of scope (Core invariants, will not violate)
 
-## Phase 6 — UI polish for the landing-page counter (small, frontend-only)
-
-In `src/pages/Home.tsx` collapse the two separate count lines into one of two forms depending on filter state:
-
-- No filter active and not expanded: `"Showing 6 of 46 published articles · Last updated May 2026"` (single line).
-- Filter active or expanded: `"46 published articles · Last updated May 2026"` above, `"6 articles match Theme X"` below.
-
-This kills the "stray 6 articles" appearance without changing any pagination logic.
-
-**Verification gate:** visual check at desktop + 360px mobile, plus the existing prose-overflow tests must still pass.
-
-## Phase 7 — Continuous, grounded gazetteer growth (the key strategic addition)
-
-Curation funnel, never auto-insert. Two loops:
-
-**Loop A — Candidate harvesting (passive, free).** `backfill-article-pins` already calls AI NER and discards every name that doesn't resolve to a gazetteer row. Instead of discarding, write those unresolved names to a new table:
-
-```text
-srangam_gazetteer_candidates (
-  id, normalized_name, raw_name,
-  first_seen_article_id, first_seen_at,
-  occurrences int default 1,
-  source_articles uuid[],       -- distinct article_ids
-  ai_provider text, ai_model text,
-  status text default 'pending', -- pending|approved|rejected|merged
-  reviewed_by uuid, reviewed_at, review_notes,
-  PRIMARY KEY (id),
-  UNIQUE (normalized_name)
-)
--- on conflict: occurrences = occurrences + 1, source_articles |= [article_id]
-```
-
-RLS: admin-only read + write. service_role full. No anon.
-
-**Loop B — Admin curation panel (active, manual).** New tab in `/admin` showing the candidate queue, sorted by `occurrences DESC, array_length(source_articles) DESC`. Each row offers:
-
-- "Promote to gazetteer" → opens a modal pre-filled by an admin-only edge function `gazetteer-variant-suggest` that proposes `feature_type`, `era_tags`, IAST, ASCII, Devanagari, and historic exonyms via Gemini, **for admin review**. On save, inserts into `srangam_gazetteer` with `ON CONFLICT (canonical_name) DO NOTHING` and marks the candidate `approved` with `gazetteer_id` backlink.
-- "Reject" → marks `rejected` with reason (e.g. "personal name", "modern company", "duplicate of …").
-- "Merge into existing" → adds the raw_name to that gazetteer row's `name_variants` and marks `merged`.
-
-Cost: zero ambient (Loop A is a side-effect of existing AI calls). Admin time is the only spend.
-
-**Auto-promote threshold? Recommendation: NO.** Honoring the Core invariant "AI for curation, not expansion" and the Phase G3 rule "If 'withPins/N' stays low after a clean backfill, always expand the gazetteer further — never broaden AI prompts or relax confidence gates as a workaround," candidates only enter `srangam_gazetteer` through an admin click. The candidate queue gives us a constantly-replenished, ranked work list so curation has somewhere obvious to start.
-
-**Verification gate:** after the next AI-on cron run completes, `srangam_gazetteer_candidates` has ≥ N new rows. Admin UI lists them with frequency. A test promotion of one candidate produces a new gazetteer row, the candidate flips to `approved`, and the next pin sweep picks the new row up automatically.
-
-## Documentation updates (every phase ships these together)
-
-- `.lovable/plan.md` — phase status with date stamps.
-- `docs/SCALABILITY_ROADMAP.md` — add the four nightly crons under "Automated intelligence loops" with cost caps and ownership.
-- `docs/architecture/SOURCES_PINS_SYSTEM.md` — document candidate funnel and the gazetteer-only pin invariant.
-- `docs/CONTEXT_MANAGEMENT_GUIDE.md` — note that CX.3 snapshots are now nightly.
-- Memory: update `Pin Enrichment Automation` to record the cron-auth fix; new memory `mem://gazetteer/candidate-funnel` describing Loop A/B.
-
-## Out of scope (unchanged)
-
-- No edits to `articleResolver.ts` JSON-source pin path.
+- No widening of AI prompts or relaxing of confidence floors to chase the 4 conceptual articles.
+- No DELETE on gazetteer (Phase G3).
 - No retroactive UPDATE on `≤2026-05-29` CX snapshots (frozen baseline).
-- No widening of AI prompts or confidence gates as a coverage shortcut.
-- No watchdog window change (5 min is correct; the fix is upstream auth).
+- No change to `articleResolver.ts` JSON-source pin path.
+- No edits to `src/integrations/supabase/{client,types}.ts` or `.env`.
+- No re-introduction of the manual-only pin flow (Phase Z invariant).
+- No `chunk_size > 1` when AI is on (Phase G1).
 
-## Execution order (each phase has a stop-and-verify gate before next)
+## Documentation updates (shipped with each phase)
 
-1. Phase 1 — cron auth.
-2. Phase 2 — gazetteer Deccan expansion + targeted resweep.
-3. Phase 2b — evidence backfill (small, optional, can defer).
-4. Phase 6 — landing-page counter polish (pure frontend, parallel-safe).
-5. Phase 3 — OG cron.
-6. Phase 4 — term enrichment cron.
-7. Phase 5 — context snapshot cron.
-8. Phase 7 — gazetteer candidate funnel (table + admin UI).
+- `.lovable/plan.md` — phase status + datestamps.
+- `docs/SCALABILITY_ROADMAP.md` — four nightly crons under "Automated intelligence loops" with cost caps ($/night).
+- `docs/architecture/SOURCES_PINS_SYSTEM.md` — candidate funnel admin UI + the explicit "conceptual articles" definition with the 4-name allow-list rationale.
+- `docs/CONTEXT_MANAGEMENT_GUIDE.md` — CX.3 snapshots now nightly.
+- Memory: update `mem://phase-z/pin-enrichment-automation` to record the cron-command fix (vault-secret dependency, helper indirection, smoke-test recipe).
 
-Phases 1, 6 are the smallest and most foundational. Phase 7 is the strategic one — it's the answer to "how do we stop being limited by gazetteer coverage forever" and turns a one-shot expansion into a continuous, admin-curated growth loop.
+## Execution order
+
+1. Phase 1-FIX — cron command rewrite (unblocks every other cron).
+2. Phase 3 — OG cron (zero-risk; smallest function surface).
+3. Phase 4 — term enrichment cron.
+4. Phase 5 — CX.3 snapshot cron.
+5. Phase 7-FIX — candidate review UI.
+6. Phase 6b — admin counter clarification.
+7. Phase 2b — evidence backfill (only after 48 h of green crons).
+
+Approve to proceed with **Phase 1-FIX** first (single `cron.alter_job` + pre-flight vault check + smoke schedule).
