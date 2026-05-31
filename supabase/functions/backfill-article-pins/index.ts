@@ -233,10 +233,34 @@ async function backfillOne(
           latency_ms: result.latency_ms,
           cost_usd_estimate: Number(result.cost_usd_estimate.toFixed(6)),
         };
+        const unresolved: string[] = [];
         for (const p of result.places) {
           const id = matchAiName(p.name, gazIdx.index);
-          if (id && !pinMap.has(id)) pinMap.set(id, 'C');
+          if (id) {
+            if (!pinMap.has(id)) pinMap.set(id, 'C');
+          } else if (p.name && p.name.trim().length >= 2) {
+            unresolved.push(p.name.trim());
+          }
         }
+        // Phase 7 — Gazetteer candidate funnel: persist unresolved AI place
+        // names for admin review (Loop A). Never auto-promotes; only enqueues.
+        if (unresolved.length > 0) {
+          try {
+            await recordGazetteerCandidates(
+              supabase,
+              article.id,
+              unresolved,
+              result.provider,
+              result.model,
+            );
+          } catch (e) {
+            console.log(JSON.stringify({
+              evt: 'pin_stage', stage: 'pin_candidates', ok: false,
+              article_id: article.id, error: serializeErr(e), ts: new Date().toISOString(),
+            }));
+          }
+        }
+
       });
     } catch (e) {
       if (e instanceof NoAIProviderError) {
