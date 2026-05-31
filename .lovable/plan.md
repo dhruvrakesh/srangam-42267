@@ -2,6 +2,29 @@
 
 This plan is additive, surgical, and reversible. Every phase has an explicit verification gate and rollback. Nothing alters the running product surface except by adding data or correcting silent failures.
 
+## Status snapshot — 2026-05-31
+
+- ✅ **Phase 1 (code path)** — `_shared/auth-gate.ts` now exports `requireAdminOrCron(req, body)`. `backfill-article-pins` uses it. Postgres helper `public._cron_invoke_edge(name, body)` deployed (reads creds from `vault.decrypted_secrets`, posts cron triple). **Blocked on user**: needs `SUPABASE_SERVICE_ROLE_KEY` and `CRON_SECRET` rows in `vault.secrets` before flipping `cron.job.command` for `srangam-pin-enrichment-nightly`.
+- ✅ **Phase 2** — gazetteer expanded by 15 Vijayanagara / medieval-Deccan rows (Vijayanagara, Tungabhadra, Anegundi, Penukonda, Chandragiri, Talikota, Krishna, Raichur, Bidar, Vijayapura, Warangal, Devagiri, Kalyana, Vitthala Temple, Kampili) + Hampi variants widened. Targeted re-sweep deferred until Phase 1 cron is live, OR can be triggered manually from the admin Geography panel.
+- ✅ **Phase 6** — Home.tsx "Recent Research" counter collapsed into single honest line ("Showing 6 of 46 published articles · Last updated …") when no filter is active and pagination is in preview mode. Old two-line layout preserved when a filter is active.
+- ✅ **Phase 7 (data layer)** — `srangam_gazetteer_candidates` table created (admin-only RLS, UNIQUE normalized_name, GIN index on source_articles). `backfill-article-pins` now writes every unresolved AI place name to this queue (Loop A). Admin curation UI (Loop B) deferred to a follow-up commit.
+- ⏳ **Phase 3 (OG nightly cron)** — pending Phase 1 vault seeding.
+- ⏳ **Phase 4 (term enrichment nightly cron)** — pending Phase 1 vault seeding.
+- ⏳ **Phase 5 (context snapshot nightly cron + first CX.3 row)** — pending Phase 1 vault seeding.
+
+### What you need to do to unblock cron phases
+
+Run this in Cloud → Database → SQL Editor (substituting the real values, which you can copy from Project Settings → API and from the existing edge-function secret you just added):
+
+```sql
+SELECT vault.create_secret('eyJhbGciOi...<service_role_jwt>...', 'SUPABASE_SERVICE_ROLE_KEY');
+SELECT vault.create_secret('<the same CRON_SECRET you entered earlier>', 'CRON_SECRET');
+```
+
+Once those two rows exist, I'll rewrite `cron.job.command` for the existing nightly entry and add the OG / term / context entries — all in a single follow-up turn, all calling `public._cron_invoke_edge('<function>', '<body>'::jsonb)`.
+
+
+
 ## What changed since v1 (your three new questions)
 
 1. **"Stray 6 articles" on the landing page.** Confirmed in `src/pages/Home.tsx`: the "Recent Research" section renders both `{totalArticles} Published Articles` (large saffron number) and below it `{filteredArticles.length} {t('filters.articlesShowing')}` — and `filteredArticles` is hard-capped at `limit: 6` until "Show all" is clicked (line 42). So the "6 articles" text is real, not a stray: it's the secondary "showing 6 of 46" counter, just sitting on its own line so the cropped screenshot makes it look orphaned. This is a UI polish item, **not a data bug** — folded into Phase 6 below.
