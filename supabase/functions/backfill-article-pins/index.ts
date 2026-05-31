@@ -349,9 +349,10 @@ Deno.serve(async (req) => {
       });
     }
   } else {
-    const gate = await requireAdmin(req);
+    const gate = await requireAdminOrCron(req, body as unknown as Record<string, unknown>);
     if (gate.error) return gate.error;
   }
+
 
   try {
     const skipAi = body.skip_ai === true;
