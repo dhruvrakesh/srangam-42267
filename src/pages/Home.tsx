@@ -132,7 +132,12 @@ export default function Home() {
             src="/images/hero_indian-ocean_aerial_21x9_v1.png"
             alt="सागर - The sacred waters of the Indian Ocean connecting ancient civilizations"
             className="w-full h-full object-cover"
+            width={2100}
+            height={900}
+            fetchPriority="high"
+            decoding="async"
           />
+
           <div className="absolute inset-0 bg-gradient-to-b from-indigo-dharma/20 via-saffron/10 to-charcoal-om/80" />
           <div className="absolute inset-0 lotus-gradient opacity-20" />
         </div>
