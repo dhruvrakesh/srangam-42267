@@ -94,39 +94,34 @@ export async function requireAdmin(req: Request): Promise<GateResult> {
 }
 
 /**
- * Phase Z2 — Cron-or-admin gate.
+ * Phase 1-FIX (2026-05-31): Two-condition cron auth.
  *
- * Cron path (pg_cron-originated):
- *   - Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY>
- *   - x-cron-secret: <CRON_SECRET>   (project env var)
- *   - body MUST contain `_cron: true`
+ * A request is treated as a trusted cron caller if BOTH:
+ *   - x-cron-secret header equals env CRON_SECRET, AND
+ *   - body contains `_cron: true`
  *
- * All three conditions must match; otherwise fall back to the user-JWT
- * admin path so the admin UI is unchanged.
+ * Rationale: the Supabase Edge gateway already requires a valid project JWT
+ * (anon is sufficient) in `apikey`/`Authorization`. That JWT is publishable
+ * and is NOT an authorization claim. The real boundary is `CRON_SECRET`,
+ * which only ever transits pg_cron -> edge function (never client logs).
+ * Defense-in-depth is preserved by requiring the `_cron:true` body marker
+ * so a leaked CRON_SECRET can't drive non-cron bodies.
  *
- * The body flag means a leaked service-role key + secret from a network
- * log can't accidentally drive a cron-only function with a non-cron body
- * shape.
+ * The user-JWT admin path (`requireAdmin`) is unchanged — admin UI behaves
+ * identically.
  */
 export async function requireAdminOrCron(
   req: Request,
   body: Record<string, unknown> | null | undefined,
 ): Promise<GateResult> {
-  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
   const cronSecret = Deno.env.get('CRON_SECRET') ?? '';
-  const auth = req.headers.get('Authorization') ?? req.headers.get('authorization') ?? '';
   const headerSecret = req.headers.get('x-cron-secret') ?? '';
   const bodyFlag = !!(body && (body as { _cron?: boolean })._cron === true);
 
-  if (
-    serviceKey &&
-    cronSecret &&
-    auth === `Bearer ${serviceKey}` &&
-    headerSecret === cronSecret &&
-    bodyFlag
-  ) {
+  if (cronSecret && headerSecret === cronSecret && bodyFlag) {
     return { isAdmin: true, fromCron: true };
   }
 
   return requireAdmin(req);
 }
+
