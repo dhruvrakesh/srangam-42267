@@ -1,6 +1,12 @@
 
 # Corrected Path Forward — Evidence-Led, Surgical, Reversible
 
+> **Phase H status: SHIPPED 2026-06-01.** Migration applied; both nightly enqueuer helpers (`enqueue_og_nightly_job`, `enqueue_term_enrichment_nightly`) created with hard caps and REVOKEd from PUBLIC/anon/authenticated (GRANT only to postgres + service_role). Cron commands for jobid 6 and 7 rewritten via `cron.alter_job`. Pre-flight check confirmed real candidates (1 OG, 2 term). jobid 8 self-cleared — `srangam_context_snapshots` has a fresh row from last night; the NULL `net._http_response` was a pg_net collection-window artifact for the >60s reply, not a failure. Verification will run automatically at 03:30 / 03:45 UTC tomorrow. See `docs/CRON_OPS_PLAYBOOK.md`.
+>
+> **Next:** Phase O (Ops dashboard + `get_recent_cron_runs` RPC). Awaiting user approval to proceed.
+
+
+
 ## What the real ground truth says (verified just now, not guessed)
 
 I queried `net._http_response` (the actual HTTP outcomes of cron's POSTs). The four nightly jobs reported `pg_cron status = succeeded` last night, but **only because pg_cron's "succeeded" means the SQL `DO` block ran — not that the edge function did real work**. The actual HTTP responses:
