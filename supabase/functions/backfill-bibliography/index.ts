@@ -337,7 +337,13 @@ Deno.serve(async (req) => {
               system: AI_BIBLIO_SYSTEM,
               user: buildAiBiblioPrompt(source.markdown_content),
               timeoutMs: AI_FALLBACK_TIMEOUT_MS,
+              telemetry: {
+                function_name: 'backfill-bibliography',
+                article_id: source.article_id ?? null,
+                purpose: 'bibliography_extract',
+              },
             });
+
             stats.aiCostUsd += aiResult.cost_usd_estimate ?? 0;
             const parsed = aiResult.parsed as { references?: AiBiblioRef[] } | null;
             const aiRefs = Array.isArray(parsed?.references) ? parsed!.references : [];
