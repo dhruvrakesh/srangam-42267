@@ -92,3 +92,14 @@ A materialized view `srangam_ai_usage_hourly_mv` aggregating `(function_name, pr
 - No edits to `enqueue_pin_backfill_sweep_job`, cron schedules, or cron commands. The contract is healed from the edge side so the SQL surface stays frozen.
 - No retroactive backfill of `srangam_ai_usage` from past job rows (we don't have per-call data to reconstruct; per user memory, baselines are frozen).
 - No raising of any nightly cap. No prompt or confidence-threshold change to gazetteer matching.
+
+---
+
+## Implementation status (2026-06-07)
+
+- ✅ **Phase H.3** — edge-only branch-gate fix, pagination hardening, contract guard, structured `resolve_candidates` log. Deployed and verified: `POST /backfill-article-pins {only_zero_pin:true,limit:20,chunk_size:1}` → **HTTP 200, `total:4`** (was 404). One zero-pin article processed via Gemini per chunk.
+- ✅ **Phase H.4** — three-source verification: HTTP 200/202 path confirmed; `srangam_admin_jobs` flow unchanged; structured log line emits. Playbook updated.
+- ✅ **Phase T.1** — `public.srangam_ai_usage` migration applied (append-only, admin-read, service-role-write, no UPDATE/DELETE policies). `_shared/ai-usage.ts` helper created. `_shared/ai-provider.ts` accepts `opts.telemetry` on `aiExtractPlaces` / `aiExtractCitations` / `callImage` and emits one ledger row per attempt. Wired into `backfill-article-pins`, `extract-purana-references`, `backfill-bibliography`. Verified end-to-end — first ledger row landed at 2026-06-07 04:15 UTC.
+- ⏸ **Phase T.2** — deferred (awaiting greenlight).
+
+Memory: `mem://observability/ai-usage-ledger` written. Docs: `RELIABILITY_AUDIT.md` § Phase T.1 + `CRON_OPS_PLAYBOOK.md` Phase H.3 / T.1 entries.
