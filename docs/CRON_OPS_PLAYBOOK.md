@@ -64,7 +64,7 @@ ORDER BY j.jobid;
 ## Phase H.2 change log (2026-06-06)
 
 - **`_cron_invoke_edge`** — was using the pg_net default 5s timeout, silently truncating every AI-backed nightly call. Now passes `timeout_milliseconds := 120000` explicitly. Pin / OG / term-enrichment enqueuers self-pump via `EdgeRuntime.waitUntil` so the 120s only needs to cover the initial 202 ack.
-- **jobid 2** (`srangam-pin-enrichment-nightly`) — root-cause: `enqueue_pin_backfill_sweep_job` inserted an `srangam_admin_jobs` row but **never called `_cron_invoke_edge`**, so the edge function was never invoked and the watchdog reaped the orphan row every night with `last_error = "watchdog: no heartbeat"`. Fixed by adding the missing POST (mirroring `enqueue_og_nightly_job` / `enqueue_term_enrichment_nightly`). Verify next morning: `srangam_admin_jobs` row for `kind='pin_backfill'` should advance `heartbeat_at` and finish `status='succeeded'` with `processed > 0`.
+- **jobid 2 follow-up** (discovered during H.2 smoke test 2026-06-07 03:57 UTC) — the enqueuer now correctly POSTs, but `backfill-article-pins` responds `404 {"error":"no articles matched"}` even when 4 zero-pin published articles exist (verified via direct query). The function's candidate filter inside the `only_zero_pin + limit + chunk_size` path disagrees with the helper's `NOT EXISTS` check. **Separate ticket**, does not block H.2 mechanical heal. Investigate in `supabase/functions/backfill-article-pins/index.ts` and align with the `enqueue_pin_backfill_sweep_job` SQL filter.
 
 ## Phase P change log (2026-06-06) — Puranic idempotency
 
