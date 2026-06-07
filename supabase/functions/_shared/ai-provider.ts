@@ -27,9 +27,12 @@
  *   }
  */
 
+import { logAIUsage, classifyAIError, type AIUsageTelemetry } from './ai-usage.ts';
+
 // Phase Z.1 (2026-05-29): raised from 15s → 60s. Pin-extraction logs showed
 // repeated `pin_ai` timeouts on 45–80 KB articles producing inserted:0.
 const DEFAULT_TIMEOUT_MS = 60_000;
+
 
 // Public list-price snapshot, USD per 1M tokens (text models)
 // or USD per generated image (image models). Update here only — no caller
@@ -72,7 +75,10 @@ export interface AIExtractResult {
 interface CallOpts {
   signal?: AbortSignal;
   timeoutMs?: number;
+  /** Phase T.1 — optional telemetry context for the AI usage ledger. */
+  telemetry?: AIUsageTelemetry;
 }
+
 
 const SYSTEM_PROMPT =
   'You extract historical place names from scholarly text. ' +
@@ -287,16 +293,48 @@ export async function aiExtractPlaces(
   // Truncate defensively — keeps token cost bounded for very long articles.
   const input = text.length > 60_000 ? text.slice(0, 60_000) : text;
 
+  const tel = opts.telemetry;
+  const logResult = (r: AIExtractResult) => {
+    if (!tel) return;
+    void logAIUsage({
+      ...tel,
+      provider: r.provider,
+      model: r.model,
+      prompt_tokens: r.prompt_tokens,
+      completion_tokens: r.completion_tokens,
+      cost_usd_estimate: r.cost_usd_estimate,
+      latency_ms: r.latency_ms,
+      ok: true,
+      meta: { places_count: r.places.length, input_chars: input.length },
+    });
+  };
+  const logFailure = (provider: 'gemini' | 'openai', model: string, e: unknown) => {
+    if (!tel) return;
+    void logAIUsage({
+      ...tel,
+      provider, model,
+      ok: false,
+      error_code: classifyAIError(e),
+      meta: { error_message: (e instanceof Error ? e.message : String(e)).slice(0, 300) },
+    });
+  };
+
   // 1. Gemini primary, with one retry on transient failure.
   if (gemini) {
     try {
-      return await callGemini(input, gemini, opts);
+      const r = await callGemini(input, gemini, opts);
+      logResult(r);
+      return r;
     } catch (e) {
+      logFailure('gemini', 'gemini-2.5-flash', e);
       if (isTransient(e)) {
         try {
           await new Promise((r) => setTimeout(r, 800));
-          return await callGemini(input, gemini, opts);
+          const r2 = await callGemini(input, gemini, opts);
+          logResult(r2);
+          return r2;
         } catch (e2) {
+          logFailure('gemini', 'gemini-2.5-flash', e2);
           if (!openai) throw e2;
           // fall through to OpenAI
         }
@@ -307,11 +345,21 @@ export async function aiExtractPlaces(
   }
 
   // 2. OpenAI fallback.
-  if (openai) return await callOpenAI(input, openai, opts);
+  if (openai) {
+    try {
+      const r = await callOpenAI(input, openai, opts);
+      logResult(r);
+      return r;
+    } catch (e) {
+      logFailure('openai', 'gpt-4o-mini', e);
+      throw e;
+    }
+  }
 
   // Should be unreachable.
   throw new NoAIProviderError();
 }
+
 
 // =============================================================================
 // Phase X.5 — Generic JSON extraction (Gemini-first, OpenAI fallback)
@@ -436,15 +484,47 @@ export async function aiExtractCitations(opts: JsonCallOpts): Promise<AIJsonResu
   const user = opts.user.length > maxChars ? opts.user.slice(0, maxChars) : opts.user;
   const call = { ...opts, user };
 
+  const tel = opts.telemetry;
+  const logResult = (r: AIJsonResult) => {
+    if (!tel) return;
+    void logAIUsage({
+      ...tel,
+      provider: r.provider,
+      model: r.model,
+      prompt_tokens: r.prompt_tokens,
+      completion_tokens: r.completion_tokens,
+      cost_usd_estimate: r.cost_usd_estimate,
+      latency_ms: r.latency_ms,
+      ok: true,
+      meta: { user_chars: user.length, parsed_ok: r.parsed !== null },
+    });
+  };
+  const logFailure = (provider: 'gemini' | 'openai', model: string, e: unknown) => {
+    if (!tel) return;
+    void logAIUsage({
+      ...tel,
+      provider, model,
+      ok: false,
+      error_code: classifyAIError(e),
+      meta: { error_message: (e instanceof Error ? e.message : String(e)).slice(0, 300) },
+    });
+  };
+
   if (gemini) {
     try {
-      return await callGeminiJson(gemini, call);
+      const r = await callGeminiJson(gemini, call);
+      logResult(r);
+      return r;
     } catch (e) {
+      logFailure('gemini', 'gemini-2.5-flash', e);
       if (isTransient(e)) {
         try {
           await new Promise((r) => setTimeout(r, 800));
-          return await callGeminiJson(gemini, call);
+          const r2 = await callGeminiJson(gemini, call);
+          logResult(r2);
+          return r2;
         } catch (e2) {
+          logFailure('gemini', 'gemini-2.5-flash', e2);
           if (!openai) throw e2;
         }
       } else if (!openai) {
@@ -452,9 +532,19 @@ export async function aiExtractCitations(opts: JsonCallOpts): Promise<AIJsonResu
       }
     }
   }
-  if (openai) return await callOpenAIJson(openai, call);
+  if (openai) {
+    try {
+      const r = await callOpenAIJson(openai, call);
+      logResult(r);
+      return r;
+    } catch (e) {
+      logFailure('openai', 'gpt-4o-mini', e);
+      throw e;
+    }
+  }
   throw new NoAIProviderError();
 }
+
 
 
 export interface AIImageResult {
@@ -471,7 +561,10 @@ export interface ImageOpts {
   /** 'landscape' (1792x1024 / 16:9) or 'square'. Default landscape. */
   shape?: 'landscape' | 'square';
   timeoutMs?: number;
+  /** Phase T.1 — optional telemetry context for the AI usage ledger. */
+  telemetry?: AIUsageTelemetry;
 }
+
 
 function decodeB64ToBytes(b64: string): Uint8Array {
   const bin = atob(b64);
@@ -585,14 +678,49 @@ export async function callImage(
   const openai = Deno.env.get('OPENAI_API_KEY');
   if (!gemini && !openai) throw new NoAIProviderError();
 
+  const tel = opts.telemetry;
+  const logResult = (r: AIImageResult) => {
+    if (!tel) return;
+    void logAIUsage({
+      ...tel,
+      provider: r.provider,
+      model: r.model,
+      cost_usd_estimate: r.cost_usd_estimate,
+      latency_ms: r.latency_ms,
+      ok: true,
+      meta: { mime: r.mime, bytes: r.bytes.byteLength, shape: opts.shape ?? 'landscape' },
+    });
+  };
+  const logFailure = (provider: 'gemini' | 'openai', model: string, e: unknown) => {
+    if (!tel) return;
+    void logAIUsage({
+      ...tel,
+      provider, model,
+      ok: false,
+      error_code: classifyAIError(e),
+      meta: { error_message: (e instanceof Error ? e.message : String(e)).slice(0, 300) },
+    });
+  };
+
   if (gemini) {
     try {
-      return await callGeminiImage(prompt, gemini, opts);
+      const r = await callGeminiImage(prompt, gemini, opts);
+      logResult(r);
+      return r;
     } catch (e) {
       console.warn('[ai-provider] gemini-image failed:', e instanceof Error ? e.message : e);
+      logFailure('gemini', 'gemini-2.5-flash-image', e);
       if (!openai) throw e;
       // fall through to OpenAI
     }
   }
-  return await callOpenAIImage(prompt, openai!, opts);
+  try {
+    const r = await callOpenAIImage(prompt, openai!, opts);
+    logResult(r);
+    return r;
+  } catch (e) {
+    logFailure('openai', 'gpt-image-1', e);
+    throw e;
+  }
 }
+

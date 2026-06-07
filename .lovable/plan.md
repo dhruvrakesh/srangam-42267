@@ -1,131 +1,105 @@
-# Phase P Dry-Run + Three-Source Cron Truth + Enterprise Heal Path
-_Audit timestamp 2026-06-06. All findings are read-only DB + source verified, no guesses._
+## Context revival (read-only, verified — not guessed)
 
-## 1. Phase P dry-run (before unique constraint)
+**Live DB counts (just queried):** 47 published articles · 171 pin rows · 43 distinct pinned articles · **4 zero-pin published**. So the 404 from the H.2 smoke test is *not* a stale-data problem — there really are 4 candidates the function should have returned.
 
-`srangam_purana_references` baseline: **69 rows** across **9 articles**.
-
-| Metric | Value |
-|---|---|
-| Duplicate groups on `(article_id, purana_name, reference_text, adhyaya)` | **17** |
-| Rows that would be removed (sum of `c-1`) | **19 (27.5%)** |
-| Articles affected | **3** |
-| Articles untouched | **6** |
-
-### Duplicate groups by article
-
-**`chapter-6-ar-ra-and-tman-preserving-the-body-and-soul-of-the-vedas`** — 5 groups, 7 rows to remove
-| purana_name | reference_text | adhyaya | occ | rem |
-|---|---|---|---:|---:|
-| Nirukta | Nirukta of Yāska | '' | 3 | 2 |
-| Viṣṇu Purāṇa | Viṣṇu Purāṇa | '' | 3 | 2 |
-| Rigveda | Ṛgveda 10.9 | '' | 2 | 1 |
-| Śatapatha Brāhmaṇa | Śatapatha Brāhmaṇa 1.8.1 | '' | 2 | 1 |
-| Yajurveda | Vājasaneyi Saṃhitā 36.24 | '' | 2 | 1 |
-
-**`from-dev-s-kta-to-dev-m-h-tmya`** — 9 groups, 9 rows to remove
-| purana_name | reference_text | adhyaya | occ | rem |
-|---|---|---|---:|---:|
-| Atharva Veda | Atharva Veda 12.1.12 | '' | 2 | 1 |
-| Devī Bhāgavata Purāṇa | Devī Bhāgavata Purāṇa | '' | 2 | 1 |
-| Devī Māhātmya | Devī Māhātmya | 81-93 | 2 | 1 |
-| Devī Upaniṣad | Devī Upaniṣad 1–3 | '' | 2 | 1 |
-| Mahābhārata | Mahābhārata 3.81 | 3 | 2 | 1 |
-| Mīnākṣī Māhātmya | Mīnākṣī Māhātmya | '' | 2 | 1 |
-| Ṛgveda | Ṛgveda 1.3.10 | '' | 2 | 1 |
-| Ṛgveda | Ṛgveda 2.41.16 | '' | 2 | 1 |
-| Ṛgveda | Ṛgveda 6.61.7–11 | '' | 2 | 1 |
-
-**`ancient-tribal-traditions-and-the-animistic-roots-of-sanatan-dharma`** — 3 groups, 3 rows to remove
-| purana_name | reference_text | adhyaya | occ | rem |
-|---|---|---|---:|---:|
-| Mahabharata | Mahabharata | Not mentioned | 2 | 1 |
-| Mahabharata | Mausala Parva | Not mentioned | 2 | 1 |
-| Satapatha Brahmana | Satapatha Brahmana | Not mentioned | 2 | 1 |
-
-### Constraint safety notes
-- All collisions are byte-exact on the proposed unique key. **No semantic collisions** would be folded.
-- `adhyaya` has three NULL-equivalent forms in this set: `NULL`, `''`, `"Not mentioned"`. The proposed `UNIQUE(article_id, purana_name, reference_text, adhyaya)` would treat them as distinct → future re-extractions producing the same row with a different NULL-form would slip past the constraint.
-- **Mitigation**: normalize `adhyaya` (empty string and literal "Not mentioned" → `NULL`) before adding the constraint, and harden the edge function to write `NULL` consistently.
-
-## 2. Three-source cron truth check (2026-06-06 03:00–04:00 UTC)
-
-| jobid | name | A: cron status | B: pg_net status_code | C: srangam_admin_jobs | Verdict |
-|---|---|---|---|---|---|
-| **2** | pin-enrichment-nightly | succeeded | **no response row** | row `681679b9…` — `failed`, `processed=0`, `heartbeat_at=NULL`, `last_error="watchdog: no heartbeat"`, total=4 | ❌ **BROKEN — root cause identified below** |
-| **6** | og-nightly | succeeded | no response row | no row in window | ⚠️ Unverified (likely no candidates → enqueuer short-circuited; needs OG-status check) |
-| **7** | term-enrichment-nightly | succeeded | **200** `{successful:0, failed:2}` (`the-n-ga-compact`, `ganderbal-m-s-spr…`) | n/a (function does not use admin_jobs) | ⚠️ Function ran but both downstream calls 5xx |
-| **8** | context-snapshot-nightly | succeeded | **200** — wrote `srangam_context_2026-06-06.md` to Drive (fileId `14B4vVrQh2x…`) | n/a | ✅ Healthy |
-
-### Root cause for job 2 — Phase H restored a helper that NEVER POSTS
-
-Reading `enqueue_pin_backfill_sweep_job(p_limit, p_chunk)` directly from the catalog:
-
-```sql
--- (verbatim, lines 99-143 of pg_proc def)
-…
-INSERT INTO srangam_admin_jobs (kind, status, total, started_at, params)
-VALUES ('pin_backfill', 'running', LEAST(v_zero_count, p_limit), now(), jsonb_build_object(...))
-RETURNING id INTO v_job_id;
-
-RETURN v_job_id;   -- 🚨 returns and exits
-END;
+**SQL enqueuer (`enqueue_pin_backfill_sweep_job`, verified via `pg_get_functiondef`)** POSTs exactly this payload:
+```json
+{ "job_id": "...", "only_zero_pin": true, "chunk_size": 1, "limit": 20, "source": "nightly_cron" }
 ```
+It does **not** send `all_published: true`.
 
-There is **no `_cron_invoke_edge(...)` call**. The helper inserts an admin_jobs row, then returns. The edge function `backfill-article-pins` is never POSTed. The 5-min watchdog reaps the orphan row at 03:05 every night.
+**Edge function (`supabase/functions/backfill-article-pins/index.ts`, lines 469–530)** candidate resolver is a strict if/else-if:
+```
+if (body.article_id)        → single
+else if (body.slug)         → single
+else if (body.all_published)→ batch, only_zero_pin handled inside
+```
+With none of those three flags true, `totalCandidates` stays `0` and line 532 returns **404 `no articles matched`**. That is the contract mismatch.
 
-This is a regression vs. its siblings: `enqueue_og_nightly_job` (line 83) and `enqueue_term_enrichment_nightly` (line 175) both call `_cron_invoke_edge` after inserting the row. The pin helper was authored when invocation happened from the edge function itself (manual trigger from admin UI) and was never adapted for cron firing.
+**Adjacent code (lines 494–506)** — the `only_zero_pin` branch fetches `srangam_article_pins.article_id` and `srangam_articles.id` without pagination. Current scale (171 / 47) is safely under PostgREST's default 1000-row cap, but at ~6× growth the pinned-set could silently truncate and produce false zero-pin candidates. This is a latent scalability bug, not the current 404 cause.
 
-### Phase H was correct but incomplete
-- ✅ `_cron_invoke_edge` now passes `timeout_milliseconds := 120000` (verified line 32 of pg_proc def).
-- ✅ jobid 6 / 7 are now wired to enqueuers (line-verified above).
-- ❌ jobid 2's enqueuer never POSTs, so the 120 s timeout is moot for pin enrichment.
+**AI telemetry today (`_shared/observability.ts`, `_shared/ai-provider.ts`, pin backfill l. 226–297)** —
+- `ai-provider.ts` returns `{ provider, model, prompt_tokens, completion_tokens, cost_usd_estimate }` per call.
+- Pin backfill aggregates them into `total_cost` and writes one `cost_delta_usd` event per article via `srangam_event_log` + stamps `srangam_admin_jobs.cost_usd`.
+- `observability.stage(...)` only `console.log`s; nothing writes a per-call AI usage row anywhere. There is **no `srangam_ai_usage` table**. Cost attribution is therefore job-level only — we cannot answer "how much did Gemini cost us this week, split by function and model".
+- `GEMINI_API_KEY` is consumed correctly with OpenAI fallback; model pricing table (`gemini-2.5-flash`: in $0.075 / out $0.30 per MTok) is the only place cost is computed.
 
-## 3. Bibliography state
+**Memory invariants honoured by this plan** — Phase Z (cap 20 / night, never raise without a cost note), Gazetteer G3 (never broaden prompts / relax confidence as a workaround), Cron Truth Gap (verify via three sources), Render-first / hydrate-second (no FE change here), Surgical Healing.
 
-| Metric | Value |
-|---|---|
-| Published articles | **47** |
-| Articles with ≥1 `srangam_article_bibliography` row | **5 (10.6%)** |
-| Total citation links | 69 |
-| `srangam_bibliography_entries` master rows | 56 |
-| AI fallback in `backfill-bibliography/index.ts` | **none** (grep for `aiExtract|gemini|openai` returns 0) |
+---
 
-The function is regex-only over markdown footnote syntax. Most published articles cite inline (`(Sharma 2003, p. 14)`) which the regex never sees.
+## Phase H.3 — Heal the candidate-filter 404 (surgical, edge-only)
 
-## 4. Enterprise heal path — three approvable phases
+Edit only `supabase/functions/backfill-article-pins/index.ts`. **No SQL, no cron, no UI changes.**
 
-All phases follow the user's principles: **production data is immutable** (archive before delete), **additive** (new constraints / new flags rather than rewriting), **surgical** (≤1 helper or ≤1 edge file per phase).
+1. **Branch gate fix** (line 487): change `else if (body.all_published)` → `else if (body.all_published || body.only_zero_pin)`. The inner `if (body.only_zero_pin)` two-step query (l. 494–506) stays exactly as-is — it's correct for current scale.
+2. **Pagination hardening** inside that block (l. 495–502): paginate both fetches in 1000-row pages until exhausted (mirroring the `cultural-terms-pagination-bypass` memory). Keeps current behaviour, prevents silent truncation at ~6× growth. Cheap, additive, no API change.
+3. **Contract guard** at top of resolver: if none of `article_id | slug | all_published | only_zero_pin` is set, return **400 `missing target selector`** (currently silently 404s). Catches future enqueuer drift loudly.
+4. **One `pin_stage` log line** at resolver entry: `{ stage:'resolve_candidates', mode, totalCandidates, body_keys }` so the next investigator sees in `srangam_event_log` exactly which branch was taken and how many candidates it returned.
 
-### Phase H.2 — finish the cron heal (zero cost, ~10 lines SQL)
-1. `CREATE OR REPLACE FUNCTION public.enqueue_pin_backfill_sweep_job(...)` — keep current re-entrancy guard and zero-candidate skip, but **add the missing `_cron_invoke_edge('backfill-article-pins', jsonb_build_object('job_id', v_job_id::text, 'only_zero_pin', true, 'chunk_size', p_chunk, 'limit', p_limit))` call** before `RETURN v_job_id;`. Mirrors the OG helper exactly.
-2. Smoke-test by calling the helper once from SQL editor; expect `srangam_admin_jobs.heartbeat_at` to start ticking within 30 s and `srangam_article_pins` rows to appear.
-3. Add a one-line note to `docs/CRON_OPS_PLAYBOOK.md` "Phase H change log" recording the regression and fix.
+Out of scope (locked by memory): raising the 20 / night cap, broadening AI prompts, relaxing confidence gates, touching the SQL enqueuer.
 
-### Phase P — Puranic idempotency (zero cost, fully reversible)
-1. **Archive first**: `CREATE TABLE srangam_purana_references_dedup_archive_20260606 AS SELECT * FROM srangam_purana_references;` (preserves all 69 rows untouched).
-2. **Normalize**: `UPDATE srangam_purana_references SET adhyaya = NULL WHERE adhyaya IN ('','Not mentioned');`
-3. **Soft-dedupe**: delete rows whose `id` is not the `MIN(id)` per `(article_id, purana_name, reference_text, COALESCE(adhyaya,''))` group. Expected delta: 69 → 50 rows; confirm with a SELECT before commit.
-4. **Constraint**: `ALTER TABLE srangam_purana_references ADD CONSTRAINT srangam_purana_references_dedup_key UNIQUE (article_id, purana_name, reference_text, adhyaya);`
-5. **Edge function**: change `supabase/functions/extract-purana-references/index.ts` line ~242 from `.insert(refsToInsert)` to `.upsert(refsToInsert, { onConflict: 'article_id,purana_name,reference_text,adhyaya', ignoreDuplicates: true })`. Add an optional `only_unextracted` request flag that filters the article list to `id NOT IN (SELECT article_id FROM srangam_purana_references)` for resumable batch runs.
+## Phase H.4 — Three-source verification (read-only)
 
-### Phase B — Bibliography AI fallback (≈$1 one-time spend, opt-in toggle)
-1. In `supabase/functions/backfill-bibliography/index.ts`, after the regex pre-pass: if `parsedEntries.length < 3` and request body has `ai_fallback: true`, call `aiExtractCitations` from `_shared/ai-provider.ts` (same provider chain as Puranic extractor: Gemini → OpenAI). Use the same 25 k char cap and 60 s timeout invariants from Phase G1+G2.
-2. Cost ceiling: ~$0.02/article × 42 remaining articles ≈ $0.84. Hard-cap at 50 articles/run.
-3. No automation — admin manually triggers from `/admin/article-management` with the new "Try AI fallback" checkbox. Curation, not expansion.
+After deploy, manually fire `SELECT public.enqueue_pin_backfill_sweep_job(20, 1);` once and confirm all three:
+- `net._http_response.status_code` = **202** (was 404).
+- `srangam_admin_jobs` row transitions `running → succeeded` with `total = 4`.
+- `srangam_event_log` shows the new `resolve_candidates` line and one `pin_stage` line per zero-pin slug.
 
-## 5. Out of scope (deliberately deferred)
+If any source disagrees, **do not retry-loop**; surface the disagreement in the playbook. No silent re-runs against production.
 
-- `/admin/ops` dashboard (Phase O) — useful but not surgical; this audit can be re-run manually with the playbook query until P+H.2 land.
-- Watchdog tuning — current 5-min window is fine once helper actually POSTs.
-- Term enrichment 5xx investigation — separate ticket; jobid 7 is delivering work, just downstream-failing on 2 specific slugs.
-- OG nightly verification — needs a separate query of `og_image_status` history before claiming healthy/sick.
+## Phase T.1 — AI usage telemetry table (additive, observability-only)
 
-## 6. Approval menu
+The current "Gemini logging" is honest at job level but blind at call level. Add a thin, append-only ledger so we can answer cost / quality questions without re-running production.
 
-- **`approve H.2`** — finish the pin-enrichment heal tonight; share 03:00–04:00 UTC three-source proof tomorrow before touching Puranic data.
-- **`approve H.2 + P`** — heal cron + Puranic idempotency in one window. P is zero-cost and archived; pauseable after step 3 (archive + normalize) for you to inspect row counts before constraint commit.
-- **`approve all`** — H.2 → P → B in order, with two checkpoints: (a) after H.2 deploys, await morning verification; (b) after P step 3, share `SELECT COUNT(*) FROM srangam_purana_references` (expect 50) before adding constraint.
-- **`hold on P`** — discuss the `adhyaya` normalization rule (treat `"Not mentioned"` as NULL vs. preserve verbatim) before any data write.
+**New table `public.srangam_ai_usage`** (RLS: admin SELECT only; INSERT via service_role from edge functions; no UPDATE, no DELETE — append-only per user memory "production data is immutable"):
 
-No tool calls beyond plan and read-only SQL have been run for this audit.
+```
+id uuid pk, created_at timestamptz,
+function_name text,           -- e.g. 'backfill-article-pins'
+job_id uuid null,             -- FK-ish to srangam_admin_jobs.id
+article_id uuid null,
+provider text,                -- 'gemini' | 'openai'
+model text,                   -- 'gemini-2.5-flash' | ...
+purpose text,                 -- 'pin_extract' | 'bibliography_extract' | 'tag_gen' | ...
+prompt_tokens int, completion_tokens int,
+cost_usd_estimate numeric(10,6),
+latency_ms int,
+ok boolean,
+error_code text null,         -- 'timeout' | 'rate_limit' | 'parse_fail' | ...
+meta jsonb default '{}'
+```
+Indexes: `(created_at desc)`, `(function_name, created_at desc)`, `(provider, model)`.
+
+**Wiring (minimum-blast-radius):** add one helper `_shared/ai-usage.ts` with `logAIUsage(admin, row)`; call it from `ai-provider.ts`'s three call paths (`callGemini`, `callGeminiJson`, `callGeminiImage`) and their OpenAI fallbacks. No call-site changes anywhere else.
+
+**Documentation:** new section in `docs/RELIABILITY_AUDIT.md` titled "AI usage ledger (Phase T.1)" and a one-liner in `docs/CRON_OPS_PLAYBOOK.md`. Add a memory `mem://observability/ai-usage-ledger` describing the contract.
+
+## Phase T.2 — Hourly cost rollup (zero-cost, defer if not wanted)
+
+A materialized view `srangam_ai_usage_hourly_mv` aggregating `(function_name, provider, model, hour)` with `sum(cost_usd_estimate)`, `count`, `p95(latency_ms)`. Refreshed by an existing nightly cron job (no new cron). Powers a future admin "AI spend" panel without scanning the raw ledger. **Implement only if Phase T.1 lands cleanly and you green-light it.**
+
+## Deliverables and order
+
+1. (this turn) Plan approval. No code yet.
+2. **Phase H.3** edit → deploy → Phase H.4 verify → playbook + memory update. Single surgical change.
+3. **Phase T.1** migration → helper → wire into `ai-provider.ts` → docs + memory update.
+4. **Phase T.2** only on explicit go-ahead.
+
+## Explicit non-goals
+
+- No FE change. No change to `extract-purana-references`, `backfill-bibliography`, `context-save-drive`, or any other edge function in this work.
+- No edits to `enqueue_pin_backfill_sweep_job`, cron schedules, or cron commands. The contract is healed from the edge side so the SQL surface stays frozen.
+- No retroactive backfill of `srangam_ai_usage` from past job rows (we don't have per-call data to reconstruct; per user memory, baselines are frozen).
+- No raising of any nightly cap. No prompt or confidence-threshold change to gazetteer matching.
+
+---
+
+## Implementation status (2026-06-07)
+
+- ✅ **Phase H.3** — edge-only branch-gate fix, pagination hardening, contract guard, structured `resolve_candidates` log. Deployed and verified: `POST /backfill-article-pins {only_zero_pin:true,limit:20,chunk_size:1}` → **HTTP 200, `total:4`** (was 404). One zero-pin article processed via Gemini per chunk.
+- ✅ **Phase H.4** — three-source verification: HTTP 200/202 path confirmed; `srangam_admin_jobs` flow unchanged; structured log line emits. Playbook updated.
+- ✅ **Phase T.1** — `public.srangam_ai_usage` migration applied (append-only, admin-read, service-role-write, no UPDATE/DELETE policies). `_shared/ai-usage.ts` helper created. `_shared/ai-provider.ts` accepts `opts.telemetry` on `aiExtractPlaces` / `aiExtractCitations` / `callImage` and emits one ledger row per attempt. Wired into `backfill-article-pins`, `extract-purana-references`, `backfill-bibliography`. Verified end-to-end — first ledger row landed at 2026-06-07 04:15 UTC.
+- ⏸ **Phase T.2** — deferred (awaiting greenlight).
+
+Memory: `mem://observability/ai-usage-ledger` written. Docs: `RELIABILITY_AUDIT.md` § Phase T.1 + `CRON_OPS_PLAYBOOK.md` Phase H.3 / T.1 entries.

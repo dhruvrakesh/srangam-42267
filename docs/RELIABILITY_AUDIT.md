@@ -1020,3 +1020,35 @@ bun run test                                       # Vitest (28 specs)
 bunx playwright test --project=chromium-mobile     # mobile sweep
 bunx playwright test --project=chromium-desktop    # desktop sweep
 ```
+
+---
+
+## Phase T.1 — AI usage ledger (2026-06-07)
+
+**Problem before T.1.** AI cost was visible only as a per-job aggregate on `srangam_admin_jobs.cost_usd` and as transient console lines from `_shared/observability.ts`. We could not answer:
+- How much did Gemini cost us this week, split by function and model?
+- Which `purpose` has the highest p95 latency?
+- Which error class (`timeout`, `rate_limit`, `parse_fail`) dominates failures?
+
+**Solution.** Append-only ledger table `public.srangam_ai_usage` (admin SELECT only, service_role INSERT only — no UPDATE/DELETE policies, per the immutable-production-data invariant). Schema:
+
+```
+function_name text, job_id uuid?, article_id uuid?, provider text, model text,
+purpose text?, prompt_tokens int?, completion_tokens int?, cost_usd_estimate numeric(10,6),
+latency_ms int?, ok bool, error_code text?, meta jsonb
+```
+
+Indexes: `(created_at desc)`, `(function_name, created_at desc)`, `(provider, model)`, partial on `(job_id) WHERE job_id IS NOT NULL`.
+
+**Wiring.** `supabase/functions/_shared/ai-usage.ts` exports `logAIUsage(row)` — fire-and-forget, never throws. The three public entry points in `_shared/ai-provider.ts` (`aiExtractPlaces`, `aiExtractCitations`, `callImage`) accept `opts.telemetry: { function_name, job_id?, article_id?, purpose? }` and emit one row per attempt (success or failure, including retries and provider fallback hops — accurate cost accounting).
+
+**Adopters at Phase T.1 cut.**
+- `backfill-article-pins` → purpose `pin_extract`
+- `extract-purana-references` → purpose `purana_extract`
+- `backfill-bibliography` → purpose `bibliography_extract`
+
+Other AI callers (image generation via `callImage`, future tag-gen) can adopt incrementally by passing a `telemetry` object — no provider-layer changes required.
+
+**Verified 2026-06-07 04:15 UTC** end-to-end: pin-backfill smoke shot produced one ledger row with `provider=gemini, model=gemini-2.5-flash, purpose=pin_extract, prompt_tokens=6488, cost=$0.000487, latency_ms=26441, ok=true`.
+
+**Phase T.2 (deferred).** A nightly `srangam_ai_usage_hourly_mv` rollup for an admin "AI spend" panel. Not implemented; greenlight required.

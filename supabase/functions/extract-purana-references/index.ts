@@ -209,7 +209,14 @@ async function processArticle(
           system: SYSTEM_PROMPT,
           user: buildUserPrompt(chunk),
           timeoutMs: CHUNK_TIMEOUTS_MS[attempt],
+          telemetry: {
+            function_name: 'extract-purana-references',
+            job_id: jobId ?? null,
+            article_id: article.id,
+            purpose: 'purana_extract',
+          },
         });
+
         totalCost += result.cost_usd_estimate;
         const parsed = result.parsed as { references?: PuranaReference[] } | null;
         if (parsed?.references && Array.isArray(parsed.references)) {
