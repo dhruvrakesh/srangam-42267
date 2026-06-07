@@ -307,8 +307,12 @@ Deno.serve(async (req) => {
       bibliographyEntriesCreated: 0,
       articleBibliographyLinksCreated: 0,
       evidenceEntriesCreated: 0,
+      aiFallbackArticles: 0,
+      aiFallbackEntries: 0,
+      aiCostUsd: 0,
       errors: [] as string[],
     };
+    let aiBudgetRemaining = AI_FALLBACK_HARD_CAP_ARTICLES;
     
     for (const source of sources || []) {
       try {
