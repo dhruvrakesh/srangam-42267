@@ -484,7 +484,10 @@ Deno.serve(async (req) => {
         .limit(1);
       if (data && data.length > 0) articles = [data[0] as any];
       totalCandidates = articles.length;
-    } else if (body.all_published) {
+    } else if (body.all_published || body.only_zero_pin) {
+      // Phase H.3 (2026-06-07) — treat `only_zero_pin: true` as self-sufficient
+      // so the nightly enqueuer (which omits `all_published`) reaches this branch
+      // instead of falling through to the silent 404 below.
       const limit = Math.min(Math.max(body.limit ?? 25, 1), 200);
 
       // Phase Z.3 — when `only_zero_pin` is set, restrict to published articles
@@ -492,17 +495,33 @@ Deno.serve(async (req) => {
       // PostgREST limitations on NOT-EXISTS joins.
       let zeroPinIds: string[] | null = null;
       if (body.only_zero_pin) {
-        const { data: pinned } = await admin
-          .from('srangam_article_pins')
-          .select('article_id');
-        const pinnedSet = new Set((pinned ?? []).map((r: any) => r.article_id));
-        const { data: pubIds } = await admin
-          .from('srangam_articles')
-          .select('id')
-          .eq('status', 'published');
-        zeroPinIds = (pubIds ?? [])
-          .map((r: any) => r.id)
-          .filter((id: string) => !pinnedSet.has(id));
+        // Phase H.3 — paginate both fetches (PostgREST caps at 1000 rows by
+        // default). Current scale is 171 / 47 but pagination keeps the filter
+        // honest as the corpus grows.
+        const PAGE = 1000;
+        const pinnedArticleIds = new Set<string>();
+        for (let from = 0; ; from += PAGE) {
+          const { data: pinPage } = await admin
+            .from('srangam_article_pins')
+            .select('article_id')
+            .range(from, from + PAGE - 1);
+          const rows = pinPage ?? [];
+          for (const r of rows) pinnedArticleIds.add((r as any).article_id);
+          if (rows.length < PAGE) break;
+        }
+        const publishedIds: string[] = [];
+        for (let from = 0; ; from += PAGE) {
+          const { data: pubPage } = await admin
+            .from('srangam_articles')
+            .select('id')
+            .eq('status', 'published')
+            .order('updated_at', { ascending: false })
+            .range(from, from + PAGE - 1);
+          const rows = pubPage ?? [];
+          for (const r of rows) publishedIds.push((r as any).id);
+          if (rows.length < PAGE) break;
+        }
+        zeroPinIds = publishedIds.filter((id) => !pinnedArticleIds.has(id));
         totalCandidates = Math.min(zeroPinIds.length, limit);
       } else {
         const { count } = await admin
@@ -527,13 +546,45 @@ Deno.serve(async (req) => {
         const { data } = await query;
         articles = (data ?? []) as any;
       }
+    } else {
+      // Phase H.3 — contract guard. Previously this fell through to a 404
+      // "no articles matched", which masked enqueuer drift (e.g. an SQL helper
+      // forgetting to set `all_published` / `only_zero_pin`). Fail loudly.
+      return new Response(
+        JSON.stringify({
+          error: 'missing target selector',
+          hint: 'set one of: article_id | slug | all_published | only_zero_pin',
+          received_keys: Object.keys(body ?? {}),
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
     }
+
+    // Phase H.3 — single structured log line so investigators can see exactly
+    // which branch ran and how many candidates it produced (mirrors the
+    // observability shape in `_shared/observability.ts`).
+    console.log(JSON.stringify({
+      evt: 'pin_stage',
+      stage: 'resolve_candidates',
+      ok: true,
+      ts: new Date().toISOString(),
+      mode: body.article_id ? 'article_id'
+        : body.slug ? 'slug'
+        : body.only_zero_pin ? 'only_zero_pin'
+        : 'all_published',
+      total_candidates: totalCandidates,
+      chunk_offset: chunkOffset,
+      chunk_size: chunkSize,
+      body_keys: Object.keys(body ?? {}),
+      job_id: body.job_id ?? null,
+    }));
 
     if (totalCandidates === 0) {
       return new Response(JSON.stringify({ error: 'no articles matched' }), {
         status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
 
     // ---- Chunked-job cancellation check -----------------------------------
     if (body.job_id && (await isCancelled(admin, body.job_id))) {
