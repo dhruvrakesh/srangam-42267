@@ -561,7 +561,10 @@ export interface ImageOpts {
   /** 'landscape' (1792x1024 / 16:9) or 'square'. Default landscape. */
   shape?: 'landscape' | 'square';
   timeoutMs?: number;
+  /** Phase T.1 — optional telemetry context for the AI usage ledger. */
+  telemetry?: AIUsageTelemetry;
 }
+
 
 function decodeB64ToBytes(b64: string): Uint8Array {
   const bin = atob(b64);
