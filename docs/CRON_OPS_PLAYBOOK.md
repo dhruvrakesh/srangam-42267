@@ -41,7 +41,7 @@ ORDER BY j.jobid;
 | jobid | name | schedule | command (post-Phase H) | cap |
 |---|---|---|---|---|
 | 1 | srangam-admin-jobs-watchdog | `*/5 * * * *` | (built-in watchdog) | n/a |
-| 2 | srangam-pin-enrichment-nightly | `0 3 * * *` | `_cron_invoke_edge('backfill-article-pins', {chunk_size:1, only_zero_pin:true, limit:20})` | 20 / night |
+| 2 | srangam-pin-enrichment-nightly | `0 3 * * *` | `enqueue_pin_backfill_sweep_job(20, 1)` (Phase H.2) | 20 / night |
 | 6 | srangam-og-nightly | `30 3 * * *` | `enqueue_og_nightly_job(1)` | 5 / night (helper hard-caps) |
 | 7 | srangam-term-enrichment-nightly | `45 3 * * *` | `enqueue_term_enrichment_nightly(5)` | 10 / night (helper hard-caps) |
 | 8 | srangam-context-snapshot-nightly | `0 4 * * *` | `_cron_invoke_edge('context-save-drive', {})` | 1 / night |
