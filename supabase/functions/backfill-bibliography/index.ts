@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 import { Marked } from 'https://esm.sh/marked@11.1.1';
 import { classifyError } from '../_shared/error-response.ts';
+import { aiExtractCitations, NoAIProviderError } from '../_shared/ai-provider.ts';
 
 import { requireAdmin } from '../_shared/auth-gate.ts';
 const marked = new Marked({ async: false, gfm: true, breaks: false });
@@ -9,6 +10,88 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Phase B (2026-06-06): AI fallback bounds.
+// - Trigger only when regex finds <3 entries (most articles cite inline, not
+//   in a fenced bibliography section, so regex misses them entirely).
+// - Cap user-prompt at 25k chars to stay inside the Gemini/OpenAI sweet spot
+//   and mirror the Puranic extractor's Phase G1 invariant.
+const AI_FALLBACK_THRESHOLD = 3;
+const AI_FALLBACK_MAX_CHARS = 25_000;
+const AI_FALLBACK_TIMEOUT_MS = 60_000;
+const AI_FALLBACK_HARD_CAP_ARTICLES = 50;
+
+const AI_BIBLIO_SYSTEM = (
+  'You are an academic citation extractor specialised in South Asian / Sanskrit ' +
+  'scholarship (MLA9 / Chicago). Return ONLY valid JSON.'
+);
+
+function buildAiBiblioPrompt(text: string): string {
+  return `Scan the following article text and extract EVERY scholarly citation,
+whether it appears in a formal bibliography section, inline parenthetical form
+(e.g. "(Sharma 2003, p. 14)"), or numbered footnote. Skip casual mentions
+without author + year.
+
+Return JSON of this exact shape:
+{
+  "references": [
+    {
+      "authors_raw": "Last, First; Last2, First2",
+      "title": "Work title",
+      "year": 1959,
+      "publisher": "Publisher name if any",
+      "entry_type": "book|article|inscription|manuscript|chapter|web|unknown",
+      "full_citation_mla": "Reconstructed MLA9-style citation string",
+      "is_primary_source": true
+    }
+  ]
+}
+
+Rules:
+- year: 4-digit integer or null
+- authors_raw: semicolon-separated "Last, First" pairs, or null if unknown
+- Deduplicate near-identical entries
+- Omit anything that is clearly NOT a citation (running prose, captions, headings)
+
+TEXT:
+${text.slice(0, ${AI_FALLBACK_MAX_CHARS})}`;
+}
+
+interface AiBiblioRef {
+  authors_raw?: string | null;
+  title?: string | null;
+  year?: number | null;
+  publisher?: string | null;
+  entry_type?: string | null;
+  full_citation_mla?: string | null;
+  is_primary_source?: boolean | null;
+}
+
+function aiRefToEntry(r: AiBiblioRef): BibliographyEntry | null {
+  if (!r.title && !r.full_citation_mla) return null;
+  const authors: { first: string; last: string }[] = [];
+  if (r.authors_raw && typeof r.authors_raw === 'string') {
+    for (const seg of r.authors_raw.split(/;|\band\b/i)) {
+      const parts = seg.split(',').map((s) => s.trim()).filter(Boolean);
+      if (parts.length >= 2) authors.push({ last: parts[0], first: parts[1] });
+      else if (parts.length === 1) authors.push({ last: parts[0], first: '' });
+    }
+  }
+  const lastName = authors[0]?.last?.toLowerCase().replace(/[^a-z]/g, '') || 'unknown';
+  const year = typeof r.year === 'number' && r.year > 0 ? r.year : null;
+  const citation_key = year ? `${lastName}_${year}` : `${lastName}_ai_${Date.now()}_${Math.floor(Math.random() * 1e4)}`;
+  return {
+    citation_key,
+    entry_type: r.entry_type || 'book',
+    authors,
+    title: (r.title || r.full_citation_mla || 'Untitled').slice(0, 500),
+    year,
+    publisher: r.publisher || undefined,
+    full_citation_mla: r.full_citation_mla || `${r.authors_raw ?? ''} ${r.title ?? ''} ${r.year ?? ''}`.trim(),
+    tags: ['ai_extracted'],
+  };
+}
+
 
 /**
  * Parse MLA9 bibliography entry
