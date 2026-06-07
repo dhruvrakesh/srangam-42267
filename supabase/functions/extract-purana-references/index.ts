@@ -54,6 +54,10 @@ interface RequestBody {
   offset?: number;
   chunk_size?: number;
   _pump?: boolean;
+  // Phase P (2026-06-06): when true, batch mode skips articles that already
+  // have ≥1 row in srangam_purana_references — enables safe resume after a
+  // partial run without paying for AI re-extraction.
+  only_unextracted?: boolean;
 }
 
 const SYSTEM_PROMPT =
@@ -263,8 +267,18 @@ async function processArticle(
   }));
 
   if (refsToInsert.length > 0) {
-    const { error } = await supabase.from('srangam_purana_references').insert(refsToInsert);
-    if (error) console.error(`[${article.slug}] insert error:`, error.message);
+    // Phase P (2026-06-06): idempotent write. Unique constraint
+    // srangam_purana_references_dedup_key on
+    // (article_id, purana_name, reference_text, adhyaya) means re-running
+    // the extractor on the same article is now a no-op for already-present
+    // rows, and a partial run can be safely resumed without duplicates.
+    const { error } = await supabase
+      .from('srangam_purana_references')
+      .upsert(refsToInsert, {
+        onConflict: 'article_id,purana_name,reference_text,adhyaya',
+        ignoreDuplicates: true,
+      });
+    if (error) console.error(`[${article.slug}] upsert error:`, error.message);
   }
 
   let high = 0, mid = 0, low = 0;
@@ -367,22 +381,40 @@ serve(async (req) => {
     // with retries), so 2 keeps a comfortable margin before pump reinvoke.
     const chunkSize = Math.min(Math.max(body.chunk_size ?? 2, 1), 5);
 
+    // Phase P (2026-06-06): when only_unextracted is set, exclude any article
+    // that already has a row in srangam_purana_references. This keeps resume
+    // runs cheap and lets nightly sweeps focus on the long tail.
+    let extractedIds: string[] = [];
+    if (body.only_unextracted) {
+      const { data: ext } = await supabase
+        .from('srangam_purana_references')
+        .select('article_id');
+      extractedIds = Array.from(new Set((ext ?? []).map((r: any) => r.article_id as string)));
+    }
+
     // Count once (cheap with count: 'exact', head: true)
-    const { count } = await supabase
+    let countQuery = supabase
       .from('srangam_articles')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'published');
+    if (extractedIds.length > 0) {
+      countQuery = countQuery.not('id', 'in', `(${extractedIds.map((id) => `"${id}"`).join(',')})`);
+    }
+    const { count } = await countQuery;
     const total = count ?? 0;
 
     const sliceEnd = Math.min(chunkOffset + chunkSize, total);
     let articles: any[] = [];
     if (chunkOffset < total) {
-      const { data } = await supabase
+      let listQuery = supabase
         .from('srangam_articles')
         .select('id, slug, content, title')
         .eq('status', 'published')
-        .order('slug', { ascending: true })
-        .range(chunkOffset, sliceEnd - 1);
+        .order('slug', { ascending: true });
+      if (extractedIds.length > 0) {
+        listQuery = listQuery.not('id', 'in', `(${extractedIds.map((id) => `"${id}"`).join(',')})`);
+      }
+      const { data } = await listQuery.range(chunkOffset, sliceEnd - 1);
       articles = data ?? [];
     }
 
@@ -418,6 +450,7 @@ serve(async (req) => {
         job_id: body.job_id,
         offset: nextOffset,
         chunk_size: chunkSize,
+        only_unextracted: body.only_unextracted,
       });
     }
 

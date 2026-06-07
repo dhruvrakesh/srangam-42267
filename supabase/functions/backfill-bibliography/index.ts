@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 import { Marked } from 'https://esm.sh/marked@11.1.1';
 import { classifyError } from '../_shared/error-response.ts';
+import { aiExtractCitations, NoAIProviderError } from '../_shared/ai-provider.ts';
 
 import { requireAdmin } from '../_shared/auth-gate.ts';
 const marked = new Marked({ async: false, gfm: true, breaks: false });
@@ -9,6 +10,88 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Phase B (2026-06-06): AI fallback bounds.
+// - Trigger only when regex finds <3 entries (most articles cite inline, not
+//   in a fenced bibliography section, so regex misses them entirely).
+// - Cap user-prompt at 25k chars to stay inside the Gemini/OpenAI sweet spot
+//   and mirror the Puranic extractor's Phase G1 invariant.
+const AI_FALLBACK_THRESHOLD = 3;
+const AI_FALLBACK_MAX_CHARS = 25_000;
+const AI_FALLBACK_TIMEOUT_MS = 60_000;
+const AI_FALLBACK_HARD_CAP_ARTICLES = 50;
+
+const AI_BIBLIO_SYSTEM = (
+  'You are an academic citation extractor specialised in South Asian / Sanskrit ' +
+  'scholarship (MLA9 / Chicago). Return ONLY valid JSON.'
+);
+
+function buildAiBiblioPrompt(text: string): string {
+  return `Scan the following article text and extract EVERY scholarly citation,
+whether it appears in a formal bibliography section, inline parenthetical form
+(e.g. "(Sharma 2003, p. 14)"), or numbered footnote. Skip casual mentions
+without author + year.
+
+Return JSON of this exact shape:
+{
+  "references": [
+    {
+      "authors_raw": "Last, First; Last2, First2",
+      "title": "Work title",
+      "year": 1959,
+      "publisher": "Publisher name if any",
+      "entry_type": "book|article|inscription|manuscript|chapter|web|unknown",
+      "full_citation_mla": "Reconstructed MLA9-style citation string",
+      "is_primary_source": true
+    }
+  ]
+}
+
+Rules:
+- year: 4-digit integer or null
+- authors_raw: semicolon-separated "Last, First" pairs, or null if unknown
+- Deduplicate near-identical entries
+- Omit anything that is clearly NOT a citation (running prose, captions, headings)
+
+TEXT:
+${text.slice(0, AI_FALLBACK_MAX_CHARS)}`;
+}
+
+interface AiBiblioRef {
+  authors_raw?: string | null;
+  title?: string | null;
+  year?: number | null;
+  publisher?: string | null;
+  entry_type?: string | null;
+  full_citation_mla?: string | null;
+  is_primary_source?: boolean | null;
+}
+
+function aiRefToEntry(r: AiBiblioRef): BibliographyEntry | null {
+  if (!r.title && !r.full_citation_mla) return null;
+  const authors: { first: string; last: string }[] = [];
+  if (r.authors_raw && typeof r.authors_raw === 'string') {
+    for (const seg of r.authors_raw.split(/;|\band\b/i)) {
+      const parts = seg.split(',').map((s) => s.trim()).filter(Boolean);
+      if (parts.length >= 2) authors.push({ last: parts[0], first: parts[1] });
+      else if (parts.length === 1) authors.push({ last: parts[0], first: '' });
+    }
+  }
+  const lastName = authors[0]?.last?.toLowerCase().replace(/[^a-z]/g, '') || 'unknown';
+  const year = typeof r.year === 'number' && r.year > 0 ? r.year : null;
+  const citation_key = year ? `${lastName}_${year}` : `${lastName}_ai_${Date.now()}_${Math.floor(Math.random() * 1e4)}`;
+  return {
+    citation_key,
+    entry_type: r.entry_type || 'book',
+    authors,
+    title: (r.title || r.full_citation_mla || 'Untitled').slice(0, 500),
+    year,
+    publisher: r.publisher || undefined,
+    full_citation_mla: r.full_citation_mla || `${r.authors_raw ?? ''} ${r.title ?? ''} ${r.year ?? ''}`.trim(),
+    tags: ['ai_extracted'],
+  };
+}
+
 
 /**
  * Parse MLA9 bibliography entry
@@ -199,7 +282,7 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { articleId, dryRun = false } = await req.json().catch(() => ({}));
+    const { articleId, dryRun = false, ai_fallback = false } = await req.json().catch(() => ({}));
 
     console.log('Starting bibliography backfill...', { articleId, dryRun });
 
@@ -224,19 +307,70 @@ Deno.serve(async (req) => {
       bibliographyEntriesCreated: 0,
       articleBibliographyLinksCreated: 0,
       evidenceEntriesCreated: 0,
+      aiFallbackArticles: 0,
+      aiFallbackEntries: 0,
+      aiCostUsd: 0,
       errors: [] as string[],
     };
+    let aiBudgetRemaining = AI_FALLBACK_HARD_CAP_ARTICLES;
     
     for (const source of sources || []) {
       try {
         console.log(`\nProcessing article: ${source.file_path}`);
         
-        // Extract bibliography
+        // Extract bibliography (regex pass)
         const bibliography = extractBibliography(source.markdown_content);
-        console.log(`  - Found ${bibliography.length} bibliography entries`);
-        
+        console.log(`  - Regex found ${bibliography.length} bibliography entries`);
+
+        // Phase B (2026-06-06): AI fallback when regex misses most citations.
+        // Opt-in via { ai_fallback: true } from admin UI. Hard-capped to
+        // AI_FALLBACK_HARD_CAP_ARTICLES per invocation (~$1 ceiling).
+        if (
+          ai_fallback &&
+          bibliography.length < AI_FALLBACK_THRESHOLD &&
+          aiBudgetRemaining > 0 &&
+          source.markdown_content?.length
+        ) {
+          aiBudgetRemaining--;
+          try {
+            const aiResult = await aiExtractCitations({
+              system: AI_BIBLIO_SYSTEM,
+              user: buildAiBiblioPrompt(source.markdown_content),
+              timeoutMs: AI_FALLBACK_TIMEOUT_MS,
+            });
+            stats.aiCostUsd += aiResult.cost_usd_estimate ?? 0;
+            const parsed = aiResult.parsed as { references?: AiBiblioRef[] } | null;
+            const aiRefs = Array.isArray(parsed?.references) ? parsed!.references : [];
+            let added = 0;
+            for (const r of aiRefs) {
+              const entry = aiRefToEntry(r);
+              if (!entry) continue;
+              // Skip if regex pass already produced a similar citation_key
+              if (bibliography.some((b) => b.citation_key === entry.citation_key)) continue;
+              bibliography.push(entry);
+              added++;
+            }
+            if (added > 0) {
+              stats.aiFallbackArticles++;
+              stats.aiFallbackEntries += added;
+              console.log(`  - AI fallback added ${added} entries (provider=${aiResult.provider}, cost=$${(aiResult.cost_usd_estimate ?? 0).toFixed(4)})`);
+            } else {
+              console.log(`  - AI fallback produced 0 usable entries`);
+            }
+          } catch (aiErr) {
+            const msg = aiErr instanceof Error ? aiErr.message : String(aiErr);
+            if (aiErr instanceof NoAIProviderError) {
+              console.error(`  - AI fallback skipped: no provider configured`);
+            } else {
+              console.error(`  - AI fallback error: ${msg}`);
+              stats.errors.push(`${source.file_path} ai_fallback: ${msg}`);
+            }
+          }
+        }
+
         // Convert markdown to HTML for evidence extraction
         const htmlContent = marked.parse(source.markdown_content) as string;
+        
         
         // Debug: Verify table conversion
         const markdownTableCount = (source.markdown_content.match(/\|[^\n]+\n\|[-:| ]+\n/g) || []).length;
