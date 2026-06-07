@@ -92,6 +92,10 @@ ORDER BY j.jobid;
 - **Observability:** one structured `pin_stage / resolve_candidates` log line at resolver entry with `{ mode, total_candidates, chunk_offset, chunk_size, body_keys, job_id }`.
 - **Verified 2026-06-07 04:11 UTC** via direct edge call with the exact nightly payload (`only_zero_pin:true, limit:20, chunk_size:1`): **HTTP 200**, `total: 4`, first chunk processed via Gemini ($0.000487, 2.5s). Nightly chain (with `job_id`) will return 202 as before via `EdgeRuntime.waitUntil`.
 
+## Phase T.1 reference (2026-06-07)
+
+See `RELIABILITY_AUDIT.md` § "Phase T.1 — AI usage ledger". `srangam_ai_usage` is the canonical per-call cost / latency / error ledger for every Gemini ## Rollback OpenAI invocation routed through `_shared/ai-provider.ts`. Append-only; admin SELECT only.
+
 ## Rollback
 
 Every Phase H / H.2 / H.3 / P change is a single `cron.alter_job` or `DROP CONSTRAINT` / `INSERT INTO ... FROM srangam_purana_references_dedup_archive_20260606` away from the previous state. Old commands and the full pre-dedup snapshot are preserved. H.3 rollback: revert `supabase/functions/backfill-article-pins/index.ts` to the pre-2026-06-07 branch gate.
