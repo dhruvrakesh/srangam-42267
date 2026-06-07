@@ -1094,3 +1094,34 @@ Proposed surgical fix: replicate the S.1.3 pattern (public SELECT restricted to 
 19. `srangam_media_assets` is admin-only read. Public OG path MUST go through `srangam_articles.og_image_url` + `gdrive-image-proxy`.
 20. `narration_analytics` INSERT requires `user_id IS NOT NULL AND auth.uid() = user_id`. No anon insert, no NULL-owner insert.
 21. Public reads on per-article child tables MUST be gated to `srangam_articles.status = 'published'` (chapters today; bibliography/evidence/cross_references/purana_references on Phase S.2 approval).
+
+## Phase S.2 — Surgical RLS Healing — sibling tables (2026-06-07)
+
+Replicates the Phase S.1.3 published-status gate on the four scanner-flagged sibling tables. Single migration, zero FE / edge edits. All consumers audited via `rg` pre-flight (see `.lovable/plan.md`).
+
+### S.2.1 — `srangam_article_bibliography`
+- Replaced `Public read article bibliography (USING true)` with `Public read article bibliography for published articles` — `EXISTS (SELECT 1 FROM srangam_articles a WHERE a.id = article_id AND a.status='published')`.
+
+### S.2.2 — `srangam_article_evidence`
+- Replaced `Evidence is publicly readable (USING true)` with `Public read article evidence for published articles` — same EXISTS pattern.
+
+### S.2.3 — `srangam_cross_references`
+- Replaced `Public read cross references (USING true)` with `Public read cross references between published articles` — requires BOTH `source_article_id` and `target_article_id` to reference a published article. NULL endpoints are hidden from public (admin ALL policy preserves access).
+
+### S.2.4 — `srangam_purana_references`
+- Added explicit `Admin read purana references` SELECT policy (`has_role(auth.uid(),'admin')`) — table previously had no admin SELECT and relied on the public `USING (true)` for admin reads.
+- Replaced `Public read purana references (USING true)` with `Public read purana references for published articles`.
+
+**Verification (2026-06-07).** Service-role parity query confirms every existing row already references a published article — zero data is hidden from public by the gate at deploy time:
+
+| Table | Total rows | Public-visible after gate | Delta |
+|---|---:|---:|---:|
+| `srangam_article_bibliography` | 69 | 69 | 0 |
+| `srangam_article_evidence` | 117 | 117 | 0 |
+| `srangam_cross_references` | 1429 | 1429 | 0 |
+| `srangam_purana_references` | 47 | 47 | 0 |
+
+The gate is forward-protective: any future row attached to a draft article will be hidden from anon until the parent article publishes. Scanner findings `srangam_article_bibliography_public_read_unfiltered`, `srangam_article_evidence_public_read_unfiltered`, `srangam_cross_references_public_read_unfiltered`, `srangam_purana_references_public_read_unfiltered` all marked fixed.
+
+### Invariant 22 (Phase S.2)
+Public SELECT on every per-article child table (bibliography, evidence, chapters, metadata, cross_references, purana_references) MUST gate on parent `srangam_articles.status = 'published'`. Cross-reference-style tables with two article FKs MUST gate on **both** endpoints. Adding a new child table without this gate is a security regression.
