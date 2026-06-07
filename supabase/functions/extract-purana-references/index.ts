@@ -450,6 +450,7 @@ serve(async (req) => {
         job_id: body.job_id,
         offset: nextOffset,
         chunk_size: chunkSize,
+        only_unextracted: body.only_unextracted,
       });
     }
 
