@@ -96,8 +96,17 @@ ORDER BY j.jobid;
 
 See `RELIABILITY_AUDIT.md` § "Phase T.1 — AI usage ledger". `srangam_ai_usage` is the canonical per-call cost / latency / error ledger for every Gemini and OpenAI invocation routed through `_shared/ai-provider.ts`. Append-only; admin SELECT only.
 
+## Phase S.1 reference (2026-06-07) — Surgical RLS heal
+
+See `RELIABILITY_AUDIT.md` § "Phase S.1". Four policy edits, zero FE/edge wiring change:
+- `srangam_media_assets` → admin-only SELECT (OG cost + GDrive IDs no longer anon-readable).
+- `narration_analytics` → strict `user_id IS NOT NULL AND auth.uid() = user_id` INSERT (closes anon spam + NULL-owner pollution).
+- `srangam_article_chapters` → public SELECT gated to `status='published'` parent article.
+- `srangam_markdown_sources` → `COMMENT ON TABLE` intent lock (scanner self-confirmed secure).
+
+Phase S.2 (proposed, not deployed) replicates the published-status gate on `srangam_article_bibliography`, `srangam_article_evidence`, `srangam_cross_references`, `srangam_purana_references`. Pre-flight FE grep required before approval.
 
 ## Rollback
 
-Every Phase H / H.2 / H.3 / P change is a single `cron.alter_job` or `DROP CONSTRAINT` / `INSERT INTO ... FROM srangam_purana_references_dedup_archive_20260606` away from the previous state. Old commands and the full pre-dedup snapshot are preserved. H.3 rollback: revert `supabase/functions/backfill-article-pins/index.ts` to the pre-2026-06-07 branch gate.
+Every Phase H / H.2 / H.3 / P / S.1 change is a single `cron.alter_job`, `DROP CONSTRAINT`, or inverse `CREATE POLICY` away from the previous state. Old commands, the full pre-dedup snapshot, and pre-S.1 policy texts are preserved in the migration history. H.3 rollback: revert `supabase/functions/backfill-article-pins/index.ts` to the pre-2026-06-07 branch gate. S.1 rollback: re-create each dropped policy from migration `20260607042423_*.sql` and `20260607_narration_analytics_*` in reverse.
 
