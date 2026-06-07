@@ -287,7 +287,15 @@ async function backfillOne(
         // Phase G1 — bound AI input to keep one article from consuming the
         // entire pump slot. Deterministic scan already used the full text.
         const aiInput = flat.length > 25_000 ? flat.slice(0, 25_000) : flat;
-        const result = await aiExtractPlaces(aiInput);
+        const result = await aiExtractPlaces(aiInput, {
+          telemetry: {
+            function_name: 'backfill-article-pins',
+            job_id: jobId ?? null,
+            article_id: article.id,
+            purpose: 'pin_extract',
+          },
+        });
+
         aiStats = {
           provider: result.provider,
           model: result.model,
