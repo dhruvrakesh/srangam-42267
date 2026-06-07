@@ -1052,3 +1052,45 @@ Other AI callers (image generation via `callImage`, future tag-gen) can adopt in
 **Verified 2026-06-07 04:15 UTC** end-to-end: pin-backfill smoke shot produced one ledger row with `provider=gemini, model=gemini-2.5-flash, purpose=pin_extract, prompt_tokens=6488, cost=$0.000487, latency_ms=26441, ok=true`.
 
 **Phase T.2 (deferred).** A nightly `srangam_ai_usage_hourly_mv` rollup for an admin "AI spend" panel. Not implemented; greenlight required.
+
+---
+
+## Phase S.1 — Surgical RLS Healing (2026-06-07)
+
+Scoped, audit-driven RLS tightening triggered by the `supabase_lov` scanner re-run after Phase T.1. Read-only codebase audit confirmed each change was zero-blast-radius for the FE/edge layer before any policy was touched.
+
+### S.1.1 — `srangam_media_assets` — admin-only SELECT
+- **Risk:** public SELECT exposed `cost_usd`, `gdrive_file_id`, `gdrive_share_url`, `prompt_hash` for every OG image ever generated.
+- **Fix:** dropped `Public read active media assets`; replaced with `has_role(auth.uid(),'admin')` SELECT. Service-role writes (edge functions `generate-article-og`, `retire-og-image`) unaffected.
+- **FE impact:** none. Public OG rendering reads `srangam_articles.og_image_url` and proxies via `gdrive-image-proxy`; never touches this table. Admin `GeographyMedia.tsx` still works (admin role).
+
+### S.1.2 — `narration_analytics` — strict ownership INSERT (with NULL guard)
+- **Risk:** prior policy `(true)` allowed anonymous/foreign inserts. Initial fix `auth.uid() = user_id` was still satisfiable with both sides NULL.
+- **Fix:** `TO authenticated WITH CHECK (user_id IS NOT NULL AND auth.uid() = user_id)`. Closes anon spam vector and NULL-owner pollution.
+- **FE impact:** none — zero `.from('narration_analytics')` consumers exist in `src/` or `supabase/functions/` (write-only dead path; kept for future analytics wiring).
+
+### S.1.3 — `srangam_article_chapters` — published-only public SELECT
+- **Risk:** public SELECT with `true` enabled draft-article→chapter enumeration via the FK.
+- **Fix:** public SELECT now gated to rows whose parent `srangam_articles.status = 'published'` (mirrors `srangam_article_metadata`). Admin ALL untouched.
+
+### S.1.4 — `srangam_markdown_sources` — intent lock
+- Scanner self-confirmed as already secure (admin-only). Added `COMMENT ON TABLE` to lock the admin-only intent for future contributors; finding ignored with justification.
+
+**Verification.** `supabase_lov` re-run shows S.1.1–S.1.4 resolved. Five new findings surfaced (see Phase S.2 below) — pattern repeats, not regressions of S.1.
+
+## Phase S.2 — Proposed (awaiting greenlight)
+
+Scanner exposes four sibling tables with the same `public SELECT true` pattern that S.1.3 closed on `srangam_article_chapters`:
+
+- `srangam_article_bibliography`
+- `srangam_article_evidence`
+- `srangam_cross_references` (gate on **both** source and target article status)
+- `srangam_purana_references`
+
+Proposed surgical fix: replicate the S.1.3 pattern (public SELECT restricted to `status = 'published'` parents) in a single migration. **Pre-flight required:** grep each FE consumer to confirm no admin/draft path reads via the public role before flipping. Not executed in this turn.
+
+## Invariants added (Phase S.1)
+
+19. `srangam_media_assets` is admin-only read. Public OG path MUST go through `srangam_articles.og_image_url` + `gdrive-image-proxy`.
+20. `narration_analytics` INSERT requires `user_id IS NOT NULL AND auth.uid() = user_id`. No anon insert, no NULL-owner insert.
+21. Public reads on per-article child tables MUST be gated to `srangam_articles.status = 'published'` (chapters today; bibliography/evidence/cross_references/purana_references on Phase S.2 approval).
