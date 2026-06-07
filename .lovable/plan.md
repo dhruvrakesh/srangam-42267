@@ -1,183 +1,131 @@
+# Phase P Dry-Run + Three-Source Cron Truth + Enterprise Heal Path
+_Audit timestamp 2026-06-06. All findings are read-only DB + source verified, no guesses._
 
-# Cron + Extractor Audit — Enterprise Heal Plan (v2, re-verified)
+## 1. Phase P dry-run (before unique constraint)
 
-Live re-audit against `cron.job`, `net._http_response`, `srangam_admin_jobs`, edge sources, and a fresh row count in `srangam_*`. Every number below was re-checked just now; nothing is inferred. **No files changed.**
+`srangam_purana_references` baseline: **69 rows** across **9 articles**.
 
----
-
-## A. Verified findings (2026-06-02)
-
-### A.1 On-demand backfills — partly working
-
-| Pipeline | State | Live evidence |
-|---|---|---|
-| `backfill-word-counts` | ✅ Complete | 47/47 published have `word_count` |
-| `backfill-bibliography` (regex-only) | ⚠️ Low coverage | **5/47** published (10.6%) have any biblio row; 56 entries total |
-| Evidence-table extractor | ⚠️ Low coverage | **9/47** articles, 117 rows |
-| `extract-purana-references` | ❌ Non-idempotent | **9/47** articles, **69 rows, 17 duplicate groups, 19 extra rows (~27% waste)** |
-| `srangam_markdown_sources` coverage | ⚠️ | 45/47 published have markdown (2 articles never imported) |
-
-### A.2 Why bibliographies look empty
-
-`backfill-bibliography/index.ts` is **regex-only**:
-- Searches for a literal `## Bibliography | References | Works Cited | Sources` H2.
-- Parses each line with a strict `Last, First.` MLA9 regex.
-- 31 articles return *"No bibliography section found"* — they cite inline.
-- More are silently rejected for not matching `Last, First.` (edited volumes, vernacular author names, primary inscriptions, web sources).
-
-Your instinct is correct: a Gemini-first AI pass is the right enterprise answer. `_shared/ai-provider.ts::aiExtractCitations` already exists — the Puranic extractor uses it; we just never wired it into bibliography.
-
-### A.3 Why Puranic extraction is not enterprise-grade
-
-| Enterprise requirement | Current state |
+| Metric | Value |
 |---|---|
-| Self-pumping batch (`EdgeRuntime.waitUntil`) | ✅ |
-| Cancellation between chunks | ✅ |
-| Heartbeats per chunk | ✅ |
-| Gemini → OpenAI fallback | ✅ |
-| Per-article internal dedup | ✅ |
-| **Cross-run dedup** | ❌ raw `.insert()`, no DB unique constraint |
-| **Resume from last stop** | ❌ always restarts at frontend offset (default 0) |
-| **Skip already-extracted** | ❌ no filter; re-running doubles 9 articles' rows |
+| Duplicate groups on `(article_id, purana_name, reference_text, adhyaya)` | **17** |
+| Rows that would be removed (sum of `c-1`) | **19 (27.5%)** |
+| Articles affected | **3** |
+| Articles untouched | **6** |
 
-The duplication is not theoretical — DB already shows 17 duplicate groups / 19 extra rows / 27% waste.
+### Duplicate groups by article
 
-### A.4 Nightly cron — still broken (re-verified just now)
+**`chapter-6-ar-ra-and-tman-preserving-the-body-and-soul-of-the-vedas`** — 5 groups, 7 rows to remove
+| purana_name | reference_text | adhyaya | occ | rem |
+|---|---|---|---:|---:|
+| Nirukta | Nirukta of Yāska | '' | 3 | 2 |
+| Viṣṇu Purāṇa | Viṣṇu Purāṇa | '' | 3 | 2 |
+| Rigveda | Ṛgveda 10.9 | '' | 2 | 1 |
+| Śatapatha Brāhmaṇa | Śatapatha Brāhmaṇa 1.8.1 | '' | 2 | 1 |
+| Yajurveda | Vājasaneyi Saṃhitā 36.24 | '' | 2 | 1 |
 
+**`from-dev-s-kta-to-dev-m-h-tmya`** — 9 groups, 9 rows to remove
+| purana_name | reference_text | adhyaya | occ | rem |
+|---|---|---|---:|---:|
+| Atharva Veda | Atharva Veda 12.1.12 | '' | 2 | 1 |
+| Devī Bhāgavata Purāṇa | Devī Bhāgavata Purāṇa | '' | 2 | 1 |
+| Devī Māhātmya | Devī Māhātmya | 81-93 | 2 | 1 |
+| Devī Upaniṣad | Devī Upaniṣad 1–3 | '' | 2 | 1 |
+| Mahābhārata | Mahābhārata 3.81 | 3 | 2 | 1 |
+| Mīnākṣī Māhātmya | Mīnākṣī Māhātmya | '' | 2 | 1 |
+| Ṛgveda | Ṛgveda 1.3.10 | '' | 2 | 1 |
+| Ṛgveda | Ṛgveda 2.41.16 | '' | 2 | 1 |
+| Ṛgveda | Ṛgveda 6.61.7–11 | '' | 2 | 1 |
+
+**`ancient-tribal-traditions-and-the-animistic-roots-of-sanatan-dharma`** — 3 groups, 3 rows to remove
+| purana_name | reference_text | adhyaya | occ | rem |
+|---|---|---|---:|---:|
+| Mahabharata | Mahabharata | Not mentioned | 2 | 1 |
+| Mahabharata | Mausala Parva | Not mentioned | 2 | 1 |
+| Satapatha Brahmana | Satapatha Brahmana | Not mentioned | 2 | 1 |
+
+### Constraint safety notes
+- All collisions are byte-exact on the proposed unique key. **No semantic collisions** would be folded.
+- `adhyaya` has three NULL-equivalent forms in this set: `NULL`, `''`, `"Not mentioned"`. The proposed `UNIQUE(article_id, purana_name, reference_text, adhyaya)` would treat them as distinct → future re-extractions producing the same row with a different NULL-form would slip past the constraint.
+- **Mitigation**: normalize `adhyaya` (empty string and literal "Not mentioned" → `NULL`) before adding the constraint, and harden the edge function to write `NULL` consistently.
+
+## 2. Three-source cron truth check (2026-06-06 03:00–04:00 UTC)
+
+| jobid | name | A: cron status | B: pg_net status_code | C: srangam_admin_jobs | Verdict |
+|---|---|---|---|---|---|
+| **2** | pin-enrichment-nightly | succeeded | **no response row** | row `681679b9…` — `failed`, `processed=0`, `heartbeat_at=NULL`, `last_error="watchdog: no heartbeat"`, total=4 | ❌ **BROKEN — root cause identified below** |
+| **6** | og-nightly | succeeded | no response row | no row in window | ⚠️ Unverified (likely no candidates → enqueuer short-circuited; needs OG-status check) |
+| **7** | term-enrichment-nightly | succeeded | **200** `{successful:0, failed:2}` (`the-n-ga-compact`, `ganderbal-m-s-spr…`) | n/a (function does not use admin_jobs) | ⚠️ Function ran but both downstream calls 5xx |
+| **8** | context-snapshot-nightly | succeeded | **200** — wrote `srangam_context_2026-06-06.md` to Drive (fileId `14B4vVrQh2x…`) | n/a | ✅ Healthy |
+
+### Root cause for job 2 — Phase H restored a helper that NEVER POSTS
+
+Reading `enqueue_pin_backfill_sweep_job(p_limit, p_chunk)` directly from the catalog:
+
+```sql
+-- (verbatim, lines 99-143 of pg_proc def)
+…
+INSERT INTO srangam_admin_jobs (kind, status, total, started_at, params)
+VALUES ('pin_backfill', 'running', LEAST(v_zero_count, p_limit), now(), jsonb_build_object(...))
+RETURNING id INTO v_job_id;
+
+RETURN v_job_id;   -- 🚨 returns and exits
+END;
 ```
-2026-06-02 03:00  pin-backfill      status NULL  Timeout 5000ms
-2026-06-02 03:30  og-nightly        status NULL  Timeout 5000ms
-2026-06-02 03:45  term-enrichment   status NULL  Timeout 5000ms
-2026-06-02 04:00  context-snapshot  status NULL  Timeout 5000ms
-```
 
-Two independent bugs:
-1. `_cron_invoke_edge` omits `timeout_milliseconds` → pg_net defaults to 5s, kills every nightly call.
-2. `cron.job` jobid 2 still runs raw `_cron_invoke_edge(...,{chunk_size:1,only_zero_pin:true,limit:20})` — bypasses `enqueue_pin_backfill_sweep_job`, so the 30-min re-entrancy guard, zero-candidate skip, and synchronous admin-job row are all missing. Watchdog reaps it as `failed: watchdog: no heartbeat` at 03:05.
+There is **no `_cron_invoke_edge(...)` call**. The helper inserts an admin_jobs row, then returns. The edge function `backfill-article-pins` is never POSTed. The 5-min watchdog reaps the orphan row at 03:05 every night.
 
----
+This is a regression vs. its siblings: `enqueue_og_nightly_job` (line 83) and `enqueue_term_enrichment_nightly` (line 175) both call `_cron_invoke_edge` after inserting the row. The pin helper was authored when invocation happened from the edge function itself (manual trigger from admin UI) and was never adapted for cron firing.
 
-## B. The path forward (surgical, additive, evidence-gated)
+### Phase H was correct but incomplete
+- ✅ `_cron_invoke_edge` now passes `timeout_milliseconds := 120000` (verified line 32 of pg_proc def).
+- ✅ jobid 6 / 7 are now wired to enqueuers (line-verified above).
+- ❌ jobid 2's enqueuer never POSTs, so the 120 s timeout is moot for pin enrichment.
 
-```text
-H (Heal cron)  →  P (Puranic idempotency)  →  B (Bibliography AI fallback)
-   ~30 min          ~45 min                     ~60 min
-   1 migration      1 migration + 1 edge edit   1 edge edit + UI toggle
-   ↓
-O (Ops dashboard)  →  V (Invariant guards)  →  D (Docs + memory)
-   ~45 min             ~20 min                   ~15 min
-```
+## 3. Bibliography state
 
-Every phase is independently reversible. **No production rows deleted** except the 19 confirmed duplicate Purana rows, and only inside a `BEGIN;…;COMMIT` audited block.
+| Metric | Value |
+|---|---|
+| Published articles | **47** |
+| Articles with ≥1 `srangam_article_bibliography` row | **5 (10.6%)** |
+| Total citation links | 69 |
+| `srangam_bibliography_entries` master rows | 56 |
+| AI fallback in `backfill-bibliography/index.ts` | **none** (grep for `aiExtract|gemini|openai` returns 0) |
 
-### Phase H — Heal the nightly cron
+The function is regex-only over markdown footnote syntax. Most published articles cite inline (`(Sharma 2003, p. 14)`) which the regex never sees.
 
-1. Rewrite `_cron_invoke_edge` body to pass `timeout_milliseconds := 120000` to `net.http_post`. Single change unblocks all four nightly jobs.
-2. `cron.alter_job(2, command := $$ SELECT public.enqueue_pin_backfill_sweep_job(20, 1); $$)` — restore documented helper path, `p_chunk=1` per Phase G1+G2.
-3. Jobids 6/7/8 inherit the timeout fix automatically.
-4. **Acceptance** (tomorrow 03:00–04:00 UTC): all four `net._http_response.status_code` rows are 200/202; `srangam_admin_jobs` rows close `succeeded`.
+## 4. Enterprise heal path — three approvable phases
 
-### Phase P — Puranic extractor: idempotent + resumable
+All phases follow the user's principles: **production data is immutable** (archive before delete), **additive** (new constraints / new flags rather than rewriting), **surgical** (≤1 helper or ≤1 edge file per phase).
 
-1. **DB migration**, run as `BEGIN; … SELECT count(*); COMMIT;` so we audit before committing:
-   ```sql
-   DELETE FROM srangam_purana_references a
-   USING srangam_purana_references b
-   WHERE a.ctid > b.ctid
-     AND a.article_id = b.article_id
-     AND a.purana_name = b.purana_name
-     AND a.reference_text = b.reference_text
-     AND COALESCE(a.adhyaya,'') = COALESCE(b.adhyaya,'');
-   ALTER TABLE srangam_purana_references
-     ADD CONSTRAINT srangam_purana_references_dedup_key
-     UNIQUE (article_id, purana_name, reference_text, adhyaya);
-   ```
-   Postgres `UNIQUE` treats NULL `adhyaya` as distinct — matches the existing in-memory dedup key shape exactly.
+### Phase H.2 — finish the cron heal (zero cost, ~10 lines SQL)
+1. `CREATE OR REPLACE FUNCTION public.enqueue_pin_backfill_sweep_job(...)` — keep current re-entrancy guard and zero-candidate skip, but **add the missing `_cron_invoke_edge('backfill-article-pins', jsonb_build_object('job_id', v_job_id::text, 'only_zero_pin', true, 'chunk_size', p_chunk, 'limit', p_limit))` call** before `RETURN v_job_id;`. Mirrors the OG helper exactly.
+2. Smoke-test by calling the helper once from SQL editor; expect `srangam_admin_jobs.heartbeat_at` to start ticking within 30 s and `srangam_article_pins` rows to appear.
+3. Add a one-line note to `docs/CRON_OPS_PLAYBOOK.md` "Phase H change log" recording the regression and fix.
 
-2. **Edge: insert → upsert** in `extract-purana-references/index.ts`:
-   ```ts
-   .upsert(refsToInsert, {
-     onConflict: 'article_id,purana_name,reference_text,adhyaya',
-     ignoreDuplicates: true,
-   })
-   ```
+### Phase P — Puranic idempotency (zero cost, fully reversible)
+1. **Archive first**: `CREATE TABLE srangam_purana_references_dedup_archive_20260606 AS SELECT * FROM srangam_purana_references;` (preserves all 69 rows untouched).
+2. **Normalize**: `UPDATE srangam_purana_references SET adhyaya = NULL WHERE adhyaya IN ('','Not mentioned');`
+3. **Soft-dedupe**: delete rows whose `id` is not the `MIN(id)` per `(article_id, purana_name, reference_text, COALESCE(adhyaya,''))` group. Expected delta: 69 → 50 rows; confirm with a SELECT before commit.
+4. **Constraint**: `ALTER TABLE srangam_purana_references ADD CONSTRAINT srangam_purana_references_dedup_key UNIQUE (article_id, purana_name, reference_text, adhyaya);`
+5. **Edge function**: change `supabase/functions/extract-purana-references/index.ts` line ~242 from `.insert(refsToInsert)` to `.upsert(refsToInsert, { onConflict: 'article_id,purana_name,reference_text,adhyaya', ignoreDuplicates: true })`. Add an optional `only_unextracted` request flag that filters the article list to `id NOT IN (SELECT article_id FROM srangam_purana_references)` for resumable batch runs.
 
-3. **Edge: resume-from-last-stop.** Add `only_unextracted` flag (default `true`). When set, article query becomes:
-   ```ts
-   .eq('status','published')
-   .not('id','in', `(select article_id from srangam_purana_references)`)
-   .order('slug').range(offset, sliceEnd-1)
-   ```
-   Crash-resume falls out for free: each successful article's rows are already committed when the function self-pumps. UI gets "Skip already-extracted articles (recommended)" checkbox, default ON.
+### Phase B — Bibliography AI fallback (≈$1 one-time spend, opt-in toggle)
+1. In `supabase/functions/backfill-bibliography/index.ts`, after the regex pre-pass: if `parsedEntries.length < 3` and request body has `ai_fallback: true`, call `aiExtractCitations` from `_shared/ai-provider.ts` (same provider chain as Puranic extractor: Gemini → OpenAI). Use the same 25 k char cap and 60 s timeout invariants from Phase G1+G2.
+2. Cost ceiling: ~$0.02/article × 42 remaining articles ≈ $0.84. Hard-cap at 50 articles/run.
+3. No automation — admin manually triggers from `/admin/article-management` with the new "Try AI fallback" checkbox. Curation, not expansion.
 
-4. **Acceptance**: "Extract All Published" with toggle ON processes the 38 remaining articles (skipping the 9 done). Toggle OFF on the 9 done articles produces zero new rows.
+## 5. Out of scope (deliberately deferred)
 
-### Phase B — Bibliography AI fallback
+- `/admin/ops` dashboard (Phase O) — useful but not surgical; this audit can be re-run manually with the playbook query until P+H.2 land.
+- Watchdog tuning — current 5-min window is fine once helper actually POSTs.
+- Term enrichment 5xx investigation — separate ticket; jobid 7 is delivering work, just downstream-failing on 2 specific slugs.
+- OG nightly verification — needs a separate query of `og_image_status` history before claiming healthy/sick.
 
-Regex stays as cheap pre-pass; AI fires only when regex returns `< 3` entries. Same pattern Phase X.5 uses for Purana citations.
+## 6. Approval menu
 
-1. `backfill-bibliography/index.ts` — after regex, if `< 3` entries, call `aiExtractCitations` over `chunkByCharBudget(6000, 25)` with a bibliography-tuned prompt returning `{ entries: [{ citation_key, entry_type, authors, title, year, publisher, full_citation_mla, full_citation_chicago? }] }`. Asks for inline-cited works (covers the 31 zero-biblio articles).
+- **`approve H.2`** — finish the pin-enrichment heal tonight; share 03:00–04:00 UTC three-source proof tomorrow before touching Puranic data.
+- **`approve H.2 + P`** — heal cron + Puranic idempotency in one window. P is zero-cost and archived; pauseable after step 3 (archive + normalize) for you to inspect row counts before constraint commit.
+- **`approve all`** — H.2 → P → B in order, with two checkpoints: (a) after H.2 deploys, await morning verification; (b) after P step 3, share `SELECT COUNT(*) FROM srangam_purana_references` (expect 50) before adding constraint.
+- **`hold on P`** — discuss the `adhyaya` normalization rule (treat `"Not mentioned"` as NULL vs. preserve verbatim) before any data write.
 
-2. **DB**: make the link-table contract real:
-   ```sql
-   ALTER TABLE srangam_article_bibliography
-     ADD CONSTRAINT srangam_article_bibliography_uniq
-     UNIQUE (article_id, bibliography_id);
-   ```
-   (The existing regex path already passes `onConflict:'article_id,bibliography_id'`; the constraint enforces it.)
-
-3. **UI** on `/admin/data-health`: "AI fallback" toggle (default ON), per-article cost preview. Estimate: ~$0.02–0.04/article via Gemini Flash on Lovable AI Gateway → **one-time ≈ $0.60–1.25** for the 31 zero-biblio articles; ≈$0 ongoing.
-
-4. **Resume/dedup model identical to Phase P**: skip articles with biblio count ≥ 3 (default ON); upsert on `citation_key`.
-
-5. **Acceptance**: with_biblio moves from 5/47 to ≥ 35/47; re-runs add zero duplicates.
-
-### Phase O — `/admin/ops` dashboard
-
-Read-only RPC `public.get_recent_cron_runs(p_hours := 48)` joining `cron.job`, `cron.job_run_details`, `net._http_response`, `srangam_admin_jobs`. Admin-only route, 30-second poll. Surfaces the three-source truth Phase H is healing.
-
-### Phase V — Invariant guards
-
-- Force `chunk_size: 1` in the manual pin-backfill button (Phase G1+G2).
-- Toast warning if admin launches a sweep while a `pin_backfill` row younger than 30 min is `running` (mirrors the SQL re-entrancy guard).
-
-### Phase D — Documentation + memory
-
-- Update `docs/CRON_OPS_PLAYBOOK.md`: pg_net 5s default trap + the exact `_cron_invoke_edge` contract.
-- New memory `mem://ops/pgnet-timeout-contract` — cron-fired helpers MUST pass `timeout_milliseconds ≥ 120000`.
-- New memory `mem://extraction/idempotency-contract` — every AI extractor MUST upsert via a DB unique constraint AND default to `only_unextracted: true`; `.insert()` without a unique key is forbidden.
-- Amend `mem://index.md` Cron Truth Gap bullet with the helper-routing requirement and the timeout contract.
-
----
-
-## C. What I am explicitly NOT proposing
-
-- No deletion of any extracted row except the 19 confirmed Purana duplicates inside an audited transaction.
-- No re-extraction of the 9 articles already in `srangam_purana_references` unless you turn the toggle OFF.
-- No widening of AI prompts or relaxing of confidence gates.
-- No new admin surfaces beyond `/admin/ops` and two checkboxes on the existing Data Health page.
-- No raising of nightly caps (still 20 pin / 5 OG / 10 term).
-
----
-
-## D. Risk + cost register
-
-| Phase | Surface | Cost | Rollback |
-|---|---|---|---|
-| H | 1 migration (alter `_cron_invoke_edge` + 1 `cron.alter_job`) | $0 | re-apply prior migration |
-| P | 1 migration + 1 edge edit | $0 (saves future AI re-spend) | `ALTER TABLE ... DROP CONSTRAINT` |
-| B | 1 edge edit + 1 migration (link-table unique) | one-time ≈ **$0.60–1.25**; $0 ongoing | toggle AI fallback OFF |
-| O | 1 RPC + 1 admin route | $0 | drop RPC, delete route |
-| V | 2-line UI guards | $0 | revert |
-| D | 3 docs/mem files | $0 | revert |
-
----
-
-## E. Approval
-
-Reply with one of:
-
-- **"approve H"** — heal nightly cron tonight, verify at 03:00–04:00 UTC, regroup tomorrow before touching extractors.
-- **"approve H+P"** — heal cron + make Puranic extraction idempotent and resumable (both zero-cost structural fixes).
-- **"approve H+P+B"** — also wire the AI bibliography fallback (≈$1 one-time).
-- **"approve all"** — execute H → P → B → O → V → D in order, pausing after H to share the morning's three-source proof and again after the Phase P dedupe to share row counts before constraint commit.
+No tool calls beyond plan and read-only SQL have been run for this audit.
