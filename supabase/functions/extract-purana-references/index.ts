@@ -54,6 +54,10 @@ interface RequestBody {
   offset?: number;
   chunk_size?: number;
   _pump?: boolean;
+  // Phase P (2026-06-06): when true, batch mode skips articles that already
+  // have ≥1 row in srangam_purana_references — enables safe resume after a
+  // partial run without paying for AI re-extraction.
+  only_unextracted?: boolean;
 }
 
 const SYSTEM_PROMPT =
