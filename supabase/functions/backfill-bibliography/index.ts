@@ -282,7 +282,7 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { articleId, dryRun = false } = await req.json().catch(() => ({}));
+    const { articleId, dryRun = false, ai_fallback = false } = await req.json().catch(() => ({}));
 
     console.log('Starting bibliography backfill...', { articleId, dryRun });
 
