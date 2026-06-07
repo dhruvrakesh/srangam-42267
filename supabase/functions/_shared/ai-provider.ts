@@ -678,14 +678,49 @@ export async function callImage(
   const openai = Deno.env.get('OPENAI_API_KEY');
   if (!gemini && !openai) throw new NoAIProviderError();
 
+  const tel = opts.telemetry;
+  const logResult = (r: AIImageResult) => {
+    if (!tel) return;
+    void logAIUsage({
+      ...tel,
+      provider: r.provider,
+      model: r.model,
+      cost_usd_estimate: r.cost_usd_estimate,
+      latency_ms: r.latency_ms,
+      ok: true,
+      meta: { mime: r.mime, bytes: r.bytes.byteLength, shape: opts.shape ?? 'landscape' },
+    });
+  };
+  const logFailure = (provider: 'gemini' | 'openai', model: string, e: unknown) => {
+    if (!tel) return;
+    void logAIUsage({
+      ...tel,
+      provider, model,
+      ok: false,
+      error_code: classifyAIError(e),
+      meta: { error_message: (e instanceof Error ? e.message : String(e)).slice(0, 300) },
+    });
+  };
+
   if (gemini) {
     try {
-      return await callGeminiImage(prompt, gemini, opts);
+      const r = await callGeminiImage(prompt, gemini, opts);
+      logResult(r);
+      return r;
     } catch (e) {
       console.warn('[ai-provider] gemini-image failed:', e instanceof Error ? e.message : e);
+      logFailure('gemini', 'gemini-2.5-flash-image', e);
       if (!openai) throw e;
       // fall through to OpenAI
     }
   }
-  return await callOpenAIImage(prompt, openai!, opts);
+  try {
+    const r = await callOpenAIImage(prompt, openai!, opts);
+    logResult(r);
+    return r;
+  } catch (e) {
+    logFailure('openai', 'gpt-image-1', e);
+    throw e;
+  }
 }
+
