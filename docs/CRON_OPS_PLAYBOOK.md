@@ -83,6 +83,16 @@ ORDER BY j.jobid;
 - Hard cap: 50 articles per invocation (~$1 ceiling). AI-derived entries are tagged `ai_extracted` so curators can audit them.
 - Trigger manually only (no cron). Curation, not expansion.
 
+## Phase H.3 change log (2026-06-07) — pin-backfill candidate-filter heal
+
+- **Root cause:** `enqueue_pin_backfill_sweep_job` POSTs `{ only_zero_pin: true, ... }` without `all_published: true`. The edge function's resolver was a strict if/else-if (`article_id` → `slug` → `all_published`), so the nightly payload matched no branch, left `totalCandidates = 0`, and returned a misleading 404 even though 4 zero-pin published articles existed.
+- **Fix (edge-only, no SQL/cron change):** branch gate widened to `else if (body.all_published || body.only_zero_pin)`; `only_zero_pin` is now self-sufficient.
+- **Hardening:** both inner fetches (`srangam_article_pins`, `srangam_articles`) now paginate in 1000-row pages — current scale (171 pins / 47 articles) is safe but the corpus is growing.
+- **Contract guard:** if none of `article_id | slug | all_published | only_zero_pin` is set, the function now returns **400 `missing target selector`** with `received_keys`, catching future enqueuer drift loudly instead of silently 404-ing.
+- **Observability:** one structured `pin_stage / resolve_candidates` log line at resolver entry with `{ mode, total_candidates, chunk_offset, chunk_size, body_keys, job_id }`.
+- **Verified 2026-06-07 04:11 UTC** via direct edge call with the exact nightly payload (`only_zero_pin:true, limit:20, chunk_size:1`): **HTTP 200**, `total: 4`, first chunk processed via Gemini ($0.000487, 2.5s). Nightly chain (with `job_id`) will return 202 as before via `EdgeRuntime.waitUntil`.
+
 ## Rollback
 
-Every Phase H / H.2 / P change is a single `cron.alter_job` or `DROP CONSTRAINT` / `INSERT INTO ... FROM srangam_purana_references_dedup_archive_20260606` away from the previous state. Old commands and the full pre-dedup snapshot are preserved.
+Every Phase H / H.2 / H.3 / P change is a single `cron.alter_job` or `DROP CONSTRAINT` / `INSERT INTO ... FROM srangam_purana_references_dedup_archive_20260606` away from the previous state. Old commands and the full pre-dedup snapshot are preserved. H.3 rollback: revert `supabase/functions/backfill-article-pins/index.ts` to the pre-2026-06-07 branch gate.
+
