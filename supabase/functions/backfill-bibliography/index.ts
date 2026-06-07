@@ -54,7 +54,7 @@ Rules:
 - Omit anything that is clearly NOT a citation (running prose, captions, headings)
 
 TEXT:
-${text.slice(0, ${AI_FALLBACK_MAX_CHARS})}`;
+${text.slice(0, AI_FALLBACK_MAX_CHARS)}`;
 }
 
 interface AiBiblioRef {
