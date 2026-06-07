@@ -101,5 +101,10 @@ A materialized view `srangam_ai_usage_hourly_mv` aggregating `(function_name, pr
 - ✅ **Phase H.4** — three-source verification: HTTP 200/202 path confirmed; `srangam_admin_jobs` flow unchanged; structured log line emits. Playbook updated.
 - ✅ **Phase T.1** — `public.srangam_ai_usage` migration applied (append-only, admin-read, service-role-write, no UPDATE/DELETE policies). `_shared/ai-usage.ts` helper created. `_shared/ai-provider.ts` accepts `opts.telemetry` on `aiExtractPlaces` / `aiExtractCitations` / `callImage` and emits one ledger row per attempt. Wired into `backfill-article-pins`, `extract-purana-references`, `backfill-bibliography`. Verified end-to-end — first ledger row landed at 2026-06-07 04:15 UTC.
 - ⏸ **Phase T.2** — deferred (awaiting greenlight).
+- ✅ **Phase S.1** (2026-06-07) — RLS heal applied via single migration:
+  - `srangam_media_assets`: dropped `Public read active media assets`; admin-only SELECT. Cost + GDrive IDs no longer anon-readable. FE OG path (`srangam_articles.og_image_url` → `gdrive-image-proxy`) unaffected.
+  - `narration_analytics`: dropped permissive INSERT; now `TO authenticated WITH CHECK (auth.uid()=user_id)`. Anon spam vector closed; zero callers in repo so no FE impact.
+  - `srangam_article_chapters`: public SELECT gated to `srangam_articles.status='published'` (mirrors `srangam_article_metadata`). Draft article→chapter ID enumeration closed.
+  - `srangam_markdown_sources`: `COMMENT ON TABLE` locking admin-only intent; scanner finding ignored with justification.
 
-Memory: `mem://observability/ai-usage-ledger` written. Docs: `RELIABILITY_AUDIT.md` § Phase T.1 + `CRON_OPS_PLAYBOOK.md` Phase H.3 / T.1 entries.
+Memory: `mem://observability/ai-usage-ledger` written. Docs: `RELIABILITY_AUDIT.md` § Phase T.1 + `CRON_OPS_PLAYBOOK.md` Phase H.3 / T.1 / S.1 entries.
