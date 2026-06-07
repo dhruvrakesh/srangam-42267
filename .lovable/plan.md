@@ -1,110 +1,191 @@
-## Context revival (read-only, verified — not guessed)
+# Phase S.2 — Surgical Published-Gate on Per-Article Child Tables
 
-**Live DB counts (just queried):** 47 published articles · 171 pin rows · 43 distinct pinned articles · **4 zero-pin published**. So the 404 from the H.2 smoke test is *not* a stale-data problem — there really are 4 candidates the function should have returned.
+**Status:** Pre-flight audit complete · code change = SQL only · zero FE / edge edits · single-transaction migration · single reversible step.
 
-**SQL enqueuer (`enqueue_pin_backfill_sweep_job`, verified via `pg_get_functiondef`)** POSTs exactly this payload:
-```json
-{ "job_id": "...", "only_zero_pin": true, "chunk_size": 1, "limit": 20, "source": "nightly_cron" }
+This plan extends the Phase S.1 RLS heal (2026-06-07) by replicating the `srangam_article_chapters` published-only public-SELECT pattern across the four sibling tables flagged by `supabase_lov` after the Phase T.1 re-scan. No functional regression for any audited consumer. Counts on `/research-network` and `/about` will drop to the **public-corpus truth** (a desired correctness fix, not a regression).
+
+## 1. Verified consumer inventory
+
+Every `.from('<table>')` call site grepped under `src/` and `supabase/functions/` and reasoned through the policy change. Service-role edge functions bypass RLS entirely; admin pages run under `admin` role and use the existing admin ALL policies.
+
+### `srangam_article_bibliography`
+| Surface | File | Role at runtime | Effect of gate |
+|---|---|---|---|
+| Public sidebar | `src/hooks/useArticleBibliography.ts` | anon | None — `articleId` only resolves for published rows (parent `srangam_articles` RLS already filters drafts for anon) |
+| Admin | `pages/admin/DataHealth.tsx`, `GeographyMedia.tsx`, `ArticleManagement.tsx` (cascade delete), `useAdminDashboardStats.ts` | admin | None — admin ALL policy |
+| Edge | `backfill-bibliography/index.ts` (`SUPABASE_SERVICE_ROLE_KEY`) | service | None — bypasses RLS |
+
+### `srangam_article_evidence`
+| Surface | File | Role | Effect |
+|---|---|---|---|
+| Public | `useArticleEvidence.ts` (+ `useArticleEvidenceBySlug` resolves id from `srangam_articles` first) | anon | None — slug→id lookup already constrained to published as anon |
+| Admin | `DataHealth.tsx`, `GeographyMedia.tsx` | admin | None |
+| Edge | `backfill-article-pins`, `backfill-bibliography` | service | None |
+
+### `srangam_cross_references`
+| Surface | File | Role | Effect |
+|---|---|---|---|
+| Article page | `useArticle.ts`, `components/academic/ArticleCrossReferences.tsx` | anon | Edges where `target` is a draft disappear — **desired**: today they render as orphan edges or leak draft slugs through the `target:srangam_articles!...` join |
+| Network graph | `pages/ResearchNetwork.tsx` (parent already filters `articles` to `status='published'`) | anon | Edges drop to published↔published only — matches the node set the page already enforces |
+| Public stats | `useResearchStats.ts` (head/count) consumed by `/begin-journey`, `/about`, `ResearchThemes` | anon | Count drops from raw row count to public-corpus count — truer public stat |
+| Admin | `Dashboard.tsx`, `CrossReferencesBrowser.tsx`, `CorpusCorrelations.tsx`, `useCorpusCorrelations.ts`, `ArticleManagement.tsx` cascade-delete | admin | None |
+| Edge | `markdown-to-article-import`, `_shared/context-metrics.ts`, `context-bundle-generator`, `context-save-drive` | service | None |
+
+Nullable-endpoint nuance: `source_article_id` / `target_article_id` are nullable. The `EXISTS` gate evaluates to false on NULL endpoints, so any NULL-endpoint row is hidden from public (admin still sees via admin ALL). This is the desired behaviour.
+
+### `srangam_purana_references`
+| Surface | File | Role | Effect |
+|---|---|---|---|
+| `/admin/purana-references` | `usePuranaReferences.ts` (`!inner` join on `srangam_articles`) | admin (logged in) | **Risk** — table currently has *no admin SELECT policy*; admins read via the public `USING (true)` today. Gating it without adding admin SELECT would blank the admin page for any draft-article rows. **Mitigation: add `Admin read purana references` SELECT policy in the same migration (mirrors bibliography/evidence pattern).** |
+| Admin delete cascade | `ArticleManagement.tsx` | admin | None — existing admin DELETE policy |
+| Edge | `extract-purana-references` (service role) | service | None |
+
+## 2. Behaviour matrix
+
+| Risk | Verdict | Note |
+|---|---|---|
+| Public article page loses bibliography / evidence / cross-refs / purana data | None | Article never resolves for anon if draft |
+| `/research-network` edge count drops | Acceptable & correct | Currently can render draft-target edges as orphans; gate aligns edge set with node set |
+| `/about`, `/begin-journey` cross-ref count drops | Acceptable & truer | Public stat now reflects public corpus |
+| `/admin/purana-references` blank for draft rows | **Mitigated** via added admin SELECT in same migration |
+| Cross-ref source published → target draft | Hidden from public, visible to admin | Closes the draft-slug-leak via target join |
+| NULL-endpoint cross-ref rows | Hidden from public | Desired side-effect |
+
+## 3. Migration (single transaction)
+
+```sql
+-- Phase S.2: published-status gate on per-article child tables.
+-- Mirrors srangam_article_chapters / srangam_article_metadata pattern from Phase S.1.
+
+BEGIN;
+
+-- 1. srangam_article_bibliography
+DROP POLICY IF EXISTS "Public read article bibliography"
+  ON public.srangam_article_bibliography;
+
+CREATE POLICY "Public read article bibliography for published articles"
+  ON public.srangam_article_bibliography
+  FOR SELECT TO anon, authenticated
+  USING (EXISTS (
+    SELECT 1 FROM public.srangam_articles a
+    WHERE a.id = srangam_article_bibliography.article_id
+      AND a.status = 'published'
+  ));
+
+-- 2. srangam_article_evidence
+DROP POLICY IF EXISTS "Evidence is publicly readable"
+  ON public.srangam_article_evidence;
+
+CREATE POLICY "Public read article evidence for published articles"
+  ON public.srangam_article_evidence
+  FOR SELECT TO anon, authenticated
+  USING (EXISTS (
+    SELECT 1 FROM public.srangam_articles a
+    WHERE a.id = srangam_article_evidence.article_id
+      AND a.status = 'published'
+  ));
+
+-- 3. srangam_cross_references — BOTH endpoints must be published
+DROP POLICY IF EXISTS "Public read cross references"
+  ON public.srangam_cross_references;
+
+CREATE POLICY "Public read cross references between published articles"
+  ON public.srangam_cross_references
+  FOR SELECT TO anon, authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.srangam_articles a
+      WHERE a.id = srangam_cross_references.source_article_id
+        AND a.status = 'published'
+    )
+    AND
+    EXISTS (
+      SELECT 1 FROM public.srangam_articles a
+      WHERE a.id = srangam_cross_references.target_article_id
+        AND a.status = 'published'
+    )
+  );
+
+-- 4. srangam_purana_references — admin SELECT first, then gate public SELECT
+CREATE POLICY "Admin read purana references"
+  ON public.srangam_purana_references
+  FOR SELECT TO authenticated
+  USING (public.has_role(auth.uid(), 'admin'));
+
+DROP POLICY IF EXISTS "Public read purana references"
+  ON public.srangam_purana_references;
+
+CREATE POLICY "Public read purana references for published articles"
+  ON public.srangam_purana_references
+  FOR SELECT TO anon, authenticated
+  USING (EXISTS (
+    SELECT 1 FROM public.srangam_articles a
+    WHERE a.id = srangam_purana_references.article_id
+      AND a.status = 'published'
+  ));
+
+COMMIT;
 ```
-It does **not** send `all_published: true`.
 
-**Edge function (`supabase/functions/backfill-article-pins/index.ts`, lines 469–530)** candidate resolver is a strict if/else-if:
+## 4. Performance note
+
+Each gate is a single `EXISTS` against `srangam_articles` via primary key (`id`) — pure index lookup, sub-microsecond per row. `srangam_articles` has ~63 rows; even a full-table parent scan would be irrelevant. No new index needed. The `ResearchNetwork` query (single `select('*')` on cross_references) gains one PK lookup per edge — cost-neutral against current latency.
+
+## 5. Verification (Phase S.2.1 — runs immediately after migration approval)
+
+1. `supabase_lov` re-scan: expect the 4 findings (`srangam_article_bibliography_public_read_unfiltered`, `srangam_article_evidence_public_read_unfiltered`, `srangam_cross_references_public_read_unfiltered`, `srangam_purana_references_public_read_unfiltered`) cleared.
+2. Anon smoke (incognito):
+   - Open one published article from each section → bibliography sidebar, evidence table, cross-refs panel render unchanged.
+   - `/research-network` loads; edge count recorded before/after.
+   - `/about` and `/begin-journey` cross-ref stat recorded before/after.
+3. Admin smoke (logged in):
+   - `/admin/purana-references` lists all rows (admin SELECT works).
+   - `/admin/cross-references-browser` and `/admin/dashboard` counts unchanged.
+4. `supabase--read_query` sanity:
+   - `SELECT count(*) FROM srangam_cross_references` as service-role vs `set role anon; SELECT count(*) FROM srangam_cross_references; reset role;` — record the delta in the playbook.
+
+If any signal disagrees, single-statement rollback (see § 7), no retry-loop in production.
+
+## 6. Documentation & memory updates (Phase S.2.2)
+
+- `docs/RELIABILITY_AUDIT.md` → append "Phase S.2" subsection under § Phase S.1 with the diff + verification numbers + invariant 22 ("public reads on per-article child tables MUST be gated to `status='published'` parent").
+- `docs/CRON_OPS_PLAYBOOK.md` → add Phase S.2 one-liner under the existing S.1 reference + extend rollback paragraph.
+- `mem://security/phase-s1-rls-heal.md` → flip Phase S.2 from "proposed" to "deployed 2026-06-07", with the verified count deltas.
+- `mem://index.md` Core → update the Phase S.1 line to note S.2 landed.
+- `security--update_memory` → add invariant 22 + remove the "Phase S.2 follow-ups" open item.
+- `security--manage_security_finding` → mark all 4 scanner findings as `mark_as_fixed` with the migration filename as evidence.
+
+## 7. Rollback
+
+```sql
+BEGIN;
+DROP POLICY "Public read article bibliography for published articles" ON public.srangam_article_bibliography;
+CREATE POLICY "Public read article bibliography" ON public.srangam_article_bibliography FOR SELECT USING (true);
+
+DROP POLICY "Public read article evidence for published articles" ON public.srangam_article_evidence;
+CREATE POLICY "Evidence is publicly readable" ON public.srangam_article_evidence FOR SELECT USING (true);
+
+DROP POLICY "Public read cross references between published articles" ON public.srangam_cross_references;
+CREATE POLICY "Public read cross references" ON public.srangam_cross_references FOR SELECT USING (true);
+
+DROP POLICY "Public read purana references for published articles" ON public.srangam_purana_references;
+DROP POLICY "Admin read purana references" ON public.srangam_purana_references;
+CREATE POLICY "Public read purana references" ON public.srangam_purana_references FOR SELECT USING (true);
+COMMIT;
 ```
-if (body.article_id)        → single
-else if (body.slug)         → single
-else if (body.all_published)→ batch, only_zero_pin handled inside
-```
-With none of those three flags true, `totalCandidates` stays `0` and line 532 returns **404 `no articles matched`**. That is the contract mismatch.
 
-**Adjacent code (lines 494–506)** — the `only_zero_pin` branch fetches `srangam_article_pins.article_id` and `srangam_articles.id` without pagination. Current scale (171 / 47) is safely under PostgREST's default 1000-row cap, but at ~6× growth the pinned-set could silently truncate and produce false zero-pin candidates. This is a latent scalability bug, not the current 404 cause.
+## 8. Out of scope (locked)
 
-**AI telemetry today (`_shared/observability.ts`, `_shared/ai-provider.ts`, pin backfill l. 226–297)** —
-- `ai-provider.ts` returns `{ provider, model, prompt_tokens, completion_tokens, cost_usd_estimate }` per call.
-- Pin backfill aggregates them into `total_cost` and writes one `cost_delta_usd` event per article via `srangam_event_log` + stamps `srangam_admin_jobs.cost_usd`.
-- `observability.stage(...)` only `console.log`s; nothing writes a per-call AI usage row anywhere. There is **no `srangam_ai_usage` table**. Cost attribution is therefore job-level only — we cannot answer "how much did Gemini cost us this week, split by function and model".
-- `GEMINI_API_KEY` is consumed correctly with OpenAI fallback; model pricing table (`gemini-2.5-flash`: in $0.075 / out $0.30 per MTok) is the only place cost is computed.
+- No FE edits — every audited consumer works unchanged.
+- No edge-function edits — all four child-table writers run under service-role.
+- No change to admin ALL / write policies, no `srangam_articles` policy edits, no GRANT changes.
+- No new indexes (cost analysis above).
+- No cron, AI prompt, gazetteer-rule, or nightly-cap touch.
+- No retroactive backfill or data UPDATE (per `mem://~user` "production data is immutable").
 
-**Memory invariants honoured by this plan** — Phase Z (cap 20 / night, never raise without a cost note), Gazetteer G3 (never broaden prompts / relax confidence as a workaround), Cron Truth Gap (verify via three sources), Render-first / hydrate-second (no FE change here), Surgical Healing.
+## 9. Sequencing
 
----
-
-## Phase H.3 — Heal the candidate-filter 404 (surgical, edge-only)
-
-Edit only `supabase/functions/backfill-article-pins/index.ts`. **No SQL, no cron, no UI changes.**
-
-1. **Branch gate fix** (line 487): change `else if (body.all_published)` → `else if (body.all_published || body.only_zero_pin)`. The inner `if (body.only_zero_pin)` two-step query (l. 494–506) stays exactly as-is — it's correct for current scale.
-2. **Pagination hardening** inside that block (l. 495–502): paginate both fetches in 1000-row pages until exhausted (mirroring the `cultural-terms-pagination-bypass` memory). Keeps current behaviour, prevents silent truncation at ~6× growth. Cheap, additive, no API change.
-3. **Contract guard** at top of resolver: if none of `article_id | slug | all_published | only_zero_pin` is set, return **400 `missing target selector`** (currently silently 404s). Catches future enqueuer drift loudly.
-4. **One `pin_stage` log line** at resolver entry: `{ stage:'resolve_candidates', mode, totalCandidates, body_keys }` so the next investigator sees in `srangam_event_log` exactly which branch was taken and how many candidates it returned.
-
-Out of scope (locked by memory): raising the 20 / night cap, broadening AI prompts, relaxing confidence gates, touching the SQL enqueuer.
-
-## Phase H.4 — Three-source verification (read-only)
-
-After deploy, manually fire `SELECT public.enqueue_pin_backfill_sweep_job(20, 1);` once and confirm all three:
-- `net._http_response.status_code` = **202** (was 404).
-- `srangam_admin_jobs` row transitions `running → succeeded` with `total = 4`.
-- `srangam_event_log` shows the new `resolve_candidates` line and one `pin_stage` line per zero-pin slug.
-
-If any source disagrees, **do not retry-loop**; surface the disagreement in the playbook. No silent re-runs against production.
-
-## Phase T.1 — AI usage telemetry table (additive, observability-only)
-
-The current "Gemini logging" is honest at job level but blind at call level. Add a thin, append-only ledger so we can answer cost / quality questions without re-running production.
-
-**New table `public.srangam_ai_usage`** (RLS: admin SELECT only; INSERT via service_role from edge functions; no UPDATE, no DELETE — append-only per user memory "production data is immutable"):
-
-```
-id uuid pk, created_at timestamptz,
-function_name text,           -- e.g. 'backfill-article-pins'
-job_id uuid null,             -- FK-ish to srangam_admin_jobs.id
-article_id uuid null,
-provider text,                -- 'gemini' | 'openai'
-model text,                   -- 'gemini-2.5-flash' | ...
-purpose text,                 -- 'pin_extract' | 'bibliography_extract' | 'tag_gen' | ...
-prompt_tokens int, completion_tokens int,
-cost_usd_estimate numeric(10,6),
-latency_ms int,
-ok boolean,
-error_code text null,         -- 'timeout' | 'rate_limit' | 'parse_fail' | ...
-meta jsonb default '{}'
-```
-Indexes: `(created_at desc)`, `(function_name, created_at desc)`, `(provider, model)`.
-
-**Wiring (minimum-blast-radius):** add one helper `_shared/ai-usage.ts` with `logAIUsage(admin, row)`; call it from `ai-provider.ts`'s three call paths (`callGemini`, `callGeminiJson`, `callGeminiImage`) and their OpenAI fallbacks. No call-site changes anywhere else.
-
-**Documentation:** new section in `docs/RELIABILITY_AUDIT.md` titled "AI usage ledger (Phase T.1)" and a one-liner in `docs/CRON_OPS_PLAYBOOK.md`. Add a memory `mem://observability/ai-usage-ledger` describing the contract.
-
-## Phase T.2 — Hourly cost rollup (zero-cost, defer if not wanted)
-
-A materialized view `srangam_ai_usage_hourly_mv` aggregating `(function_name, provider, model, hour)` with `sum(cost_usd_estimate)`, `count`, `p95(latency_ms)`. Refreshed by an existing nightly cron job (no new cron). Powers a future admin "AI spend" panel without scanning the raw ledger. **Implement only if Phase T.1 lands cleanly and you green-light it.**
-
-## Deliverables and order
-
-1. (this turn) Plan approval. No code yet.
-2. **Phase H.3** edit → deploy → Phase H.4 verify → playbook + memory update. Single surgical change.
-3. **Phase T.1** migration → helper → wire into `ai-provider.ts` → docs + memory update.
-4. **Phase T.2** only on explicit go-ahead.
-
-## Explicit non-goals
-
-- No FE change. No change to `extract-purana-references`, `backfill-bibliography`, `context-save-drive`, or any other edge function in this work.
-- No edits to `enqueue_pin_backfill_sweep_job`, cron schedules, or cron commands. The contract is healed from the edge side so the SQL surface stays frozen.
-- No retroactive backfill of `srangam_ai_usage` from past job rows (we don't have per-call data to reconstruct; per user memory, baselines are frozen).
-- No raising of any nightly cap. No prompt or confidence-threshold change to gazetteer matching.
-
----
-
-## Implementation status (2026-06-07)
-
-- ✅ **Phase H.3** — edge-only branch-gate fix, pagination hardening, contract guard, structured `resolve_candidates` log. Deployed and verified: `POST /backfill-article-pins {only_zero_pin:true,limit:20,chunk_size:1}` → **HTTP 200, `total:4`** (was 404). One zero-pin article processed via Gemini per chunk.
-- ✅ **Phase H.4** — three-source verification: HTTP 200/202 path confirmed; `srangam_admin_jobs` flow unchanged; structured log line emits. Playbook updated.
-- ✅ **Phase T.1** — `public.srangam_ai_usage` migration applied (append-only, admin-read, service-role-write, no UPDATE/DELETE policies). `_shared/ai-usage.ts` helper created. `_shared/ai-provider.ts` accepts `opts.telemetry` on `aiExtractPlaces` / `aiExtractCitations` / `callImage` and emits one ledger row per attempt. Wired into `backfill-article-pins`, `extract-purana-references`, `backfill-bibliography`. Verified end-to-end — first ledger row landed at 2026-06-07 04:15 UTC.
-- ⏸ **Phase T.2** — deferred (awaiting greenlight).
-- ✅ **Phase S.1** (2026-06-07) — RLS heal applied via single migration:
-  - `srangam_media_assets`: dropped `Public read active media assets`; admin-only SELECT. Cost + GDrive IDs no longer anon-readable. FE OG path (`srangam_articles.og_image_url` → `gdrive-image-proxy`) unaffected.
-  - `narration_analytics`: dropped permissive INSERT; now `TO authenticated WITH CHECK (auth.uid()=user_id)`. Anon spam vector closed; zero callers in repo so no FE impact.
-  - `srangam_article_chapters`: public SELECT gated to `srangam_articles.status='published'` (mirrors `srangam_article_metadata`). Draft article→chapter ID enumeration closed.
-  - `srangam_markdown_sources`: `COMMENT ON TABLE` locking admin-only intent; scanner finding ignored with justification.
-
-Memory: `mem://observability/ai-usage-ledger` written. Docs: `RELIABILITY_AUDIT.md` § Phase T.1 + `CRON_OPS_PLAYBOOK.md` Phase H.3 / T.1 / S.1 entries.
+1. (this turn) Plan approval.
+2. **Phase S.2** — single migration via `supabase--migration` (the four policy edits + admin-read addition above, in one transaction).
+3. **Phase S.2.1** — verification block (scanner + anon/admin smoke + count deltas). Captured in playbook.
+4. **Phase S.2.2** — docs + memory + scanner-finding triage in one batched edit pass.
