@@ -318,12 +318,59 @@ Deno.serve(async (req) => {
       try {
         console.log(`\nProcessing article: ${source.file_path}`);
         
-        // Extract bibliography
+        // Extract bibliography (regex pass)
         const bibliography = extractBibliography(source.markdown_content);
-        console.log(`  - Found ${bibliography.length} bibliography entries`);
-        
+        console.log(`  - Regex found ${bibliography.length} bibliography entries`);
+
+        // Phase B (2026-06-06): AI fallback when regex misses most citations.
+        // Opt-in via { ai_fallback: true } from admin UI. Hard-capped to
+        // AI_FALLBACK_HARD_CAP_ARTICLES per invocation (~$1 ceiling).
+        if (
+          ai_fallback &&
+          bibliography.length < AI_FALLBACK_THRESHOLD &&
+          aiBudgetRemaining > 0 &&
+          source.markdown_content?.length
+        ) {
+          aiBudgetRemaining--;
+          try {
+            const aiResult = await aiExtractCitations({
+              system: AI_BIBLIO_SYSTEM,
+              user: buildAiBiblioPrompt(source.markdown_content),
+              timeoutMs: AI_FALLBACK_TIMEOUT_MS,
+            });
+            stats.aiCostUsd += aiResult.cost_usd_estimate ?? 0;
+            const parsed = aiResult.parsed as { references?: AiBiblioRef[] } | null;
+            const aiRefs = Array.isArray(parsed?.references) ? parsed!.references : [];
+            let added = 0;
+            for (const r of aiRefs) {
+              const entry = aiRefToEntry(r);
+              if (!entry) continue;
+              // Skip if regex pass already produced a similar citation_key
+              if (bibliography.some((b) => b.citation_key === entry.citation_key)) continue;
+              bibliography.push(entry);
+              added++;
+            }
+            if (added > 0) {
+              stats.aiFallbackArticles++;
+              stats.aiFallbackEntries += added;
+              console.log(`  - AI fallback added ${added} entries (provider=${aiResult.provider}, cost=$${(aiResult.cost_usd_estimate ?? 0).toFixed(4)})`);
+            } else {
+              console.log(`  - AI fallback produced 0 usable entries`);
+            }
+          } catch (aiErr) {
+            const msg = aiErr instanceof Error ? aiErr.message : String(aiErr);
+            if (aiErr instanceof NoAIProviderError) {
+              console.error(`  - AI fallback skipped: no provider configured`);
+            } else {
+              console.error(`  - AI fallback error: ${msg}`);
+              stats.errors.push(`${source.file_path} ai_fallback: ${msg}`);
+            }
+          }
+        }
+
         // Convert markdown to HTML for evidence extraction
         const htmlContent = marked.parse(source.markdown_content) as string;
+        
         
         // Debug: Verify table conversion
         const markdownTableCount = (source.markdown_content.match(/\|[^\n]+\n\|[-:| ]+\n/g) || []).length;
