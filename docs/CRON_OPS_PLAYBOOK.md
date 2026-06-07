@@ -94,7 +94,8 @@ ORDER BY j.jobid;
 
 ## Phase T.1 reference (2026-06-07)
 
-See `RELIABILITY_AUDIT.md` § "Phase T.1 — AI usage ledger". `srangam_ai_usage` is the canonical per-call cost / latency / error ledger for every Gemini ## Rollback OpenAI invocation routed through `_shared/ai-provider.ts`. Append-only; admin SELECT only.
+See `RELIABILITY_AUDIT.md` § "Phase T.1 — AI usage ledger". `srangam_ai_usage` is the canonical per-call cost / latency / error ledger for every Gemini and OpenAI invocation routed through `_shared/ai-provider.ts`. Append-only; admin SELECT only.
+
 
 ## Rollback
 
