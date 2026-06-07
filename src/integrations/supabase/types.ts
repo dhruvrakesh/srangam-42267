@@ -143,6 +143,60 @@ export type Database = {
         }
         Relationships: []
       }
+      srangam_ai_usage: {
+        Row: {
+          article_id: string | null
+          completion_tokens: number | null
+          cost_usd_estimate: number | null
+          created_at: string
+          error_code: string | null
+          function_name: string
+          id: string
+          job_id: string | null
+          latency_ms: number | null
+          meta: Json
+          model: string
+          ok: boolean
+          prompt_tokens: number | null
+          provider: string
+          purpose: string | null
+        }
+        Insert: {
+          article_id?: string | null
+          completion_tokens?: number | null
+          cost_usd_estimate?: number | null
+          created_at?: string
+          error_code?: string | null
+          function_name: string
+          id?: string
+          job_id?: string | null
+          latency_ms?: number | null
+          meta?: Json
+          model: string
+          ok?: boolean
+          prompt_tokens?: number | null
+          provider: string
+          purpose?: string | null
+        }
+        Update: {
+          article_id?: string | null
+          completion_tokens?: number | null
+          cost_usd_estimate?: number | null
+          created_at?: string
+          error_code?: string | null
+          function_name?: string
+          id?: string
+          job_id?: string | null
+          latency_ms?: number | null
+          meta?: Json
+          model?: string
+          ok?: boolean
+          prompt_tokens?: number | null
+          provider?: string
+          purpose?: string | null
+        }
+        Relationships: []
+      }
       srangam_article_analytics: {
         Row: {
           article_id: string
