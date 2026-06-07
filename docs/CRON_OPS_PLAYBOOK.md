@@ -104,9 +104,17 @@ See `RELIABILITY_AUDIT.md` § "Phase S.1". Four policy edits, zero FE/edge wirin
 - `srangam_article_chapters` → public SELECT gated to `status='published'` parent article.
 - `srangam_markdown_sources` → `COMMENT ON TABLE` intent lock (scanner self-confirmed secure).
 
-Phase S.2 (proposed, not deployed) replicates the published-status gate on `srangam_article_bibliography`, `srangam_article_evidence`, `srangam_cross_references`, `srangam_purana_references`. Pre-flight FE grep required before approval.
+## Phase S.2 reference (2026-06-07) — Surgical RLS heal, sibling tables
+
+See `RELIABILITY_AUDIT.md` § "Phase S.2". Single migration; published-status gate replicated on the four scanner-flagged sibling tables; zero FE / edge wiring change.
+
+- `srangam_article_bibliography` → public SELECT gated to `status='published'` parent. 69/69 rows unaffected at deploy.
+- `srangam_article_evidence` → same pattern. 117/117 unaffected.
+- `srangam_cross_references` → public SELECT requires **both** endpoints published. 1429/1429 unaffected (NULL-endpoint rows hidden from public, admin still sees via ALL).
+- `srangam_purana_references` → added explicit admin SELECT (table previously relied on public-true for admin reads), then gated public SELECT to published parent. 47/47 unaffected.
 
 ## Rollback
 
-Every Phase H / H.2 / H.3 / P / S.1 change is a single `cron.alter_job`, `DROP CONSTRAINT`, or inverse `CREATE POLICY` away from the previous state. Old commands, the full pre-dedup snapshot, and pre-S.1 policy texts are preserved in the migration history. H.3 rollback: revert `supabase/functions/backfill-article-pins/index.ts` to the pre-2026-06-07 branch gate. S.1 rollback: re-create each dropped policy from migration `20260607042423_*.sql` and `20260607_narration_analytics_*` in reverse.
+Every Phase H / H.2 / H.3 / P / S.1 / S.2 change is a single `cron.alter_job`, `DROP CONSTRAINT`, or inverse `CREATE POLICY` away from the previous state. Old commands, the full pre-dedup snapshot, and pre-S.1/S.2 policy texts are preserved in the migration history. H.3 rollback: revert `supabase/functions/backfill-article-pins/index.ts` to the pre-2026-06-07 branch gate. S.1/S.2 rollback: re-create each dropped policy with `USING (true)` and drop the new gated policies + the new `Admin read purana references` SELECT policy.
+
 
