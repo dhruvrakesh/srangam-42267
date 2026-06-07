@@ -484,15 +484,47 @@ export async function aiExtractCitations(opts: JsonCallOpts): Promise<AIJsonResu
   const user = opts.user.length > maxChars ? opts.user.slice(0, maxChars) : opts.user;
   const call = { ...opts, user };
 
+  const tel = opts.telemetry;
+  const logResult = (r: AIJsonResult) => {
+    if (!tel) return;
+    void logAIUsage({
+      ...tel,
+      provider: r.provider,
+      model: r.model,
+      prompt_tokens: r.prompt_tokens,
+      completion_tokens: r.completion_tokens,
+      cost_usd_estimate: r.cost_usd_estimate,
+      latency_ms: r.latency_ms,
+      ok: true,
+      meta: { user_chars: user.length, parsed_ok: r.parsed !== null },
+    });
+  };
+  const logFailure = (provider: 'gemini' | 'openai', model: string, e: unknown) => {
+    if (!tel) return;
+    void logAIUsage({
+      ...tel,
+      provider, model,
+      ok: false,
+      error_code: classifyAIError(e),
+      meta: { error_message: (e instanceof Error ? e.message : String(e)).slice(0, 300) },
+    });
+  };
+
   if (gemini) {
     try {
-      return await callGeminiJson(gemini, call);
+      const r = await callGeminiJson(gemini, call);
+      logResult(r);
+      return r;
     } catch (e) {
+      logFailure('gemini', 'gemini-2.5-flash', e);
       if (isTransient(e)) {
         try {
           await new Promise((r) => setTimeout(r, 800));
-          return await callGeminiJson(gemini, call);
+          const r2 = await callGeminiJson(gemini, call);
+          logResult(r2);
+          return r2;
         } catch (e2) {
+          logFailure('gemini', 'gemini-2.5-flash', e2);
           if (!openai) throw e2;
         }
       } else if (!openai) {
@@ -500,9 +532,19 @@ export async function aiExtractCitations(opts: JsonCallOpts): Promise<AIJsonResu
       }
     }
   }
-  if (openai) return await callOpenAIJson(openai, call);
+  if (openai) {
+    try {
+      const r = await callOpenAIJson(openai, call);
+      logResult(r);
+      return r;
+    } catch (e) {
+      logFailure('openai', 'gpt-4o-mini', e);
+      throw e;
+    }
+  }
   throw new NoAIProviderError();
 }
+
 
 
 export interface AIImageResult {
