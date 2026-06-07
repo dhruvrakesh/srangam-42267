@@ -267,8 +267,18 @@ async function processArticle(
   }));
 
   if (refsToInsert.length > 0) {
-    const { error } = await supabase.from('srangam_purana_references').insert(refsToInsert);
-    if (error) console.error(`[${article.slug}] insert error:`, error.message);
+    // Phase P (2026-06-06): idempotent write. Unique constraint
+    // srangam_purana_references_dedup_key on
+    // (article_id, purana_name, reference_text, adhyaya) means re-running
+    // the extractor on the same article is now a no-op for already-present
+    // rows, and a partial run can be safely resumed without duplicates.
+    const { error } = await supabase
+      .from('srangam_purana_references')
+      .upsert(refsToInsert, {
+        onConflict: 'article_id,purana_name,reference_text,adhyaya',
+        ignoreDuplicates: true,
+      });
+    if (error) console.error(`[${article.slug}] upsert error:`, error.message);
   }
 
   let high = 0, mid = 0, low = 0;
