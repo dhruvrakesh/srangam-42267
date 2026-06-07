@@ -75,7 +75,10 @@ export interface AIExtractResult {
 interface CallOpts {
   signal?: AbortSignal;
   timeoutMs?: number;
+  /** Phase T.1 — optional telemetry context for the AI usage ledger. */
+  telemetry?: AIUsageTelemetry;
 }
+
 
 const SYSTEM_PROMPT =
   'You extract historical place names from scholarly text. ' +
