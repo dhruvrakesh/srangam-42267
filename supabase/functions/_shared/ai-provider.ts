@@ -293,16 +293,48 @@ export async function aiExtractPlaces(
   // Truncate defensively — keeps token cost bounded for very long articles.
   const input = text.length > 60_000 ? text.slice(0, 60_000) : text;
 
+  const tel = opts.telemetry;
+  const logResult = (r: AIExtractResult) => {
+    if (!tel) return;
+    void logAIUsage({
+      ...tel,
+      provider: r.provider,
+      model: r.model,
+      prompt_tokens: r.prompt_tokens,
+      completion_tokens: r.completion_tokens,
+      cost_usd_estimate: r.cost_usd_estimate,
+      latency_ms: r.latency_ms,
+      ok: true,
+      meta: { places_count: r.places.length, input_chars: input.length },
+    });
+  };
+  const logFailure = (provider: 'gemini' | 'openai', model: string, e: unknown) => {
+    if (!tel) return;
+    void logAIUsage({
+      ...tel,
+      provider, model,
+      ok: false,
+      error_code: classifyAIError(e),
+      meta: { error_message: (e instanceof Error ? e.message : String(e)).slice(0, 300) },
+    });
+  };
+
   // 1. Gemini primary, with one retry on transient failure.
   if (gemini) {
     try {
-      return await callGemini(input, gemini, opts);
+      const r = await callGemini(input, gemini, opts);
+      logResult(r);
+      return r;
     } catch (e) {
+      logFailure('gemini', 'gemini-2.5-flash', e);
       if (isTransient(e)) {
         try {
           await new Promise((r) => setTimeout(r, 800));
-          return await callGemini(input, gemini, opts);
+          const r2 = await callGemini(input, gemini, opts);
+          logResult(r2);
+          return r2;
         } catch (e2) {
+          logFailure('gemini', 'gemini-2.5-flash', e2);
           if (!openai) throw e2;
           // fall through to OpenAI
         }
@@ -313,11 +345,21 @@ export async function aiExtractPlaces(
   }
 
   // 2. OpenAI fallback.
-  if (openai) return await callOpenAI(input, openai, opts);
+  if (openai) {
+    try {
+      const r = await callOpenAI(input, openai, opts);
+      logResult(r);
+      return r;
+    } catch (e) {
+      logFailure('openai', 'gpt-4o-mini', e);
+      throw e;
+    }
+  }
 
   // Should be unreachable.
   throw new NoAIProviderError();
 }
+
 
 // =============================================================================
 // Phase X.5 — Generic JSON extraction (Gemini-first, OpenAI fallback)
