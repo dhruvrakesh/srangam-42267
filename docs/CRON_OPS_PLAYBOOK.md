@@ -61,6 +61,27 @@ ORDER BY j.jobid;
 - **jobid 7** (`srangam-term-enrichment-nightly`) — was 200 but no-op (empty `articleSlugs`). Replaced with `enqueue_term_enrichment_nightly(5)` which selects up to 5 published articles with empty `tags` arrays and regenerates them. **Never overwrites curated tags.**
 - **jobid 8** (`srangam-context-snapshot-nightly`) — pg_net showed NULL status_code, but `srangam_context_snapshots` shows fresh rows landing nightly. Job is healthy; the NULL is a pg_net collection-window artifact for slow (>60s) edge replies. **No change required.** Documented here so the next investigator doesn't waste a debug cycle.
 
+## Phase H.2 change log (2026-06-06)
+
+- **`_cron_invoke_edge`** — was using the pg_net default 5s timeout, silently truncating every AI-backed nightly call. Now passes `timeout_milliseconds := 120000` explicitly. Pin / OG / term-enrichment enqueuers self-pump via `EdgeRuntime.waitUntil` so the 120s only needs to cover the initial 202 ack.
+- **jobid 2** (`srangam-pin-enrichment-nightly`) — root-cause: `enqueue_pin_backfill_sweep_job` inserted an `srangam_admin_jobs` row but **never called `_cron_invoke_edge`**, so the edge function was never invoked and the watchdog reaped the orphan row every night with `last_error = "watchdog: no heartbeat"`. Fixed by adding the missing POST (mirroring `enqueue_og_nightly_job` / `enqueue_term_enrichment_nightly`). Verify next morning: `srangam_admin_jobs` row for `kind='pin_backfill'` should advance `heartbeat_at` and finish `status='succeeded'` with `processed > 0`.
+
+## Phase P change log (2026-06-06) — Puranic idempotency
+
+- Pre-clean baseline: 69 rows, 17 duplicate groups on `(article_id, purana_name, reference_text, adhyaya)`.
+- Archived to `public.srangam_purana_references_dedup_archive_20260606` (RLS: admin SELECT only) before any mutation.
+- Normalized `adhyaya`: `''` and literal `"Not mentioned"` → `NULL`.
+- Soft-deduplicated to 47 unique rows (22 removed — 3 more than the pre-normalization audit predicted because empty-string vs NULL collisions surfaced after normalization).
+- Added `UNIQUE (article_id, purana_name, reference_text, adhyaya)` constraint `srangam_purana_references_dedup_key`. Re-running the extractor on the same article is now a no-op for already-present rows.
+- `extract-purana-references` edge function: `.insert()` → `.upsert(..., { onConflict, ignoreDuplicates: true })`; new optional request flag `only_unextracted: true` filters out articles that already have ≥1 reference, enabling cheap resumable batch sweeps.
+
+## Phase B change log (2026-06-06) — Bibliography AI fallback
+
+- Baseline coverage: 5 / 47 published articles have any bibliography rows (10.6%). Regex was missing inline parenthetical citations entirely.
+- `backfill-bibliography` now accepts `{ ai_fallback: true }` — when the regex pass yields `< 3` entries, calls `aiExtractCitations` (Gemini → OpenAI) with a 25 k char cap, 60 s timeout, MLA9-shaped JSON schema.
+- Hard cap: 50 articles per invocation (~$1 ceiling). AI-derived entries are tagged `ai_extracted` so curators can audit them.
+- Trigger manually only (no cron). Curation, not expansion.
+
 ## Rollback
 
-Every Phase H change is a single `cron.alter_job` away from the previous (broken-but-known) state. Old commands are preserved in the migration file `supabase/migrations/20260601*phase_h*.sql` as comments.
+Every Phase H / H.2 / P change is a single `cron.alter_job` or `DROP CONSTRAINT` / `INSERT INTO ... FROM srangam_purana_references_dedup_archive_20260606` away from the previous state. Old commands and the full pre-dedup snapshot are preserved.
