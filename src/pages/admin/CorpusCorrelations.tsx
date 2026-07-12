@@ -53,6 +53,30 @@ export default function CorpusCorrelations() {
   const [useSnapshot, setUseSnapshot] = useState(true);
   const [weights, setWeights] = useState<CorrelationWeights>(DEFAULT_WEIGHTS);
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [isRecomputing, setIsRecomputing] = useState(false);
+
+  const handleRecompute = async () => {
+    setIsRecomputing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('correlate-corpus', {
+        body: {
+          min_shared: minShared,
+          limit_rows: Math.max(limitRows, 500),
+          ...weights,
+        },
+      });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || 'Recompute failed');
+      toast.success(`Snapshot written: ${data.rows} pairs`, {
+        description: new Date(data.computed_at).toLocaleString(),
+      });
+      await refetch();
+    } catch (e: any) {
+      toast.error(`Recompute failed: ${e.message || String(e)}`);
+    } finally {
+      setIsRecomputing(false);
+    }
+  };
 
   const { data, isLoading, error, refetch, isFetching } = useCorpusCorrelations({
     minShared,
