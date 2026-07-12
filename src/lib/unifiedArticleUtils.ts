@@ -5,6 +5,10 @@ import type { SupportedLanguage } from '@/types/multilingual';
 // file is in the eager Home import graph and must not pull article bodies.
 import { SLUG_TO_ID_MAP } from '@/data/articles/meta';
 import { getArticleCoverageMap } from '@/lib/i18n/coverageData';
+// Phase 2.2 (2026-07-12): registry id → canonical DB slug/alias. Lets the
+// merge recognise a registry article by its published DB twin (imported under
+// a standardized slug) and collapse the duplicate card.
+import { CANONICAL_SLUG_MAP } from '@/data/articles/canonicalSlugMap';
 
 /**
  * Extracts a normalized key from a slug for deduplication.
@@ -65,6 +69,13 @@ export const mergeArticleSources = (
       (SLUG_TO_ID_MAP as Record<string, string>)[
         article.slug.startsWith('/') ? article.slug : `/${article.id}`
       ]?.toLowerCase() || '',
+      // Phase 2.2 — the registry article's published DB twin lives under a
+      // standardized (renamed) slug; add it so the duplicate card collapses.
+      // Matches nothing when the DB twin is absent (e.g. draft), so a genuinely
+      // registry-only article is never hidden.
+      article.id && CANONICAL_SLUG_MAP[article.id.toLowerCase()]
+        ? normalizeSlugKey(CANONICAL_SLUG_MAP[article.id.toLowerCase()])
+        : '',
     ].filter(Boolean);
 
     if (jsonCandidates.some((c) => dbIdentifiers.has(c))) {
