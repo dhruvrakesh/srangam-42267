@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { X, MapPin, Info, Anchor } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { getPublicConfig } from '@/lib/publicConfig';
 
 interface MapboxPortMapProps {
   onClose: () => void;
@@ -151,6 +152,23 @@ export function MapboxPortMap({ onClose }: MapboxPortMapProps) {
       markers.current.push(marker);
     });
   };
+
+  // UX heal (2026-07-12): auto-provision the Mapbox public token from the
+  // `get-public-config` edge function (server-side MAPBOX_PUBLIC_TOKEN) so
+  // public visitors get the map directly instead of a manual token prompt.
+  // If the server has no token, we leave the manual modal as a graceful
+  // fallback — previous behaviour is preserved, nothing breaks.
+  useEffect(() => {
+    let cancelled = false;
+    getPublicConfig().then((cfg) => {
+      if (cancelled) return;
+      if (cfg.mapbox.hasToken && cfg.mapbox.publicToken) {
+        setMapboxToken(cfg.mapbox.publicToken);
+        setIsTokenSet(true);
+      }
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     if (isTokenSet && mapboxToken) {
