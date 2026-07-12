@@ -1,13 +1,15 @@
-## Redeploy all edge functions
+## Goal
+Populate `srangam_corpus_correlations_snapshot` with a fresh multi-signal correlation set by invoking the `correlate-corpus` edge function once.
 
-Redeploy every function under `supabase/functions/` to bring the runtime in sync with current source. Idempotent, no code changes.
+## Steps
+1. Call `correlate-corpus` via `supabase--curl_edge_functions` with default weights (min_shared=1, limit_rows=1000, w_place=0.25, w_purana=0.30, w_term=0.20, w_tag=0.10, w_biblio=0.15) using service-role bearer so it runs in cron mode.
+2. Verify response: expect `{ ok: true, job_id, rows, computed_at }`.
+3. Confirm snapshot rows via `supabase--read_query` on `srangam_corpus_correlations_snapshot` filtered by the returned `job_id` and check `srangam_admin_jobs` row = `succeeded`.
 
-### Functions (29)
-analyze-tag-relationships, backfill-article-pins, backfill-bibliography, backfill-word-counts, batch-enrich-terms, batch-import-from-github, context-bundle-generator, context-diff-generator, context-save-drive, correlate-corpus, cron-self-test, detect-duplicate-articles, enrich-cultural-term, extract-purana-references, gdrive-image-proxy, generate-article-og, generate-article-seo, generate-article-tags, generate-sitemap, get-public-config, imaging-handoff-token, markdown-to-article-import, retire-og-image, scan-github-markdown, suggest-tag-categories, tts-save-drive, tts-stream-elevenlabs, tts-stream-google, tts-stream-openai
+## Out of scope
+- No code, migration, cron, RLS, or FE changes.
+- No weight tuning beyond defaults.
+- No promotion of pairs into `srangam_cross_references` (curator action, stays manual).
 
-### Steps
-1. Call `supabase--deploy_edge_functions` with all 29 names in one batch.
-2. Smoke test `get-public-config` (expect 200).
-
-### Out of scope
-No code, config, cron, RLS, or FE changes.
+## Risk
+Low. Function is idempotent-per-invocation (one job = one snapshot); admin UI already reads latest snapshot by `computed_at`.
