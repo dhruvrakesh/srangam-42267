@@ -240,7 +240,7 @@ export default function Home() {
                   <p className="text-base sm:text-lg text-foreground mb-4">
                     Showing <span className="text-saffron font-semibold">{filteredArticles.length}</span>
                     {' '}of{' '}
-                    <span className="text-saffron font-semibold">{totalArticles}</span> published articles
+                    <span className="text-saffron font-semibold">{totalArticles}</span> research articles
                     <span className="text-muted-foreground"> · Last updated {lastUpdated}</span>
                   </p>
                 );
@@ -249,7 +249,7 @@ export default function Home() {
                 <>
                   <div className="flex items-center justify-center gap-6 mb-4">
                     <p className="text-2xl font-semibold text-foreground">
-                      <span className="text-saffron">{totalArticles}</span> Published Articles
+                      <span className="text-saffron">{totalArticles}</span> Research Articles
                     </p>
                     <span className="text-muted-foreground">•</span>
                     <p className="text-sm text-muted-foreground">Last updated: {lastUpdated}</p>
