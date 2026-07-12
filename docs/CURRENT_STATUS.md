@@ -1,6 +1,16 @@
 # Srangam Platform - Current Status
 
-**Last Updated**: 2026-02-15 (Enterprise Hardening Roadmap — Phase A: Documentation Truth)
+**Last Updated**: 2026-07-12 (Enterprise Roadmap Phase 1 — Load-Time Surgery)
+
+---
+
+## 🚀 Latest: Phase 1 Load-Time Surgery (2026-07-12)
+
+- Entry bundle 630 KB gz → 277 KB gz (static article corpus + cultural-terms dataset removed from eager graph; vendor chunks split for cache stability)
+- Homepage hero LCP image 2.7 MB PNG → 172 KB WebP with PNG fallback
+- Homepage first-load ~3.4 MB → ~0.47 MB (−86%); all 35 unit tests green
+- New: `src/data/articles/meta.ts` (generated — run `node scripts/generate-registry-meta.mjs` after editing static registry articles)
+- Full audit + Phases 2–5 plan: [ENTERPRISE_AUDIT_AND_ROADMAP_2026-07-12.md](./ENTERPRISE_AUDIT_AND_ROADMAP_2026-07-12.md)
 
 ---
 

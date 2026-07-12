@@ -19,8 +19,11 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/brand/srangam_favicon_180.png" />
     <link rel="manifest" href="/brand/site.webmanifest" />
     
-    <!-- LCP: preload hero image used on the homepage above-the-fold (Phase 6c). -->
-    <link rel="preload" as="image" href="/images/hero_indian-ocean_aerial_21x9_v1.png" fetchpriority="high" />
+    <!-- LCP: preload hero image used on the homepage above-the-fold (Phase 6c).
+         Phase 1.2 (2026-07-12): points at the WebP variant (172 KB vs 2.7 MB PNG).
+         type="image/webp" makes non-WebP browsers skip this preload and fall
+         back to the <picture> PNG source at render time. -->
+    <link rel="preload" as="image" href="/images/hero_indian-ocean_aerial_21x9_v1.webp" type="image/webp" fetchpriority="high" />
 
     <!-- Fonts -->
 

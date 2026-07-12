@@ -1,6 +1,10 @@
 import { supabase } from '@/integrations/supabase/client';
 import { getOceanicCardBySlug, type OceanicCard } from './oceanicCardsLoader';
-import { MULTILINGUAL_ARTICLES, ARTICLE_METADATA } from '@/data/articles';
+// Phase 1.1 (2026-07-12): resolver is on the eager import graph of several
+// pages, so it must not statically import the full registry. Metadata comes
+// from the lightweight meta module; full article content is loaded on demand
+// via ARTICLE_CONTENT_LOADERS (one dynamic-import chunk per article).
+import { ARTICLE_METADATA, ARTICLE_CONTENT_LOADERS } from '@/data/articles/meta';
 import { loadArticlePins } from './articlePins';
 
 export interface ResolvedArticle {
@@ -73,9 +77,12 @@ export async function resolveOceanicArticle(slug: string): Promise<ResolvedArtic
     };
   }
 
-  // 2. Try MULTILINGUAL_ARTICLES registry (28 articles with full content)
-  const multilingualArticle = MULTILINGUAL_ARTICLES.find(a => a.id === slug);
-  if (multilingualArticle) {
+  // 2. Try the static registry (28 articles with full content), loaded
+  //    lazily — Phase 1.1: one dynamic-import chunk per article instead of
+  //    1.4 MB of bodies in the entry bundle.
+  const contentLoader = ARTICLE_CONTENT_LOADERS[slug];
+  if (contentLoader) {
+    const multilingualArticle = await contentLoader();
     const metadata = ARTICLE_METADATA[slug];
     const titleEn = typeof multilingualArticle.title === 'object' ? (multilingualArticle.title as any).en || '' : String(multilingualArticle.title);
     const titleHi = typeof multilingualArticle.title === 'object' ? (multilingualArticle.title as any).hi : undefined;

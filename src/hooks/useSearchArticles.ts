@@ -1,8 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { searchArticles } from "@/lib/searchEngine";
 import { useLanguage } from "@/components/language/LanguageProvider";
 import { stripExportArtifacts } from "@/lib/textSanitizer";
+
+// Phase 1.1 (2026-07-12): searchEngine statically imports the full static
+// article registry (~1.4 MB pre-gzip). This hook is reachable from HeaderNav
+// (eager on every page), which silently pulled the whole corpus into the
+// entry bundle. The engine is now dynamic-imported inside the query fn, so
+// the corpus chunk loads only when a user actually types a search query.
 
 interface SearchResultItem {
   id: string;
@@ -68,20 +73,31 @@ export function useSearchArticles(query: string, options: UseSearchArticlesOptio
     staleTime: 60_000,
   });
 
+  // Static-registry search via lazily-loaded engine (Phase 1.1)
+  const jsonQuery = useQuery({
+    queryKey: ['search-static', query, currentLanguage, theme, minScore, useBoolean, searchField],
+    queryFn: async () => {
+      const { searchArticles } = await import('@/lib/searchEngine');
+      return searchArticles(query, {
+        language: currentLanguage,
+        theme,
+        searchInContent: true,
+        searchCulturalTerms: true,
+        minScore,
+        useBoolean,
+        searchField,
+      });
+    },
+    enabled: enabled && query.trim().length >= 2,
+    staleTime: 60_000,
+  });
+
   // Merge JSON + DB results
   const results: SearchResultItem[] = (() => {
     if (!query.trim()) return [];
 
-    // 1. JSON-based search (existing logic, untouched)
-    const jsonResults = searchArticles(query, {
-      language: currentLanguage,
-      theme,
-      searchInContent: true,
-      searchCulturalTerms: true,
-      minScore,
-      useBoolean,
-      searchField,
-    });
+    // 1. JSON-based search (same logic; engine now loaded on demand)
+    const jsonResults = jsonQuery.data || [];
 
     const formattedJson: SearchResultItem[] = jsonResults.map(result => ({
       id: result.article.id,
@@ -127,7 +143,7 @@ export function useSearchArticles(query: string, options: UseSearchArticlesOptio
 
   return {
     results,
-    isLoading: dbQuery.isLoading && query.trim().length >= 2,
+    isLoading: (dbQuery.isLoading || jsonQuery.isLoading) && query.trim().length >= 2,
     error: dbQuery.error,
   };
 }

@@ -1,4 +1,7 @@
-import { MULTILINGUAL_ARTICLES, ARTICLE_METADATA, SLUG_TO_ID_MAP } from '@/data/articles';
+// Phase 1.1 (2026-07-12): card/list paths read the lightweight meta module
+// (≈80 KB) instead of the full registry (≈1.4 MB) so Home/theme pages stop
+// shipping every article body in the entry bundle.
+import { ARTICLE_CARDS, ARTICLE_METADATA } from '@/data/articles/meta';
 import { LocalizedArticle, SupportedLanguage } from '@/types/multilingual';
 
 interface DisplayArticle {
@@ -14,12 +17,12 @@ interface DisplayArticle {
 }
 
 /**
- * Converts LocalizedArticle data to display format for ArticleCard
+ * Converts article card metadata to display format for ArticleCard
  */
 export const getDisplayArticles = (language: SupportedLanguage = 'en'): DisplayArticle[] => {
-  return MULTILINGUAL_ARTICLES.map(article => {
+  return ARTICLE_CARDS.map(article => {
     const metadata = ARTICLE_METADATA[article.id];
-    
+
     if (!metadata) {
       console.warn(`No metadata found for article: ${article.id}`);
       return {
@@ -133,9 +136,9 @@ export const getFeaturedArticles = (language: SupportedLanguage = 'en', limit: n
  * Get article by ID
  */
 export const getArticleById = (id: string, language: SupportedLanguage = 'en'): DisplayArticle | undefined => {
-  const article = MULTILINGUAL_ARTICLES.find(a => a.id === id);
+  const article = ARTICLE_CARDS.find(a => a.id === id);
   if (!article) return undefined;
-  
+
   const metadata = ARTICLE_METADATA[id];
   if (!metadata) return undefined;
 
@@ -156,7 +159,7 @@ export const getArticleById = (id: string, language: SupportedLanguage = 'en'): 
  * Get articles by theme
  */
 export const getArticlesByTheme = (theme: string, language: SupportedLanguage = 'en'): DisplayArticle[] => {
-  return getDisplayArticles(language).filter(article => 
+  return getDisplayArticles(language).filter(article =>
     article.theme.toLowerCase().includes(theme.toLowerCase())
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, Suspense, lazy } from "react";
 import { Helmet } from "react-helmet-async";
 import { useTranslation } from "react-i18next";
 import { ArticleCard } from "@/components/ui/ArticleCard";
@@ -12,8 +12,14 @@ import { ArticleThemeChips } from "@/components/articles/ArticleThemeChips";
 import { IconMonsoon, IconScript, IconBasalt, IconPort, IconEdict, IconDharmaChakra, IconSarnathLion, IconLotus, IconConch, IconOm } from "@/components/icons";
 import { Link } from "react-router-dom";
 import { ArrowRight, Waves, Mountain, BookOpen, Map, Users, Network, Loader2 } from "lucide-react";
-import GeomythologySection from "@/components/home/GeomythologySection";
-import ToolsSection from "@/components/home/ToolsSection";
+// Phase 1.1 (2026-07-12): GeomythologySection transitively imports the full
+// cultural-terms dataset (~610 KB pre-gzip) via CulturalTermTooltip. Home is
+// eagerly imported in App.tsx, so a static import here put that dataset in
+// the entry bundle for every visitor. Both below-the-fold sections are
+// lazy-loaded instead; the entry chunk stays lean and the sections hydrate
+// right after first paint.
+const GeomythologySection = lazy(() => import("@/components/home/GeomythologySection"));
+const ToolsSection = lazy(() => import("@/components/home/ToolsSection"));
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Home() {
@@ -128,15 +134,21 @@ export default function Home() {
       <section className="relative min-h-screen">
         {/* Hero Image Background with Sacred Overlays */}
         <div className="absolute inset-0">
-          <img
-            src="/images/hero_indian-ocean_aerial_21x9_v1.png"
-            alt="सागर - The sacred waters of the Indian Ocean connecting ancient civilizations"
-            className="w-full h-full object-cover"
-            width={2100}
-            height={900}
-            fetchPriority="high"
-            decoding="async"
-          />
+          {/* Phase 1.2 (2026-07-12): WebP hero (172 KB) with PNG fallback
+              (2.7 MB) — same 1536×1024 source pixels. Keep the preload in
+              index.html pointed at the same WebP URL. */}
+          <picture>
+            <source srcSet="/images/hero_indian-ocean_aerial_21x9_v1.webp" type="image/webp" />
+            <img
+              src="/images/hero_indian-ocean_aerial_21x9_v1.png"
+              alt="सागर - The sacred waters of the Indian Ocean connecting ancient civilizations"
+              className="w-full h-full object-cover"
+              width={2100}
+              height={900}
+              fetchPriority="high"
+              decoding="async"
+            />
+          </picture>
 
           <div className="absolute inset-0 bg-gradient-to-b from-indigo-dharma/20 via-saffron/10 to-charcoal-om/80" />
           <div className="absolute inset-0 lotus-gradient opacity-20" />
@@ -450,11 +462,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Geomythology & Cultural Continuity Section */}
-      <GeomythologySection />
+      {/* Geomythology & Cultural Continuity Section (lazy, below the fold) */}
+      <Suspense fallback={null}>
+        <GeomythologySection />
+      </Suspense>
 
-      {/* Research Tools Section */}
-      <ToolsSection />
+      {/* Research Tools Section (lazy, below the fold) */}
+      <Suspense fallback={null}>
+        <ToolsSection />
+      </Suspense>
 
       {/* Themes Grid - Dharmic Mandala Layout */}
       <section className="py-16 bg-background relative">

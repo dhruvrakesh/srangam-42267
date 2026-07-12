@@ -1,8 +1,7 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Info, BookOpen, Globe } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { getCulturalContext } from '@/data/articles/cultural-terms';
 import { cn } from '@/lib/utils';
 
 interface CulturalTermTooltipProps {
@@ -10,6 +9,28 @@ interface CulturalTermTooltipProps {
   children: React.ReactNode;
   className?: string;
 }
+
+interface CulturalContextValue {
+  translation: string;
+  transliteration?: string;
+  etymology?: string;
+  culturalContext?: string;
+}
+
+/**
+ * Phase 1.1 (2026-07-12, Enterprise Roadmap) — lazy terms dataset.
+ *
+ * `cultural-terms.ts` aggregates ~600 KB (pre-gzip) of term data. This
+ * tooltip is rendered by ArticleCard/EnhancedMultilingualText, which sit in
+ * the eager Home import graph, so a static import shipped the entire
+ * dataset in the entry bundle for every visitor. The module is now
+ * dynamic-imported once (module-level cached promise) on first tooltip
+ * mount; until it resolves, the term renders as plain text — identical to
+ * the existing "term not found" fallback, so nothing breaks visually.
+ */
+let termsModulePromise: Promise<typeof import('@/data/articles/cultural-terms')> | null = null;
+const loadTermsModule = () =>
+  termsModulePromise ?? (termsModulePromise = import('@/data/articles/cultural-terms'));
 
 /**
  * CulturalTermTooltip
@@ -31,7 +52,38 @@ export const CulturalTermTooltip: React.FC<CulturalTermTooltipProps> = ({
   const { i18n } = useTranslation();
   const currentLang = i18n.language;
   const [open, setOpen] = useState(false);
+  const [context, setContext] = useState<CulturalContextValue | null>(null);
   const touchedRef = useRef(false);
+
+  // Normalize term: lowercase, trim, and handle hyphens.
+  // (Guarded — `term` may arrive as a non-string from dynamic content.)
+  const normalizedTerm =
+    typeof term === 'string' ? term.toLowerCase().trim().replace(/\s+/g, '-') : '';
+
+  // Phase 1.1: resolve the term against the lazily-loaded dataset.
+  // All hooks run unconditionally (before any early return) — this also
+  // fixes a latent rules-of-hooks violation in the previous version, where
+  // useCallback sat below conditional returns.
+  useEffect(() => {
+    if (!normalizedTerm) return;
+    let cancelled = false;
+    loadTermsModule().then((m) => {
+      if (cancelled) return;
+      // Try exact match first, then without hyphens as fallback
+      let ctx = m.getCulturalContext(normalizedTerm, currentLang);
+      if (!ctx) {
+        ctx = m.getCulturalContext(normalizedTerm.replace(/-/g, ''), currentLang);
+      }
+      setContext(ctx ?? null);
+    }).catch((err) => {
+      if (!cancelled) {
+        console.error('CulturalTermTooltip: failed to load terms dataset', err);
+      }
+    });
+    return () => { cancelled = true; };
+  }, [normalizedTerm, currentLang]);
+
+  const toggle = useCallback(() => setOpen((o) => !o), []);
 
   // Type safety: ensure term is always a string
   if (typeof term !== 'string') {
@@ -39,22 +91,13 @@ export const CulturalTermTooltip: React.FC<CulturalTermTooltipProps> = ({
     return <span className={className}>{children}</span>;
   }
 
-  // Normalize term: lowercase, trim, and handle hyphens
-  const normalizedTerm = term.toLowerCase().trim().replace(/\s+/g, '-');
-
   if (!normalizedTerm) {
     console.error('CulturalTermTooltip: empty term provided');
     return <span className={className}>{children}</span>;
   }
 
-  // Try exact match first, then without hyphens as fallback
-  let context = getCulturalContext(normalizedTerm, currentLang);
-  if (!context) {
-    const termWithoutHyphens = normalizedTerm.replace(/-/g, '');
-    context = getCulturalContext(termWithoutHyphens, currentLang);
-  }
-
-  // If term not found in database, render children without tooltip (not [object Object])
+  // Term not (yet) found in database → render children without tooltip.
+  // This covers both "dataset still loading" and "term genuinely unknown".
   if (!context) {
     return <span className={className}>{children}</span>;
   }
@@ -64,8 +107,6 @@ export const CulturalTermTooltip: React.FC<CulturalTermTooltipProps> = ({
     console.error('CulturalTermTooltip: invalid context returned for term:', term, context);
     return <span className={className}>{children}</span>;
   }
-
-  const toggle = useCallback(() => setOpen((o) => !o), []);
 
   const onPointerDown = (e: React.PointerEvent) => {
     if (e.pointerType === 'touch') {

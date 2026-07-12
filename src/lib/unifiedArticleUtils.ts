@@ -1,7 +1,9 @@
 import { getDisplayArticles } from './multilingualArticleUtils';
 import type { DisplayArticle } from '@/hooks/useArticles';
 import type { SupportedLanguage } from '@/types/multilingual';
-import { SLUG_TO_ID_MAP } from '@/data/articles';
+// Phase 1.1 (2026-07-12): import from the lightweight meta module — this
+// file is in the eager Home import graph and must not pull article bodies.
+import { SLUG_TO_ID_MAP } from '@/data/articles/meta';
 import { getArticleCoverageMap } from '@/lib/i18n/coverageData';
 
 /**
