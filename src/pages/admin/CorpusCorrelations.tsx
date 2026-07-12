@@ -181,13 +181,24 @@ export default function CorpusCorrelations() {
                   Use snapshot
                 </Label>
               </div>
-              <Button onClick={() => refetch()} disabled={isFetching} size="sm">
+              <Button onClick={() => refetch()} disabled={isFetching} size="sm" variant="outline">
                 {isFetching ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin mr-2" /> Refreshing…
                   </>
                 ) : (
                   'Refresh'
+                )}
+              </Button>
+              <Button onClick={handleRecompute} disabled={isRecomputing} size="sm" className="gap-2">
+                {isRecomputing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> Recomputing…
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="h-4 w-4" /> Recompute now
+                  </>
                 )}
               </Button>
             </div>
