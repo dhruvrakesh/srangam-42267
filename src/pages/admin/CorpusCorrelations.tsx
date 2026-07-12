@@ -12,6 +12,8 @@
  */
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +32,7 @@ import {
   ChevronDown,
   CheckCircle2,
   Sparkles,
+  RefreshCw,
 } from 'lucide-react';
 import {
   useCorpusCorrelations,
@@ -50,6 +53,30 @@ export default function CorpusCorrelations() {
   const [useSnapshot, setUseSnapshot] = useState(true);
   const [weights, setWeights] = useState<CorrelationWeights>(DEFAULT_WEIGHTS);
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [isRecomputing, setIsRecomputing] = useState(false);
+
+  const handleRecompute = async () => {
+    setIsRecomputing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('correlate-corpus', {
+        body: {
+          min_shared: minShared,
+          limit_rows: Math.max(limitRows, 500),
+          ...weights,
+        },
+      });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || 'Recompute failed');
+      toast.success(`Snapshot written: ${data.rows} pairs`, {
+        description: new Date(data.computed_at).toLocaleString(),
+      });
+      await refetch();
+    } catch (e: any) {
+      toast.error(`Recompute failed: ${e.message || String(e)}`);
+    } finally {
+      setIsRecomputing(false);
+    }
+  };
 
   const { data, isLoading, error, refetch, isFetching } = useCorpusCorrelations({
     minShared,
@@ -154,13 +181,24 @@ export default function CorpusCorrelations() {
                   Use snapshot
                 </Label>
               </div>
-              <Button onClick={() => refetch()} disabled={isFetching} size="sm">
+              <Button onClick={() => refetch()} disabled={isFetching} size="sm" variant="outline">
                 {isFetching ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin mr-2" /> Refreshing…
                   </>
                 ) : (
                   'Refresh'
+                )}
+              </Button>
+              <Button onClick={handleRecompute} disabled={isRecomputing} size="sm" className="gap-2">
+                {isRecomputing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> Recomputing…
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="h-4 w-4" /> Recompute now
+                  </>
                 )}
               </Button>
             </div>
