@@ -119,7 +119,18 @@ Note: after editing/adding a static registry article, run `node scripts/generate
 
 **1.4 Lock it in.** Run `article-perf.spec.ts` + Lighthouse before/after; once green, tighten the frozen budgets in RELIABILITY_AUDIT.md and add a bundle-size budget (e.g. size-limit: entry gz ≤ 400 KB) to CI so regressions can't land silently.
 
-### Phase 2 — Single Source of Truth (logic firming) — est. 2–3 sessions
+### Phase 2 — Single Source of Truth (logic firming) — ⚙️ PARTIALLY SHIPPED 2026-07-12
+
+**Shipped (this commit):**
+- **2.1 ✅ DB-first resolver.** `articleResolver.ts` now queries the database first; static registry (full content) and JSON cards (abstract-only) are fallbacks, each emitting a `static_fallback_serve` event with slug/source/reason. DB rows are enriched with curated pins/mla_refs from a matching JSON card when the DB has none. **This also fixed a live content bug**: 6 article slugs overlapping the 8 oceanic JSON cards (pepper-and-bullion, indian-ocean-power-networks, chola-naval-raid, riders-on-monsoon, maritime-memories-south-india, + alias overlaps) were being served the card's abstract-only payload — full multilingual content never rendered. They now serve complete content from the DB (or registry fallback).
+- **2.0 ✅ Parity-check script written** — run locally: `node scripts/registry-parity-check.mjs` (needs network access to Supabase; writes `docs/PARITY_REPORT.md`; exit 0 = full parity).
+- **2.5 ✅ Dead code deleted (verification-gated).** 30 files, each confirmed 0 importers: 27 legacy pages in `src/pages/articles/`, `enhanced/PepperAndBullionEnhanced.tsx`, `pages/GeomythologyLandReclamation.tsx`, `components/navigation/TopNavigation.tsx`. Build + all 35 tests green after deletion.
+- **2.7 ✅ Title resolution generalized.** `ResolvedArticle.title_ml` carries the full multilingual object; `getArticleTitle` now works for all 9 languages with legacy-field and English fallbacks. `title_hi/pa/ta` retained but deprecated.
+
+**Remaining (gated on running the parity script against live DB):**
+- 2.2 backfill any gaps the report shows · 2.3 search unification · 2.4 term-highlighting from DB · 2.6 registry retirement after 2+ weeks of zero fallback events.
+
+Original plan follows for reference — est. 1–2 sessions remaining.
 
 The core defect this phase removes: `articleResolver` checks static sources *before* the database, so admin-dashboard edits to any of the 36 statically-registered articles (8 JSON cards + 28 registry articles) silently never render. Order of operations matters — nothing gets deleted until parity is proven and fallback traffic is measured at zero.
 

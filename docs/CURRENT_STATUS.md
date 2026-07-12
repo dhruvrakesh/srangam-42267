@@ -4,7 +4,15 @@
 
 ---
 
-## 🚀 Latest: Phase 1 Load-Time Surgery (2026-07-12)
+## 🚀 Latest: Phase 2 Single Source of Truth — partial (2026-07-12)
+
+- **DB-first article resolution** — admin edits now always render; static registry/JSON cards demoted to fallbacks with `static_fallback_serve` telemetry
+- **Fixed live bug**: 6 oceanic-card slugs were serving abstract-only content; full multilingual bodies now render
+- **30 dead files deleted** (27 legacy article pages + 3 others; all verified 0 importers); build + 35 tests green
+- `getArticleTitle` generalized to all 9 languages via `title_ml`
+- **Action required**: run `node scripts/registry-parity-check.mjs` locally → review `docs/PARITY_REPORT.md` → gates steps 2.2–2.6
+
+## Phase 1 Load-Time Surgery (2026-07-12)
 
 - Entry bundle 630 KB gz → 277 KB gz (static article corpus + cultural-terms dataset removed from eager graph; vendor chunks split for cache stability)
 - Homepage hero LCP image 2.7 MB PNG → 172 KB WebP with PNG fallback
