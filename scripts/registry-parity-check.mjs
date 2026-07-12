@@ -75,11 +75,15 @@ const nonEmptyLangs = (content) =>
 const registry = await loadStaticRegistry();
 console.log(`Static sources: ${registry.length} registry articles, ${jsonCards.length} JSON cards`);
 
-// Fetch all published articles once (49 rows — well under any limit)
+// Fetch ALL articles (published + draft), not just published. The public
+// resolver only serves published rows, but an imported DRAFT still EXISTS —
+// reporting it as "MISSING IN DB" is wrong and invites a duplicate re-import.
+// (2026-07-12 fix: drafts were being misreported as missing.)
 const dbArticles = await rest(
-  'srangam_articles?select=id,slug,slug_alias,status,title,content,updated_at&status=eq.published&limit=1000',
+  'srangam_articles?select=id,slug,slug_alias,status,title,content,updated_at&limit=1000',
 );
-console.log(`Database: ${dbArticles.length} published articles`);
+const publishedCount = dbArticles.filter((a) => a.status === 'published').length;
+console.log(`Database: ${dbArticles.length} articles (${publishedCount} published, ${dbArticles.length - publishedCount} draft/other)`);
 
 const bySlug = new Map();
 for (const a of dbArticles) {
@@ -97,6 +101,11 @@ for (const art of registry) {
   if (!db) {
     gaps++;
     rows.push({ slug: art.id, kind: 'registry', status: '❌ MISSING IN DB', detail: `static languages: ${staticLangs.join(',')}` });
+    continue;
+  }
+  if (db.status !== 'published') {
+    gaps++;
+    rows.push({ slug: art.id, kind: 'registry', status: '📝 DRAFT (imported, unpublished)', detail: `exists as '${db.status}' under slug '${db.slug}' — PUBLISH it, do NOT re-import. DB langs: ${nonEmptyLangs(db.content).join(',') || 'none'}` });
     continue;
   }
   const dbLangs = nonEmptyLangs(db.content);
@@ -139,7 +148,7 @@ const now = new Date().toISOString();
 const md = `# Static ↔ Database Parity Report
 
 **Generated**: ${now} by \`scripts/registry-parity-check.mjs\` (roadmap Phase 2.0)
-**Database**: ${SUPABASE_URL} — ${dbArticles.length} published articles
+**Database**: ${SUPABASE_URL} — ${dbArticles.length} articles (${publishedCount} published, ${dbArticles.length - publishedCount} draft)
 **Result**: ${gaps === 0 ? '✅ FULL PARITY' : `⚠️ ${gaps} gap(s) found`}
 
 | Slug | Source | Status | Detail |
