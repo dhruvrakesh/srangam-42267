@@ -14,3 +14,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://srangam.nartiang.org/sitemap.xml
+Sitemap: https://xjaizfjcpkjcqbyobcsh.supabase.co/functions/v1/generate-sitemap
