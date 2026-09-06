@@ -322,3 +322,56 @@ not survive this importer's diacritic stripping; **length does**.
 Still unresolved: `vedic-preservation-sarira` (47,288) vs
 `sarira-atman-preservation-vedas` (28,736) — plausibly a chapter and the full
 paper. `consolidate_03` §6 prints both openings so a person decides.
+
+---
+
+## 10. Incident: a shell redirect corrupted a file that writes article bodies
+
+**2026-09-06 15:10 UTC.** The command in the runbook was
+
+```powershell
+node scripts\emit-draft-fill-sql.mjs > consolidate_02b_fill_shells.sql
+```
+
+Windows PowerShell 5.1 decodes a program's stdout using the OEM console code
+page (437/850), then `>` writes the result as UTF-16LE. Node emitted correct
+UTF-8; two layers of the shell destroyed it before it reached disk.
+
+| in the registry | in the file that was run |
+|---|---|
+| `Purāṇa` | `Pur─üß╣ça` |
+| `Śāstra` | `┼Ü─üstra` |
+| `Geo‑Heritage` | `GeoΓÇæHeritage` |
+| `यस्य आज्ञया` | `αñ»αñ╕αÑìαñ» αñåαñ£αÑìαñ₧αñ»αñ╛` |
+
+The file carried **8 UPDATE statements that write article bodies**, and it was
+run. Whether it committed is what `consolidate_05_ENCODING_DAMAGE_CHECK.sql`
+determines.
+
+The size difference is itself the proof: the corrupt file decoded to 139,198
+characters, the regenerated one is 92,563. OEM mis-decoding expands every
+multi-byte character into two to four, so the 46,635-character gap is exactly
+the corruption.
+
+### Fixes, all structural rather than procedural
+
+1. **`scripts/emit-draft-fill-sql.mjs` and `scripts/coherence/pipeline.py`
+   write their own files** with explicit UTF-8. Neither prints SQL to stdout.
+   There is no redirect left to get wrong.
+2. **`scripts/split-sql-sections.py`.** The Supabase editor shows only the last
+   statement's result, and that hid the answer four separate times today —
+   `consolidate_01` §1 behind §6, `consolidate_03` §4 failing because §1 was
+   never pasted with it, `consolidate_03` §6 behind §7, `consolidate_05` §1–§3
+   behind §4. Telling a person to "run one section at a time" does not fix a
+   trap; splitting the file does.
+3. **`consolidate_05` is a single statement** and returns one table with a
+   plain-English `verdict` column per row.
+
+### The rule this establishes
+
+Any generated artefact that will be executed — SQL, JSON, a data file — is
+written by the program that generates it, in an encoding that program names.
+It never travels through a shell redirect, a clipboard, or a console. The three
+Devanagari-bearing projects in this estate make that non-negotiable: a mangled
+diacritic in a build script is an annoyance, and a mangled diacritic in a
+Sanskrit corpus is data loss.

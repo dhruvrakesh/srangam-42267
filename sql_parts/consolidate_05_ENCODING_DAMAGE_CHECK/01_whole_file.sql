@@ -1,3 +1,31 @@
+-- 01_whole_file.sql  ·  split from consolidate_05_ENCODING_DAMAGE_CHECK.sql
+-- One statement. Paste, Run, read the result.
+--
+-- consolidate_05_ENCODING_DAMAGE_CHECK.sql  ·  2026-09-06  ·  READS ONLY
+--
+-- ONE STATEMENT. Paste the whole file, press Run, read the table.
+--
+-- The Supabase editor displays only the LAST statement's result. Every
+-- multi-section file I have written today has therefore shown you its final
+-- SELECT and hidden the answer you needed. This file has exactly one query.
+--
+-- ═══ WHAT IT IS CHECKING ═══════════════════════════════════════════════════
+--     node scripts\emit-draft-fill-sql.mjs > consolidate_02b_fill_shells.sql
+-- Windows PowerShell 5.1 decodes a program's stdout with the OEM console code
+-- page and then writes UTF-16LE. The file that reached disk on 2026-09-06 held
+--     "Purāṇa"  as  "Pur─üß╣ça"        "Śāstra" as "┼Ü─üstra"
+--     Devanagari "यस्य आज्ञया" as "αñ»αñ╕αÑìαñ» αñåαñ£αÑìαñ₧αñ»αñ╛"
+-- and it contained 8 UPDATE statements that write article bodies. It was run.
+--
+-- The regenerated file is clean (verified: no BOM, UTF-8, 92,563 chars vs the
+-- corrupted 139,198 — the difference is precisely the mojibake expansion).
+-- What remains unknown is whether the corrupt version's UPDATEs committed.
+--
+-- The mojibake byte patterns cannot occur in correctly-encoded text:
+--   ΓÇ  = UTF-8 punctuation (– — ‑ ' ") read as cp437
+--   αñ  = Devanagari read as cp437
+--   ─ü  = ā        ┼Ü = Ś        ß╣ç = ṇ
+
 -- consolidate_05_ENCODING_DAMAGE_CHECK.sql  ·  2026-09-06  ·  READS ONLY
 --
 -- ONE STATEMENT. Paste the whole file, press Run, read the table.
