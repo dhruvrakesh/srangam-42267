@@ -18,7 +18,6 @@
  * decisions), 1 = gaps found (see report), 2 = configuration/network error.
  */
 import { build } from 'esbuild';
-// PARITY_OFFLINE_2026_09_06
 import { readFileSync, writeFileSync } from 'fs';
 import { pathToFileURL } from 'url';
 
@@ -64,74 +63,6 @@ async function rest(path) {
 }
 
 // PARITY_RLS_2026_09_06
-
-// ── Offline inventory (PARITY_OFFLINE_2026_09_06) ───────────────────────────
-// This is a Lovable Cloud project: no SUPABASE_SERVICE_ROLE_KEY is available,
-// so the anon key can never see drafts (RLS: public SELECT = published only).
-// The Supabase SQL editor CAN, so accept its export instead of a key.
-// Produce the file with parity_inventory.sql, then:
-//   node scripts/registry-parity-check.mjs --inventory docs/db_inventory.csv
-function parseDelimited(text) {
-  const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
-  if (!lines.length) return [];
-  // Supabase exports semicolon-separated; a comma export works too.
-  const delim = (lines[0].match(/;/g) || []).length >= (lines[0].match(/,/g) || []).length ? ';' : ',';
-  const splitRow = (line) => {
-    const out = [];
-    let cur = '', inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i];
-      if (inQ) {
-        if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; }
-        else if (ch === '"') inQ = false;
-        else cur += ch;
-      } else if (ch === '"') inQ = true;
-      else if (ch === delim) { out.push(cur); cur = ''; }
-      else cur += ch;
-    }
-    out.push(cur);
-    return out.map((s) => s.trim());
-  };
-  const head = splitRow(lines[0]).map((h) => h.replace(/^\ufeff/, ''));
-  return lines.slice(1).map((line) => {
-    const cells = splitRow(line);
-    const row = {};
-    head.forEach((h, i) => { row[h] = cells[i] ?? ''; });
-    return row;
-  });
-}
-
-function loadInventory(path) {
-  const raw = readFileSync(path, 'utf8');
-  const rows = raw.trim().startsWith('[') || raw.trim().startsWith('{')
-    ? (() => { const j = JSON.parse(raw); return Array.isArray(j) ? j : (j.rows || j.data || []); })()
-    : parseDelimited(raw);
-
-  return rows.map((r) => {
-    // Rebuild a content object from the pre-computed language list, so
-    // nonEmptyLangs() and the CONTENT GAP check work unchanged. The blob
-    // itself is deliberately not exported: it does not survive CSV cleanly.
-    const langs = String(r.content_langs ?? r.langs ?? '')
-      .split(/[,\s]+/).filter(Boolean);
-    const content = {};
-    for (const l of langs) content[l] = 'x';   // non-empty marker only
-    return {
-      id: r.id,
-      slug: r.slug,
-      slug_alias: r.slug_alias || null,
-      status: r.status,
-      title: r.title || '',
-      content,
-      updated_at: r.updated_at || null,
-    };
-  });
-}
-
-const INVENTORY_ARG = (() => {
-  const i = process.argv.indexOf('--inventory');
-  return i > -1 ? process.argv[i + 1] : null;
-})();
-
 // ---------- load static sources ----------
 async function loadStaticRegistry() {
   await build({
@@ -159,20 +90,15 @@ console.log(`Static sources: ${registry.length} registry articles, ${jsonCards.l
 // resolver only serves published rows, but an imported DRAFT still EXISTS —
 // reporting it as "MISSING IN DB" is wrong and invites a duplicate re-import.
 // (2026-07-12 fix: drafts were being misreported as missing.)
-const dbArticles = INVENTORY_ARG
-  ? loadInventory(INVENTORY_ARG)          // PARITY_OFFLINE_2026_09_06
-  : await rest(
-      'srangam_articles?select=id,slug,slug_alias,status,title,content,updated_at&limit=1000',
-    );
-if (INVENTORY_ARG) {
-  console.log(`Inventory: ${INVENTORY_ARG} (SQL-editor export — drafts visible, no key required)`);
-}
+const dbArticles = await rest(
+  'srangam_articles?select=id,slug,slug_alias,status,title,content,updated_at&limit=1000',
+);
 const publishedCount = dbArticles.filter((a) => a.status === 'published').length;
 const draftCount = dbArticles.length - publishedCount;
 console.log(`Database: ${dbArticles.length} articles (${publishedCount} published, ${draftCount} draft/other)`);
 
 // PARITY_RLS_2026_09_06 — do not let an anon-key run masquerade as a full one.
-const BLIND = !IS_SERVICE && !INVENTORY_ARG;
+const BLIND = !IS_SERVICE;
 if (BLIND) {
   console.warn('');
   console.warn('  ******************************************************************');
@@ -262,11 +188,7 @@ const md = `# Static ↔ Database Parity Report
 
 **Generated**: ${now} by \`scripts/registry-parity-check.mjs\` (roadmap Phase 2.0)
 **Database**: ${SUPABASE_URL} — ${dbArticles.length} articles (${publishedCount} published, ${draftCount} draft)
-**Source**: ${INVENTORY_ARG
-        ? `SQL-editor inventory \`${INVENTORY_ARG}\` — drafts visible, no key required`
-        : IS_SERVICE
-          ? 'service role — drafts visible, counts complete'
-          : '⚠️ ANON — RLS hides drafts. Rows marked UNVERIFIABLE may already exist as drafts; DO NOT import from this run.'}
+**Key**: ${IS_SERVICE ? 'service role — drafts visible, counts complete' : '⚠️ ANON — RLS hides drafts. Rows marked UNVERIFIABLE may already exist as drafts; DO NOT import from this run.'}
 **Result**: ${gaps === 0 ? '✅ FULL PARITY' : `⚠️ ${gaps} gap(s) found`}
 
 | Slug | Source | Status | Detail |
