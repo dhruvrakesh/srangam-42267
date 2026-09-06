@@ -1,0 +1,243 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+pipeline.py — iterative coherence editing that cannot alter facts.
+
+  python pipeline.py analyze  --in db_export.csv
+  python pipeline.py edit     --in db_export.csv --slug stone-purana --editor stub
+  python pipeline.py emit-sql --accepted out/ > consolidate_04_coherence.sql
+
+═══ THE ARCHITECTURE, AND WHY IT IS SHAPED THIS WAY ════════════════════════
+An LLM asked to "improve flow" will produce text that reads better and is
+quietly wrong: a date normalised, a diacritic dropped, a footnote marker
+deleted as a stray digit, a Sanskrit gloss removed "for readability". A
+fluency score cannot see any of that — it rewards exactly the edit that did it.
+This estate has already been bitten twice by scoring output instead of
+checking input (tr_qa scored an inverted verse 1.0; the parity gate counted a
+69-character placeholder as a translation).
+
+So the LLM never has the last word here. Every candidate edit passes through
+invariants.verify(), which is a BINARY GATE, not a score: one missing footnote
+marker rejects the whole chunk and the original is kept. The pipeline can only
+ever improve prose or do nothing. It cannot degrade the record.
+
+  chunk  ->  edit  ->  verify  ->  accept or KEEP ORIGINAL  ->  next chunk
+
+Iteration is bounded and monotone: MAX_PASSES attempts per chunk, each pass fed
+the previous rejection reasons so the editor can try again inside the
+constraint. After the last pass, whatever passed most recently wins; if nothing
+passed, the source chunk is emitted unchanged.
+
+═══ WHY IT CHUNKS ═════════════════════════════════════════════════════════
+Rewriting a 568,471-character article in one call is neither affordable nor
+reviewable, and one bad sentence would reject the entire document. Chunking at
+heading boundaries means a rejection costs one section, and an accepted section
+is independently reviewable in the diff.
+
+═══ WHY IT EMITS SQL RATHER THAN WRITING ══════════════════════════════════
+This is a Lovable Cloud project with no service-role key, so nothing here can
+write to the database. It emits reviewed, idempotent UPDATE statements the same
+way scripts/emit-draft-fill-sql.mjs does — guarded on the body still matching
+what was edited, so a concurrent admin edit is never clobbered.
+"""
+from __future__ import annotations
+import argparse, csv, io, json, os, re, sys, hashlib
+from invariants import extract, verify
+
+MAX_PASSES = 3
+CHUNK_TARGET = 6000        # characters; sections larger than this are split at <p>
+
+SPLIT_H = re.compile(r'(?=<h[1-3]\b)', re.I)
+PARA    = re.compile(r'(?=<p\b)', re.I)
+
+
+# ── chunking ───────────────────────────────────────────────────────────────
+def chunk(html_text: str) -> list[str]:
+    out = []
+    for sec in [s for s in SPLIT_H.split(html_text) if s.strip()]:
+        if len(sec) <= CHUNK_TARGET:
+            out.append(sec); continue
+        buf = ''
+        for para in [p for p in PARA.split(sec) if p.strip()]:
+            if buf and len(buf) + len(para) > CHUNK_TARGET:
+                out.append(buf); buf = para
+            else:
+                buf += para
+        if buf: out.append(buf)
+    return out or [html_text]
+
+
+# ── coherence diagnostics (a BACKLOG, not a score to optimise) ─────────────
+SENT = re.compile(r'(?<=[.!?])\s+')
+STOP = set('the a an of and or to in is are was were be been being that this it '
+           'its their his her as by for from with on at which who whom whose not '
+           'but also such these those there here we they he she i you'.split())
+
+def _words(s: str) -> list[str]:
+    return [w for w in re.findall(r"[a-zÀ-ɏ']+", s.lower()) if w not in STOP and len(w) > 2]
+
+def diagnose(html_text: str) -> dict:
+    from invariants import _strip
+    plain = _strip(html_text)
+    paras = [p.strip() for p in plain.split('\n') if len(p.strip()) > 80]
+    sents = [s for s in SENT.split(' '.join(paras)) if s.strip()]
+    heads = extract(html_text).headings
+
+    # lexical cohesion: overlap between adjacent paragraphs. Low = abrupt shift.
+    cohesion, abrupt = [], 0
+    for a, b in zip(paras, paras[1:]):
+        wa, wb = set(_words(a)), set(_words(b))
+        j = len(wa & wb) / len(wa | wb) if (wa | wb) else 0
+        cohesion.append(j)
+        if j < 0.04: abrupt += 1
+
+    # heading hierarchy gaps (h1 -> h3 with no h2)
+    lv = [int(m.group(1)) for m in re.finditer(r'<h([1-6])\b', html_text, re.I)]
+    gaps = sum(1 for a, b in zip(lv, lv[1:]) if b - a > 1)
+
+    # repeated sentences (a re-import artefact and a flow problem both)
+    norm = [re.sub(r'\W+', ' ', s.lower()).strip() for s in sents if len(s) > 60]
+    dupes = len(norm) - len(set(norm))
+
+    longp = sum(1 for p in paras if len(p) > 1400)
+    longs = sum(1 for s in sents if len(s) > 400)
+
+    return {
+        'chars': len(plain), 'paragraphs': len(paras), 'sentences': len(sents),
+        'headings': len(heads), 'heading_gaps': gaps,
+        'mean_cohesion': round(sum(cohesion) / len(cohesion), 4) if cohesion else 0.0,
+        'abrupt_transitions': abrupt,
+        'duplicate_sentences': dupes,
+        'overlong_paragraphs': longp, 'overlong_sentences': longs,
+        'mean_sentence_chars': round(sum(len(s) for s in sents) / len(sents)) if sents else 0,
+    }
+
+def priority(d: dict) -> float:
+    """Rank only. Never a target to optimise — the gate decides correctness."""
+    if not d['paragraphs']: return 0.0
+    return round(
+        3.0 * d['duplicate_sentences']
+        + 2.0 * d['heading_gaps']
+        + 1.5 * (d['abrupt_transitions'] / max(d['paragraphs'], 1)) * 10
+        + 1.0 * (d['overlong_paragraphs'] / max(d['paragraphs'], 1)) * 10
+        + 1.0 * (d['overlong_sentences'] / max(d['sentences'], 1)) * 10, 2)
+
+
+# ── editors (pluggable; the LLM is never trusted, only gated) ──────────────
+def editor_stub(text, reasons=None):
+    """Deterministic, no network. Collapses runs of whitespace and normalises
+    double spaces after sentence ends. Exists so the harness is testable and so
+    the gate has a positive control that must PASS."""
+    t = re.sub(r'[^\S\n]{2,}', ' ', text)
+    return re.sub(r'\n{3,}', '\n\n', t)
+
+def editor_sabotage(text, reasons=None):
+    """NEGATIVE CONTROL. Mimics exactly what a fluency-optimising model does:
+    strips diacritics and deletes trailing footnote digits. Must be REJECTED."""
+    import unicodedata
+    t = re.sub(r'(?<=[a-zA-Z\).,;:”"])\d{1,3}(?=[\s<.,;:]|$)', '', text)
+    return ''.join(c for c in unicodedata.normalize('NFD', t)
+                   if not unicodedata.combining(c))
+
+EDITORS = {'stub': editor_stub, 'sabotage': editor_sabotage}
+
+
+def edit_article(html_text: str, editor, *, verbose=False) -> dict:
+    chunks = chunk(html_text)
+    out, stats = [], {'chunks': len(chunks), 'accepted': 0, 'rejected': 0, 'passes': 0}
+    for i, c in enumerate(chunks, 1):
+        best, reasons = None, None
+        for p in range(1, MAX_PASSES + 1):
+            stats['passes'] += 1
+            cand = editor(c, reasons)
+            v = verify(c, cand)
+            if v.ok:
+                best = cand; break
+            reasons = v.report()
+            if verbose:
+                print(f'  chunk {i} pass {p}: REJECTED\n{reasons}', file=sys.stderr)
+        if best is None:
+            out.append(c); stats['rejected'] += 1
+        else:
+            out.append(best); stats['accepted'] += 1
+    return {'text': ''.join(out), 'stats': stats}
+
+
+# ── commands ───────────────────────────────────────────────────────────────
+def load(path):
+    raw = io.open(path, encoding='utf-8-sig').read()
+    head = raw.splitlines()[0] if raw.splitlines() else ''
+    d = ';' if head.count(';') >= head.count(',') else ','
+    return list(csv.DictReader(io.StringIO(raw), delimiter=d))
+
+def cmd_analyze(a):
+    rows = load(a.infile)
+    res = []
+    for r in rows:
+        body = r.get('content_en') or r.get('opening') or ''
+        if not body: continue
+        d = diagnose(body); d['slug'] = r.get('slug', '?'); d['priority'] = priority(d)
+        res.append(d)
+    res.sort(key=lambda x: -x['priority'])
+    print(f"{'article':<44}{'chars':>8}{'dupes':>7}{'gaps':>6}{'abrupt':>8}{'longP':>7}{'coh':>7}{'prio':>8}")
+    print('-' * 95)
+    for d in res:
+        print(f"{d['slug'][:44]:<44}{d['chars']:>8}{d['duplicate_sentences']:>7}"
+              f"{d['heading_gaps']:>6}{d['abrupt_transitions']:>8}{d['overlong_paragraphs']:>7}"
+              f"{d['mean_cohesion']:>7.3f}{d['priority']:>8}")
+    print('-' * 95)
+    print('  dupes = repeated sentences   gaps = heading-level jumps (h1->h3)')
+    print('  abrupt = adjacent paragraphs sharing <4% vocabulary   coh = mean overlap')
+    print('  prio ranks the BACKLOG. It is not a target: the invariant gate, not this')
+    print('  number, decides whether any edit is allowed to land.')
+
+def cmd_edit(a):
+    rows = load(a.infile)
+    row = next((r for r in rows if r.get('slug') == a.slug or r.get('slug_alias') == a.slug), None)
+    if not row: sys.exit(f'no row with slug/alias {a.slug!r} in {a.infile}')
+    body = row.get('content_en') or row.get('opening') or ''
+    if not body: sys.exit('row has no content_en column — re-export with the body')
+    r = edit_article(body, EDITORS[a.editor], verbose=a.verbose)
+    os.makedirs(a.out, exist_ok=True)
+    sha = hashlib.sha256(body.encode()).hexdigest()[:16]
+    with io.open(os.path.join(a.out, f'{a.slug}.json'), 'w', encoding='utf-8') as f:
+        json.dump({'slug': row.get('slug'), 'source_sha256_16': sha,
+                   'source_len': len(body), 'edited_len': len(r['text']),
+                   'stats': r['stats'], 'edited': r['text']}, f, ensure_ascii=False, indent=1)
+    s = r['stats']
+    print(f"{a.slug}: {s['chunks']} chunks, {s['accepted']} accepted, "
+          f"{s['rejected']} kept-unchanged (rejected), {s['passes']} editor calls")
+    print(f"  {len(body)} -> {len(r['text'])} chars")
+    print(f"  wrote {a.out}/{a.slug}.json")
+
+def cmd_emit_sql(a):
+    print('-- consolidate_04_coherence.sql  ·  GENERATED by coherence/pipeline.py')
+    print('-- Every UPDATE is guarded on the CURRENT body still being the one that was')
+    print('-- edited (md5 of the English body). If an admin edited the article since,')
+    print('-- the guard fails, zero rows change, and you re-export instead of clobbering.')
+    print('BEGIN;')
+    for fn in sorted(os.listdir(a.accepted)):
+        if not fn.endswith('.json'): continue
+        d = json.load(io.open(os.path.join(a.accepted, fn), encoding='utf-8'))
+        if d['stats']['accepted'] == 0:
+            print(f"-- {d['slug']}: no chunk passed the invariant gate — nothing to write"); continue
+        body = d['edited'].replace('$body$', '$body_$')
+        print(f"\n-- {d['slug']}: {d['stats']['accepted']}/{d['stats']['chunks']} chunks edited")
+        print("UPDATE srangam_articles SET")
+        print(f"  content = jsonb_set(content::jsonb, '{{en}}', to_jsonb($body${body}$body$::text)),")
+        print("  updated_at = now()")
+        print(f"WHERE slug = '{d['slug']}'")
+        print(f"  AND length(content::jsonb ->> 'en') = {d['source_len']}   -- unchanged since export")
+        print("RETURNING slug, length(content::jsonb ->> 'en') AS en_chars;")
+    print('\n-- Review every RETURNING, then COMMIT; or ROLLBACK;')
+
+
+if __name__ == '__main__':
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = ap.add_subparsers(dest='cmd', required=True)
+    p1 = sub.add_parser('analyze'); p1.add_argument('--in', dest='infile', required=True); p1.set_defaults(f=cmd_analyze)
+    p2 = sub.add_parser('edit'); p2.add_argument('--in', dest='infile', required=True)
+    p2.add_argument('--slug', required=True); p2.add_argument('--editor', default='stub', choices=list(EDITORS))
+    p2.add_argument('--out', default='out'); p2.add_argument('--verbose', action='store_true'); p2.set_defaults(f=cmd_edit)
+    p3 = sub.add_parser('emit-sql'); p3.add_argument('--accepted', required=True); p3.set_defaults(f=cmd_emit_sql)
+    a = ap.parse_args(); a.f(a)

@@ -88,46 +88,12 @@ ORDER BY en_chars DESC, created_at;
 --   WINNER  the-asura-exiles-…          "The Asura Exiles: A Multi-Disciplinary Inquiry into the Mitanni…"
 --   loser   deep-dive-indo-iranian-…-2  "Deep Dive- Indo-Iranian Origins and Zoroastrianism (2)"
 --
--- ═══ CONFIRMED BY created_at, 2026-09-06 20:49 export ══════════════════════
--- The three losers were created within 100 SECONDS of each other:
---     2026-02-01 06:06:49   deep-dive-indoiranian-origins
---     2026-02-01 06:08:17   shiva-bunjil-altair-connections
---     2026-02-01 06:08:28   vishnu-shiva-hari-hara
--- The three winners predate them by twelve weeks:
---     2025-11-09 08:38:52   har-har-hari-hari
---     2025-11-10 04:02:45   asura-exiles-mitanni
---     2025-11-10 04:47:18   celestial-bridge-shaivism-bunjil
---
--- This is not three coincidences. It is ONE bad bulk import on 2026-02-01 that
--- re-ingested three already-published articles under filename-derived slugs.
--- Winner selection is therefore settled by two independent signals that agree:
--- the earlier row, and the human-authored title.
---
 -- Corroboration for the third: canonicalSlugMap.ts already maps the registry id
 -- 'asura-exiles-indo-iranian' to 'asura-exiles-mitanni'. The repo had already
 -- decided which of that pair is canonical.
 
 
 -- ═══ 4 ── record and retire. Idempotent. ═══════════════════════════════════
--- SELF-SUFFICIENT: the CREATE TABLE from section 1 is repeated here, because
--- the SQL editor shows only the LAST statement's result and these sections are
--- therefore run one at a time. Running section 4 alone previously failed with
---     ERROR: 42P01: relation "srangam_article_merges" does not exist
--- CREATE TABLE IF NOT EXISTS is idempotent, so repeating it costs nothing.
-CREATE TABLE IF NOT EXISTS srangam_article_merges (
-  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  winner_id    uuid NOT NULL REFERENCES srangam_articles(id) ON DELETE RESTRICT,
-  loser_id     uuid NOT NULL REFERENCES srangam_articles(id) ON DELETE RESTRICT,
-  winner_slug  text NOT NULL,
-  loser_slug   text NOT NULL,
-  loser_alias  text,
-  reason       text NOT NULL,
-  merged_at    timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT srangam_article_merges_loser_unique UNIQUE (loser_id),
-  CONSTRAINT srangam_article_merges_not_self     CHECK (winner_id <> loser_id)
-);
-ALTER TABLE srangam_article_merges ENABLE ROW LEVEL SECURITY;
-
 BEGIN;
 
 INSERT INTO srangam_article_merges (winner_id, loser_id, winner_slug, loser_slug, loser_alias, reason)
@@ -181,23 +147,9 @@ WHERE w.slug_alias = 'geomythology-cultural-continuity'
 ON CONFLICT (loser_id) DO NOTHING;
 
 
--- ═══ 6 ── the Śarīra pair: RESOLVED 2026-09-06 20:51 — NOT DUPLICATES ══════
--- The openings settle it. They are two different works on one subject:
---
---   47,288  "Chapter 6: Śarīra and Ātman – Preserving the Body and Soul of the
---            Vedas" … "This chapter explores how the Vedas were transmitted…"
---            -> a CHAPTER of a longer work, narrative register, no footnotes.
---
---   28,736  "Śarīra and Ātman: The Preservation of the Vedas through the
---            Anukramaṇīs and the Bhāṣya of Sāyaṇāchārya" … "…superhuman
---            revelation.1 … (anumāna).4 … intellectual rigor.5"
---            -> a STANDALONE monograph with footnote apparatus.
---
--- Different openings, different registers, different scholarly apparatus.
--- DO NOT MERGE. Both stay published. The 1.6x length gap that made this look
--- suspicious is explained: a chapter and a paper are not the same length.
---
--- Query kept for re-verification if either body is ever edited.
+-- ═══ 6 ── the UNRESOLVED Śarīra pair. Decide with your eyes, not a heuristic ═
+-- Read the first 1,200 characters of each. If one is a chapter OF the other,
+-- they are separate publications and must NOT be merged.
 SELECT slug, COALESCE(slug_alias,'') AS slug_alias,
        length(content::jsonb ->> 'en') AS en_chars,
        COALESCE(title::jsonb ->> 'en','') AS title,
