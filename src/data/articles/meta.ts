@@ -17,8 +17,10 @@ export interface ArticleCardMeta {
   title: LocalizedArticle['title'];
   dek: LocalizedArticle['dek'];
   tags: LocalizedArticle['tags'];
-  /** Languages whose body content is non-empty in the static registry. */
+  /** Languages with a REAL body in the static registry (placeholders excluded). */
   contentLanguages: SupportedLanguage[];
+  /** Languages present but placeholder-only. Reported, never counted. */
+  placeholderLanguages?: SupportedLanguage[];
 }
 
 export const ARTICLE_CARDS: ArticleCardMeta[] = [
@@ -82,16 +84,17 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
       }
     ],
     "contentLanguages": [
-      "en",
-      "ta",
-      "te",
-      "kn",
-      "bn",
       "as",
-      "pn",
+      "bn",
+      "en",
       "hi",
-      "pa"
-    ]
+      "kn",
+      "pa",
+      "pn",
+      "ta",
+      "te"
+    ],
+    "placeholderLanguages": []
   },
   {
     "id": "scripts-that-sailed",
@@ -135,10 +138,11 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
     ],
     "contentLanguages": [
       "en",
-      "ta",
       "hi",
-      "pa"
-    ]
+      "pa",
+      "ta"
+    ],
+    "placeholderLanguages": []
   },
   {
     "id": "riders-on-monsoon",
@@ -201,14 +205,16 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
     ],
     "contentLanguages": [
       "en",
-      "ta",
-      "te",
-      "kn",
-      "bn",
-      "as",
-      "pn",
       "hi",
-      "pa"
+      "ta",
+      "te"
+    ],
+    "placeholderLanguages": [
+      "as",
+      "bn",
+      "kn",
+      "pa",
+      "pn"
     ]
   },
   {
@@ -260,16 +266,17 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
       }
     ],
     "contentLanguages": [
-      "en",
-      "ta",
-      "te",
-      "kn",
-      "bn",
       "as",
-      "pn",
+      "bn",
+      "en",
       "hi",
-      "pa"
-    ]
+      "kn",
+      "pa",
+      "pn",
+      "ta",
+      "te"
+    ],
+    "placeholderLanguages": []
   },
   {
     "id": "gondwana-to-himalaya",
@@ -320,16 +327,17 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
       }
     ],
     "contentLanguages": [
-      "en",
-      "ta",
-      "te",
-      "kn",
-      "bn",
       "as",
-      "pn",
+      "bn",
+      "en",
       "hi",
-      "pa"
-    ]
+      "kn",
+      "pa",
+      "pn",
+      "ta",
+      "te"
+    ],
+    "placeholderLanguages": []
   },
   {
     "id": "indian-ocean-power-networks",
@@ -382,13 +390,15 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
     "contentLanguages": [
       "en",
       "ta",
-      "te",
-      "kn",
-      "bn",
+      "te"
+    ],
+    "placeholderLanguages": [
       "as",
-      "pn",
+      "bn",
       "hi",
-      "pa"
+      "kn",
+      "pa",
+      "pn"
     ]
   },
   {
@@ -452,14 +462,16 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
     ],
     "contentLanguages": [
       "en",
-      "ta",
-      "te",
-      "kn",
-      "bn",
-      "as",
-      "pn",
       "hi",
-      "pa"
+      "ta",
+      "te"
+    ],
+    "placeholderLanguages": [
+      "as",
+      "bn",
+      "kn",
+      "pa",
+      "pn"
     ]
   },
   {
@@ -556,7 +568,8 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
     ],
     "contentLanguages": [
       "en"
-    ]
+    ],
+    "placeholderLanguages": []
   },
   {
     "id": "kutai-yupa-borneo",
@@ -607,16 +620,17 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
       }
     ],
     "contentLanguages": [
-      "en",
-      "ta",
-      "te",
-      "kn",
-      "bn",
       "as",
-      "pn",
+      "bn",
+      "en",
       "hi",
-      "pa"
-    ]
+      "kn",
+      "pa",
+      "pn",
+      "ta",
+      "te"
+    ],
+    "placeholderLanguages": []
   },
   {
     "id": "chola-naval-raid",
@@ -678,15 +692,17 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
       }
     ],
     "contentLanguages": [
-      "en",
-      "ta",
-      "te",
-      "kn",
       "bn",
-      "as",
-      "pn",
+      "en",
       "hi",
-      "pa"
+      "kn",
+      "pa",
+      "pn",
+      "ta",
+      "te"
+    ],
+    "placeholderLanguages": [
+      "as"
     ]
   },
   {
@@ -739,14 +755,16 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
     ],
     "contentLanguages": [
       "en",
-      "ta",
-      "te",
-      "kn",
-      "bn",
-      "as",
       "pn",
+      "ta"
+    ],
+    "placeholderLanguages": [
+      "as",
+      "bn",
       "hi",
-      "pa"
+      "kn",
+      "pa",
+      "te"
     ]
   },
   {
@@ -798,16 +816,17 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
       }
     ],
     "contentLanguages": [
-      "en",
-      "ta",
-      "te",
-      "kn",
-      "bn",
       "as",
-      "pn",
+      "bn",
+      "en",
       "hi",
-      "pa"
-    ]
+      "kn",
+      "pa",
+      "pn",
+      "ta",
+      "te"
+    ],
+    "placeholderLanguages": []
   },
   {
     "id": "jambudvipa-connected",
@@ -880,15 +899,17 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
       }
     ],
     "contentLanguages": [
-      "en",
-      "ta",
-      "te",
-      "kn",
-      "bn",
+      "en"
+    ],
+    "placeholderLanguages": [
       "as",
-      "pn",
+      "bn",
       "hi",
-      "pa"
+      "kn",
+      "pa",
+      "pn",
+      "ta",
+      "te"
     ]
   },
   {
@@ -973,15 +994,17 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
       }
     ],
     "contentLanguages": [
-      "en",
-      "hi",
-      "ta",
-      "te",
-      "kn",
-      "bn",
+      "en"
+    ],
+    "placeholderLanguages": [
       "as",
+      "bn",
+      "hi",
+      "kn",
       "pa",
-      "pn"
+      "pn",
+      "ta",
+      "te"
     ]
   },
   {
@@ -1077,15 +1100,17 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
       }
     ],
     "contentLanguages": [
-      "en",
-      "hi",
-      "ta",
-      "te",
-      "kn",
-      "bn",
+      "en"
+    ],
+    "placeholderLanguages": [
       "as",
+      "bn",
+      "hi",
+      "kn",
       "pa",
-      "pn"
+      "pn",
+      "ta",
+      "te"
     ]
   },
   {
@@ -1153,7 +1178,9 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
       }
     ],
     "contentLanguages": [
-      "en",
+      "en"
+    ],
+    "placeholderLanguages": [
       "hi",
       "ta"
     ]
@@ -1251,15 +1278,17 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
       }
     ],
     "contentLanguages": [
-      "en",
-      "hi",
-      "ta",
+      "en"
+    ],
+    "placeholderLanguages": [
+      "as",
       "bn",
-      "te",
+      "hi",
       "kn",
       "pa",
-      "as",
-      "pn"
+      "pn",
+      "ta",
+      "te"
     ]
   },
   {
@@ -1366,15 +1395,17 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
       }
     ],
     "contentLanguages": [
-      "en",
-      "hi",
-      "ta",
+      "en"
+    ],
+    "placeholderLanguages": [
+      "as",
       "bn",
-      "te",
+      "hi",
       "kn",
       "pa",
-      "as",
-      "pn"
+      "pn",
+      "ta",
+      "te"
     ]
   },
   {
@@ -1558,15 +1589,17 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
       }
     ],
     "contentLanguages": [
-      "en",
-      "hi",
-      "ta",
+      "en"
+    ],
+    "placeholderLanguages": [
+      "as",
       "bn",
-      "te",
+      "hi",
       "kn",
       "pa",
-      "as",
-      "pn"
+      "pn",
+      "ta",
+      "te"
     ]
   },
   {
@@ -1677,7 +1710,8 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
     ],
     "contentLanguages": [
       "en"
-    ]
+    ],
+    "placeholderLanguages": []
   },
   {
     "id": "sarira-and-atman-vedic-preservation",
@@ -1787,7 +1821,8 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
     ],
     "contentLanguages": [
       "en"
-    ]
+    ],
+    "placeholderLanguages": []
   },
   {
     "id": "rishi-genealogies-vedic-tradition",
@@ -1894,7 +1929,8 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
     ],
     "contentLanguages": [
       "en"
-    ]
+    ],
+    "placeholderLanguages": []
   },
   {
     "id": "reassessing-rigveda-antiquity",
@@ -1990,7 +2026,8 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
     ],
     "contentLanguages": [
       "en"
-    ]
+    ],
+    "placeholderLanguages": []
   },
   {
     "id": "geomythology-land-reclamation",
@@ -2129,15 +2166,17 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
       }
     ],
     "contentLanguages": [
-      "en",
-      "ta",
-      "te",
-      "kn",
-      "bn",
+      "en"
+    ],
+    "placeholderLanguages": [
       "as",
-      "pn",
+      "bn",
       "hi",
-      "pa"
+      "kn",
+      "pa",
+      "pn",
+      "ta",
+      "te"
     ]
   },
   {
@@ -2167,7 +2206,8 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
     ],
     "contentLanguages": [
       "en"
-    ]
+    ],
+    "placeholderLanguages": []
   },
   {
     "id": "continuous-habitation-uttarapatha",
@@ -2208,7 +2248,8 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
     ],
     "contentLanguages": [
       "en"
-    ]
+    ],
+    "placeholderLanguages": []
   },
   {
     "id": "somnatha-prabhasa-itihasa",
@@ -2273,7 +2314,8 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
     ],
     "contentLanguages": [
       "en"
-    ]
+    ],
+    "placeholderLanguages": []
   },
   {
     "id": "ringing-rocks-rhythmic-cosmology",
@@ -2338,7 +2380,8 @@ export const ARTICLE_CARDS: ArticleCardMeta[] = [
     ],
     "contentLanguages": [
       "en"
-    ]
+    ],
+    "placeholderLanguages": []
   }
 ] as ArticleCardMeta[];
 

@@ -143,10 +143,40 @@ are metadata, not slugs, and are fixed in the admin UI:
 The site is effectively English-only, and **the registry is not the multilingual
 reserve it appears to be**: half its non-English bodies are placeholder strings.
 
-**Consequence for roadmap 2.6 (registry retirement):** the blocker is smaller
-than assumed, but it is not zero. Before retiring, migrate the ~72 substantive
-non-English bodies and the four articles whose registry English body exceeds
-the DB's. Do not migrate the 69 stubs.
+### CORRECTION, measured 2026-09-06 19:58 in the SQL editor
+
+`consolidate_01_evidence.sql` §6 returned:
+
+```
+non_english_chars_in_db = 160,991     rows_multilingual = 3     rows_total = 58
+```
+
+Set against the registry, scored with the placeholder rule:
+
+| | non-English characters |
+|---|---:|
+| static registry, total | 58,517 |
+| &nbsp;&nbsp;of which placeholder | 11,660 |
+| &nbsp;&nbsp;**of which real** | **46,857** |
+| **live database** (3 rows) | **160,991** |
+
+**The database already holds 3.4× more real non-English text than the entire
+static registry.** The three multilingual rows — `baba-ala-singh-patiala`
+(en,hi,pa), `devi-sukta-mahatmya` (bn,en,hi) and `saffron-blue-ayodhya`
+(en,hi,pa) — average roughly 27,000 characters per non-English body. Those are
+full translations, not blurbs.
+
+This inverts the assumption this section previously recorded. The registry is
+**not** the multilingual reserve; the DB is. "3 of 58 rows are multilingual"
+counts rows and undercounts the corpus by a wide margin — the same
+presence-versus-substance error, made in the opposite direction.
+
+**Consequence for roadmap 2.6 (registry retirement):** the multilingual blocker
+is far smaller than the Master Plan assumed. The 46,857 real registry characters
+are worth migrating, but they are concentrated in three or four articles
+(`riders-on-monsoon` hi/ta/te, `ashoka-kandahar-edicts` hi/ta/te,
+`scripts-that-sailed` hi/pa/ta) plus a handful of short card blurbs. Migrate
+those; do not migrate the 11,660 characters of placeholder.
 
 ⚠️ `maritime-memories-south-india-complete.ts` — the file the registry imports —
 holds **1,674** English characters, while the unimported

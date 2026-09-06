@@ -12,9 +12,6 @@ import { writeFileSync, readFileSync, mkdirSync } from 'fs';
 // WINPATH_JSONB_2026_09_06
 import { join } from 'path';
 import { pathToFileURL } from 'url';
-// SUBSTANCE_SHARED_2026_09_06 - the placeholder rule, shared with
-// scripts/registry-parity-check.mjs so the two cannot drift.
-import { substantiveLangs, placeholderLangs } from './lib/substance.mjs';
 
 const ROOT = process.cwd();
 
@@ -67,6 +64,7 @@ const header = `/**
  * articleResolver step 2.
  */
 import type { LocalizedArticle, SupportedLanguage } from '@/types/multilingual';
+import { substantiveLangs, placeholderLangs } from './lib/substance.mjs';
 
 export interface ArticleCardMeta {
   id: string;
