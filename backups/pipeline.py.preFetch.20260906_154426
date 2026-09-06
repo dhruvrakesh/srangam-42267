@@ -163,76 +163,6 @@ def edit_article(html_text: str, editor, *, verbose=False) -> dict:
     return {'text': ''.join(out), 'stats': stats}
 
 
-
-# ── fetch: read PUBLISHED bodies with the anon key, no SQL editor ──────────
-def _load_env():
-    """Same source the parity gate uses: .env in the repo root."""
-    env = {}
-    for name in ('.env', '.env.local'):
-        if os.path.exists(name):
-            for line in io.open(name, encoding='utf-8'):
-                line = line.strip()
-                if line and not line.startswith('#') and '=' in line:
-                    k, v = line.split('=', 1)
-                    env.setdefault(k.strip(), v.strip().strip('"\''))
-    return env
-
-def cmd_fetch(a):
-    """Pull published article bodies over the anon REST endpoint.
-
-    RLS restricts public SELECT on srangam_articles to status='published', and
-    every article this pipeline edits IS published — so no service key is
-    needed and no SQL-editor export is needed either. Drafts stay invisible,
-    which is correct: a 60-character shell has no prose to improve.
-
-    Writes are a different matter and still go through the SQL editor: the anon
-    key cannot UPDATE, and it should not be able to.
-    """
-    import urllib.request, urllib.parse
-    env = _load_env()
-    url = os.environ.get('VITE_SUPABASE_URL') or env.get('VITE_SUPABASE_URL')
-    key = (os.environ.get('VITE_SUPABASE_PUBLISHABLE_KEY')
-           or env.get('VITE_SUPABASE_PUBLISHABLE_KEY'))
-    if not url or not key:
-        sys.exit('VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY not found in env or .env')
-
-    q = {'select': 'slug,slug_alias,status,content', 'status': 'eq.published', 'limit': '1000'}
-    if a.slug:
-        q['or'] = f'(slug.eq.{a.slug},slug_alias.eq.{a.slug})'
-    req = urllib.request.Request(
-        f'{url.rstrip("/")}/rest/v1/srangam_articles?' + urllib.parse.urlencode(q),
-        headers={'apikey': key, 'Authorization': f'Bearer {key}', 'Accept': 'application/json'})
-    try:
-        with urllib.request.urlopen(req, timeout=120) as r:
-            rows = json.loads(r.read().decode('utf-8'))
-    except Exception as exc:
-        sys.exit(
-            f'could not reach {url}: {exc}\n\n'
-            'If this machine has no route to Supabase, fall back to the SQL editor:\n'
-            '  run consolidate_00_export_bodies.sql, Export CSV to docs/db_bodies.csv\n'
-            'The CSV needs exactly: slug ; slug_alias ; content_en')
-
-    kept, skipped = [], 0
-    for r in rows:
-        body = (r.get('content') or {}).get('en') or ''
-        if len(body) < a.min_chars:
-            skipped += 1; continue
-        kept.append({'slug': r['slug'], 'slug_alias': r.get('slug_alias') or '', 'content_en': body})
-
-    os.makedirs(os.path.dirname(a.out) or '.', exist_ok=True)
-    with io.open(a.out, 'w', encoding='utf-8', newline='') as f:
-        w = csv.DictWriter(f, fieldnames=['slug', 'slug_alias', 'content_en'], delimiter=';')
-        w.writeheader()
-        for row in sorted(kept, key=lambda x: -len(x['content_en'])):
-            w.writerow(row)
-    total = sum(len(r['content_en']) for r in kept)
-    print(f'fetched {len(rows)} published rows; kept {len(kept)} '
-          f'(>= {a.min_chars} chars), skipped {skipped}')
-    print(f'wrote {a.out} — UTF-8, {total:,} characters of body text')
-    print('  drafts are invisible to the anon key by RLS. That is correct: the nine')
-    print('  drafts are 60-109 character shells with no prose to edit.')
-
-
 # ── commands ───────────────────────────────────────────────────────────────
 def load(path):
     if not os.path.exists(path):
@@ -328,10 +258,6 @@ if __name__ == '__main__':
     p2 = sub.add_parser('edit'); p2.add_argument('--in', dest='infile', required=True)
     p2.add_argument('--slug', required=True); p2.add_argument('--editor', default='stub', choices=list(EDITORS))
     p2.add_argument('--out', default='out'); p2.add_argument('--verbose', action='store_true'); p2.set_defaults(f=cmd_edit)
-    p4 = sub.add_parser('fetch'); p4.add_argument('--out', default='docs/db_bodies.csv')
-    p4.add_argument('--slug', default=None, help='one article by slug or alias')
-    p4.add_argument('--min-chars', type=int, default=2000, dest='min_chars')
-    p4.set_defaults(f=cmd_fetch)
     p3 = sub.add_parser('emit-sql'); p3.add_argument('--accepted', required=True)
     p3.add_argument('--out-sql', default='consolidate_04_coherence.sql')
     p3.set_defaults(f=cmd_emit_sql)

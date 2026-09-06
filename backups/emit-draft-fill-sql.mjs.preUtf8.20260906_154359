@@ -43,7 +43,7 @@
  * Reads only. Writes nothing to the database — it PRINTS SQL for you to review.
  */
 import { build } from 'esbuild';
-import { mkdirSync, writeFileSync } from 'fs';
+import { mkdirSync } from 'fs';
 import { join } from 'path';
 import { pathToFileURL } from 'url';
 import { substantiveLangs, placeholderLangs } from './lib/substance.mjs';
@@ -139,16 +139,5 @@ out.push(`-- AFTER : published +${filled}, draft ${9 - filled} rows with real bo
 out.push('');
 out.push('SELECT count(*) AS total FROM srangam_articles;   -- must still be 58, always');
 
-// ENCODING_2026_09_06 — this script WRITES ITS OWN FILE and never prints SQL
-// to stdout. `node emit-draft-fill-sql.mjs > out.sql` under Windows PowerShell
-// 5.1 corrupts the output twice: stdout is decoded with the OEM console code
-// page (Purāṇa -> Pur─üß╣ça, Devanagari -> αñ»αñ╕...) and `>` then writes
-// UTF-16LE. The 2026-09-06 15:10 run produced exactly that, and the file
-// contained eight UPDATEs that write article bodies. Never again through a
-// shell redirect.
-const OUT = process.argv.includes('--out')
-  ? process.argv[process.argv.indexOf('--out') + 1]
-  : 'consolidate_02b_fill_shells.sql';
-writeFileSync(OUT, out.join('\n'), { encoding: 'utf8' });
-console.error(`wrote ${OUT} (UTF-8, ${out.join('\n').length} chars)`);
+console.log(out.join('\n'));
 console.error(`emitted: ${filled} fill+publish, ${held} fill+hold, 1 excluded (geomythology shell -> consolidate_03)`);
