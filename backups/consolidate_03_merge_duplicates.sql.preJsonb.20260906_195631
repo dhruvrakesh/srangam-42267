@@ -51,7 +51,7 @@ ALTER TABLE srangam_article_merges ENABLE ROW LEVEL SECURITY;
 
 -- ═══ STEP 2 — the ONE confirmed pair. Dry run first. ══════════════════════
 SELECT id, slug, COALESCE(slug_alias,'') AS slug_alias, status,
-       left(COALESCE(title::jsonb ->> 'en',''),80) AS title,
+       left(COALESCE(title,''),80) AS title,
        length(COALESCE(content::jsonb ->> 'en','')) AS en_chars, updated_at
 FROM srangam_articles
 WHERE slug = 'geomythology-land-reclamation'

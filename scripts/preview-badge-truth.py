@@ -71,6 +71,41 @@ for mod in mods:
     if len(real) != len(now): changed += 1
     rows.append((aid, en, len(now), len(real), stubs))
 
+# --check: is the GENERATED meta.ts in sync with its sources?
+# This exists because generate-registry-meta.mjs could never run on Windows
+# (it wrote intermediates to '/tmp/...'), so meta.ts silently drifted from the
+# modules it is generated from. On 2026-09-06 a patch to the generator was
+# committed with the message "badges: count real translations" while meta.ts
+# was untouched — the patch landed, the effect did not. This check makes that
+# state visible without needing esbuild, so it can run anywhere.
+if '--check' in sys.argv:
+    import json as _json
+    meta_path = os.path.join(D, 'meta.ts')
+    meta = io.open(meta_path, encoding='utf-8').read()
+    drift = []
+    for aid, en, n_now, n_real, stubs in rows:
+        m = re.search(r'"id":\s*"' + re.escape(aid) + r'".*?"contentLanguages":\s*(\[[^\]]*\])',
+                      meta, re.S)
+        if not m:
+            drift.append((aid, 'ABSENT from meta.ts', '')); continue
+        have = sorted(_json.loads(m.group(1)))
+        want = sorted(k for k, v in scan(os.path.join(D, [x for x in mods
+                      if re.search(r"\bid\s*:\s*'" + re.escape(aid) + r"'",
+                      io.open(os.path.join(D, x + '.ts'), encoding='utf-8').read())
+                      if os.path.exists(os.path.join(D, x + '.ts'))][0] + '.ts')).items()
+                      if v > 0 and not is_stub(k, v, en))
+        if have != want:
+            drift.append((aid, ','.join(have), ','.join(want)))
+    if drift:
+        print(f"meta.ts is STALE — {len(drift)} article(s) disagree with their source modules:\n")
+        for aid, have, want in drift:
+            print(f"  {aid:<38} meta.ts: {have or '-':<28} sources: {want or '-'}")
+        print("\n  Regenerate:  node scripts/generate-registry-meta.mjs")
+        print("  Then re-run: python scripts/preview-badge-truth.py --check")
+        sys.exit(1)
+    print(f"meta.ts is in sync with all {len(rows)} source modules.")
+    sys.exit(0)
+
 print(f"{'article':<38} {'en chars':>9}  badge now -> truthful   placeholders removed")
 print('-' * 100)
 for aid, en, n_now, n_real, stubs in sorted(rows, key=lambda x: (x[3] - x[2], -x[1])):

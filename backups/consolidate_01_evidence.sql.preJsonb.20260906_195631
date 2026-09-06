@@ -28,7 +28,7 @@ SELECT
   a.slug,
   COALESCE(a.slug_alias, '')                                    AS slug_alias,
   a.status,
-  left(COALESCE(a.title::jsonb ->> 'en', ''), 90)                AS title,
+  left(COALESCE(a.title, ''), 90)                               AS title,
   COALESCE(
     (SELECT string_agg(e.key || '=' || length(e.val), ' ' ORDER BY e.key)
        FROM jsonb_each_text(COALESCE(a.content::jsonb, '{}'::jsonb)) AS e(key, val)
@@ -44,7 +44,7 @@ ORDER BY length(COALESCE(a.content::jsonb ->> 'en', '')) DESC;
 -- The 9 drafts, with body size. Decides Step B (publish) vs Step C (merge).
 -- All 9 were inserted in one batch at 2026-02-21 18:27:44.512333+00.
 SELECT slug, COALESCE(slug_alias,'') AS slug_alias,
-       left(COALESCE(title::jsonb ->> 'en',''), 80)  AS title,
+       left(COALESCE(title,''), 80)  AS title,
        length(COALESCE(content::jsonb ->> 'en','')) AS en_chars,
        (SELECT count(*) FROM jsonb_each_text(COALESCE(content::jsonb,'{}'::jsonb)) e(k,v)
          WHERE length(btrim(v)) > 0)                AS n_langs,
@@ -61,7 +61,7 @@ ORDER BY en_chars DESC;
 -- completeness and is EXPECTED to be a false positive: Part I and Part II are
 -- different articles. Confirm each pair on TITLE and LENGTH before merging.
 SELECT id, slug, COALESCE(slug_alias,'') AS slug_alias, status,
-       left(COALESCE(title::jsonb ->> 'en',''),100) AS title,
+       left(COALESCE(title,''),100) AS title,
        length(COALESCE(content::jsonb ->> 'en','')) AS en_chars,
        created_at, updated_at
 FROM srangam_articles

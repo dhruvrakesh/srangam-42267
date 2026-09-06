@@ -8,32 +8,21 @@
  * Requires devDependency esbuild (already present via vite).
  */
 import { build } from 'esbuild';
-import { writeFileSync, readFileSync, mkdirSync } from 'fs';
-// WINPATH_JSONB_2026_09_06
-import { join } from 'path';
+import { writeFileSync, readFileSync } from 'fs';
 import { pathToFileURL } from 'url';
 
 const ROOT = process.cwd();
-
-// WINPATH_JSONB_2026_09_06 — intermediates used to go to '/tmp/...', which on
-// Windows esbuild writes relative to the cwd (D:\repo\tmp\) while
-// pathToFileURL() resolves to the drive root (file:///D:/tmp/) — so the import
-// always missed and this generator could never run here. Same convention as
-// registry-parity-check.mjs: keep build output inside node_modules.
-const TMPDIR = join(ROOT, 'node_modules', '.cache', 'registry-meta');
-mkdirSync(TMPDIR, { recursive: true });
 
 const indexSrc = readFileSync('src/data/articles/index.ts', 'utf8');
 const importRe = /import \{ (\w+) \} from '(\.\/[\w-]+)';/g;
 const mods = [...indexSrc.matchAll(importRe)].map(m => ({ exportName: m[1], path: m[2] }));
 
-const bundlePath = join(TMPDIR, 'registry-bundle.mjs');
-await build({ entryPoints: ['src/data/articles/index.ts'], bundle: true, format: 'esm', platform: 'node', outfile: bundlePath, alias: { '@': ROOT + '/src' }, logLevel: 'error' });
-const full = await import(pathToFileURL(bundlePath));
+await build({ entryPoints: ['src/data/articles/index.ts'], bundle: true, format: 'esm', platform: 'node', outfile: '/tmp/registry-bundle.mjs', alias: { '@': ROOT + '/src' }, logLevel: 'error' });
+const full = await import(pathToFileURL('/tmp/registry-bundle.mjs'));
 
 const loaders = [];
 for (const m of mods) {
-  const out = join(TMPDIR, `mod-${m.exportName}.mjs`);
+  const out = `/tmp/mod-${m.exportName}.mjs`;
   await build({ entryPoints: [`src/data/articles/${m.path.slice(2)}.ts`], bundle: true, format: 'esm', platform: 'node', outfile: out, alias: { '@': ROOT + '/src' }, logLevel: 'error' });
   const mod = await import(pathToFileURL(out));
   const art = mod[m.exportName];

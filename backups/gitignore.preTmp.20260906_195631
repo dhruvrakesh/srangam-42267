@@ -22,7 +22,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-# WINPATH_JSONB_2026_09_06 - build intermediates; a failed generator run committed
-# a 1.4 MB tmp/registry-bundle.mjs into 189a270.
-tmp/

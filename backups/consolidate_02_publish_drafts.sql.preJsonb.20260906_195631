@@ -33,7 +33,7 @@ SELECT slug,
        length(COALESCE(content::jsonb ->> 'en','')) AS en_chars,
        CASE WHEN length(COALESCE(content::jsonb ->> 'en','')) >= 2000
             THEN 'would PUBLISH' ELSE 'would BE HELD BACK (too short)' END AS effect,
-       left(COALESCE(title::jsonb ->> 'en',''),70) AS title
+       left(COALESCE(title,''),70) AS title
 FROM srangam_articles
 WHERE status <> 'published'
   AND slug IN ('chola-naval-raid','earth-sea-sangam','indian-ocean-power-networks',
