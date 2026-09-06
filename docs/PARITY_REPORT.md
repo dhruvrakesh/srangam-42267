@@ -1,6 +1,6 @@
 # Static ↔ Database Parity Report
 
-**Generated**: 2026-09-06T14:16:46.037Z by `scripts/registry-parity-check.mjs` (roadmap Phase 2.0)
+**Generated**: 2026-09-06T14:21:56.147Z by `scripts/registry-parity-check.mjs` (roadmap Phase 2.0)
 **Database**: https://xjaizfjcpkjcqbyobcsh.supabase.co — 58 articles (49 published, 9 draft)
 **Source**: SQL-editor inventory `docs\db_inventory.csv` — drafts visible, no key required
 **Result**: ⚠️ 19 gap(s) found

@@ -30,14 +30,9 @@ for (const m of mods) {
   loaders.push({ id: art.id, exportName: m.exportName, path: m.path });
 }
 
-// SUBSTANCE_SHARED_2026_09_06 — was `v.trim().length > 0`, which counted a
-// placeholder as a translation and produced the 3/9 badge on an article whose
-// hi and ta bodies are 69 characters each. substantiveLangs() applies the
-// shared placeholder rule; see scripts/lib/substance.mjs for the measurements.
 const cards = full.MULTILINGUAL_ARTICLES.map(a => ({
   id: a.id, title: a.title, dek: a.dek, tags: a.tags,
-  contentLanguages: substantiveLangs(a.content),
-  placeholderLanguages: placeholderLangs(a.content),
+  contentLanguages: Object.entries(a.content || {}).filter(([, v]) => typeof v === 'string' && v.trim().length > 0).map(([k]) => k),
 }));
 
 const header = `/**
@@ -53,17 +48,14 @@ const header = `/**
  * articleResolver step 2.
  */
 import type { LocalizedArticle, SupportedLanguage } from '@/types/multilingual';
-import { substantiveLangs, placeholderLangs } from './lib/substance.mjs';
 
 export interface ArticleCardMeta {
   id: string;
   title: LocalizedArticle['title'];
   dek: LocalizedArticle['dek'];
   tags: LocalizedArticle['tags'];
-  /** Languages with a REAL body in the static registry (placeholders excluded). */
+  /** Languages whose body content is non-empty in the static registry. */
   contentLanguages: SupportedLanguage[];
-  /** Languages present but placeholder-only. Reported, never counted. */
-  placeholderLanguages?: SupportedLanguage[];
 }
 `;
 

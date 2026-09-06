@@ -21,7 +21,6 @@ import { build } from 'esbuild';
 // PARITY_OFFLINE_2026_09_06
 import { readFileSync, writeFileSync } from 'fs';
 import { pathToFileURL } from 'url';
-import { STUB_RATIO, SHORT_SOURCE, STUB_ABS, isStub } from './lib/substance.mjs';
 
 const ROOT = process.cwd();
 
@@ -183,8 +182,17 @@ async function loadCanonicalMap() {
 // The absolute floor exists to protect genuinely SHORT articles —
 // kutai-yupa-borneo has a 235-char English body and ~110-char translations that
 // are real — so it now applies only where it is needed, to short sources.
-// SUBSTANCE_SHARED_2026_09_06 — moved to scripts/lib/substance.mjs so the gate
-// and the meta generator cannot drift apart. Imported at the top of this file.
+const STUB_RATIO   = 0.10;   // long article: a real translation is never under 10%
+const SHORT_SOURCE = 2000;   // below this the ratio is not meaningful ...
+const STUB_ABS     = 100;    // ... so only titles/empties are treated as stubs
+const isStub = (content, lang) => {
+  if (lang === 'en') return false;
+  const v = (content?.[lang] || '').trim();
+  const en = (content?.en || '').trim().length;
+  if (!v.length) return true;
+  if (en >= SHORT_SOURCE) return v.length < en * STUB_RATIO;
+  return v.length < STUB_ABS;
+};
 const stubLangs = (content) =>
   Object.keys(content || {}).filter((l) => (content[l] || '').trim().length > 0 && isStub(content, l)).sort();
 
