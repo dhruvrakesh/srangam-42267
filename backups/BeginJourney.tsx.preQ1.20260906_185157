@@ -45,7 +45,7 @@ const entryPoints = [
 
 export default function BeginJourney() {
   const { t } = useTranslation();
-  const { publishedArticles, crossReferences, culturalTerms, themes, isLoading } = useResearchStats();
+  const { totalArticles, crossReferences, culturalTerms, themes, isLoading } = useResearchStats();
   
   // Intersection observers for scroll animations
   const heroSection = useIntersectionObserver<HTMLElement>({ threshold: 0.1 });
@@ -55,9 +55,7 @@ export default function BeginJourney() {
 
   // Build research metrics configuration for shared component
   const researchMetrics: MetricConfig[] = [
-    // Q1_COUNTS_2026_09_06: was totalArticles, which includes drafts — the
-    // figure labelled "Published Articles" counted unpublished ones.
-    { value: publishedArticles, label: "Published Articles", sublabel: "Long-form research", suffix: "+", color: "saffron" },
+    { value: totalArticles, label: "Published Articles", sublabel: "Long-form research", suffix: "+", color: "saffron" },
     { value: crossReferences, label: "Cross-References", sublabel: "Interconnected scholarship", color: "peacock-blue" },
     { value: culturalTerms, label: "Cultural Terms", sublabel: "Sanskrit & regional vocabulary", color: "terracotta" },
     { value: 5, label: "Research Themes", sublabel: "Multidisciplinary pillars", color: "turmeric" },
@@ -67,7 +65,7 @@ export default function BeginJourney() {
     <div className="min-h-screen bg-background">
       <Helmet>
         <title>Begin Your Journey | Srangam — Histories of the Indian Ocean World</title>
-        <meta name="description" content={`Explore ${publishedArticles}+ research articles, 5 thematic pillars, and ${culturalTerms.toLocaleString()} cultural terms. Where sacred waters meet stone records — dharmic scholarship meets archaeological rigor.`} />
+        <meta name="description" content={`Explore ${totalArticles}+ research articles, 5 thematic pillars, and ${culturalTerms.toLocaleString()} cultural terms. Where sacred waters meet stone records — dharmic scholarship meets archaeological rigor.`} />
         <link rel="canonical" href="https://srangam.nartiang.org/begin-journey" />
       </Helmet>
 

@@ -1,7 +1,7 @@
 # Static ↔ Database Parity Report
 
-**Generated**: 2026-07-12T11:21:04.098Z by `scripts/registry-parity-check.mjs` (roadmap Phase 2.0)
-**Database**: https://xjaizfjcpkjcqbyobcsh.supabase.co — 47 published articles
+**Generated**: 2026-09-06T13:23:27.248Z by `scripts/registry-parity-check.mjs` (roadmap Phase 2.0)
+**Database**: https://xjaizfjcpkjcqbyobcsh.supabase.co — 49 articles (49 published, 0 draft)
 **Result**: ⚠️ 34 gap(s) found
 
 | Slug | Source | Status | Detail |

@@ -13,7 +13,7 @@ import { ResearchThemes } from "@/components/research/ResearchThemes";
 
 export default function About() {
   const navigate = useNavigate();
-  const { publishedArticles, crossReferences, culturalTerms, isLoading } = useResearchStats();
+  const { totalArticles, crossReferences, culturalTerms, isLoading } = useResearchStats();
   
   // Intersection observers for scroll animations
   const missionSection = useIntersectionObserver<HTMLDivElement>({ threshold: 0.1 });
@@ -23,8 +23,7 @@ export default function About() {
 
   // Build research metrics configuration for shared component
   const knowledgeMetrics: MetricConfig[] = [
-    // Q1_COUNTS_2026_09_06: published, not published+drafts.
-    { value: publishedArticles, label: "Research Articles", sublabel: "Long-form scholarship", suffix: "+", color: "saffron" },
+    { value: totalArticles, label: "Research Articles", sublabel: "Long-form scholarship", suffix: "+", color: "saffron" },
     { value: crossReferences, label: "Cross-References", sublabel: "Interconnected insights", color: "peacock-blue" },
     { value: culturalTerms, label: "Cultural Terms", sublabel: "Sanskrit & regional vocabulary", color: "terracotta" },
     { value: 5, label: "Research Themes", sublabel: "Multidisciplinary pillars", color: "turmeric" },

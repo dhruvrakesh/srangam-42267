@@ -1,4 +1,3 @@
-// Q1_COUNTS_2026_09_06
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -18,23 +17,14 @@ export interface ResearchStats {
   isLoading: boolean;
 }
 
-export async function fetchResearchStats(): Promise<Omit<ResearchStats, 'isLoading'>> {
+async function fetchResearchStats(): Promise<Omit<ResearchStats, 'isLoading'>> {
   // Fetch all stats in parallel
-  const [articlesResult, totalResult, crossRefsResult, termsResult, themeStatsResult] = await Promise.all([
-    // Published articles — EXACT count. (Q1_COUNTS_2026_09_06)
-    // This query was already being issued and its .count discarded; it is now
-    // the source of truth for publishedArticles.
+  const [articlesResult, crossRefsResult, termsResult, themeStatsResult] = await Promise.all([
+    // Total published articles
     supabase
       .from('srangam_articles')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'published'),
-
-    // ALL articles — EXACT count. Previously derived from the length of the
-    // grouped row array, which PostgREST caps at 1000 rows by default: correct
-    // at 49 articles, silently wrong at 1001. A head-count has no cap.
-    supabase
-      .from('srangam_articles')
-      .select('id', { count: 'exact', head: true }),
     
     // Cross-references count
     supabase
@@ -76,15 +66,10 @@ export async function fetchResearchStats(): Promise<Omit<ResearchStats, 'isLoadi
     draftCount: counts.draft
   }));
 
-  // Totals come from the EXACT head-counts, not from the length of the grouped
-  // row array. The grouped select remains the source for the per-theme
-  // breakdown, which is all it is fit for. (Q1_COUNTS_2026_09_06)
-  const totalArticles = totalResult.count ?? (themeStatsResult.data?.length || 0);
-  const publishedArticles = articlesResult.count
-    ?? themes.reduce((sum, t) => sum + t.count, 0);
-  const draftArticles = (totalResult.count != null && articlesResult.count != null)
-    ? Math.max(0, totalResult.count - articlesResult.count)
-    : themes.reduce((sum, t) => sum + t.draftCount, 0);
+  // Calculate totals
+  const totalArticles = themeStatsResult.data?.length || 0;
+  const publishedArticles = themes.reduce((sum, t) => sum + t.count, 0);
+  const draftArticles = themes.reduce((sum, t) => sum + t.draftCount, 0);
 
   return {
     totalArticles,
