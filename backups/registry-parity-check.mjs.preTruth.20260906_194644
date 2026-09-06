@@ -65,7 +65,6 @@ async function rest(path) {
 
 // PARITY_RLS_2026_09_06
 // PARITY_CANONICAL_2026_09_06
-// PARITY_TRUTH_2026_09_06
 
 // ── Offline inventory (PARITY_OFFLINE_2026_09_06) ───────────────────────────
 // This is a Lovable Cloud project: no SUPABASE_SERVICE_ROLE_KEY is available,
@@ -173,25 +172,14 @@ async function loadCanonicalMap() {
 // and janajati-oral-traditions has 71,299 English characters against eight
 // 32-character "translations". Measured 2026-09-06 over the 28 registered
 // articles: 69 of 141 non-English bodies are stubs by the rule below.
-// PARITY_TRUTH_2026_09_06 — the previous rule was
-//     (len < 500) AND (len < 10% of en)
-// The AND let a 696-char "translation" of a 27,477-char article count as real
-// (696 > 500), so the 14:12 report claimed jambudvipa-connected was missing
-// bn,hi,kn,ta,te when all five are placeholders.
-//
-// The absolute floor exists to protect genuinely SHORT articles —
-// kutai-yupa-borneo has a 235-char English body and ~110-char translations that
-// are real — so it now applies only where it is needed, to short sources.
-const STUB_RATIO   = 0.10;   // long article: a real translation is never under 10%
-const SHORT_SOURCE = 2000;   // below this the ratio is not meaningful ...
-const STUB_ABS     = 100;    // ... so only titles/empties are treated as stubs
+const STUB_RATIO = 0.10;   // shorter than 10% of the English body ...
+const STUB_ABS   = 500;    // ... AND shorter than 500 characters
 const isStub = (content, lang) => {
   if (lang === 'en') return false;
   const v = (content?.[lang] || '').trim();
   const en = (content?.en || '').trim().length;
   if (!v.length) return true;
-  if (en >= SHORT_SOURCE) return v.length < en * STUB_RATIO;
-  return v.length < STUB_ABS;
+  return v.length < STUB_ABS && (en > 0 ? v.length < en * STUB_RATIO : false);
 };
 const stubLangs = (content) =>
   Object.keys(content || {}).filter((l) => (content[l] || '').trim().length > 0 && isStub(content, l)).sort();
@@ -242,17 +230,10 @@ if (BLIND) {
   console.warn('  *  Set SUPABASE_SERVICE_ROLE_KEY and re-run for a true picture.  *');
   console.warn('  ******************************************************************');
   console.warn('');
+} else if (draftCount === 0) {
+  console.log('Service-role key in use; the database genuinely holds no drafts.');
 } else {
-  // PARITY_TRUTH_2026_09_06 — name the real source. Before this fix an
-  // --inventory run printed "Service-role key in use", which was false: this is
-  // Lovable Cloud and no service key exists. BLIND was redefined to account for
-  // --inventory but these two messages were not updated with it.
-  const source = INVENTORY_ARG
-    ? `SQL-editor inventory (${INVENTORY_ARG}) — no key involved`
-    : 'service-role key';
-  console.log(draftCount === 0
-    ? `Source: ${source}; the database genuinely holds no drafts.`
-    : `Source: ${source}; ${draftCount} draft(s) are visible and will be reported as DRAFT, not MISSING.`);
+  console.log(`Service-role key in use; ${draftCount} draft(s) are visible and will be reported as DRAFT, not MISSING.`);
 }
 
 const bySlug = new Map();
@@ -304,20 +285,10 @@ for (const art of registry) {
   const details = [];
   let bad = false;
   if (missingLangs.length) { bad = true; details.push(`DB missing languages: ${missingLangs.join(',')}`); }
-  // PARITY_TRUTH_2026_09_06 — the inventory CSV deliberately omits the body
-  // blob; loadInventory() rebuilds content as { en: 'x' }, a 1-char presence
-  // marker. Comparing lengths against that produced four fabricated
-  // "DB 1 chars vs static N (−100%)" rows in the 2026-09-06T14:12 report, two
-  // of them on articles that were ✅ OK in the previous run. A check that
-  // cannot be performed must say so, not return a result.
-  if (INVENTORY_ARG) {
-    details.push('length comparison SKIPPED (inventory export carries no body text — run without --inventory to compare lengths)');
-  } else {
-    for (const l of staticLangs) {
-      const sLen = (art.content?.[l] || '').length;
-      const dLen = (db.content?.[l] || '').length;
-      if (dLen > 0 && dLen < sLen * 0.9) { bad = true; details.push(`${l}: DB ${dLen} chars vs static ${sLen} (−${Math.round((1 - dLen / sLen) * 100)}%)`); }
-    }
+  for (const l of staticLangs) {
+    const sLen = (art.content?.[l] || '').length;
+    const dLen = (db.content?.[l] || '').length;
+    if (dLen > 0 && dLen < sLen * 0.9) { bad = true; details.push(`${l}: DB ${dLen} chars vs static ${sLen} (−${Math.round((1 - dLen / sLen) * 100)}%)`); }
   }
   if (staticStubs.length) details.push(`registry placeholder langs IGNORED (not real translations): ${staticStubs.join(',')}`);
   if (bad) gaps++;
@@ -367,8 +338,7 @@ ${rows.map((r) => `| ${r.slug} | ${r.kind} | ${r.status} | ${r.detail || ''} |`)
 - **MISSING IN DB (registry)** → genuinely absent. Import via Admin → Markdown Import (or \`markdown-to-article-import\`), then re-run.
 - **ALIASED** → already published under a different slug (\`canonicalSlugMap.ts\`). **Never import these.**
 - **DRAFT** → the row exists but is unpublished. **Publish it; never import.**
-- Language counts ignore placeholder bodies. Rule: for an English body of ${SHORT_SOURCE}+ characters, anything under ${Math.round(STUB_RATIO * 100)}% of it is a placeholder; for a shorter source, anything under ${STUB_ABS} characters. Measured 2026-09-06 over the 28 registered articles: most non-English "translations" are placeholders, so a CONTENT GAP on those languages was never real.
-- **Length deltas are only computed on a live fetch.** With \`--inventory\` the CSV carries no body text, so the comparison is skipped and says so rather than reporting a false −100%.
+- Language counts ignore placeholder bodies (shorter than ${Math.round(STUB_RATIO * 100)}% of the English body AND under ${STUB_ABS} characters). Measured 2026-09-06: 69 of the registry's 141 non-English bodies are placeholders, so a CONTENT GAP on those languages was never real.
 - **CONTENT GAP** → DB body is shorter than the static registry version for that language; re-import that language's content.
 - **PINS ONLY IN CARD** → run \`backfill-article-pins\` for that article, or keep relying on the resolver's card-pin enrichment (Phase 2.1) until backfilled.
 - Re-run until ✅ FULL PARITY, then proceed to roadmap 2.6 (registry retirement) after 2+ weeks of zero \`static_fallback_serve\` events.

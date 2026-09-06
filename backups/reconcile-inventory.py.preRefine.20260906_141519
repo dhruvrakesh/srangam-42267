@@ -46,7 +46,7 @@ def load_inventory(path):
 
 
 def load_claimed(path):
-    """Registry rows the report still calls MISSING or UNVERIFIABLE."""
+    """Every registry row the report calls MISSING or UNVERIFIABLE."""
     out = []
     for line in io.open(path, encoding="utf-8"):
         if not line.startswith("|"):
@@ -55,29 +55,6 @@ def load_claimed(path):
         if len(c) >= 3 and c[1] == "registry" and ("MISSING IN DB" in c[2] or "UNVERIFIABLE" in c[2]):
             out.append(c[0])
     return out
-
-
-def load_resolved(path):
-    """RECONCILE_POSTFIX_2026_09_06 — rows the gate has ALREADY classified.
-
-    Once patch_parity_canonical.py is applied the report no longer calls the
-    19 present-but-not-found articles "MISSING"; it labels them DRAFT and
-    ALIASED. Reading only the MISSING rows then prints "0 publish, 0 already
-    live", which is arithmetically right and tells you nothing. These two
-    buckets are the answer to "what do I do next", so read them too.
-    """
-    draft, aliased = [], []
-    for line in io.open(path, encoding="utf-8"):
-        if not line.startswith("|"):
-            continue
-        c = [x.strip() for x in line.strip().strip("|").split("|")]
-        if len(c) < 3 or c[1] != "registry":
-            continue
-        if "DRAFT" in c[2]:
-            draft.append(c[0])
-        elif "ALIASED" in c[2]:
-            aliased.append(c[0])
-    return draft, aliased
 
 
 def load_canonical(path):
@@ -97,7 +74,6 @@ def main():
 
     rows = load_inventory(INV)
     claimed = load_claimed(REPORT)
-    gate_draft, gate_aliased = load_resolved(REPORT)
     canon = load_canonical(CMAP)
 
     by_key = {}
@@ -140,15 +116,6 @@ def main():
          lambda t: f"{t[0]:<40} -> {t[1]['slug'][:44]}")
     show("IMPORT — genuinely absent", [(a, None) for a in absent],
          lambda t: t[0])
-
-    # RECONCILE_POSTFIX_2026_09_06 — what the gate itself already resolved.
-    if gate_draft or gate_aliased:
-        print("-" * 74)
-        print("ALREADY RESOLVED BY THE GATE (no longer reported as missing)")
-        print(f"    {len(gate_draft):>2} DRAFT   -> publish, do NOT import: "
-              + (", ".join(sorted(gate_draft)) if gate_draft else "(none)"))
-        print(f"    {len(gate_aliased):>2} ALIASED -> already published under another slug; do nothing")
-        print()
 
     print("-" * 74)
     print(f"  of {len(claimed)} 'missing' articles: "

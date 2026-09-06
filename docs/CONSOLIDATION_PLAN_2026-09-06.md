@@ -174,3 +174,51 @@ Read-only first, reversible next, irreversible last. Nothing below is a bulk
 After step 2 the parity report should read **5 MISSING, 10 ALIASED, 0 DRAFT,
 0 CONTENT GAP**. If it does not, stop: the export is stale — re-run
 `parity_inventory.sql` and re-export before doing anything else.
+
+---
+
+## 7. Q2 again: only 2 of the 5 "absent" articles are actually articles
+
+Before importing the five genuinely-absent registry articles, measure what
+would be imported. There is **no markdown source in `docs/` for any of them** —
+the static `.ts` module is the only source — and their English bodies are:
+
+| registry article | English body | verdict |
+|---|---:|---|
+| `cosmic-island-sacred-land` | 38,894 | **import** |
+| `ashoka-kandahar-edicts` | 6,086 | **import** (from `-complete.ts`) |
+| `maritime-memories-south-india` | 1,674 imported / **7,963** in the unimported file | import — **but take `maritime-memories-south-india.ts`, not `-complete.ts`** |
+| `gondwana-to-himalaya` | 780 | card blurb, not an article — **hold** |
+| `pepper-and-bullion` | 271 | card blurb, not an article — **hold** |
+
+`index.ts` imports `maritime-memories-south-india-complete.ts` (1,674 English
+chars with eight real translations) while `maritime-memories-south-india.ts`
+holds 7,963 English chars with Tamil only. The file named "complete" is the
+shorter one. Check the same for `indian-ocean-power-networks`: the imported
+`-complete` variant has 697 English chars, the unimported one 803.
+
+So Master Plan Q2, measured end to end:
+
+> ~~Import 13~~ → **import 2, import 1 from the correct file, publish 8, hold 2, do nothing for 10.**
+
+`gondwana-to-himalaya` and `pepper-and-bullion` are the same category of problem
+as a short draft: importing them puts a 271-character "article" on a public
+research site. They need writing, not importing.
+
+---
+
+## 8. Card badges count placeholders (see `docs/UI_LINK_AUDIT_2026-09-06.md` §2)
+
+`src/data/articles/meta.ts` is generated, and its `contentLanguages` drives the
+n/9 badge. `scripts/generate-registry-meta.mjs:35` used `v.trim().length > 0`,
+so `scripts-that-sailed-ii` records `["en","hi","ta"]` → **3/9** when `hi` and
+`ta` are 69 characters each. Truth: **1/9**.
+
+`patch_badge_truth.py` moves the rule into `scripts/lib/substance.mjs` — one
+definition, imported by the generator and the parity gate. Preview the exact
+effect on all 28 cards with `python scripts/preview-badge-truth.py`: 13 change,
+15 are already truthful, seven go 9/9 → 1/9.
+
+The three remaining copies of the rule (`useArticles.ts:63`,
+`LanguageAvailabilityBadge.tsx:30`, `coverage.ts`) act on DB rows, whose bodies
+are real, so they are logged and left alone. They belong in their own commit.
