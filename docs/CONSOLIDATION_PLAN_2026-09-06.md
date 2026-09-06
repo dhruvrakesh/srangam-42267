@@ -252,3 +252,73 @@ effect on all 28 cards with `python scripts/preview-badge-truth.py`: 13 change,
 The three remaining copies of the rule (`useArticles.ts:63`,
 `LanguageAvailabilityBadge.tsx:30`, `coverage.ts`) act on DB rows, whose bodies
 are real, so they are logged and left alone. They belong in their own commit.
+
+
+---
+
+## 9. EVIDENCE LANDED — the plan above is superseded where it conflicts
+
+`docs/db_evidence.csv`, exported 2026-09-06 20:04, is the first look at actual
+body lengths. Three conclusions replace earlier guidance.
+
+### 9.1 The nine "drafts" are empty shells
+
+| chars | slug | | chars | slug |
+|---:|---|---|---:|---|
+| 109 | kutai-yupa-borneo | | 88 | scripts-that-sailed |
+| 93 | earth-sea-sangam | | 86 | monsoon-trade-clock |
+| 92 | chola-naval-raid | | 81 | stone-purana |
+| 90 | indian-ocean-power-networks | | 80 | riders-on-monsoon |
+| | | | 60 | geomythology-land-reclamation |
+
+Characters, not words. Published rows run from 7,462 to 568,471 characters. The
+gap between 109 and 7,462 is the entire finding.
+
+So **publish is the wrong verb**. Q2's "import" would duplicate; my "publish 8"
+would put ~90-character pages on the site. The content exists in the static
+registry; the row exists in the DB; they have never been joined. The operation
+is **UPDATE the existing row**, which preserves its id and every foreign key.
+`scripts/emit-draft-fill-sql.mjs` generates that SQL, idempotently
+(guarded by `en body < 200 chars`, so it can only ever fill a shell).
+
+Of the eight fillable shells, only three have a registry body worth publishing —
+`stone-purana` (38,844), `riders-on-monsoon` (9,210), `scripts-that-sailed`
+(7,181). The other five have registry bodies of 235–975 characters; they are
+filled but held as drafts, because they need writing, not publishing.
+
+### 9.2 Wherever both exist, the DATABASE always wins
+
+Joining the registry census to the evidence export across all 28 registry
+articles:
+
+- **14** have a published DB row that is **larger** — from 1.3× (`jambudvipa`)
+  to 143.7× (`reassessing-rigveda-antiquity`: registry 289 chars, DB 41,538).
+- **9** appear "registry larger" only because the DB row is one of the shells.
+- **5** are absent from the DB entirely.
+
+**There is not one case where a published DB row is smaller than its registry
+twin.** The static registry is a stale, smaller copy everywhere the two overlap.
+That removes the main objection to roadmap 2.6: for the 14, retiring the
+registry loses nothing. The only registry-only content is the 5 absent articles,
+of which `gondwana-to-himalaya` (780) and `pepper-and-bullion` (271) are blurbs.
+
+### 9.3 Q3's duplicate count is right; two of its three pairs are not
+
+Two rows with byte-identical English lengths are the same document imported
+twice. Nothing else produces an exact collision at 34,000+ characters.
+
+| chars | winner (human title) | loser (filename title) |
+|---:|---|---|
+| 54,798 | `celestial-bridge-shaivism-bunjil` | `shiva-bunjil-altair-connections` |
+| 36,359 | `har-har-hari-hari` | `vishnu-shiva-hari-hara` |
+| 34,178 | `asura-exiles-mitanni` | `deep-dive-indoiranian-origins` |
+
+Disproven from the earlier list: `janajatiya-oral-traditions` (107,177) vs
+`janajatiya-traditions-oral-continuities` (63,183) — different lengths and
+titles; and `vishnu-shiva-hari-hara` vs `vishnu-shiva-interplay` (538,809) — a
+15× gap. I paired both by slug similarity and both were wrong. Slug text does
+not survive this importer's diacritic stripping; **length does**.
+
+Still unresolved: `vedic-preservation-sarira` (47,288) vs
+`sarira-atman-preservation-vedas` (28,736) — plausibly a chapter and the full
+paper. `consolidate_03` §6 prints both openings so a person decides.
