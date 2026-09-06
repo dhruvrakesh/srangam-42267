@@ -64,7 +64,6 @@ async function rest(path) {
 }
 
 // PARITY_RLS_2026_09_06
-// PARITY_CANONICAL_2026_09_06
 
 // ── Offline inventory (PARITY_OFFLINE_2026_09_06) ───────────────────────────
 // This is a Lovable Cloud project: no SUPABASE_SERVICE_ROLE_KEY is available,
@@ -145,58 +144,15 @@ async function loadStaticRegistry() {
   return mod.MULTILINGUAL_ARTICLES;
 }
 
-// PARITY_CANONICAL_2026_09_06
-// The repo already knows that some registry ids live in the DB under another
-// slug — src/data/articles/canonicalSlugMap.ts, hand-verified 2026-07-12 and
-// used by the list-page merge. This gate never consulted it, so it reported
-// 10 published articles as "MISSING IN DB" and advised importing them.
-async function loadCanonicalMap() {
-  try {
-    await build({
-      entryPoints: ['src/data/articles/canonicalSlugMap.ts'],
-      bundle: true, format: 'esm', platform: 'node',
-      outfile: 'node_modules/.parity-canonical.mjs',
-      alias: { '@': ROOT + '/src' }, logLevel: 'error',
-    });
-    const m = await import(pathToFileURL(ROOT + '/node_modules/.parity-canonical.mjs'));
-    return m.CANONICAL_SLUG_MAP || {};
-  } catch (err) {
-    console.warn(`canonicalSlugMap.ts could not be loaded (${err.message}); aliased articles will read as MISSING.`);
-    return {};
-  }
-}
-
-// A language body counts only if it is real. Registry "translations" are often
-// placeholders — stone-purana.ts carries
-//   hi: '...[Professional Hindi translation required - 6,500 words]'
-// and janajati-oral-traditions has 71,299 English characters against eight
-// 32-character "translations". Measured 2026-09-06 over the 28 registered
-// articles: 69 of 141 non-English bodies are stubs by the rule below.
-const STUB_RATIO = 0.10;   // shorter than 10% of the English body ...
-const STUB_ABS   = 500;    // ... AND shorter than 500 characters
-const isStub = (content, lang) => {
-  if (lang === 'en') return false;
-  const v = (content?.[lang] || '').trim();
-  const en = (content?.en || '').trim().length;
-  if (!v.length) return true;
-  return v.length < STUB_ABS && (en > 0 ? v.length < en * STUB_RATIO : false);
-};
-const stubLangs = (content) =>
-  Object.keys(content || {}).filter((l) => (content[l] || '').trim().length > 0 && isStub(content, l)).sort();
-
 const jsonCards = JSON.parse(readFileSync('src/data/oceanic_bharat/oceanic_cards_8.json', 'utf8')).cards;
 
-// PARITY_CANONICAL_2026_09_06 — was: any non-blank string counted as a
-// language. That counted placeholders as translations. Now a stub is excluded
-// from the language set and surfaced separately.
 const nonEmptyLangs = (content) =>
   Object.entries(content || {})
-    .filter(([k, v]) => typeof v === 'string' && v.trim().length > 0 && !isStub(content, k))
+    .filter(([, v]) => typeof v === 'string' && v.trim().length > 0)
     .map(([k]) => k).sort();
 
 // ---------- main ----------
 const registry = await loadStaticRegistry();
-const CANONICAL_SLUG_MAP = await loadCanonicalMap();   // PARITY_CANONICAL_2026_09_06
 console.log(`Static sources: ${registry.length} registry articles, ${jsonCards.length} JSON cards`);
 
 // Fetch ALL articles (published + draft), not just published. The public
@@ -247,23 +203,8 @@ let gaps = 0;
 
 // -- registry articles (full content comparison)
 for (const art of registry) {
-  // PARITY_CANONICAL_2026_09_06 — try the id, then the repo's own canonical map.
-  let db = bySlug.get(art.id);
-  let viaCanonical = null;
-  if (!db) {
-    const canon = CANONICAL_SLUG_MAP[art.id];
-    if (canon && bySlug.get(canon)) { db = bySlug.get(canon); viaCanonical = canon; }
-  }
+  const db = bySlug.get(art.id);
   const staticLangs = nonEmptyLangs(art.content);
-  const staticStubs = stubLangs(art.content);
-  if (db && viaCanonical && db.status === 'published') {
-    rows.push({
-      slug: art.id, kind: 'registry', status: '🔗 ALIASED (published under a different slug)',
-      detail: `canonicalSlugMap: '${art.id}' -> '${viaCanonical}' (DB slug '${db.slug}'). Present and published — DO NOT IMPORT.`
-        + (staticStubs.length ? ` Registry placeholder langs (ignored): ${staticStubs.join(',')}` : ''),
-    });
-    continue;
-  }
   if (!db) {
     gaps++;
     rows.push({
@@ -290,7 +231,6 @@ for (const art of registry) {
     const dLen = (db.content?.[l] || '').length;
     if (dLen > 0 && dLen < sLen * 0.9) { bad = true; details.push(`${l}: DB ${dLen} chars vs static ${sLen} (−${Math.round((1 - dLen / sLen) * 100)}%)`); }
   }
-  if (staticStubs.length) details.push(`registry placeholder langs IGNORED (not real translations): ${staticStubs.join(',')}`);
   if (bad) gaps++;
   rows.push({ slug: art.id, kind: 'registry', status: bad ? '⚠️ CONTENT GAP' : '✅ OK', detail: details.join('; ') || `langs ${dbLangs.join(',')}` });
 }
@@ -335,10 +275,7 @@ ${rows.map((r) => `| ${r.slug} | ${r.kind} | ${r.status} | ${r.detail || ''} |`)
 
 ## How to act on gaps
 
-- **MISSING IN DB (registry)** → genuinely absent. Import via Admin → Markdown Import (or \`markdown-to-article-import\`), then re-run.
-- **ALIASED** → already published under a different slug (\`canonicalSlugMap.ts\`). **Never import these.**
-- **DRAFT** → the row exists but is unpublished. **Publish it; never import.**
-- Language counts ignore placeholder bodies (shorter than ${Math.round(STUB_RATIO * 100)}% of the English body AND under ${STUB_ABS} characters). Measured 2026-09-06: 69 of the registry's 141 non-English bodies are placeholders, so a CONTENT GAP on those languages was never real.
+- **MISSING IN DB (registry)** → import via Admin → Markdown Import (or \`markdown-to-article-import\`), then re-run.
 - **CONTENT GAP** → DB body is shorter than the static registry version for that language; re-import that language's content.
 - **PINS ONLY IN CARD** → run \`backfill-article-pins\` for that article, or keep relying on the resolver's card-pin enrichment (Phase 2.1) until backfilled.
 - Re-run until ✅ FULL PARITY, then proceed to roadmap 2.6 (registry retirement) after 2+ weeks of zero \`static_fallback_serve\` events.

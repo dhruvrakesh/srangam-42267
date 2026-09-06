@@ -1,0 +1,141 @@
+-- consolidate_03_merge_duplicates.sql  ·  2026-09-06
+--
+-- Master Plan Q3: "Reconcile the 3 true duplicate rows … Ship as reviewed SQL,
+-- not a silent UPDATE."  This is that SQL. It is deliberately the LAST step and
+-- the only one that is hard to undo, so it runs after 01 and 02 have settled.
+--
+-- HOW THE PAIRS WERE FOUND, AND WHAT IS ACTUALLY PROVEN
+-- Token overlap on raw slugs finds NOTHING here: the importer's slugifier drops
+-- diacritics to nothing, so one twin reads 'sarira' and the other 'ar-ra' and no
+-- string test relates them. Overlap on slug_alias (which is clean on all 58
+-- rows) finds four candidate pairs. Of those:
+--   * geomythology-land-reclamation (draft) vs geomythology-cultural-continuity
+--     (published) is CONFIRMED by the repo's own canonicalSlugMap.ts, which
+--     maps the registry id to the published row while a draft of the same id
+--     also exists. Two rows, one article — proven without reading titles.
+--   * the other three are CANDIDATES only. Confirm each on title and body
+--     length from consolidate_01 §3 before touching it.
+--   * scripts-that-sailed vs scripts-sailed-epigraphic-atlas is expected to be
+--     a FALSE positive (Part I and Part II are different articles). The Master
+--     Plan says the DB holds only Part II. Do not merge it.
+--
+-- NOTHING IS DELETED ANYWHERE IN THIS FILE. The loser is unpublished and the
+-- merge is recorded, so every step is reversible with one UPDATE.
+
+
+-- ═══ STEP 1 — an audit trail, created before anything is changed ══════════
+-- Additive: a new table, no existing object touched. Without this, a merge is
+-- an unexplained status change six months from now.
+CREATE TABLE IF NOT EXISTS srangam_article_merges (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  winner_id    uuid NOT NULL REFERENCES srangam_articles(id) ON DELETE RESTRICT,
+  loser_id     uuid NOT NULL REFERENCES srangam_articles(id) ON DELETE RESTRICT,
+  winner_slug  text NOT NULL,
+  loser_slug   text NOT NULL,
+  loser_alias  text,
+  reason       text NOT NULL,
+  merged_at    timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT srangam_article_merges_loser_unique UNIQUE (loser_id),
+  CONSTRAINT srangam_article_merges_not_self     CHECK (winner_id <> loser_id)
+);
+
+COMMENT ON TABLE srangam_article_merges IS
+  'Duplicate-article reconciliation (Master Plan Q3). The loser row is NOT '
+  'deleted — it is set status=draft so it stops rendering, and this table '
+  'records why. A resolver fallback can later use it to 301 the loser slug.';
+
+-- RLS: this table holds no public content. Deny by default; admin access goes
+-- through the same path as the rest of the admin surface.
+ALTER TABLE srangam_article_merges ENABLE ROW LEVEL SECURITY;
+
+
+-- ═══ STEP 2 — the ONE confirmed pair. Dry run first. ══════════════════════
+SELECT id, slug, COALESCE(slug_alias,'') AS slug_alias, status,
+       left(COALESCE(title,''),80) AS title,
+       length(COALESCE(content::jsonb ->> 'en','')) AS en_chars, updated_at
+FROM srangam_articles
+WHERE slug = 'geomythology-land-reclamation'
+   OR slug_alias = 'geomythology-cultural-continuity'
+ORDER BY en_chars DESC;
+-- EXPECTED (from the inventory): two rows.
+--   winner  slug  xfrom-legends-of-land-reclamation-to-living-traditions-…
+--           alias geomythology-cultural-continuity      status published
+--   loser   slug  geomythology-land-reclamation         status draft
+-- If the DRAFT turns out to hold the longer/better body, SWAP the roles below
+-- — publish the draft and retire the other. Length decides, not status.
+
+
+-- ═══ STEP 3 — record and retire. Idempotent. ══════════════════════════════
+BEGIN;
+
+INSERT INTO srangam_article_merges (winner_id, loser_id, winner_slug, loser_slug, loser_alias, reason)
+SELECT w.id, l.id, w.slug, l.slug, l.slug_alias,
+       'Q3/2026-09-06: canonicalSlugMap.ts maps registry id '
+       || 'geomythology-land-reclamation to the published row; a draft of the '
+       || 'same id also exists. Same article, two rows.'
+  FROM srangam_articles w, srangam_articles l
+ WHERE w.slug_alias = 'geomythology-cultural-continuity'
+   AND l.slug       = 'geomythology-land-reclamation'
+   AND w.id <> l.id
+ON CONFLICT (loser_id) DO NOTHING;      -- <= re-running is a no-op
+
+UPDATE srangam_articles
+   SET status = 'draft', updated_at = now()
+ WHERE id IN (SELECT loser_id FROM srangam_article_merges)
+   AND status = 'published'
+RETURNING id, slug, status;
+
+-- Review the output, then COMMIT; or ROLLBACK;
+-- ROLLBACK of a committed run:
+--   UPDATE srangam_articles SET status='published'
+--    WHERE id IN (SELECT loser_id FROM srangam_article_merges WHERE loser_slug='geomythology-land-reclamation');
+--   DELETE FROM srangam_article_merges WHERE loser_slug='geomythology-land-reclamation';
+
+
+-- ═══ STEP 4 — the three CANDIDATE pairs. DO NOT RUN YET. ══════════════════
+-- Fill these in only after consolidate_01 §3 shows you the titles and lengths.
+-- Left deliberately as a commented template: a merge decided from a slug
+-- instead of a title is how the duplicates got here in the first place.
+--
+--   pair A  janajatiya-oral-traditions            vs janajatiya-traditions-oral-continuities
+--   pair B  vedic-preservation-sarira             vs sarira-atman-preservation-vedas
+--   pair C  vishnu-shiva-hari-hara                vs vishnu-shiva-interplay
+--
+-- Source-file evidence that these are re-imports of the same document — docs/
+-- holds the originals, and several exist in numbered copies:
+--   'Janajātiya Traditions_ Oral Continuities and Archaeological Parallels (1).md'
+--   'Janajātiya Traditions_ Oral Continuities and Archaeological Parallels (2).md'
+--   'Stone, Song, and Sea_ … (1).md'  and  '… (2).md'
+--   'Under the Sacred Tree_ … (2).md' and  '… (3).md'
+--   'Scripts that Sailed II_ ….md'    and  '… (1).md'
+-- The duplicates are not a database defect. They are repeated imports of
+-- near-identical source files, which is why STEP 5 matters more than STEP 4.
+--
+-- INSERT INTO srangam_article_merges (winner_id, loser_id, winner_slug, loser_slug, loser_alias, reason)
+-- SELECT w.id, l.id, w.slug, l.slug, l.slug_alias, 'Q3/<date>: <what the titles showed>'
+--   FROM srangam_articles w, srangam_articles l
+--  WHERE w.slug_alias = '<winner alias>' AND l.slug_alias = '<loser alias>' AND w.id <> l.id
+-- ON CONFLICT (loser_id) DO NOTHING;
+
+
+-- ═══ STEP 5 — stop the source of duplicates ═══════════════════════════════
+-- A merge cleans up; it does not prevent. This constraint does. It is additive
+-- and cannot break a read path.
+--
+-- Run the check FIRST — if it returns any row, the constraint will fail to
+-- create, and that row is a duplicate you have not dealt with yet.
+SELECT lower(btrim(COALESCE(title::jsonb ->> 'en', ''))) AS title_en, count(*)
+FROM srangam_articles
+WHERE btrim(COALESCE(title::jsonb ->> 'en','')) <> ''
+GROUP BY 1 HAVING count(*) > 1
+ORDER BY 2 DESC;
+
+-- Only when the query above returns zero rows:
+-- CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS srangam_articles_title_en_unique
+--     ON srangam_articles ((lower(btrim(title::jsonb ->> 'en'))))
+--  WHERE btrim(COALESCE(title::jsonb ->> 'en','')) <> '';
+--
+-- CONCURRENTLY cannot run inside a transaction block — run it on its own.
+-- If the importer legitimately needs to re-import an article, it should UPDATE
+-- the matching row, not INSERT a second one; this index makes that explicit
+-- instead of silent.
