@@ -110,7 +110,7 @@ export default function ScriptsInscriptions() {
           <p className="text-sm text-muted-foreground mb-3">
             Before palm leaf and paper, knowledge traveled through voice. The Anukramaṇī technology—indexing mantras by ṛṣi, devatā, and chandas—preserved Vedic texts across millennia with extraordinary fidelity.
           </p>
-          <Link to="/articles/sarira-and-atman-vedic-preservation" className="text-primary hover:underline text-sm font-medium">
+          <Link to="/sarira-atman-vedic-preservation" className="text-primary hover:underline text-sm font-medium">
             Śarīra and Ātman: The Preservation of the Vedas →
           </Link>
         </div>

@@ -188,7 +188,7 @@ export default function AncientIndia() {
                 <p className="text-sm mb-4">
                   How did oral texts survive millennia without corruption? The Anukramaṇīs provided the <em>śarīra</em> (body)—indexing each mantra by ṛṣi, devatā, and chandas. Sāyaṇāchārya's 14th-century commentary provided the <em>ātman</em> (soul)—preserving meaning during Vijayanagara's manuscript renaissance.
                 </p>
-                <Link to="/articles/sarira-and-atman-vedic-preservation" className="text-primary hover:underline text-sm font-medium">
+                <Link to="/sarira-atman-vedic-preservation" className="text-primary hover:underline text-sm font-medium">
                   Read Part 1: Technology →
                 </Link>
               </CardContent>

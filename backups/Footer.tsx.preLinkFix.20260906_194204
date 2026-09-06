@@ -99,7 +99,7 @@ export function Footer() {
                 <BookOpen size={16} className="inline mr-1" />
                 About
               </Link>
-              <Link to="/about" className="hover:text-ocean transition-colors">
+              <Link to="/contact" className="hover:text-ocean transition-colors">
                 <MapPin size={16} className="inline mr-1" />
                 Contact
               </Link>

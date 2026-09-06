@@ -87,7 +87,7 @@ const BatchBujangNagapattinamOcean: React.FC = () => {
         {/* Enhanced Map CTA */}
         <div className="text-center mb-8">
           <Button variant="default" size="lg" asChild>
-            <Link to="/maps-data">
+            <Link to="/maps">
               {isHindi ? oceanNetworksI18n.cta.enhanced_map_hi : oceanNetworksI18n.cta.enhanced_map_en}
             </Link>
           </Button>

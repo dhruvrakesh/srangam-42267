@@ -1,0 +1,61 @@
+# .gitattributes — 2026-09-06
+#
+# WHY THIS FILE EXISTS
+# `git status` reported EVERY tracked file as modified — README.md, bun.lock,
+# components.json, every doc, every backup. None of them had actually changed:
+#
+#     git diff --ignore-cr-at-eol -- README.md    ->    (empty)
+#
+# The repo is edited from two places with opposite line-ending habits: Lovable
+# Cloud commits LF, and Windows checkouts write CRLF. With no .gitattributes and
+# no core.autocrlf setting, git saw the CR bytes as content and marked the whole
+# tree dirty. That noise is not cosmetic — it hides real changes in `git status`
+# and `git diff`, which is how three commits of fixes sat unpushed without
+# anyone noticing that Lovable was still running the old code.
+#
+# `* text=auto` makes git normalise to LF in the object store while checking out
+# whatever the platform wants. It is applied once (see `git add --renormalize`
+# in the runbook) and is idempotent thereafter.
+
+* text=auto
+
+# Source and text: always LF in the repository.
+*.ts    text eol=lf
+*.tsx   text eol=lf
+*.js    text eol=lf
+*.mjs   text eol=lf
+*.jsx   text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+*.css   text eol=lf
+*.html  text eol=lf
+*.sql   text eol=lf
+*.py    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.csv   text eol=lf
+*.toml  text eol=lf
+*.svg   text eol=lf
+
+# Windows-only helpers keep CRLF or they will not run.
+*.ps1   text eol=crlf
+*.cmd   text eol=crlf
+*.bat   text eol=crlf
+
+# Binary: never touch, never diff.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.pdf   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.otf   binary
+*.zip   binary
+
+# Lockfiles: LF, and keep them out of diff review noise.
+bun.lock      text eol=lf -diff
+package-lock.json text eol=lf -diff
