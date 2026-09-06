@@ -97,21 +97,10 @@ out.push('--');
 out.push('-- Idempotent: each UPDATE is guarded by  en body < 200 chars,  so a second run');
 out.push('-- changes nothing and an admin edit can never be overwritten.');
 out.push('--');
-out.push('-- NO TRANSACTION WRAPPER, deliberately. The first version of this file');
-out.push('-- opened BEGIN; and left COMMIT; to the reader. Pasted whole into the SQL');
-out.push('-- editor on 2026-09-06 that produced an unresolvable state: nobody could');
-out.push('-- say afterwards whether the eight UPDATEs had committed or been discarded,');
-out.push('-- and the answer decided whether a corrupted earlier run needed repair.');
-out.push('--');
-out.push('-- Every UPDATE below is guarded by  en body < 200 chars,  so each one is');
-out.push('-- independently safe and idempotent. A transaction adds no safety here and');
-out.push('-- costs certainty. Statements commit as they run; the RETURNING output is');
-out.push('-- the record of what changed.');
-out.push('--');
-out.push('-- NOTE ON THE GUARD: it is what makes re-running harmless, and it is also');
-out.push('-- why a clean re-run CANNOT repair a row that a corrupted run already');
-out.push('-- filled - the body is no longer under 200 characters, so the UPDATE skips');
-out.push('-- it. Corruption must be repaired by a statement that targets the mojibake.');
+out.push('-- Run the VERIFY block at the end BEFORE and AFTER. Wrap in BEGIN/COMMIT and');
+out.push('-- read the RETURNING output before committing.');
+out.push('');
+out.push('BEGIN;');
 out.push('');
 
 let filled = 0, held = 0;
@@ -139,9 +128,7 @@ for (const [slug, cfg] of Object.entries(SHELLS)) {
   cfg.publish ? filled++ : held++;
 }
 
-out.push('-- Each statement above has already committed. Read every RETURNING block:');
-out.push('--   a slug listed = that shell was filled');
-out.push('--   a slug absent = its guard blocked, i.e. the body was already >= 200 chars');
+out.push('-- Review every RETURNING block above, then:  COMMIT;   (or ROLLBACK;)');
 out.push('');
 out.push('-- ═══ VERIFY — run before and after ═══════════════════════════════════════');
 out.push("SELECT status, count(*), min(length(COALESCE(content::jsonb ->> 'en',''))) AS min_en,");
