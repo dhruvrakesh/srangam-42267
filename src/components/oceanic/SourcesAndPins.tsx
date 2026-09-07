@@ -10,6 +10,7 @@ import { useArticleBibliographyBySlug, type ArticleBibliographyLink } from '@/ho
 import { useArticleEvidenceBySlug, type ArticleEvidence } from '@/hooks/useArticleEvidence';
 import { correlationEngine, type SourcesAndPins as LegacySourcesAndPinsData } from '@/lib/correlationEngine';
 import { useArticlePinsBySlug } from '@/hooks/useArticlePins';   // PINS_IN_PANEL_2026_09_07
+import type { ArticlePin } from '@/lib/articlePins';             // PINS_SCOPE_FIX_2026_09_07
 import { useLanguage } from '@/components/language/LanguageProvider';
 
 interface SourcesAndPinsProps {
@@ -43,7 +44,7 @@ export const SourcesAndPins: React.FC<SourcesAndPinsProps> = ({
 
   const handleDownloadData = () => {
     const exportData = hasDbData
-      ? { bibliography, evidence, source: 'database' }
+      ? { bibliography, evidence, pins: dbPins ?? [], source: 'database' }  // PINS_SCOPE_FIX_2026_09_07
       : { ...legacyData, source: 'legacy' };
     
     const dataStr = JSON.stringify(exportData, null, 2);
@@ -87,6 +88,7 @@ export const SourcesAndPins: React.FC<SourcesAndPinsProps> = ({
           <SourcesAndPinsContent 
             bibliography={bibliography}
             evidence={evidence}
+            dbPins={dbPins}
             legacyData={legacyData}
             hasDbData={hasDbData}
             isLoading={isLoading}
@@ -120,6 +122,7 @@ export const SourcesAndPins: React.FC<SourcesAndPinsProps> = ({
         <SourcesAndPinsContent 
           bibliography={bibliography}
           evidence={evidence}
+          dbPins={dbPins}
           legacyData={legacyData}
           hasDbData={hasDbData}
           isLoading={isLoading}
@@ -146,14 +149,41 @@ const SourceQualityBadge: React.FC<{ quality: string | null }> = ({ quality }) =
   );
 };
 
+/** PINS_SCOPE_FIX_2026_09_07 - srangam_article_pins, rendered from a single place.
+ *  Previously inlined in the legacy branch only, where hasDbData is false -
+ *  i.e. exactly when there are no pins. It could never appear. */
+const DatabasePinsBlock: React.FC<{ pins: ArticlePin[] }> = ({ pins }) => (
+  <div className="space-y-2">
+    <h4 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+      <MapPin className="h-4 w-4" />
+      Geographical Pins ({pins.length})
+      <span className="text-xs font-normal normal-case opacity-75">from database</span>
+    </h4>
+    <div className="grid gap-2">
+      {pins.map((pin, index) => (
+        <div key={pin.gazetteer_id ?? `${pin.name}-${index}`}
+             className="p-2 rounded bg-background border border-l-2 border-l-primary/40">
+          <div className="text-sm font-medium">{pin.name}</div>
+          <div className="text-xs text-muted-foreground font-mono">
+            {pin.lat.toFixed(4)}, {pin.lon.toFixed(4)}
+            {pin.confidence ? ` \u00b7 confidence ${pin.confidence}` : ''}
+            {pin.approximate ? ' \u00b7 approximate' : ''}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 const SourcesAndPinsContent: React.FC<{
   bibliography: ArticleBibliographyLink[] | undefined;
   evidence: ArticleEvidence[] | undefined;
+  dbPins: ArticlePin[] | undefined;   // PINS_SCOPE_FIX_2026_09_07
   legacyData: LegacySourcesAndPinsData;
   hasDbData: boolean;
   isLoading: boolean;
   onDownload: () => void;
-}> = ({ bibliography, evidence, legacyData, hasDbData, isLoading }) => {
+}> = ({ bibliography, evidence, dbPins, legacyData, hasDbData, isLoading }) => {
   const [showEvidence, setShowEvidence] = useState(false);
   const [selectedPin, setSelectedPin] = useState<any>(null);
   const [selectedEvidence, setSelectedEvidence] = useState<ArticleEvidence | null>(null);
@@ -286,6 +316,10 @@ const SourcesAndPinsContent: React.FC<{
             </p>
           </div>
         )}
+
+        {/* PINS_SCOPE_FIX_2026_09_07 - pins are neither bibliography nor evidence, so they
+            render under whichever view is active rather than behind the toggle. */}
+        {(dbPins?.length ?? 0) > 0 && <DatabasePinsBlock pins={dbPins!} />}
 
         {/* Evidence Detail Dialog */}
         <Dialog open={!!selectedEvidence} onOpenChange={(open) => !open && setSelectedEvidence(null)}>
@@ -428,28 +462,8 @@ const SourcesAndPinsContent: React.FC<{
       )}
 
       {/* Pins */}
-      {/* PINS_IN_PANEL_2026_09_07 — database pins, which were never rendered. */}
-      {(dbPins?.length ?? 0) > 0 && (
-        <div className="mt-4">
-          <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
-            Geographical Pins ({dbPins!.length})
-            <span className="text-xs text-muted-foreground">from database</span>
-          </h4>
-          <div className="space-y-2">
-            {dbPins!.map((pin, index) => (
-              <div key={pin.gazetteer_id ?? `${pin.name}-${index}`}
-                   className="text-sm border-l-2 border-primary/40 pl-3">
-                <div className="font-medium">{pin.name}</div>
-                <div className="text-xs text-muted-foreground">
-                  {pin.lat.toFixed(4)}, {pin.lon.toFixed(4)}
-                  {pin.confidence ? ` · confidence ${pin.confidence}` : ''}
-                  {pin.approximate ? ' · approximate' : ''}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* PINS_IN_PANEL_2026_09_07 / PINS_SCOPE_FIX_2026_09_07 */}
+      {(dbPins?.length ?? 0) > 0 && <DatabasePinsBlock pins={dbPins!} />}
 
       {(dbPins?.length ?? 0) === 0 && legacyData.pins.length > 0 && (
         <div className="space-y-2">
