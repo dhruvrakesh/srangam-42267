@@ -12,7 +12,6 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
-  // TAGS_PROVENANCE_2026_09_07
   const body = await req.clone().json().catch(() => ({} as any));
   const __gate = await requireAdminOrCron(req, body);
   if (__gate.error) return __gate.error;
@@ -40,7 +39,7 @@ serve(async (req) => {
         // Fetch article
         const { data: article, error: fetchError } = await supabase
           .from('srangam_articles')
-          .select('id, slug, title, content, theme, tags')   // TAGS_PROVENANCE_2026_09_07: theme is required by generate-article-tags
+          .select('id, slug, title, content')
           .eq('slug', slug)
           .single();
 
@@ -50,29 +49,14 @@ serve(async (req) => {
           continue;
         }
 
-        // TAGS_PROVENANCE_2026_09_07 - was sending { articleId, title, content }.
-        // generate-article-tags:38 destructures { title, theme, culturalTerms,
-        // contentPreview }, so contentPreview/theme/culturalTerms arrived
-        // undefined and articleId was never read. Every article was rejected.
-        // This is the shape markdown-to-article-import:547 sends, which works.
-        const titleText = typeof article.title === 'string'
-          ? article.title
-          : (article.title?.en ?? Object.values(article.title ?? {})[0] ?? article.slug);
-        const contentText = typeof article.content === 'string'
-          ? article.content
-          : (article.content?.en ?? '');
-        if (!contentText) {
-          results.push({ slug, success: false, error: 'article has no English body to derive tags from' });
-          continue;
-        }
+        // Call generate-article-tags function
         const { data: tagData, error: tagError } = await supabase.functions.invoke(
           'generate-article-tags',
           {
             body: {
-              title: titleText,
-              theme: article.theme ?? '',
-              culturalTerms: [],
-              contentPreview: contentText.slice(0, 1000),
+              articleId: article.id,
+              title: article.title,
+              content: article.content
             }
           }
         );
@@ -83,27 +67,8 @@ serve(async (req) => {
           continue;
         }
 
-        // TAGS_PROVENANCE_2026_09_07 - the tags used to be pushed into `results`
-        // and discarded; this file contained no UPDATE at all, which is why the
-        // report said success while no tags were ever added. Persist, then
-        // report what the database returned - never what we hoped to write.
-        const newTags = Array.isArray(tagData?.tags) ? tagData.tags : null;
-        if (!newTags || newTags.length === 0) {
-          results.push({ slug, success: false, error: 'tag service returned no tags' });
-          continue;
-        }
-        const { data: updated, error: updateError } = await supabase
-          .from('srangam_articles')
-          .update({ tags: newTags, updated_at: new Date().toISOString() })
-          .eq('id', article.id)
-          .select('id, tags')
-          .single();
-        if (updateError || !updated) {
-          results.push({ slug, success: false, error: `tags generated but NOT saved: ${updateError?.message ?? 'no row returned'}` });
-          continue;
-        }
-        results.push({ slug, success: true, tagsWritten: updated.tags?.length ?? 0, tags: updated.tags });
-        console.log(`Wrote ${updated.tags?.length ?? 0} tags to ${slug}`);
+        results.push({ slug, success: true, tags: tagData.tags });
+        console.log(`Successfully regenerated tags for ${slug}`);
 
       } catch (err) {
         console.error(`Error processing ${slug}:`, err);
@@ -120,10 +85,7 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ 
-        // TAGS_PROVENANCE_2026_09_07 - was unconditionally true. Four failed
-        // articles rendered as a successful run because the admin UI reads this
-        // flag and not summary.failed.
-        success: failCount === 0,
+        success: true,
         summary: {
           total: results.length,
           successful: successCount,
@@ -131,12 +93,7 @@ serve(async (req) => {
         },
         results 
       }),
-      {
-        // 207 Multi-Status when some articles failed, so a caller that only
-        // checks the HTTP code cannot be misled either.
-        status: failCount === 0 ? 200 : 207,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {

@@ -975,14 +975,7 @@ Deno.serve(async (req) => {
         termsExtracted: culturalTerms.length,
         termsMatched,
         termsCreated,
-        // TAGS_PROVENANCE_2026_09_07 - this field said "Created" while this
-        // function inserts into NEITHER srangam_article_bibliography NOR
-        // srangam_article_evidence (grep: 0 hits). It reported the extraction
-        // count as a creation count for every article ever imported, which is
-        // why Sources & Pins is empty on every one of them.
-        citationsExtracted: citations.length,
-        citationsPersisted: 0,   // nothing is inserted here yet - see patch step 2
-        bibliographyBackfillRun: false,
+        citationsCreated: citations.length,
         readTimeMinutes,
         crossReferencesCreated: crossRefsToCreate.length,
         markdownSourceSaved: !markdownError,
