@@ -147,10 +147,18 @@ out.push('-- ═══ VERIFY — run before and after ════════�
 out.push("SELECT status, count(*), min(length(COALESCE(content::jsonb ->> 'en',''))) AS min_en,");
 out.push("       max(length(COALESCE(content::jsonb ->> 'en',''))) AS max_en");
 out.push('FROM srangam_articles GROUP BY status ORDER BY status;');
-out.push('-- BEFORE: draft 9 rows, min_en 60, max_en 109');
+out.push('-- BEFORE the 2026-09-07 run: draft 9 rows, min_en 60, max_en 109');
 out.push(`-- AFTER : published +${filled}, draft ${9 - filled} rows with real bodies`);
 out.push('');
-out.push('SELECT count(*) AS total FROM srangam_articles;   -- must still be 58, always');
+// COUNT ASSERTION, 2026-09-07. This file contains only UPDATEs - no INSERT,
+// no DELETE - so it is structurally incapable of changing the row count. The
+// right assertion is therefore "unchanged", not a hardcoded number. The
+// hardcoded 58 went stale the moment custodians-unfinished-time was imported
+// (corpus is 59 as of 2026-09-07) and would have raised a false alarm on a
+// correct run - a guard that is wrong is worse than no guard at all.
+out.push('SELECT count(*) AS total FROM srangam_articles;');
+out.push('-- Must equal the count you took BEFORE running this file. This file');
+out.push('-- has no INSERT and no DELETE, so any change means something else ran.');
 
 // ENCODING_2026_09_06 — this script WRITES ITS OWN FILE and never prints SQL
 // to stdout. `node emit-draft-fill-sql.mjs > out.sql` under Windows PowerShell
