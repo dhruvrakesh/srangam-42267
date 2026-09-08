@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -384,6 +384,54 @@ export type Database = {
           {
             foreignKeyName: "srangam_article_evidence_article_id_fkey"
             columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      srangam_article_merges: {
+        Row: {
+          id: string
+          loser_alias: string | null
+          loser_id: string
+          loser_slug: string
+          merged_at: string
+          reason: string
+          winner_id: string
+          winner_slug: string
+        }
+        Insert: {
+          id?: string
+          loser_alias?: string | null
+          loser_id: string
+          loser_slug: string
+          merged_at?: string
+          reason: string
+          winner_id: string
+          winner_slug: string
+        }
+        Update: {
+          id?: string
+          loser_alias?: string | null
+          loser_id?: string
+          loser_slug?: string
+          merged_at?: string
+          reason?: string
+          winner_id?: string
+          winner_slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_article_merges_loser_id_fkey"
+            columns: ["loser_id"]
+            isOneToOne: true
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "srangam_article_merges_winner_id_fkey"
+            columns: ["winner_id"]
             isOneToOne: false
             referencedRelation: "srangam_articles"
             referencedColumns: ["id"]
@@ -1512,6 +1560,95 @@ export type Database = {
           related_tags?: Json | null
           tag_name?: string
           usage_count?: number | null
+        }
+        Relationships: []
+      }
+      srangam_text_passages: {
+        Row: {
+          created_at: string
+          iast: string | null
+          id: string
+          idx: number
+          page_no: number
+          quality_score: number | null
+          sanskrit: string
+          text_id: string
+          translation: string
+          updated_at: string
+          verse_ref: string | null
+        }
+        Insert: {
+          created_at?: string
+          iast?: string | null
+          id?: string
+          idx: number
+          page_no: number
+          quality_score?: number | null
+          sanskrit: string
+          text_id: string
+          translation: string
+          updated_at?: string
+          verse_ref?: string | null
+        }
+        Update: {
+          created_at?: string
+          iast?: string | null
+          id?: string
+          idx?: number
+          page_no?: number
+          quality_score?: number | null
+          sanskrit?: string
+          text_id?: string
+          translation?: string
+          updated_at?: string
+          verse_ref?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_text_passages_text_id_fkey"
+            columns: ["text_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_texts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      srangam_texts: {
+        Row: {
+          category: string | null
+          created_at: string
+          doc_code: string
+          id: string
+          passage_count: number
+          published: boolean
+          source_note: string | null
+          title: string
+          translation_engine: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          doc_code: string
+          id?: string
+          passage_count?: number
+          published?: boolean
+          source_note?: string | null
+          title: string
+          translation_engine?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          doc_code?: string
+          id?: string
+          passage_count?: number
+          published?: boolean
+          source_note?: string | null
+          title?: string
+          translation_engine?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -2789,12 +2926,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2818,11 +2955,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2843,11 +2980,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2868,11 +3005,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2885,11 +3022,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
