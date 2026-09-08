@@ -6,7 +6,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 import { classifyError } from '../_shared/error-response.ts';
 
-import { requireAdmin } from '../_shared/auth-gate.ts';
+import { requireAdminOrCron } from '../_shared/auth-gate.ts';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -31,11 +31,17 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
-  const __gate = await requireAdmin(req);
+  // TAGS_AUTH_2026_09_08: batch-enrich-terms invokes this function server-side,
+  // where the only credential available is the service-role key — getUser() can
+  // never resolve that to an admin user, so requireAdmin returned 401 and every
+  // batched article failed. Accept the cron/service path (x-cron-secret +
+  // `_cron: true`) in addition to the admin-JWT path used by the admin UI.
+  const __body = await req.clone().json().catch(() => ({} as any));
+  const __gate = await requireAdminOrCron(req, __body);
   if (__gate.error) return __gate.error;
 
   try {
-    const { title, theme, culturalTerms, contentPreview }: TagGenerationRequest = await req.json();
+    const { title, theme, culturalTerms, contentPreview }: TagGenerationRequest = __body;
     
     console.log('🏷️ Generating tags for:', title);
 

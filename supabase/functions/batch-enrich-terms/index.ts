@@ -65,10 +65,15 @@ serve(async (req) => {
           results.push({ slug, success: false, error: 'article has no English body to derive tags from' });
           continue;
         }
+        // TAGS_AUTH_2026_09_08: invoking with the service-role client sent a
+        // service-role bearer that generate-article-tags' admin gate rejected
+        // with 401. Send the cron/service credentials it now accepts.
         const { data: tagData, error: tagError } = await supabase.functions.invoke(
           'generate-article-tags',
           {
+            headers: { 'x-cron-secret': Deno.env.get('CRON_SECRET') ?? '' },
             body: {
+              _cron: true,
               title: titleText,
               theme: article.theme ?? '',
               culturalTerms: [],
