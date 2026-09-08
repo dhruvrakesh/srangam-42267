@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { IconOm, IconLotus } from "@/components/icons";
 import { BookOpen, Calendar, TrendingUp, Info, ArrowRight, MailIcon, Github, Code2, Terminal, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { ProjectStatusPanel } from "@/components/ProjectStatusPanel";
 
 export default function JyotishHoroscope() {
   const structuredData = {
@@ -1002,6 +1003,9 @@ export default function JyotishHoroscope() {
             </div>
           </div>
         </section>
+
+        {/* PROJECT_STATUS_2026_09_08 - measured figures, and what is not yet true */}
+        <ProjectStatusPanel variant="panchang" />
 
         {/* Final CTA Section */}
         <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-peacock-blue to-indigo-dharma text-white relative overflow-hidden">

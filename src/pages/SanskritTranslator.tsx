@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { IconOm, IconScript, IconLotus } from "@/components/icons";
 import { BookOpen, FileText, MapPin, Languages, ArrowRight, Upload, Github, Code2, Terminal, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { ProjectStatusPanel } from "@/components/ProjectStatusPanel";
 
 export default function SanskritTranslator() {
   const structuredData = {
@@ -553,6 +554,9 @@ export default function SanskritTranslator() {
             </div>
           </div>
         </section>
+
+        {/* PROJECT_STATUS_2026_09_08 - measured figures, and what is not yet true */}
+        <ProjectStatusPanel variant="translation" />
 
         {/* Final CTA Section */}
         <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-indigo-dharma to-peacock-blue text-white relative overflow-hidden">
