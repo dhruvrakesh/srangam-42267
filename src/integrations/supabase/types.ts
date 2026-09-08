@@ -1,2 +1,3044 @@
-Access token not provided. Supply an access token by running `supabase login` or setting the SUPABASE_ACCESS_TOKEN environment variable.
-Try rerunning the command with --debug to troubleshoot the error.
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
+  public: {
+    Tables: {
+      narration_analytics: {
+        Row: {
+          article_slug: string
+          completed: boolean | null
+          created_at: string | null
+          device_type: string | null
+          id: string
+          language: string
+          playback_events: Json | null
+          provider: string
+          session_id: string
+          started_at: string
+          user_id: string | null
+          voice: string
+        }
+        Insert: {
+          article_slug: string
+          completed?: boolean | null
+          created_at?: string | null
+          device_type?: string | null
+          id?: string
+          language: string
+          playback_events?: Json | null
+          provider: string
+          session_id: string
+          started_at?: string
+          user_id?: string | null
+          voice: string
+        }
+        Update: {
+          article_slug?: string
+          completed?: boolean | null
+          created_at?: string | null
+          device_type?: string | null
+          id?: string
+          language?: string
+          playback_events?: Json | null
+          provider?: string
+          session_id?: string
+          started_at?: string
+          user_id?: string | null
+          voice?: string
+        }
+        Relationships: []
+      }
+      spatial_ref_sys: {
+        Row: {
+          auth_name: string | null
+          auth_srid: number | null
+          proj4text: string | null
+          srid: number
+          srtext: string | null
+        }
+        Insert: {
+          auth_name?: string | null
+          auth_srid?: number | null
+          proj4text?: string | null
+          srid: number
+          srtext?: string | null
+        }
+        Update: {
+          auth_name?: string | null
+          auth_srid?: number | null
+          proj4text?: string | null
+          srid?: number
+          srtext?: string | null
+        }
+        Relationships: []
+      }
+      srangam_admin_jobs: {
+        Row: {
+          cost_usd: number
+          created_at: string
+          created_by: string | null
+          failed: number
+          finished_at: string | null
+          heartbeat_at: string | null
+          id: string
+          kind: string
+          last_error: string | null
+          last_item: string | null
+          params: Json
+          processed: number
+          started_at: string | null
+          status: string
+          succeeded: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          cost_usd?: number
+          created_at?: string
+          created_by?: string | null
+          failed?: number
+          finished_at?: string | null
+          heartbeat_at?: string | null
+          id?: string
+          kind: string
+          last_error?: string | null
+          last_item?: string | null
+          params?: Json
+          processed?: number
+          started_at?: string | null
+          status?: string
+          succeeded?: number
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          cost_usd?: number
+          created_at?: string
+          created_by?: string | null
+          failed?: number
+          finished_at?: string | null
+          heartbeat_at?: string | null
+          id?: string
+          kind?: string
+          last_error?: string | null
+          last_item?: string | null
+          params?: Json
+          processed?: number
+          started_at?: string | null
+          status?: string
+          succeeded?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      srangam_ai_usage: {
+        Row: {
+          article_id: string | null
+          completion_tokens: number | null
+          cost_usd_estimate: number | null
+          created_at: string
+          error_code: string | null
+          function_name: string
+          id: string
+          job_id: string | null
+          latency_ms: number | null
+          meta: Json
+          model: string
+          ok: boolean
+          prompt_tokens: number | null
+          provider: string
+          purpose: string | null
+        }
+        Insert: {
+          article_id?: string | null
+          completion_tokens?: number | null
+          cost_usd_estimate?: number | null
+          created_at?: string
+          error_code?: string | null
+          function_name: string
+          id?: string
+          job_id?: string | null
+          latency_ms?: number | null
+          meta?: Json
+          model: string
+          ok?: boolean
+          prompt_tokens?: number | null
+          provider: string
+          purpose?: string | null
+        }
+        Update: {
+          article_id?: string | null
+          completion_tokens?: number | null
+          cost_usd_estimate?: number | null
+          created_at?: string
+          error_code?: string | null
+          function_name?: string
+          id?: string
+          job_id?: string | null
+          latency_ms?: number | null
+          meta?: Json
+          model?: string
+          ok?: boolean
+          prompt_tokens?: number | null
+          provider?: string
+          purpose?: string | null
+        }
+        Relationships: []
+      }
+      srangam_article_analytics: {
+        Row: {
+          article_id: string
+          avg_read_time_seconds: number | null
+          completion_rate: number | null
+          cultural_term_interactions: number | null
+          date: string
+          id: string
+          language_breakdown: Json | null
+          unique_visitors: number | null
+          updated_at: string
+          views: number | null
+        }
+        Insert: {
+          article_id: string
+          avg_read_time_seconds?: number | null
+          completion_rate?: number | null
+          cultural_term_interactions?: number | null
+          date?: string
+          id?: string
+          language_breakdown?: Json | null
+          unique_visitors?: number | null
+          updated_at?: string
+          views?: number | null
+        }
+        Update: {
+          article_id?: string
+          avg_read_time_seconds?: number | null
+          completion_rate?: number | null
+          cultural_term_interactions?: number | null
+          date?: string
+          id?: string
+          language_breakdown?: Json | null
+          unique_visitors?: number | null
+          updated_at?: string
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_article_analytics_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      srangam_article_bibliography: {
+        Row: {
+          article_id: string | null
+          bibliography_id: string | null
+          citation_context: string | null
+          created_at: string
+          id: string
+          is_primary_source: boolean | null
+          page_numbers: string | null
+          quote: string | null
+        }
+        Insert: {
+          article_id?: string | null
+          bibliography_id?: string | null
+          citation_context?: string | null
+          created_at?: string
+          id?: string
+          is_primary_source?: boolean | null
+          page_numbers?: string | null
+          quote?: string | null
+        }
+        Update: {
+          article_id?: string | null
+          bibliography_id?: string | null
+          citation_context?: string | null
+          created_at?: string
+          id?: string
+          is_primary_source?: boolean | null
+          page_numbers?: string | null
+          quote?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_article_bibliography_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "srangam_article_bibliography_bibliography_id_fkey"
+            columns: ["bibliography_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_bibliography_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      srangam_article_chapters: {
+        Row: {
+          article_id: string | null
+          chapter_id: string | null
+          created_at: string
+          custom_introduction: string | null
+          id: string
+          include_bibliography: boolean | null
+          include_full_text: boolean | null
+          sequence_number: number
+        }
+        Insert: {
+          article_id?: string | null
+          chapter_id?: string | null
+          created_at?: string
+          custom_introduction?: string | null
+          id?: string
+          include_bibliography?: boolean | null
+          include_full_text?: boolean | null
+          sequence_number: number
+        }
+        Update: {
+          article_id?: string | null
+          chapter_id?: string | null
+          created_at?: string
+          custom_introduction?: string | null
+          id?: string
+          include_bibliography?: boolean | null
+          include_full_text?: boolean | null
+          sequence_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_article_chapters_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "srangam_article_chapters_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_book_chapters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      srangam_article_evidence: {
+        Row: {
+          actors: string[] | null
+          article_id: string
+          created_at: string
+          date_approx: string | null
+          event_description: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          place: string | null
+          significance: string | null
+          source_quality: string | null
+        }
+        Insert: {
+          actors?: string[] | null
+          article_id: string
+          created_at?: string
+          date_approx?: string | null
+          event_description?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          place?: string | null
+          significance?: string | null
+          source_quality?: string | null
+        }
+        Update: {
+          actors?: string[] | null
+          article_id?: string
+          created_at?: string
+          date_approx?: string | null
+          event_description?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          place?: string | null
+          significance?: string | null
+          source_quality?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_article_evidence_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      srangam_article_merges: {
+        Row: {
+          id: string
+          loser_alias: string | null
+          loser_id: string
+          loser_slug: string
+          merged_at: string
+          reason: string
+          winner_id: string
+          winner_slug: string
+        }
+        Insert: {
+          id?: string
+          loser_alias?: string | null
+          loser_id: string
+          loser_slug: string
+          merged_at?: string
+          reason: string
+          winner_id: string
+          winner_slug: string
+        }
+        Update: {
+          id?: string
+          loser_alias?: string | null
+          loser_id?: string
+          loser_slug?: string
+          merged_at?: string
+          reason?: string
+          winner_id?: string
+          winner_slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_article_merges_loser_id_fkey"
+            columns: ["loser_id"]
+            isOneToOne: true
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "srangam_article_merges_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      srangam_article_metadata: {
+        Row: {
+          ai_keywords: string[] | null
+          ai_model_version: string | null
+          ai_summary: Json | null
+          ai_themes: string[] | null
+          article_id: string
+          cultural_density_score: number | null
+          embeddings: string | null
+          generated_at: string
+          id: string
+          sentiment_analysis: Json | null
+        }
+        Insert: {
+          ai_keywords?: string[] | null
+          ai_model_version?: string | null
+          ai_summary?: Json | null
+          ai_themes?: string[] | null
+          article_id: string
+          cultural_density_score?: number | null
+          embeddings?: string | null
+          generated_at?: string
+          id?: string
+          sentiment_analysis?: Json | null
+        }
+        Update: {
+          ai_keywords?: string[] | null
+          ai_model_version?: string | null
+          ai_summary?: Json | null
+          ai_themes?: string[] | null
+          article_id?: string
+          cultural_density_score?: number | null
+          embeddings?: string | null
+          generated_at?: string
+          id?: string
+          sentiment_analysis?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_article_metadata_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: true
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      srangam_article_pins: {
+        Row: {
+          article_id: string
+          confidence: string
+          created_at: string
+          display_order: number
+          gazetteer_id: string
+          source: string
+        }
+        Insert: {
+          article_id: string
+          confidence?: string
+          created_at?: string
+          display_order?: number
+          gazetteer_id: string
+          source?: string
+        }
+        Update: {
+          article_id?: string
+          confidence?: string
+          created_at?: string
+          display_order?: number
+          gazetteer_id?: string
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_article_pins_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "srangam_article_pins_gazetteer_id_fkey"
+            columns: ["gazetteer_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_corpus_purana_pin_overlap"
+            referencedColumns: ["gazetteer_id"]
+          },
+          {
+            foreignKeyName: "srangam_article_pins_gazetteer_id_fkey"
+            columns: ["gazetteer_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_gazetteer"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      srangam_article_versions: {
+        Row: {
+          article_id: string
+          change_summary: string | null
+          changed_by: string | null
+          content_snapshot: Json
+          created_at: string
+          id: string
+          version_number: number
+        }
+        Insert: {
+          article_id: string
+          change_summary?: string | null
+          changed_by?: string | null
+          content_snapshot: Json
+          created_at?: string
+          id?: string
+          version_number: number
+        }
+        Update: {
+          article_id?: string
+          change_summary?: string | null
+          changed_by?: string | null
+          content_snapshot?: Json
+          created_at?: string
+          id?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_article_versions_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      srangam_articles: {
+        Row: {
+          author: string
+          content: Json
+          content_markdown_path: string | null
+          created_at: string
+          dek: Json | null
+          featured: boolean | null
+          id: string
+          og_image_status: string
+          og_image_url: string | null
+          og_image_version: number
+          part_number: number | null
+          published_date: string
+          read_time_minutes: number | null
+          search_vector: unknown
+          series_id: string | null
+          slug: string
+          slug_alias: string | null
+          status: string
+          tags: string[] | null
+          theme: string
+          title: Json
+          updated_at: string
+          word_count: number | null
+        }
+        Insert: {
+          author: string
+          content: Json
+          content_markdown_path?: string | null
+          created_at?: string
+          dek?: Json | null
+          featured?: boolean | null
+          id?: string
+          og_image_status?: string
+          og_image_url?: string | null
+          og_image_version?: number
+          part_number?: number | null
+          published_date?: string
+          read_time_minutes?: number | null
+          search_vector?: unknown
+          series_id?: string | null
+          slug: string
+          slug_alias?: string | null
+          status?: string
+          tags?: string[] | null
+          theme: string
+          title: Json
+          updated_at?: string
+          word_count?: number | null
+        }
+        Update: {
+          author?: string
+          content?: Json
+          content_markdown_path?: string | null
+          created_at?: string
+          dek?: Json | null
+          featured?: boolean | null
+          id?: string
+          og_image_status?: string
+          og_image_url?: string | null
+          og_image_version?: number
+          part_number?: number | null
+          published_date?: string
+          read_time_minutes?: number | null
+          search_vector?: unknown
+          series_id?: string | null
+          slug?: string
+          slug_alias?: string | null
+          status?: string
+          tags?: string[] | null
+          theme?: string
+          title?: Json
+          updated_at?: string
+          word_count?: number | null
+        }
+        Relationships: []
+      }
+      srangam_audio_narrations: {
+        Row: {
+          article_slug: string
+          audio_format: string | null
+          character_count: number | null
+          content_hash: string | null
+          cost_usd: number | null
+          created_at: string | null
+          duration_seconds: number | null
+          file_size_bytes: number | null
+          google_drive_file_id: string | null
+          google_drive_share_url: string | null
+          id: string
+          language_code: string
+          provider: string
+          provider_metadata: Json | null
+          sample_rate: number | null
+          updated_at: string | null
+          voice_id: string
+        }
+        Insert: {
+          article_slug: string
+          audio_format?: string | null
+          character_count?: number | null
+          content_hash?: string | null
+          cost_usd?: number | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          file_size_bytes?: number | null
+          google_drive_file_id?: string | null
+          google_drive_share_url?: string | null
+          id?: string
+          language_code: string
+          provider: string
+          provider_metadata?: Json | null
+          sample_rate?: number | null
+          updated_at?: string | null
+          voice_id: string
+        }
+        Update: {
+          article_slug?: string
+          audio_format?: string | null
+          character_count?: number | null
+          content_hash?: string | null
+          cost_usd?: number | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          file_size_bytes?: number | null
+          google_drive_file_id?: string | null
+          google_drive_share_url?: string | null
+          id?: string
+          language_code?: string
+          provider?: string
+          provider_metadata?: Json | null
+          sample_rate?: number | null
+          updated_at?: string | null
+          voice_id?: string
+        }
+        Relationships: []
+      }
+      srangam_bibliography_entries: {
+        Row: {
+          archive_location: string | null
+          authors: Json | null
+          citation_count: number | null
+          citation_key: string
+          created_at: string
+          doi: string | null
+          editors: Json | null
+          entry_type: string
+          full_citation_apa: string | null
+          full_citation_chicago: string | null
+          full_citation_mla: string | null
+          id: string
+          isbn: string | null
+          issn: string | null
+          issue: string | null
+          journal: string | null
+          notes: Json | null
+          pages: string | null
+          publisher: string | null
+          tags: string[] | null
+          title: Json
+          updated_at: string
+          url: string | null
+          volume: string | null
+          year: number | null
+        }
+        Insert: {
+          archive_location?: string | null
+          authors?: Json | null
+          citation_count?: number | null
+          citation_key: string
+          created_at?: string
+          doi?: string | null
+          editors?: Json | null
+          entry_type: string
+          full_citation_apa?: string | null
+          full_citation_chicago?: string | null
+          full_citation_mla?: string | null
+          id?: string
+          isbn?: string | null
+          issn?: string | null
+          issue?: string | null
+          journal?: string | null
+          notes?: Json | null
+          pages?: string | null
+          publisher?: string | null
+          tags?: string[] | null
+          title: Json
+          updated_at?: string
+          url?: string | null
+          volume?: string | null
+          year?: number | null
+        }
+        Update: {
+          archive_location?: string | null
+          authors?: Json | null
+          citation_count?: number | null
+          citation_key?: string
+          created_at?: string
+          doi?: string | null
+          editors?: Json | null
+          entry_type?: string
+          full_citation_apa?: string | null
+          full_citation_chicago?: string | null
+          full_citation_mla?: string | null
+          id?: string
+          isbn?: string | null
+          issn?: string | null
+          issue?: string | null
+          journal?: string | null
+          notes?: Json | null
+          pages?: string | null
+          publisher?: string | null
+          tags?: string[] | null
+          title?: Json
+          updated_at?: string
+          url?: string | null
+          volume?: string | null
+          year?: number | null
+        }
+        Relationships: []
+      }
+      srangam_book_chapters: {
+        Row: {
+          actual_word_count: number | null
+          chapter_id: string
+          chapter_number: number
+          conclusion: Json | null
+          created_at: string
+          description: Json | null
+          editors: Json | null
+          id: string
+          introduction: Json | null
+          publication_target: string | null
+          status: string | null
+          subtitle: Json | null
+          target_page_count: number | null
+          target_word_count: number | null
+          title: Json
+          updated_at: string
+          volume_number: number
+        }
+        Insert: {
+          actual_word_count?: number | null
+          chapter_id: string
+          chapter_number: number
+          conclusion?: Json | null
+          created_at?: string
+          description?: Json | null
+          editors?: Json | null
+          id?: string
+          introduction?: Json | null
+          publication_target?: string | null
+          status?: string | null
+          subtitle?: Json | null
+          target_page_count?: number | null
+          target_word_count?: number | null
+          title: Json
+          updated_at?: string
+          volume_number: number
+        }
+        Update: {
+          actual_word_count?: number | null
+          chapter_id?: string
+          chapter_number?: number
+          conclusion?: Json | null
+          created_at?: string
+          description?: Json | null
+          editors?: Json | null
+          id?: string
+          introduction?: Json | null
+          publication_target?: string | null
+          status?: string | null
+          subtitle?: Json | null
+          target_page_count?: number | null
+          target_word_count?: number | null
+          title?: Json
+          updated_at?: string
+          volume_number?: number
+        }
+        Relationships: []
+      }
+      srangam_context_snapshots: {
+        Row: {
+          articles_count: number
+          changes_from_previous: Json | null
+          context_summary: string | null
+          created_at: string | null
+          cross_refs_count: number
+          document_length: number | null
+          error_message: string | null
+          file_size_bytes: number | null
+          google_drive_file_id: string | null
+          google_drive_share_url: string | null
+          id: string
+          identity_sets: Json | null
+          modules_count: number | null
+          snapshot_date: string
+          stats_detail: Json | null
+          status: string | null
+          tags_count: number
+          terms_count: number
+          triggered_by: string | null
+          triggered_by_user: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          articles_count: number
+          changes_from_previous?: Json | null
+          context_summary?: string | null
+          created_at?: string | null
+          cross_refs_count: number
+          document_length?: number | null
+          error_message?: string | null
+          file_size_bytes?: number | null
+          google_drive_file_id?: string | null
+          google_drive_share_url?: string | null
+          id?: string
+          identity_sets?: Json | null
+          modules_count?: number | null
+          snapshot_date?: string
+          stats_detail?: Json | null
+          status?: string | null
+          tags_count: number
+          terms_count: number
+          triggered_by?: string | null
+          triggered_by_user?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          articles_count?: number
+          changes_from_previous?: Json | null
+          context_summary?: string | null
+          created_at?: string | null
+          cross_refs_count?: number
+          document_length?: number | null
+          error_message?: string | null
+          file_size_bytes?: number | null
+          google_drive_file_id?: string | null
+          google_drive_share_url?: string | null
+          id?: string
+          identity_sets?: Json | null
+          modules_count?: number | null
+          snapshot_date?: string
+          stats_detail?: Json | null
+          status?: string | null
+          tags_count?: number
+          terms_count?: number
+          triggered_by?: string | null
+          triggered_by_user?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      srangam_corpus_correlations_snapshot: {
+        Row: {
+          article_a: string
+          article_b: string
+          computed_at: string
+          jaccard: number
+          job_id: string
+          shared_biblio: number
+          shared_places: number
+          shared_puranas: number
+          shared_tags: number
+          shared_terms: number
+          shared_total: number
+          weights: Json
+        }
+        Insert: {
+          article_a: string
+          article_b: string
+          computed_at?: string
+          jaccard?: number
+          job_id: string
+          shared_biblio?: number
+          shared_places?: number
+          shared_puranas?: number
+          shared_tags?: number
+          shared_terms?: number
+          shared_total?: number
+          weights?: Json
+        }
+        Update: {
+          article_a?: string
+          article_b?: string
+          computed_at?: string
+          jaccard?: number
+          job_id?: string
+          shared_biblio?: number
+          shared_places?: number
+          shared_puranas?: number
+          shared_tags?: number
+          shared_terms?: number
+          shared_total?: number
+          weights?: Json
+        }
+        Relationships: []
+      }
+      srangam_correlation_matrix: {
+        Row: {
+          article_slug: string | null
+          bibliography: Json | null
+          confidence_level: string | null
+          coordinates: unknown
+          correlation_id: string
+          created_at: string
+          evidence_description: Json | null
+          id: string
+          location_ancient: string | null
+          location_modern: string | null
+          pin_data: Json | null
+          source_type: string
+          theme: string
+        }
+        Insert: {
+          article_slug?: string | null
+          bibliography?: Json | null
+          confidence_level?: string | null
+          coordinates?: unknown
+          correlation_id: string
+          created_at?: string
+          evidence_description?: Json | null
+          id?: string
+          location_ancient?: string | null
+          location_modern?: string | null
+          pin_data?: Json | null
+          source_type: string
+          theme: string
+        }
+        Update: {
+          article_slug?: string | null
+          bibliography?: Json | null
+          confidence_level?: string | null
+          coordinates?: unknown
+          correlation_id?: string
+          created_at?: string
+          evidence_description?: Json | null
+          id?: string
+          location_ancient?: string | null
+          location_modern?: string | null
+          pin_data?: Json | null
+          source_type?: string
+          theme?: string
+        }
+        Relationships: []
+      }
+      srangam_cross_references: {
+        Row: {
+          bidirectional: boolean | null
+          context_description: Json | null
+          created_at: string
+          created_by: string | null
+          id: string
+          reference_type: string
+          source_article_id: string | null
+          strength: number | null
+          target_article_id: string | null
+        }
+        Insert: {
+          bidirectional?: boolean | null
+          context_description?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          reference_type: string
+          source_article_id?: string | null
+          strength?: number | null
+          target_article_id?: string | null
+        }
+        Update: {
+          bidirectional?: boolean | null
+          context_description?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          reference_type?: string
+          source_article_id?: string | null
+          strength?: number | null
+          target_article_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_cross_references_source_article_id_fkey"
+            columns: ["source_article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "srangam_cross_references_target_article_id_fkey"
+            columns: ["target_article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      srangam_cultural_terms: {
+        Row: {
+          context: Json | null
+          created_at: string
+          display_term: string
+          etymology: Json | null
+          id: string
+          module: string
+          related_terms: string[] | null
+          synonyms: string[] | null
+          term: string
+          translations: Json
+          transliteration: string | null
+          usage_count: number | null
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string
+          display_term: string
+          etymology?: Json | null
+          id?: string
+          module: string
+          related_terms?: string[] | null
+          synonyms?: string[] | null
+          term: string
+          translations: Json
+          transliteration?: string | null
+          usage_count?: number | null
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string
+          display_term?: string
+          etymology?: Json | null
+          id?: string
+          module?: string
+          related_terms?: string[] | null
+          synonyms?: string[] | null
+          term?: string
+          translations?: Json
+          transliteration?: string | null
+          usage_count?: number | null
+        }
+        Relationships: []
+      }
+      srangam_gazetteer: {
+        Row: {
+          canonical_name: string
+          country: string | null
+          created_at: string
+          era_tags: string[]
+          external_refs: Json
+          feature_type: string | null
+          id: string
+          latitude: number
+          longitude: number
+          name_variants: string[]
+          notes: string | null
+          precision: string
+          updated_at: string
+        }
+        Insert: {
+          canonical_name: string
+          country?: string | null
+          created_at?: string
+          era_tags?: string[]
+          external_refs?: Json
+          feature_type?: string | null
+          id?: string
+          latitude: number
+          longitude: number
+          name_variants?: string[]
+          notes?: string | null
+          precision?: string
+          updated_at?: string
+        }
+        Update: {
+          canonical_name?: string
+          country?: string | null
+          created_at?: string
+          era_tags?: string[]
+          external_refs?: Json
+          feature_type?: string | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          name_variants?: string[]
+          notes?: string | null
+          precision?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      srangam_gazetteer_candidates: {
+        Row: {
+          ai_model: string | null
+          ai_provider: string | null
+          created_at: string
+          first_seen_article_id: string | null
+          first_seen_at: string
+          id: string
+          last_seen_at: string
+          normalized_name: string
+          occurrences: number
+          promoted_gazetteer_id: string | null
+          raw_name: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source_articles: string[]
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          ai_model?: string | null
+          ai_provider?: string | null
+          created_at?: string
+          first_seen_article_id?: string | null
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          normalized_name: string
+          occurrences?: number
+          promoted_gazetteer_id?: string | null
+          raw_name: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_articles?: string[]
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          ai_model?: string | null
+          ai_provider?: string | null
+          created_at?: string
+          first_seen_article_id?: string | null
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          normalized_name?: string
+          occurrences?: number
+          promoted_gazetteer_id?: string | null
+          raw_name?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_articles?: string[]
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      srangam_inscriptions: {
+        Row: {
+          bibliography: string[] | null
+          century: string
+          coordinates: unknown
+          created_at: string
+          dating_method: string | null
+          id: string
+          inscription_id: string
+          location_ancient: string
+          location_modern: string
+          period_dynasty: string
+          period_ruler: string | null
+          related_inscriptions: string[] | null
+          script_types: string[]
+          scripts: Json
+          significance: Json | null
+          title: Json
+          translations: Json
+        }
+        Insert: {
+          bibliography?: string[] | null
+          century: string
+          coordinates?: unknown
+          created_at?: string
+          dating_method?: string | null
+          id?: string
+          inscription_id: string
+          location_ancient: string
+          location_modern: string
+          period_dynasty: string
+          period_ruler?: string | null
+          related_inscriptions?: string[] | null
+          script_types: string[]
+          scripts: Json
+          significance?: Json | null
+          title: Json
+          translations: Json
+        }
+        Update: {
+          bibliography?: string[] | null
+          century?: string
+          coordinates?: unknown
+          created_at?: string
+          dating_method?: string | null
+          id?: string
+          inscription_id?: string
+          location_ancient?: string
+          location_modern?: string
+          period_dynasty?: string
+          period_ruler?: string | null
+          related_inscriptions?: string[] | null
+          script_types?: string[]
+          scripts?: Json
+          significance?: Json | null
+          title?: Json
+          translations?: Json
+        }
+        Relationships: []
+      }
+      srangam_markdown_sources: {
+        Row: {
+          article_id: string | null
+          content_hash: string | null
+          conversion_metadata: Json | null
+          created_at: string
+          file_path: string | null
+          git_branch: string | null
+          git_commit_hash: string | null
+          id: string
+          last_sync_at: string | null
+          markdown_content: string
+          sync_status: string | null
+          updated_at: string
+        }
+        Insert: {
+          article_id?: string | null
+          content_hash?: string | null
+          conversion_metadata?: Json | null
+          created_at?: string
+          file_path?: string | null
+          git_branch?: string | null
+          git_commit_hash?: string | null
+          id?: string
+          last_sync_at?: string | null
+          markdown_content: string
+          sync_status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          article_id?: string | null
+          content_hash?: string | null
+          conversion_metadata?: Json | null
+          created_at?: string
+          file_path?: string | null
+          git_branch?: string | null
+          git_commit_hash?: string | null
+          id?: string
+          last_sync_at?: string | null
+          markdown_content?: string
+          sync_status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_markdown_sources_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: true
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      srangam_media_assets: {
+        Row: {
+          article_id: string
+          cost_usd: number | null
+          created_at: string
+          gdrive_file_id: string | null
+          gdrive_share_url: string | null
+          id: string
+          kind: string
+          model: string
+          prompt_hash: string | null
+          provider: string
+          retired_at: string | null
+          status: string
+          version: number
+        }
+        Insert: {
+          article_id: string
+          cost_usd?: number | null
+          created_at?: string
+          gdrive_file_id?: string | null
+          gdrive_share_url?: string | null
+          id?: string
+          kind?: string
+          model: string
+          prompt_hash?: string | null
+          provider: string
+          retired_at?: string | null
+          status?: string
+          version?: number
+        }
+        Update: {
+          article_id?: string
+          cost_usd?: number | null
+          created_at?: string
+          gdrive_file_id?: string | null
+          gdrive_share_url?: string | null
+          id?: string
+          kind?: string
+          model?: string
+          prompt_hash?: string | null
+          provider?: string
+          retired_at?: string | null
+          status?: string
+          version?: number
+        }
+        Relationships: []
+      }
+      srangam_purana_references: {
+        Row: {
+          adhyaya: string | null
+          article_id: string
+          claim_made: string | null
+          confidence_score: number | null
+          context_snippet: string | null
+          created_at: string | null
+          extracted_by: string | null
+          extraction_method: string | null
+          id: string
+          is_primary_source: boolean | null
+          kanda: string | null
+          metadata: Json | null
+          purana_category: string | null
+          purana_name: string
+          reference_text: string | null
+          shloka_end: number | null
+          shloka_start: number | null
+          updated_at: string | null
+          validation_notes: string | null
+          validation_status: string | null
+        }
+        Insert: {
+          adhyaya?: string | null
+          article_id: string
+          claim_made?: string | null
+          confidence_score?: number | null
+          context_snippet?: string | null
+          created_at?: string | null
+          extracted_by?: string | null
+          extraction_method?: string | null
+          id?: string
+          is_primary_source?: boolean | null
+          kanda?: string | null
+          metadata?: Json | null
+          purana_category?: string | null
+          purana_name: string
+          reference_text?: string | null
+          shloka_end?: number | null
+          shloka_start?: number | null
+          updated_at?: string | null
+          validation_notes?: string | null
+          validation_status?: string | null
+        }
+        Update: {
+          adhyaya?: string | null
+          article_id?: string
+          claim_made?: string | null
+          confidence_score?: number | null
+          context_snippet?: string | null
+          created_at?: string | null
+          extracted_by?: string | null
+          extraction_method?: string | null
+          id?: string
+          is_primary_source?: boolean | null
+          kanda?: string | null
+          metadata?: Json | null
+          purana_category?: string | null
+          purana_name?: string
+          reference_text?: string | null
+          shloka_end?: number | null
+          shloka_start?: number | null
+          updated_at?: string | null
+          validation_notes?: string | null
+          validation_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_purana_references_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      srangam_purana_references_dedup_archive_20260606: {
+        Row: {
+          adhyaya: string | null
+          article_id: string | null
+          claim_made: string | null
+          confidence_score: number | null
+          context_snippet: string | null
+          created_at: string | null
+          extracted_by: string | null
+          extraction_method: string | null
+          id: string | null
+          is_primary_source: boolean | null
+          kanda: string | null
+          metadata: Json | null
+          purana_category: string | null
+          purana_name: string | null
+          reference_text: string | null
+          shloka_end: number | null
+          shloka_start: number | null
+          updated_at: string | null
+          validation_notes: string | null
+          validation_status: string | null
+        }
+        Insert: {
+          adhyaya?: string | null
+          article_id?: string | null
+          claim_made?: string | null
+          confidence_score?: number | null
+          context_snippet?: string | null
+          created_at?: string | null
+          extracted_by?: string | null
+          extraction_method?: string | null
+          id?: string | null
+          is_primary_source?: boolean | null
+          kanda?: string | null
+          metadata?: Json | null
+          purana_category?: string | null
+          purana_name?: string | null
+          reference_text?: string | null
+          shloka_end?: number | null
+          shloka_start?: number | null
+          updated_at?: string | null
+          validation_notes?: string | null
+          validation_status?: string | null
+        }
+        Update: {
+          adhyaya?: string | null
+          article_id?: string | null
+          claim_made?: string | null
+          confidence_score?: number | null
+          context_snippet?: string | null
+          created_at?: string | null
+          extracted_by?: string | null
+          extraction_method?: string | null
+          id?: string | null
+          is_primary_source?: boolean | null
+          kanda?: string | null
+          metadata?: Json | null
+          purana_category?: string | null
+          purana_name?: string | null
+          reference_text?: string | null
+          shloka_end?: number | null
+          shloka_start?: number | null
+          updated_at?: string | null
+          validation_notes?: string | null
+          validation_status?: string | null
+        }
+        Relationships: []
+      }
+      srangam_tags: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          last_used: string | null
+          related_tags: Json | null
+          tag_name: string
+          usage_count: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          last_used?: string | null
+          related_tags?: Json | null
+          tag_name: string
+          usage_count?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          last_used?: string | null
+          related_tags?: Json | null
+          tag_name?: string
+          usage_count?: number | null
+        }
+        Relationships: []
+      }
+      srangam_text_passages: {
+        Row: {
+          created_at: string
+          iast: string | null
+          id: string
+          idx: number
+          page_no: number
+          quality_score: number | null
+          sanskrit: string
+          text_id: string
+          translation: string
+          updated_at: string
+          verse_ref: string | null
+        }
+        Insert: {
+          created_at?: string
+          iast?: string | null
+          id?: string
+          idx: number
+          page_no: number
+          quality_score?: number | null
+          sanskrit: string
+          text_id: string
+          translation: string
+          updated_at?: string
+          verse_ref?: string | null
+        }
+        Update: {
+          created_at?: string
+          iast?: string | null
+          id?: string
+          idx?: number
+          page_no?: number
+          quality_score?: number | null
+          sanskrit?: string
+          text_id?: string
+          translation?: string
+          updated_at?: string
+          verse_ref?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_text_passages_text_id_fkey"
+            columns: ["text_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_texts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      srangam_texts: {
+        Row: {
+          category: string | null
+          created_at: string
+          doc_code: string
+          id: string
+          passage_count: number
+          published: boolean
+          source_note: string | null
+          title: string
+          translation_engine: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          doc_code: string
+          id?: string
+          passage_count?: number
+          published?: boolean
+          source_note?: string | null
+          title: string
+          translation_engine?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          doc_code?: string
+          id?: string
+          passage_count?: number
+          published?: boolean
+          source_note?: string | null
+          title?: string
+          translation_engine?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      srangam_translation_queue: {
+        Row: {
+          article_id: string | null
+          assigned_translator: string | null
+          completed_at: string | null
+          content_type: string
+          created_at: string
+          due_date: string | null
+          id: string
+          priority: string
+          source_language: string
+          status: string
+          target_language: string
+        }
+        Insert: {
+          article_id?: string | null
+          assigned_translator?: string | null
+          completed_at?: string | null
+          content_type: string
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          priority?: string
+          source_language?: string
+          status?: string
+          target_language: string
+        }
+        Update: {
+          article_id?: string | null
+          assigned_translator?: string | null
+          completed_at?: string | null
+          content_type?: string
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          priority?: string
+          source_language?: string
+          status?: string
+          target_language?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_translation_queue_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      geography_columns: {
+        Row: {
+          coord_dimension: number | null
+          f_geography_column: unknown
+          f_table_catalog: unknown
+          f_table_name: unknown
+          f_table_schema: unknown
+          srid: number | null
+          type: string | null
+        }
+        Relationships: []
+      }
+      geometry_columns: {
+        Row: {
+          coord_dimension: number | null
+          f_geometry_column: unknown
+          f_table_catalog: string | null
+          f_table_name: unknown
+          f_table_schema: unknown
+          srid: number | null
+          type: string | null
+        }
+        Insert: {
+          coord_dimension?: number | null
+          f_geometry_column?: unknown
+          f_table_catalog?: string | null
+          f_table_name?: unknown
+          f_table_schema?: unknown
+          srid?: number | null
+          type?: string | null
+        }
+        Update: {
+          coord_dimension?: number | null
+          f_geometry_column?: unknown
+          f_table_catalog?: string | null
+          f_table_name?: unknown
+          f_table_schema?: unknown
+          srid?: number | null
+          type?: string | null
+        }
+        Relationships: []
+      }
+      srangam_audio_narrations_public: {
+        Row: {
+          article_slug: string | null
+          audio_format: string | null
+          character_count: number | null
+          content_hash: string | null
+          created_at: string | null
+          duration_seconds: number | null
+          file_size_bytes: number | null
+          google_drive_share_url: string | null
+          id: string | null
+          language_code: string | null
+          provider: string | null
+          sample_rate: number | null
+          updated_at: string | null
+          voice_id: string | null
+        }
+        Insert: {
+          article_slug?: string | null
+          audio_format?: string | null
+          character_count?: number | null
+          content_hash?: string | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          file_size_bytes?: number | null
+          google_drive_share_url?: string | null
+          id?: string | null
+          language_code?: string | null
+          provider?: string | null
+          sample_rate?: number | null
+          updated_at?: string | null
+          voice_id?: string | null
+        }
+        Update: {
+          article_slug?: string | null
+          audio_format?: string | null
+          character_count?: number | null
+          content_hash?: string | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          file_size_bytes?: number | null
+          google_drive_share_url?: string | null
+          id?: string | null
+          language_code?: string | null
+          provider?: string | null
+          sample_rate?: number | null
+          updated_at?: string | null
+          voice_id?: string | null
+        }
+        Relationships: []
+      }
+      srangam_corpus_article_biblio_pairs: {
+        Row: {
+          article_a: string | null
+          article_b: string | null
+          shared_biblio: number | null
+        }
+        Relationships: []
+      }
+      srangam_corpus_article_place_pairs: {
+        Row: {
+          article_a: string | null
+          article_b: string | null
+          shared_places: number | null
+        }
+        Relationships: []
+      }
+      srangam_corpus_article_purana_pairs: {
+        Row: {
+          article_a: string | null
+          article_b: string | null
+          shared_puranas: number | null
+        }
+        Relationships: []
+      }
+      srangam_corpus_article_tag_pairs: {
+        Row: {
+          article_a: string | null
+          article_b: string | null
+          shared_tags: number | null
+        }
+        Relationships: []
+      }
+      srangam_corpus_article_term_pairs: {
+        Row: {
+          article_a: string | null
+          article_b: string | null
+          shared_terms: number | null
+        }
+        Relationships: []
+      }
+      srangam_corpus_purana_pin_overlap: {
+        Row: {
+          adhyaya: string | null
+          article_id: string | null
+          gazetteer_id: string | null
+          kanda: string | null
+          pin_conf: string | null
+          place: string | null
+          purana_conf: number | null
+          purana_name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_purana_references_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Functions: {
+      _cron_invoke_edge: {
+        Args: { _body?: Json; _function_slug: string }
+        Returns: number
+      }
+      _postgis_deprecate: {
+        Args: { newname: string; oldname: string; version: string }
+        Returns: undefined
+      }
+      _postgis_index_extent: {
+        Args: { col: string; tbl: unknown }
+        Returns: unknown
+      }
+      _postgis_pgsql_version: { Args: never; Returns: string }
+      _postgis_scripts_pgsql_version: { Args: never; Returns: string }
+      _postgis_selectivity: {
+        Args: { att_name: string; geom: unknown; mode?: string; tbl: unknown }
+        Returns: number
+      }
+      _postgis_stats: {
+        Args: { ""?: string; att_name: string; tbl: unknown }
+        Returns: string
+      }
+      _st_3dintersects: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_contains: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_containsproperly: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_coveredby:
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      _st_covers:
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      _st_crosses: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_dwithin: {
+        Args: {
+          geog1: unknown
+          geog2: unknown
+          tolerance: number
+          use_spheroid?: boolean
+        }
+        Returns: boolean
+      }
+      _st_equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      _st_intersects: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_linecrossingdirection: {
+        Args: { line1: unknown; line2: unknown }
+        Returns: number
+      }
+      _st_longestline: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      _st_maxdistance: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      _st_orderingequals: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_overlaps: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_sortablehash: { Args: { geom: unknown }; Returns: number }
+      _st_touches: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_voronoi: {
+        Args: {
+          clip?: unknown
+          g1: unknown
+          return_polygons?: boolean
+          tolerance?: number
+        }
+        Returns: unknown
+      }
+      _st_within: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      addauth: { Args: { "": string }; Returns: boolean }
+      addgeometrycolumn:
+        | {
+            Args: {
+              catalog_name: string
+              column_name: string
+              new_dim: number
+              new_srid_in: number
+              new_type: string
+              schema_name: string
+              table_name: string
+              use_typmod?: boolean
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              column_name: string
+              new_dim: number
+              new_srid: number
+              new_type: string
+              schema_name: string
+              table_name: string
+              use_typmod?: boolean
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              column_name: string
+              new_dim: number
+              new_srid: number
+              new_type: string
+              table_name: string
+              use_typmod?: boolean
+            }
+            Returns: string
+          }
+      analyze_tag_cooccurrence: {
+        Args: never
+        Returns: {
+          cooccurrence_count: number
+          tag1: string
+          tag2: string
+        }[]
+      }
+      check_audio_cache: {
+        Args: { p_content_hash: string; p_lang: string; p_slug: string }
+        Returns: {
+          cache_exists: boolean
+          drive_url: string
+          duration: number
+          provider: string
+        }[]
+      }
+      disablelongtransactions: { Args: never; Returns: string }
+      dropgeometrycolumn:
+        | {
+            Args: {
+              catalog_name: string
+              column_name: string
+              schema_name: string
+              table_name: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              column_name: string
+              schema_name: string
+              table_name: string
+            }
+            Returns: string
+          }
+        | { Args: { column_name: string; table_name: string }; Returns: string }
+      dropgeometrytable:
+        | {
+            Args: {
+              catalog_name: string
+              schema_name: string
+              table_name: string
+            }
+            Returns: string
+          }
+        | { Args: { schema_name: string; table_name: string }; Returns: string }
+        | { Args: { table_name: string }; Returns: string }
+      enablelongtransactions: { Args: never; Returns: string }
+      enqueue_og_nightly_job: { Args: { p_limit?: number }; Returns: Json }
+      enqueue_pin_backfill_sweep_job: {
+        Args: { p_chunk?: number; p_limit?: number }
+        Returns: string
+      }
+      enqueue_term_enrichment_nightly: {
+        Args: { p_limit?: number }
+        Returns: Json
+      }
+      equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      geometry: { Args: { "": string }; Returns: unknown }
+      geometry_above: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_below: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_cmp: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      geometry_contained_3d: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_contains: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_contains_3d: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_distance_box: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      geometry_distance_centroid: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      geometry_eq: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_ge: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_gt: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_le: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_left: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_lt: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_overabove: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_overbelow: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_overlaps: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_overlaps_3d: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_overleft: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_overright: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_right: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_same: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_same_3d: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_within: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geomfromewkt: { Args: { "": string }; Returns: unknown }
+      get_corpus_correlations: {
+        Args: { limit_rows?: number; min_shared?: number }
+        Returns: {
+          article_a: string
+          article_b: string
+          jaccard: number
+          shared_places: number
+          shared_puranas: number
+          shared_total: number
+        }[]
+      }
+      get_corpus_correlations_v2: {
+        Args: {
+          limit_rows?: number
+          min_shared?: number
+          w_biblio?: number
+          w_place?: number
+          w_purana?: number
+          w_tag?: number
+          w_term?: number
+        }
+        Returns: {
+          article_a: string
+          article_b: string
+          jaccard: number
+          shared_biblio: number
+          shared_places: number
+          shared_puranas: number
+          shared_tags: number
+          shared_terms: number
+          shared_total: number
+        }[]
+      }
+      get_purana_statistics: {
+        Args: never
+        Returns: {
+          article_count: number
+          avg_confidence: number
+          citation_count: number
+          purana_category: string
+          purana_name: string
+        }[]
+      }
+      gettransactionid: { Args: never; Returns: unknown }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      increment_term_usage_counts: {
+        Args: { term_names: string[] }
+        Returns: {
+          new_count: number
+          term: string
+        }[]
+      }
+      longtransactionsenabled: { Args: never; Returns: boolean }
+      populate_geometry_columns:
+        | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }
+        | { Args: { use_typmod?: boolean }; Returns: string }
+      postgis_constraint_dims: {
+        Args: { geomcolumn: string; geomschema: string; geomtable: string }
+        Returns: number
+      }
+      postgis_constraint_srid: {
+        Args: { geomcolumn: string; geomschema: string; geomtable: string }
+        Returns: number
+      }
+      postgis_constraint_type: {
+        Args: { geomcolumn: string; geomschema: string; geomtable: string }
+        Returns: string
+      }
+      postgis_extensions_upgrade: { Args: never; Returns: string }
+      postgis_full_version: { Args: never; Returns: string }
+      postgis_geos_version: { Args: never; Returns: string }
+      postgis_lib_build_date: { Args: never; Returns: string }
+      postgis_lib_revision: { Args: never; Returns: string }
+      postgis_lib_version: { Args: never; Returns: string }
+      postgis_libjson_version: { Args: never; Returns: string }
+      postgis_liblwgeom_version: { Args: never; Returns: string }
+      postgis_libprotobuf_version: { Args: never; Returns: string }
+      postgis_libxml_version: { Args: never; Returns: string }
+      postgis_proj_version: { Args: never; Returns: string }
+      postgis_scripts_build_date: { Args: never; Returns: string }
+      postgis_scripts_installed: { Args: never; Returns: string }
+      postgis_scripts_released: { Args: never; Returns: string }
+      postgis_svn_version: { Args: never; Returns: string }
+      postgis_type_name: {
+        Args: {
+          coord_dimension: number
+          geomname: string
+          use_new_name?: boolean
+        }
+        Returns: string
+      }
+      postgis_version: { Args: never; Returns: string }
+      postgis_wagyu_version: { Args: never; Returns: string }
+      reconcile_stuck_admin_jobs: { Args: never; Returns: number }
+      srangam_increment_term_usage: {
+        Args: { term_key: string }
+        Returns: undefined
+      }
+      srangam_search_articles_fulltext: {
+        Args: { result_limit?: number; search_query: string }
+        Returns: {
+          author: string
+          dek: Json
+          id: string
+          og_image_url: string
+          published_date: string
+          rank: number
+          read_time_minutes: number
+          slug: string
+          tags: string[]
+          theme: string
+          title: Json
+        }[]
+      }
+      srangam_search_articles_semantic: {
+        Args: {
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+        }
+        Returns: {
+          article_id: string
+          similarity: number
+          slug: string
+          title: Json
+        }[]
+      }
+      st_3dclosestpoint: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_3ddistance: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      st_3dintersects: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      st_3dlongestline: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_3dmakebox: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_3dmaxdistance: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      st_3dshortestline: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_addpoint: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_angle:
+        | { Args: { line1: unknown; line2: unknown }; Returns: number }
+        | {
+            Args: { pt1: unknown; pt2: unknown; pt3: unknown; pt4?: unknown }
+            Returns: number
+          }
+      st_area:
+        | { Args: { geog: unknown; use_spheroid?: boolean }; Returns: number }
+        | { Args: { "": string }; Returns: number }
+      st_asencodedpolyline: {
+        Args: { geom: unknown; nprecision?: number }
+        Returns: string
+      }
+      st_asewkt: { Args: { "": string }; Returns: string }
+      st_asgeojson:
+        | {
+            Args: { geog: unknown; maxdecimaldigits?: number; options?: number }
+            Returns: string
+          }
+        | {
+            Args: { geom: unknown; maxdecimaldigits?: number; options?: number }
+            Returns: string
+          }
+        | {
+            Args: {
+              geom_column?: string
+              maxdecimaldigits?: number
+              pretty_bool?: boolean
+              r: Record<string, unknown>
+            }
+            Returns: string
+          }
+        | { Args: { "": string }; Returns: string }
+      st_asgml:
+        | {
+            Args: {
+              geog: unknown
+              id?: string
+              maxdecimaldigits?: number
+              nprefix?: string
+              options?: number
+            }
+            Returns: string
+          }
+        | {
+            Args: { geom: unknown; maxdecimaldigits?: number; options?: number }
+            Returns: string
+          }
+        | { Args: { "": string }; Returns: string }
+        | {
+            Args: {
+              geog: unknown
+              id?: string
+              maxdecimaldigits?: number
+              nprefix?: string
+              options?: number
+              version: number
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              geom: unknown
+              id?: string
+              maxdecimaldigits?: number
+              nprefix?: string
+              options?: number
+              version: number
+            }
+            Returns: string
+          }
+      st_askml:
+        | {
+            Args: { geog: unknown; maxdecimaldigits?: number; nprefix?: string }
+            Returns: string
+          }
+        | {
+            Args: { geom: unknown; maxdecimaldigits?: number; nprefix?: string }
+            Returns: string
+          }
+        | { Args: { "": string }; Returns: string }
+      st_aslatlontext: {
+        Args: { geom: unknown; tmpl?: string }
+        Returns: string
+      }
+      st_asmarc21: { Args: { format?: string; geom: unknown }; Returns: string }
+      st_asmvtgeom: {
+        Args: {
+          bounds: unknown
+          buffer?: number
+          clip_geom?: boolean
+          extent?: number
+          geom: unknown
+        }
+        Returns: unknown
+      }
+      st_assvg:
+        | {
+            Args: { geog: unknown; maxdecimaldigits?: number; rel?: number }
+            Returns: string
+          }
+        | {
+            Args: { geom: unknown; maxdecimaldigits?: number; rel?: number }
+            Returns: string
+          }
+        | { Args: { "": string }; Returns: string }
+      st_astext: { Args: { "": string }; Returns: string }
+      st_astwkb:
+        | {
+            Args: {
+              geom: unknown
+              prec?: number
+              prec_m?: number
+              prec_z?: number
+              with_boxes?: boolean
+              with_sizes?: boolean
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              geom: unknown[]
+              ids: number[]
+              prec?: number
+              prec_m?: number
+              prec_z?: number
+              with_boxes?: boolean
+              with_sizes?: boolean
+            }
+            Returns: string
+          }
+      st_asx3d: {
+        Args: { geom: unknown; maxdecimaldigits?: number; options?: number }
+        Returns: string
+      }
+      st_azimuth:
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: number }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: number }
+      st_boundingdiagonal: {
+        Args: { fits?: boolean; geom: unknown }
+        Returns: unknown
+      }
+      st_buffer:
+        | {
+            Args: { geom: unknown; options?: string; radius: number }
+            Returns: unknown
+          }
+        | {
+            Args: { geom: unknown; quadsegs: number; radius: number }
+            Returns: unknown
+          }
+      st_centroid: { Args: { "": string }; Returns: unknown }
+      st_clipbybox2d: {
+        Args: { box: unknown; geom: unknown }
+        Returns: unknown
+      }
+      st_closestpoint: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_collect: { Args: { geom1: unknown; geom2: unknown }; Returns: unknown }
+      st_concavehull: {
+        Args: {
+          param_allow_holes?: boolean
+          param_geom: unknown
+          param_pctconvex: number
+        }
+        Returns: unknown
+      }
+      st_contains: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      st_containsproperly: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      st_coorddim: { Args: { geometry: unknown }; Returns: number }
+      st_coveredby:
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_covers:
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_crosses: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_curvetoline: {
+        Args: { flags?: number; geom: unknown; tol?: number; toltype?: number }
+        Returns: unknown
+      }
+      st_delaunaytriangles: {
+        Args: { flags?: number; g1: unknown; tolerance?: number }
+        Returns: unknown
+      }
+      st_difference: {
+        Args: { geom1: unknown; geom2: unknown; gridsize?: number }
+        Returns: unknown
+      }
+      st_disjoint: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      st_distance:
+        | {
+            Args: { geog1: unknown; geog2: unknown; use_spheroid?: boolean }
+            Returns: number
+          }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: number }
+      st_distancesphere:
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: number }
+        | {
+            Args: { geom1: unknown; geom2: unknown; radius: number }
+            Returns: number
+          }
+      st_distancespheroid: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      st_dwithin: {
+        Args: {
+          geog1: unknown
+          geog2: unknown
+          tolerance: number
+          use_spheroid?: boolean
+        }
+        Returns: boolean
+      }
+      st_equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_expand:
+        | { Args: { box: unknown; dx: number; dy: number }; Returns: unknown }
+        | {
+            Args: { box: unknown; dx: number; dy: number; dz?: number }
+            Returns: unknown
+          }
+        | {
+            Args: {
+              dm?: number
+              dx: number
+              dy: number
+              dz?: number
+              geom: unknown
+            }
+            Returns: unknown
+          }
+      st_force3d: { Args: { geom: unknown; zvalue?: number }; Returns: unknown }
+      st_force3dm: {
+        Args: { geom: unknown; mvalue?: number }
+        Returns: unknown
+      }
+      st_force3dz: {
+        Args: { geom: unknown; zvalue?: number }
+        Returns: unknown
+      }
+      st_force4d: {
+        Args: { geom: unknown; mvalue?: number; zvalue?: number }
+        Returns: unknown
+      }
+      st_generatepoints:
+        | { Args: { area: unknown; npoints: number }; Returns: unknown }
+        | {
+            Args: { area: unknown; npoints: number; seed: number }
+            Returns: unknown
+          }
+      st_geogfromtext: { Args: { "": string }; Returns: unknown }
+      st_geographyfromtext: { Args: { "": string }; Returns: unknown }
+      st_geohash:
+        | { Args: { geog: unknown; maxchars?: number }; Returns: string }
+        | { Args: { geom: unknown; maxchars?: number }; Returns: string }
+      st_geomcollfromtext: { Args: { "": string }; Returns: unknown }
+      st_geometricmedian: {
+        Args: {
+          fail_if_not_converged?: boolean
+          g: unknown
+          max_iter?: number
+          tolerance?: number
+        }
+        Returns: unknown
+      }
+      st_geometryfromtext: { Args: { "": string }; Returns: unknown }
+      st_geomfromewkt: { Args: { "": string }; Returns: unknown }
+      st_geomfromgeojson:
+        | { Args: { "": Json }; Returns: unknown }
+        | { Args: { "": Json }; Returns: unknown }
+        | { Args: { "": string }; Returns: unknown }
+      st_geomfromgml: { Args: { "": string }; Returns: unknown }
+      st_geomfromkml: { Args: { "": string }; Returns: unknown }
+      st_geomfrommarc21: { Args: { marc21xml: string }; Returns: unknown }
+      st_geomfromtext: { Args: { "": string }; Returns: unknown }
+      st_gmltosql: { Args: { "": string }; Returns: unknown }
+      st_hasarc: { Args: { geometry: unknown }; Returns: boolean }
+      st_hausdorffdistance: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      st_hexagon: {
+        Args: { cell_i: number; cell_j: number; origin?: unknown; size: number }
+        Returns: unknown
+      }
+      st_hexagongrid: {
+        Args: { bounds: unknown; size: number }
+        Returns: Record<string, unknown>[]
+      }
+      st_interpolatepoint: {
+        Args: { line: unknown; point: unknown }
+        Returns: number
+      }
+      st_intersection: {
+        Args: { geom1: unknown; geom2: unknown; gridsize?: number }
+        Returns: unknown
+      }
+      st_intersects:
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_isvaliddetail: {
+        Args: { flags?: number; geom: unknown }
+        Returns: Database["public"]["CompositeTypes"]["valid_detail"]
+        SetofOptions: {
+          from: "*"
+          to: "valid_detail"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      st_length:
+        | { Args: { geog: unknown; use_spheroid?: boolean }; Returns: number }
+        | { Args: { "": string }; Returns: number }
+      st_letters: { Args: { font?: Json; letters: string }; Returns: unknown }
+      st_linecrossingdirection: {
+        Args: { line1: unknown; line2: unknown }
+        Returns: number
+      }
+      st_linefromencodedpolyline: {
+        Args: { nprecision?: number; txtin: string }
+        Returns: unknown
+      }
+      st_linefromtext: { Args: { "": string }; Returns: unknown }
+      st_linelocatepoint: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      st_linetocurve: { Args: { geometry: unknown }; Returns: unknown }
+      st_locatealong: {
+        Args: { geometry: unknown; leftrightoffset?: number; measure: number }
+        Returns: unknown
+      }
+      st_locatebetween: {
+        Args: {
+          frommeasure: number
+          geometry: unknown
+          leftrightoffset?: number
+          tomeasure: number
+        }
+        Returns: unknown
+      }
+      st_locatebetweenelevations: {
+        Args: { fromelevation: number; geometry: unknown; toelevation: number }
+        Returns: unknown
+      }
+      st_longestline: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_makebox2d: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_makeline: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_makevalid: {
+        Args: { geom: unknown; params: string }
+        Returns: unknown
+      }
+      st_maxdistance: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      st_minimumboundingcircle: {
+        Args: { inputgeom: unknown; segs_per_quarter?: number }
+        Returns: unknown
+      }
+      st_mlinefromtext: { Args: { "": string }; Returns: unknown }
+      st_mpointfromtext: { Args: { "": string }; Returns: unknown }
+      st_mpolyfromtext: { Args: { "": string }; Returns: unknown }
+      st_multilinestringfromtext: { Args: { "": string }; Returns: unknown }
+      st_multipointfromtext: { Args: { "": string }; Returns: unknown }
+      st_multipolygonfromtext: { Args: { "": string }; Returns: unknown }
+      st_node: { Args: { g: unknown }; Returns: unknown }
+      st_normalize: { Args: { geom: unknown }; Returns: unknown }
+      st_offsetcurve: {
+        Args: { distance: number; line: unknown; params?: string }
+        Returns: unknown
+      }
+      st_orderingequals: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      st_overlaps: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      st_perimeter: {
+        Args: { geog: unknown; use_spheroid?: boolean }
+        Returns: number
+      }
+      st_pointfromtext: { Args: { "": string }; Returns: unknown }
+      st_pointm: {
+        Args: {
+          mcoordinate: number
+          srid?: number
+          xcoordinate: number
+          ycoordinate: number
+        }
+        Returns: unknown
+      }
+      st_pointz: {
+        Args: {
+          srid?: number
+          xcoordinate: number
+          ycoordinate: number
+          zcoordinate: number
+        }
+        Returns: unknown
+      }
+      st_pointzm: {
+        Args: {
+          mcoordinate: number
+          srid?: number
+          xcoordinate: number
+          ycoordinate: number
+          zcoordinate: number
+        }
+        Returns: unknown
+      }
+      st_polyfromtext: { Args: { "": string }; Returns: unknown }
+      st_polygonfromtext: { Args: { "": string }; Returns: unknown }
+      st_project: {
+        Args: { azimuth: number; distance: number; geog: unknown }
+        Returns: unknown
+      }
+      st_quantizecoordinates: {
+        Args: {
+          g: unknown
+          prec_m?: number
+          prec_x: number
+          prec_y?: number
+          prec_z?: number
+        }
+        Returns: unknown
+      }
+      st_reduceprecision: {
+        Args: { geom: unknown; gridsize: number }
+        Returns: unknown
+      }
+      st_relate: { Args: { geom1: unknown; geom2: unknown }; Returns: string }
+      st_removerepeatedpoints: {
+        Args: { geom: unknown; tolerance?: number }
+        Returns: unknown
+      }
+      st_segmentize: {
+        Args: { geog: unknown; max_segment_length: number }
+        Returns: unknown
+      }
+      st_setsrid:
+        | { Args: { geog: unknown; srid: number }; Returns: unknown }
+        | { Args: { geom: unknown; srid: number }; Returns: unknown }
+      st_sharedpaths: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_shortestline: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_simplifypolygonhull: {
+        Args: { geom: unknown; is_outer?: boolean; vertex_fraction: number }
+        Returns: unknown
+      }
+      st_split: { Args: { geom1: unknown; geom2: unknown }; Returns: unknown }
+      st_square: {
+        Args: { cell_i: number; cell_j: number; origin?: unknown; size: number }
+        Returns: unknown
+      }
+      st_squaregrid: {
+        Args: { bounds: unknown; size: number }
+        Returns: Record<string, unknown>[]
+      }
+      st_srid:
+        | { Args: { geog: unknown }; Returns: number }
+        | { Args: { geom: unknown }; Returns: number }
+      st_subdivide: {
+        Args: { geom: unknown; gridsize?: number; maxvertices?: number }
+        Returns: unknown[]
+      }
+      st_swapordinates: {
+        Args: { geom: unknown; ords: unknown }
+        Returns: unknown
+      }
+      st_symdifference: {
+        Args: { geom1: unknown; geom2: unknown; gridsize?: number }
+        Returns: unknown
+      }
+      st_symmetricdifference: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_tileenvelope: {
+        Args: {
+          bounds?: unknown
+          margin?: number
+          x: number
+          y: number
+          zoom: number
+        }
+        Returns: unknown
+      }
+      st_touches: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_transform:
+        | {
+            Args: { from_proj: string; geom: unknown; to_proj: string }
+            Returns: unknown
+          }
+        | {
+            Args: { from_proj: string; geom: unknown; to_srid: number }
+            Returns: unknown
+          }
+        | { Args: { geom: unknown; to_proj: string }; Returns: unknown }
+      st_triangulatepolygon: { Args: { g1: unknown }; Returns: unknown }
+      st_union:
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: unknown }
+        | {
+            Args: { geom1: unknown; geom2: unknown; gridsize: number }
+            Returns: unknown
+          }
+      st_voronoilines: {
+        Args: { extend_to?: unknown; g1: unknown; tolerance?: number }
+        Returns: unknown
+      }
+      st_voronoipolygons: {
+        Args: { extend_to?: unknown; g1: unknown; tolerance?: number }
+        Returns: unknown
+      }
+      st_within: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_wkbtosql: { Args: { wkb: string }; Returns: unknown }
+      st_wkttosql: { Args: { "": string }; Returns: unknown }
+      st_wrapx: {
+        Args: { geom: unknown; move: number; wrap: number }
+        Returns: unknown
+      }
+      unlockrows: { Args: { "": string }; Returns: number }
+      updategeometrysrid: {
+        Args: {
+          catalogn_name: string
+          column_name: string
+          new_srid_in: number
+          schema_name: string
+          table_name: string
+        }
+        Returns: string
+      }
+    }
+    Enums: {
+      app_role: "admin" | "moderator" | "user"
+    }
+    CompositeTypes: {
+      geometry_dump: {
+        path: number[] | null
+        geom: unknown
+      }
+      valid_detail: {
+        valid: boolean | null
+        reason: string | null
+        location: unknown
+      }
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never) = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never) = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
+  },
+} as const
