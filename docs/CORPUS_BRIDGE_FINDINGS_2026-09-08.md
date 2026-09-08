@@ -40,3 +40,35 @@ the Sanskrit corpus despite the name. Do not conflate them again.
 
 Fix: lay out on the hierarchy that exists (theme -> article now; category -> work ->
 passage after Phase 3) with a d3 cluster, arcs per parent, radius scaled to count, no pinning.
+## B1 applied and verified — 2026-09-08
+
+Migration `20260718120000_srangam_texts_corpus.sql` was applied via the Lovable
+Cloud SQL editor (not via Lovable's own migration flow — see caveat below).
+
+Pre-flight (all as required):
+  fn srangam_update_updated_at()        present  TRUE
+  fn has_role(uuid, app_role)           present  TRUE
+  table srangam_texts already exists            FALSE
+  table srangam_text_passages already exists    FALSE
+
+Post-apply verification — 7 of 7 gates matched expectation:
+  tables                            2  / 2
+  columns srangam_texts            10  / 10
+  columns srangam_text_passages    11  / 11
+  named indexes                     3  / 3
+  updated_at triggers               2  / 2
+  RLS enabled                       2  / 2
+  policies                          4  / 4
+
+"Query succeeded, no rows returned" was NOT accepted as evidence. The structure
+was counted object by object, because a CREATE TABLE can commit while a later
+RLS block fails and the editor still reports success.
+
+CAVEAT — two consequences of the SQL-editor path:
+1. supabase_migrations.schema_migrations has no row for 20260718120000. A future
+   `supabase db push` would think it pending and fail on CREATE TABLE. Do NOT
+   hand-insert into that table; its shape is Supabase's to manage.
+2. src/integrations/supabase/types.ts was not regenerated (0 references to
+   srangam_text*). Ask Lovable to regenerate types; until then the corpus data
+   layer casts in exactly one place, matching the existing precedent in
+   src/hooks/useCorpusCorrelations.ts.
