@@ -1,22 +1,20 @@
 /**
  * Corpus text loaders — Track B3.
  *
- * Reads srangam_texts / srangam_text_passages, created by migration
- * 20260718120000. Both tables are absent from the generated Database type
- * because the migration was applied through the SQL editor rather than
- * Lovable's migration flow, so types.ts has not been regenerated.
+ * Reads srangam_texts / srangam_text_passages (migration 20260718120000).
  *
- * The cast is confined to ONE place here, matching the existing precedent in
- * src/hooks/useCorpusCorrelations.ts (`const sb = supabase as any`). When
- * Lovable regenerates types, delete the cast and nothing else changes: every
- * export below is already fully typed outward.
+ * WHY A FLAT RESULT AND NOT A DISCRIMINATED UNION
+ * The first version returned `{ok:true;rows}|{ok:false;error}`. That is better
+ * TypeScript and it does not work here: tsconfig sets strictNullChecks:false, so
+ * the compiler will not narrow a boolean discriminant — neither `if (!r.ok)` nor
+ * `if (r.ok) throw` narrows, and every consumer would have to cast. A flat shape
+ * needs no narrowing and keeps the property that matters.
  *
- * WHY A DISCRIMINATED RESULT AND NOT AN EMPTY ARRAY
- * articlePins.ts returns [] on failure, which suits a resolver splicing in
- * optional data. A reader must not do that: a failed query rendering "no texts"
- * is indistinguishable from a corpus that is genuinely empty, and the reader
- * would then assert something false about the data. Callers must handle
- * ok:false explicitly.
+ * THE PROPERTY THAT MATTERS
+ * A failed query must never be indistinguishable from an empty corpus.
+ * articlePins.ts returns [] on failure, which suits a resolver splicing optional
+ * data; a reader must not, because "no texts" would then assert something false.
+ * Contract: check `ok` FIRST. `error` is non-null exactly when ok is false.
  */
 import { supabase } from '@/integrations/supabase/client';
 
@@ -44,20 +42,33 @@ export interface CorpusPassage {
   quality_score: number | null;
 }
 
-export type Loaded<T> =
-  | { ok: true; rows: T[]; total: number }
-  | { ok: false; error: string };
+export interface Loaded<T> {
+  ok: boolean;
+  rows: T[];
+  total: number;
+  /** Non-null exactly when ok === false. */
+  error: string | null;
+}
 
-export type LoadedOne<T> =
-  | { ok: true; row: T | null }
-  | { ok: false; error: string };
+export interface LoadedOne<T> {
+  ok: boolean;
+  row: T | null;
+  error: string | null;
+}
 
-function withTimeout<T>(p: PromiseLike<T>, label: string): Promise<T | { __timeout: string }> {
-  const timeout = new Promise<{ __timeout: string }>((resolve) =>
-    setTimeout(() => resolve({ __timeout: label + ' timed out after ' + CORPUS_TIMEOUT_MS + 'ms' }),
-      CORPUS_TIMEOUT_MS),
+const okRows = <T>(rows: T[], total: number): Loaded<T> => ({ ok: true, rows, total, error: null });
+const failRows = <T>(error: string): Loaded<T> => ({ ok: false, rows: [], total: 0, error });
+const okRow = <T>(row: T | null): LoadedOne<T> => ({ ok: true, row, error: null });
+const failRow = <T>(error: string): LoadedOne<T> => ({ ok: false, row: null, error });
+
+function withTimeout(p: PromiseLike<unknown>, label: string): Promise<any> {
+  const timeout = new Promise<any>((resolve) =>
+    setTimeout(
+      () => resolve({ __timeout: label + ' timed out after ' + CORPUS_TIMEOUT_MS + 'ms' }),
+      CORPUS_TIMEOUT_MS,
+    ),
   );
-  return Promise.race([Promise.resolve(p), timeout]) as Promise<T | { __timeout: string }>;
+  return Promise.race([Promise.resolve(p), timeout]);
 }
 
 /** Published texts only. RLS enforces this too; the filter makes it explicit. */
@@ -72,14 +83,14 @@ export async function listPublishedTexts(): Promise<Loaded<CorpusText>> {
       .order('title', { ascending: true }),
     'listPublishedTexts',
   );
-  if ((res as any).__timeout) return { ok: false, error: (res as any).__timeout };
-  const { data, error, count } = res as any;
-  if (error) return { ok: false, error: error.message ?? String(error) };
-  return { ok: true, rows: (data ?? []) as CorpusText[], total: count ?? (data?.length ?? 0) };
+  if (res && res.__timeout) return failRows<CorpusText>(res.__timeout);
+  if (res && res.error) return failRows<CorpusText>(res.error.message ?? String(res.error));
+  const rows = (res?.data ?? []) as CorpusText[];
+  return okRows<CorpusText>(rows, res?.count ?? rows.length);
 }
 
 export async function loadTextByDocCode(docCode: string | undefined): Promise<LoadedOne<CorpusText>> {
-  if (!docCode) return { ok: true, row: null };
+  if (!docCode) return okRow<CorpusText>(null);
   const sb = supabase as any;
   const res = await withTimeout(
     sb.from('srangam_texts')
@@ -89,17 +100,16 @@ export async function loadTextByDocCode(docCode: string | undefined): Promise<Lo
       .maybeSingle(),
     'loadTextByDocCode',
   );
-  if ((res as any).__timeout) return { ok: false, error: (res as any).__timeout };
-  const { data, error } = res as any;
-  if (error) return { ok: false, error: error.message ?? String(error) };
-  return { ok: true, row: (data ?? null) as CorpusText | null };
+  if (res && res.__timeout) return failRow<CorpusText>(res.__timeout);
+  if (res && res.error) return failRow<CorpusText>(res.error.message ?? String(res.error));
+  return okRow<CorpusText>((res?.data ?? null) as CorpusText | null);
 }
 
 export async function loadPassages(
   textId: string | undefined,
   opts: { offset?: number; limit?: number } = {},
 ): Promise<Loaded<CorpusPassage>> {
-  if (!textId) return { ok: true, rows: [], total: 0 };
+  if (!textId) return okRows<CorpusPassage>([], 0);
   const offset = opts.offset ?? 0;
   const limit = opts.limit ?? 50;
   const sb = supabase as any;
@@ -113,8 +123,8 @@ export async function loadPassages(
       .range(offset, offset + limit - 1),
     'loadPassages',
   );
-  if ((res as any).__timeout) return { ok: false, error: (res as any).__timeout };
-  const { data, error, count } = res as any;
-  if (error) return { ok: false, error: error.message ?? String(error) };
-  return { ok: true, rows: (data ?? []) as CorpusPassage[], total: count ?? 0 };
+  if (res && res.__timeout) return failRows<CorpusPassage>(res.__timeout);
+  if (res && res.error) return failRows<CorpusPassage>(res.error.message ?? String(res.error));
+  const rows = (res?.data ?? []) as CorpusPassage[];
+  return okRows<CorpusPassage>(rows, res?.count ?? 0);
 }

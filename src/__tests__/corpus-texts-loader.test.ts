@@ -12,28 +12,36 @@ vi.mock('@/integrations/supabase/client', () => {
   return { supabase: { from: () => chain } };
 });
 
-import { listPublishedTexts, loadPassages } from '@/lib/corpusTexts';
+import { listPublishedTexts, loadPassages, loadTextByDocCode } from '@/lib/corpusTexts';
 
 beforeEach(() => { state.data = []; state.error = null; state.count = 0; });
 
 describe('Track B3 - corpus loaders distinguish empty from failed', () => {
-  it('an empty corpus is ok:true with no rows', async () => {
+  it('an empty corpus is ok:true, no rows, no error', async () => {
     const r = await listPublishedTexts();
     expect(r.ok).toBe(true);
-    if (r.ok) { expect(r.rows).toEqual([]); expect(r.total).toBe(0); }
+    expect(r.rows).toEqual([]);
+    expect(r.total).toBe(0);
+    expect(r.error).toBeNull();
   });
 
-  it('a FAILED query is ok:false - never an empty list', async () => {
-    // The regression this file exists for. Returning [] here would make the
-    // reader render "no texts" during an outage, asserting something false
-    // about the corpus.
+  it('a FAILED query is ok:false WITH an error - not a silent empty list', async () => {
+    // The regression this file exists for. Without the ok/error pair, a reader
+    // renders "no texts" during an outage and asserts something false.
     state.error = { message: 'permission denied for table srangam_texts' };
     const r = await listPublishedTexts();
-    // strictNullChecks is OFF here, so `if (!r.ok)` does not narrow a boolean
-    // discriminant. Throwing on the positive branch narrows the rest of the flow
-    // and says the intent more plainly: the failure IS the assertion.
-    if (r.ok) throw new Error('expected ok:false, got ok:true');
+    expect(r.ok).toBe(false);
     expect(r.error).toContain('permission denied');
+  });
+
+  it('holds the invariant: error is non-null exactly when ok is false', async () => {
+    state.error = null;
+    const good = await listPublishedTexts();
+    expect(good.ok === false).toBe(good.error !== null);
+
+    state.error = { message: 'boom' };
+    const bad = await listPublishedTexts();
+    expect(bad.ok === false).toBe(bad.error !== null);
   });
 
   it('maps text rows through unchanged', async () => {
@@ -43,17 +51,27 @@ describe('Track B3 - corpus loaders distinguish empty from failed', () => {
     state.count = 1;
     const r = await listPublishedTexts();
     expect(r.ok).toBe(true);
-    if (r.ok) { expect(r.rows[0].doc_code).toBe('MBh01'); expect(r.rows[0].passage_count).toBe(6957); }
+    expect(r.rows[0].doc_code).toBe('MBh01');
+    expect(r.rows[0].passage_count).toBe(6957);
   });
 
-  it('passages: a failed load is ok:false, and no textId is an honest empty', async () => {
+  it('passages: failure carries an error; no textId is an honest empty', async () => {
     state.error = { message: 'timeout' };
     const bad = await loadPassages('some-id');
     expect(bad.ok).toBe(false);
+    expect(bad.error).toContain('timeout');
 
     state.error = null;
     const none = await loadPassages(undefined);
     expect(none.ok).toBe(true);
-    if (none.ok) expect(none.rows).toEqual([]);
+    expect(none.rows).toEqual([]);
+    expect(none.error).toBeNull();
+  });
+
+  it('single text: a missing doc_code is ok with row null, not an error', async () => {
+    const r = await loadTextByDocCode(undefined);
+    expect(r.ok).toBe(true);
+    expect(r.row).toBeNull();
+    expect(r.error).toBeNull();
   });
 });
