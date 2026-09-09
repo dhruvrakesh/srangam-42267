@@ -6,6 +6,7 @@ import { runImportPipeline } from '../_shared/markdown-pipeline.ts';
 import { stage, logComplete, countMermaidBlocks } from '../_shared/observability.ts';
 
 import { requireAdmin } from '../_shared/auth-gate.ts';
+import { collectReferenceLines } from '../_shared/reference-sections.ts';
 // Configure marked for synchronous parsing
 const marked = new Marked({
   async: false,
@@ -212,17 +213,14 @@ function extractCitations(markdown: string): Array<{ text: string; url?: string;
     });
   }
   
-  // Pattern 3: Bibliography section
-  const bibliographyMatch = markdown.match(/##\s*(?:Bibliography|References|Works\s+Cited)\s*\n([\s\S]+?)(?=\n##|$)/i);
-  
-  if (bibliographyMatch) {
-    const biblioText = bibliographyMatch[1];
-    const entries = biblioText
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.length > 0 && !line.startsWith('#'));
-    
-    entries.forEach(entry => citations.push({ text: entry }));
+  // Pattern 3: reference sections.
+  // REFERENCE_HEADINGS_2026_09_09 - this was one regex demanding "##", no
+  // bold wrapper, and a newline immediately after the heading word. Across
+  // the 33 documents in data/ it matched ONE file and produced zero entries
+  // that parseMLA9Entry() would accept. See _shared/reference-sections.ts
+  // for the three shapes it lost and the numbers.
+  for (const entry of collectReferenceLines(markdown, 1)) {
+    citations.push({ text: entry });
   }
   
   console.log(`Extracted ${citations.length} citations`);

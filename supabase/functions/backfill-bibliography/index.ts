@@ -4,6 +4,7 @@ import { classifyError } from '../_shared/error-response.ts';
 import { aiExtractCitations, NoAIProviderError } from '../_shared/ai-provider.ts';
 
 import { requireAdmin } from '../_shared/auth-gate.ts';
+import { collectReferenceLines } from '../_shared/reference-sections.ts';
 const marked = new Marked({ async: false, gfm: true, breaks: false });
 
 const corsHeaders = {
@@ -163,19 +164,15 @@ function parseMLA9Entry(entry: string): BibliographyEntry | null {
 function extractBibliography(markdown: string): BibliographyEntry[] {
   const entries: BibliographyEntry[] = [];
   
-  // Find bibliography section
-  const biblioMatch = markdown.match(/##\s*(?:Bibliography|References|Works\s+Cited|Sources)\s*\n([\s\S]+?)(?=\n##|$)/i);
-  
-  if (!biblioMatch) {
-    console.log('No bibliography section found');
+  // REFERENCE_HEADINGS_2026_09_09 - see _shared/reference-sections.ts.
+  // The 20-character floor and the leading-# skip are preserved exactly;
+  // only the search for the section itself is broadened.
+  const lines = collectReferenceLines(markdown, 20);
+
+  if (lines.length === 0) {
+    console.log('No reference section found');
     return entries;
   }
-  
-  const biblioText = biblioMatch[1];
-  const lines = biblioText
-    .split('\n')
-    .map(line => line.trim())
-    .filter(line => line.length > 20 && !line.startsWith('#'));
   
   console.log(`Found ${lines.length} potential bibliography entries`);
   
