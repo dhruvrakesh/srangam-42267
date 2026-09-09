@@ -52,6 +52,37 @@ describe('reference sections: the three shapes the old regex lost', () => {
   });
 });
 
+describe('reference sections: Notes is deliberately NOT a reference heading', () => {
+  /**
+   * NOTES_DROPPED_2026_09_09. Measured on the live corpus, including `Notes`
+   * reached six more articles and 103 more candidate lines and produced zero
+   * additional parseable entries. Everything it added was rejected by
+   * parseMLA9Entry, so the only outcome available to it was a false positive.
+   *
+   * This is a decision, not an oversight, and it is easy to undo by accident.
+   */
+  it('does not treat a Notes heading as a reference section', () => {
+    const commentary =
+      'These notes are interpretive and source-critical; full bibliographic ' +
+      'detail appears in the Works Cited below.';
+    const md = `# T\n\n## Notes\n\n${commentary}\n`;
+    expect(collectReferenceSections(md)).toEqual([]);
+    expect(collectReferenceLines(md, 20)).toEqual([]);
+  });
+
+  it('still reads the real Works Cited in an article that has both', () => {
+    const md = [
+      '# T', '',
+      '## Notes', '',
+      'These notes are interpretive and source-critical, see below.', '',
+      '## Works Cited', '', ENTRY, '',
+    ].join('\n');
+    const lines = collectReferenceLines(md, 20);
+    expect(lines).toContain(ENTRY);
+    expect(lines.some((l) => l.startsWith('These notes'))).toBe(false);
+  });
+});
+
 describe('reference sections: boundaries', () => {
   it('a section ends at the next heading of the same or a higher level', () => {
     const md = [

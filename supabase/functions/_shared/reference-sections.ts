@@ -49,13 +49,24 @@
 /**
  * Heading levels 2 to 4, optional bold wrapper, any trailing qualifier.
  *
- * `Notes` is included because two files title their apparatus
- * "## **Notes (commentary footnotes)**". Commentary prose that is not a
- * citation is rejected downstream by parseMLA9Entry(), which requires an
- * author-shaped opening, so widening here does not lower the bar there.
+ * NOTES_DROPPED_2026_09_09. `Notes` was in this list and has been removed.
+ * Measured against the live database with a corrected section boundary,
+ * including it reached six more articles and 103 more candidate lines and
+ * produced EXACTLY ZERO additional parseable entries - so its only possible
+ * effect was a false positive.
+ *
+ * Three of those six sections are commentary; breached-from-within opens its
+ * with "These notes are interpretive and source-critical; full bibliographic
+ * detail appears in the Works Cited below", and that article does have a real
+ * Works Cited. The other three are scholarly endnotes carrying genuine
+ * citations - the Padma Purana, Encyclopaedia Iranica, 2 Maccabees, the
+ * Rabatak inscription - but cited in prose and markdown links, mid-sentence,
+ * numbered "1." or "**[1]**". parseMLA9Entry() needs a line opening with a
+ * surname and a comma. None of them do. Those citations are real and they are
+ * inline, which is the AI pass, not a heading rule.
  */
 export const REFERENCE_HEADING =
-  /^(#{2,4})[ \t]*\**[ \t]*(Bibliography|References|Works\s+Cited|Works\s+Consulted|Sources|Further\s+Reading|Notes)\b[^\n]*$/gim;
+  /^(#{2,4})[ \t]*\**[ \t]*(Bibliography|References|Works\s+Cited|Works\s+Consulted|Sources|Further\s+Reading)\b[^\n]*$/gim;
 
 /**
  * Every reference section in the document, as raw text.
