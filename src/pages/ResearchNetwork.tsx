@@ -15,6 +15,7 @@ import { Separator } from '@/components/ui/separator';
 import { Network, ZoomIn, ZoomOut, Maximize2, Download, FileDown, Info } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { Link } from 'react-router-dom';
+import { resolveCssColor } from '@/lib/cssColor';
 
 // Theme colors matching existing design system
 const THEME_COLORS: Record<string, string> = {
@@ -112,9 +113,13 @@ export default function ResearchNetwork() {
   }, [articles]);
 
   // Determine node color based on theme
+  // RADIAL_TIDY_2026_09_09 - these tokens are painted onto a canvas, which
+  // cannot resolve var(). Resolve here, once, against the document.
   const getNodeColor = (article: any) => {
-    if (!article?.theme) return 'hsl(var(--muted))';
-    return THEME_COLORS[article.theme] || 'hsl(var(--muted))';
+    const token = !article?.theme
+      ? 'hsl(var(--muted))'
+      : THEME_COLORS[article.theme] || 'hsl(var(--muted))';
+    return resolveCssColor(token, '#94a3b8');
   };
 
   // Calculate connection counts
@@ -180,27 +185,47 @@ export default function ResearchNetwork() {
         target: ref.target_article_id,
         value: ref.strength || 1,
         type: ref.reference_type,
-        color: TYPE_COLORS[ref.reference_type] || 'hsl(var(--muted-foreground))',
+        color: resolveCssColor(
+          TYPE_COLORS[ref.reference_type] || 'hsl(var(--muted-foreground))',
+          '#64748b',
+        ),
         label: ref.reference_type,
       }));
 
     // Apply layout
     if (layout === 'radial' && nodes.length > 0) {
-      const centerNode = nodes.reduce((max, node) => 
-        node.value > max.value ? node : max
-      );
-      
-      nodes.forEach((node, i) => {
-        if (node.id === centerNode.id) {
-          node.fx = 0;
-          node.fy = 0;
-        } else {
-          const angle = (i / nodes.length) * 2 * Math.PI;
-          const radius = 300;
+      // RADIAL_TIDY_2026_09_09
+      // The hub used to consume a slot on the ring - the index ran over every
+      // node including the one pinned at the origin - so the circle always
+      // carried one empty gap. The radius was a constant 300 whatever the
+      // node count or the canvas size. And the order was whatever the query
+      // returned, so adjacency on the ring meant nothing.
+      const hub = nodes.reduce((max, node) => (node.value > max.value ? node : max));
+      const ring = nodes
+        .filter((n) => n.id !== hub.id)
+        .sort((a, b) => b.value - a.value || a.name.localeCompare(b.name));
+
+      hub.fx = 0;
+      hub.fy = 0;
+
+      if (ring.length > 0) {
+        // Room for each node's own diameter plus a gap, then held inside the
+        // canvas so the ring cannot walk off the edge.
+        const widest = ring.reduce((m, n) => Math.max(m, n.value), 0);
+        const needed = (ring.length * (widest * 2 + 18)) / (2 * Math.PI);
+        const ceiling = Math.max(
+          140,
+          Math.min(dimensions.width, dimensions.height) / 2 - widest - 24,
+        );
+        const radius = Math.max(140, Math.min(needed, ceiling));
+
+        ring.forEach((node, i) => {
+          // -PI/2 starts the ring at twelve o'clock rather than three.
+          const angle = (i / ring.length) * 2 * Math.PI - Math.PI / 2;
           node.fx = Math.cos(angle) * radius;
           node.fy = Math.sin(angle) * radius;
-        }
-      });
+        });
+      }
     } else {
       nodes.forEach(node => {
         delete node.fx;
@@ -209,7 +234,10 @@ export default function ResearchNetwork() {
     }
 
     return { nodes, links };
-  }, [articles, crossRefs, searchQuery, typeFilters, minStrength, layout, connectionCounts]);
+  // dimensions joins the deps because the radial radius is now derived from
+  // the canvas size; without it a resize would leave a stale ring.
+  }, [articles, crossRefs, searchQuery, typeFilters, minStrength, layout,
+      connectionCounts, dimensions]);
 
   // Selected article details
   const selectedArticle = useMemo(() => {
@@ -479,17 +507,35 @@ export default function ResearchNetwork() {
               linkDirectionalParticleSpeed={0.002}
               onNodeClick={handleNodeClick}
               nodeCanvasObject={(node: any, ctx, globalScale) => {
+                // RADIAL_TIDY_2026_09_09
+                // ctx.fillStyle = 'hsl(var(--foreground))' is not something a
+                // canvas can parse. An unparseable assignment is ignored and
+                // the previous fill persists, so every label was painted in
+                // the colour of the disc it sat on. resolveCssColor reads the
+                // custom property off the document, where the cascade has
+                // already resolved it into concrete HSL components.
                 const label = node.name;
-                const fontSize = 12 / globalScale;
-                ctx.font = `${fontSize}px Sans-Serif`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillStyle = node.color;
+                const r = Math.max(3, Math.min(node.value, 22));
+
                 ctx.beginPath();
-                ctx.arc(node.x, node.y, node.value, 0, 2 * Math.PI);
+                ctx.arc(node.x, node.y, r, 0, 2 * Math.PI);
+                ctx.fillStyle = resolveCssColor(node.color, '#94a3b8');
                 ctx.fill();
-                ctx.fillStyle = 'hsl(var(--foreground))';
-                ctx.fillText(label, node.x, node.y + node.value + fontSize);
+
+                // Label only what a reader can actually read at this zoom.
+                if (globalScale < 0.7 && node.value < 12) return;
+
+                // Push the text outward along the node's own radius instead of
+                // always downward, so the lower arc stops writing over itself.
+                const fontSize = Math.max(9, 12 / globalScale);
+                ctx.font = `${fontSize}px Sans-Serif`;
+                ctx.textBaseline = 'middle';
+                const len = Math.hypot(node.x, node.y) || 1;
+                const ux = node.x / len;
+                const uy = node.y / len;
+                ctx.textAlign = ux >= 0 ? 'left' : 'right';
+                ctx.fillStyle = resolveCssColor('hsl(var(--foreground))', '#0f172a');
+                ctx.fillText(label, node.x + ux * (r + 6), node.y + uy * (r + 6));
               }}
             />
             
