@@ -44,7 +44,18 @@ interface ImportResult {
     termsExtracted: number;
     termsMatched?: number;
     termsCreated?: number;
-    citationsCreated: number;
+    // CITATIONS_TRUTH_2026_09_09 - mirror of ImportResponse in
+    // supabase/functions/markdown-to-article-import/index.ts. Keep the two in
+    // step: this file is the only place the UI learns what the function sends.
+    /** Citations parsed out of the markdown. Not a count of anything stored. */
+    citationsExtracted?: number;
+    /** Rows written by THIS call. Always 0 today - persistence lives in
+     *  backfill-bibliography. */
+    citationsPersisted?: number;
+    bibliographyBackfillRun?: boolean;
+    /** @deprecated The success path stopped sending this on 2026-09-07.
+     *  Optional so nothing that still reads it breaks. */
+    citationsCreated?: number;
     crossReferencesCreated?: number;
     markdownSourceSaved?: boolean;
   };
@@ -768,11 +779,11 @@ slug: "${slug}"
                       {importResult.stats && (
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
                           <div className="bg-background rounded p-2 border">
-                            <div className="font-semibold text-foreground">{importResult.stats.wordCount?.toLocaleString()}</div>
+                            <div className="font-semibold text-foreground">{(importResult.stats.wordCount ?? 0).toLocaleString()}</div>
                             <div className="text-muted-foreground text-xs">Words</div>
                           </div>
                           <div className="bg-background rounded p-2 border">
-                            <div className="font-semibold text-foreground">{importResult.stats.termsExtracted}</div>
+                            <div className="font-semibold text-foreground">{importResult.stats.termsExtracted ?? 0}</div>
                             <div className="text-muted-foreground text-xs">Terms Extracted</div>
                           </div>
                           <div className="bg-background rounded p-2 border">
@@ -780,10 +791,36 @@ slug: "${slug}"
                             <div className="text-muted-foreground text-xs">Cross-References</div>
                           </div>
                           <div className="bg-background rounded p-2 border">
-                            <div className="font-semibold text-foreground">{importResult.stats.citationsCreated}</div>
-                            <div className="text-muted-foreground text-xs">Citations</div>
+                            <div className="font-semibold text-foreground">{importResult.stats.citationsExtracted ?? importResult.stats.citationsCreated ?? 0}</div>
+                            <div className="text-muted-foreground text-xs">Citations found</div>
                           </div>
                         </div>
+                      )}
+                      {/* CITATIONS_TRUTH_2026_09_09 - a blank box told an editor nothing.
+                          This says what was found, what was stored, and what to do next. */}
+                      {importResult.stats
+                        && (importResult.stats.citationsExtracted ?? 0) > 0
+                        && (importResult.stats.citationsPersisted ?? 0) === 0 && (
+                        <Alert>
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertTitle>
+                            {importResult.stats.citationsExtracted} citations found, none saved yet
+                          </AlertTitle>
+                          <AlertDescription className="space-y-2">
+                            <p>
+                              The import parsed these out of your markdown but does not write
+                              bibliography rows. Your source markdown was saved, so nothing is
+                              lost &mdash; the Bibliography backfill reads it, deduplicates on
+                              citation key, and creates the entries and their article links.
+                            </p>
+                            <p>
+                              <Link to="/admin/data-health" className="underline font-medium">
+                                Run it from Data Health
+                              </Link>{' '}
+                              to populate Sources &amp; Pins for this article.
+                            </p>
+                          </AlertDescription>
+                        </Alert>
                       )}
                       <div className="flex gap-2 pt-2">
                         <Button asChild variant="default" size="sm">

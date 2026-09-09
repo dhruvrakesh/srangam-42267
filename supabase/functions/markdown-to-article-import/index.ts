@@ -134,7 +134,18 @@ interface ImportResponse {
     termsExtracted: number;
     termsMatched?: number;
     termsCreated?: number;
-    citationsCreated: number;
+    // CITATIONS_TRUTH_2026_09_09 - this interface said `citationsCreated:
+    // number` while the success path below returned citationsExtracted and
+    // citationsPersisted. The contract and the implementation disagreed, and
+    // the UI believed the contract, so it read a key that is never sent.
+    /** Citations parsed out of the markdown. Not a count of anything stored. */
+    citationsExtracted?: number;
+    /** Rows written to srangam_bibliography_entries by THIS call. Always 0
+     *  today: persistence lives in the backfill-bibliography function. */
+    citationsPersisted?: number;
+    bibliographyBackfillRun?: boolean;
+    /** @deprecated Kept so older callers do not break. Prefer the two above. */
+    citationsCreated?: number;
     readTimeMinutes: number;
     crossReferencesCreated?: number;
     markdownSourceSaved?: boolean;
@@ -634,6 +645,13 @@ Deno.serve(async (req) => {
         stats: {
           wordCount,
           termsExtracted: 0,
+          // CITATIONS_TRUTH_2026_09_09 - the merge path used to return only
+          // the old key, so a merge rendered "0" while a fresh import
+          // rendered blank: two paths, two key names, one UI. Both paths now
+          // speak the same vocabulary.
+          citationsExtracted: 0,
+          citationsPersisted: 0,
+          bibliographyBackfillRun: false,
           citationsCreated: 0,
           readTimeMinutes,
           markdownSourceSaved: !markdownError
