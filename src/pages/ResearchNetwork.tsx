@@ -16,6 +16,14 @@ import { Network, ZoomIn, ZoomOut, Maximize2, Download, FileDown, Info } from 'l
 import html2canvas from 'html2canvas';
 import { Link } from 'react-router-dom';
 import { onThemeColorsChanged, resolveCssColor } from '@/lib/cssColor';
+import { useResearchStats } from '@/hooks/useResearchStats';
+
+// QUERY_CEILING_2026_09_10
+// PostgREST answers an unbounded select with at most `max-rows` (1000 on
+// Supabase by default) and gives the client no way to tell a truncated page
+// from a complete one. This graph was relying on that accident. The ceiling
+// is now ours, it is named, and the page admits when it has hit it.
+const GRAPH_EDGE_BUDGET = 2000;
 
 // Theme colors matching existing design system
 const THEME_COLORS: Record<string, string> = {
@@ -88,16 +96,64 @@ export default function ResearchNetwork() {
     },
   });
 
-  // Fetch cross-references
+  // Fetch cross-references for the graph.
+  // QUERY_CEILING_2026_09_10 - was .select('*') with no bound, so the server
+  // returned its default 1000 and nothing downstream knew. Ordering by
+  // strength means a truncated fetch keeps the strongest edges instead of an
+  // arbitrary thousand, and only the five columns the graph draws are pulled
+  // rather than every column of every row.
   const { data: crossRefs, isLoading: crossRefsLoading } = useQuery({
-    queryKey: ['cross-references-network'],
+    queryKey: ['cross-references-network', GRAPH_EDGE_BUDGET],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('srangam_cross_references')
-        .select('*');
-      
+        .select('id, source_article_id, target_article_id, reference_type, strength')
+        .order('strength', { ascending: false })
+        .limit(GRAPH_EDGE_BUDGET);
+
       if (error) throw error;
       return data;
+    },
+  });
+
+  // Exact totals. A head-count carries no rows, so the server has nothing to
+  // cap. This hook has existed since 2026-09-06 and this page did not use it.
+  const researchStats = useResearchStats();
+
+  // avg(strength) and count(distinct reference_type) are aggregates, and no
+  // head-count can produce them. Doing them in the browser means downloading
+  // the table to do arithmetic the database does in one pass. The view does
+  // it in one row. If it has not been created yet this resolves to null and
+  // the tiles show an em dash - see the memo below for why there is no
+  // client-side fallback.
+  const { data: aggregates } = useQuery({
+    queryKey: ['cross-reference-aggregates'],
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+    queryFn: async () => {
+      // The generated Supabase types are derived from the schema and do not
+      // list a view created after they were last generated. Rather than
+      // hand-edit generated output, the relation is reached through an
+      // untyped handle and the row is cast once, here, where the shape is
+      // stated. When Lovable regenerates types after the migration lands,
+      // this cast can go and the call becomes ordinary.
+      const sb = supabase as unknown as {
+        from: (relation: string) => {
+          select: (columns: string) => {
+            maybeSingle: () => Promise<{ data: unknown; error: unknown }>;
+          };
+        };
+      };
+      const { data, error } = await sb
+        .from('srangam_cross_reference_stats')
+        .select('total, distinct_types, avg_strength')
+        .maybeSingle();
+      if (error || !data) return null;
+      return data as {
+        total: number;
+        distinct_types: number;
+        avg_strength: number;
+      };
     },
   });
 
@@ -333,22 +389,31 @@ export default function ResearchNetwork() {
     );
   };
 
+  // QUERY_CEILING_2026_09_10
+  // These tiles used to be computed from the crossRefs array:
+  //     connections: crossRefs.length
+  //     avgStrength: sum(strength) / crossRefs.length
+  //     types:       Object.keys(typeBreakdown).length
+  // With the fetch capped at 1000 that is min(true, 1000), the mean of a
+  // slice, and the distinct types present in that slice - which is why the
+  // page showed 2 reference types above a filter list offering five.
+  //
+  // The two countable figures now come from exact head-counts. The two
+  // aggregates come from the view or not at all: a missing number is honest,
+  // a number computed over a truncated fetch is not, so there is no
+  // client-side fallback here on purpose.
   const stats = useMemo(() => {
-    if (!articles || !crossRefs) return null;
-    
-    const avgStrength = crossRefs.reduce((sum, ref) => sum + (ref.strength || 0), 0) / crossRefs.length;
-    const typeBreakdown = crossRefs.reduce((acc, ref) => {
-      acc[ref.reference_type] = (acc[ref.reference_type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
+    if (researchStats.isLoading) return null;
     return {
-      articles: articles.length,
-      connections: crossRefs.length,
-      avgStrength: avgStrength.toFixed(1),
-      types: Object.keys(typeBreakdown).length,
+      articles: researchStats.publishedArticles,
+      connections: researchStats.crossReferences,
+      avgStrength:
+        aggregates?.avg_strength != null
+          ? Number(aggregates.avg_strength).toFixed(1)
+          : null,
+      types: aggregates?.distinct_types ?? null,
     };
-  }, [articles, crossRefs]);
+  }, [researchStats, aggregates]);
 
   if (articlesLoading || crossRefsLoading) {
     return (
@@ -414,16 +479,27 @@ export default function ResearchNetwork() {
             <Card>
               <CardHeader className="pb-3">
                 <CardDescription>Average Strength</CardDescription>
-                <CardTitle className="text-3xl">{stats.avgStrength}/10</CardTitle>
+                <CardTitle className="text-3xl">
+                  {stats.avgStrength ? `${stats.avgStrength}/10` : '\u2014'}
+                </CardTitle>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader className="pb-3">
                 <CardDescription>Reference Types</CardDescription>
-                <CardTitle className="text-3xl">{stats.types}</CardTitle>
+                <CardTitle className="text-3xl">{stats.types ?? '\u2014'}</CardTitle>
               </CardHeader>
             </Card>
           </div>
+        )}
+
+        {/* QUERY_CEILING_2026_09_10 - a view that silently shows a subset is
+            worse than one that shows less and says so. */}
+        {crossRefs && stats && stats.connections > crossRefs.length && (
+          <p className="text-sm text-muted-foreground">
+            Graph shows the {crossRefs.length.toLocaleString()} strongest of{' '}
+            {stats.connections.toLocaleString()} connections.
+          </p>
         )}
 
         {/* Filters & Controls */}
@@ -571,7 +647,9 @@ export default function ResearchNetwork() {
         {/* Reference Table */}
         <Card>
           <CardHeader>
-            <CardTitle>All Cross-References ({graphData.links.length})</CardTitle>
+            <CardTitle>
+              Cross-References shown ({graphData.links.length.toLocaleString()})
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
