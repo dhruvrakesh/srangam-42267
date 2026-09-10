@@ -81,3 +81,87 @@ export function resolveCssColor(value: string, fallback = '#666666'): string {
 export function clearCssColorCache(): void {
   cache.clear();
 }
+
+/* ------------------------------------------------------------------------ *
+ * THEME CHANGES
+ *
+ * Writing clearCssColorCache() and then calling it from nowhere is exactly
+ * the failure this module was built to fix: a mechanism that reports itself
+ * present while nothing invokes it. The cache above outlives a theme switch,
+ * so on switching light/dark the labels kept the previous theme's foreground
+ * colour - dark text on a dark ground - until a reload.
+ *
+ * Clearing the cache is necessary but NOT sufficient. ResearchNetwork resolves
+ * node and link colours inside its graphData memo, so those concrete strings
+ * are frozen into the graph objects; flushing the cache alone would refresh
+ * the labels and leave every disc and edge in the old palette. Subscribers
+ * therefore need a signal, not just an invalidation - hence a listener API
+ * rather than an internal side effect.
+ *
+ * The app mounts <ThemeProvider attribute="class" defaultTheme="system"
+ * enableSystem>, so next-themes flips a class on <html> for all three cases,
+ * including an OS-level change while set to "system". Watching that attribute
+ * covers every path today. The media-query listener is a second, cheap net
+ * for a future palette driven purely by @media (prefers-color-scheme), which
+ * would change the computed values without touching any attribute.
+ * ------------------------------------------------------------------------ */
+
+type ThemeListener = () => void;
+
+const listeners = new Set<ThemeListener>();
+let observer: MutationObserver | null = null;
+let media: MediaQueryList | null = null;
+
+function handleThemeChange(): void {
+  cache.clear();
+  // Copy first: a listener may unsubscribe itself while we are iterating.
+  for (const listener of [...listeners]) {
+    try {
+      listener();
+    } catch {
+      // One bad subscriber must not stop the rest of the graph repainting.
+    }
+  }
+}
+
+function attach(): void {
+  if (typeof document === 'undefined' || !document.documentElement) return;
+
+  if (!observer && typeof MutationObserver !== 'undefined') {
+    observer = new MutationObserver(handleThemeChange);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      // Only these two. Watching `style` as well would fire on every
+      // scroll-lock and inline write, and the clear is not free.
+      attributeFilter: ['class', 'data-theme'],
+    });
+  }
+
+  if (!media && typeof window !== 'undefined' && window.matchMedia) {
+    media = window.matchMedia('(prefers-color-scheme: dark)');
+    media.addEventListener?.('change', handleThemeChange);
+  }
+}
+
+function detach(): void {
+  observer?.disconnect();
+  observer = null;
+  media?.removeEventListener?.('change', handleThemeChange);
+  media = null;
+}
+
+/**
+ * Call `listener` whenever the resolved theme colours may have changed. The
+ * cache is cleared before the listener runs, so anything it reads is fresh.
+ *
+ * @returns an unsubscribe function, suitable as a useEffect cleanup.
+ */
+export function onThemeColorsChanged(listener: ThemeListener): () => void {
+  listeners.add(listener);
+  attach();
+
+  return () => {
+    listeners.delete(listener);
+    if (listeners.size === 0) detach();
+  };
+}

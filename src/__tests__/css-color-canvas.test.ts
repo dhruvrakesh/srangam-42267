@@ -2,7 +2,11 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { resolveCssColor, clearCssColorCache } from '@/lib/cssColor';
+import {
+  resolveCssColor,
+  clearCssColorCache,
+  onThemeColorsChanged,
+} from '@/lib/cssColor';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(here, '../..');
@@ -110,5 +114,101 @@ describe('ResearchNetwork: no unresolved CSS variables reach the canvas', () => 
 
   it('imports the resolver it needs', () => {
     expect(src).toMatch(/from ['"]@\/lib\/cssColor['"]/);
+  });
+});
+
+/**
+ * THEME_REPAINT_2026_09_10
+ *
+ * Reported after the colour resolver shipped: switching light/dark left the
+ * graph in the previous theme until a reload. The resolver had a cache and a
+ * documented reason to clear it, and nothing called the clear - a mechanism
+ * present and never invoked, which is the fault this file exists to prevent.
+ */
+describe('onThemeColorsChanged', () => {
+  beforeEach(() => {
+    document.documentElement.classList.remove('dark');
+    document.documentElement.style.setProperty('--foreground', '222 47% 11%');
+    clearCssColorCache();
+  });
+
+  it('clears the cache and notifies when the root class flips', async () => {
+    expect(resolveCssColor('hsl(var(--foreground))')).toBe('hsl(222 47% 11%)');
+
+    let fired = 0;
+    const off = onThemeColorsChanged(() => {
+      fired += 1;
+    });
+
+    // next-themes is mounted as <ThemeProvider attribute="class">, so this is
+    // literally what a theme switch does to the document.
+    document.documentElement.classList.add('dark');
+    document.documentElement.style.setProperty('--foreground', '0 0% 98%');
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(fired).toBe(1);
+    expect(resolveCssColor('hsl(var(--foreground))')).toBe('hsl(0 0% 98%)');
+    off();
+  });
+
+  it('stops notifying once unsubscribed', async () => {
+    let fired = 0;
+    const off = onThemeColorsChanged(() => {
+      fired += 1;
+    });
+    off();
+
+    document.documentElement.classList.add('dark');
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(fired).toBe(0);
+  });
+
+  it('survives a subscriber that throws', async () => {
+    let second = 0;
+    const offA = onThemeColorsChanged(() => {
+      throw new Error('one bad subscriber');
+    });
+    const offB = onThemeColorsChanged(() => {
+      second += 1;
+    });
+
+    document.documentElement.classList.add('dark');
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(second).toBe(1);
+    offA();
+    offB();
+  });
+});
+
+describe('ResearchNetwork: a theme change actually repaints', () => {
+  const src = readFileSync(resolve(ROOT, 'src/pages/ResearchNetwork.tsx'), 'utf-8');
+
+  it('subscribes to theme changes', () => {
+    expect(
+      src,
+      'The colour cache outlives a theme switch. Without a subscription the ' +
+        'labels keep the previous theme’s foreground colour until reload.',
+    ).toMatch(/onThemeColorsChanged\s*\(/);
+  });
+
+  it('rebuilds the graph on a theme change, not just the labels', () => {
+    // Node and link colours are resolved inside the graphData memo, so they
+    // are frozen into the graph objects. Clearing the cache refreshes the
+    // labels only; the memo must re-run for the discs and edges.
+    const depLists = [...src.matchAll(/\}\s*,\s*\[([\s\S]*?)\]\s*\)\s*;/g)].map(
+      (m) => m[1],
+    );
+    const graphDeps = depLists.find(
+      (d) => d.includes('crossRefs') && d.includes('layout'),
+    );
+
+    expect(graphDeps, 'could not locate the graphData memo dependency array').toBeDefined();
+    expect(
+      graphDeps,
+      'themeEpoch is missing from the graphData deps, so node and link ' +
+        'colours stay at whatever palette was in force when the memo last ran.',
+    ).toContain('themeEpoch');
   });
 });

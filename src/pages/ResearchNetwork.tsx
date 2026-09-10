@@ -15,7 +15,7 @@ import { Separator } from '@/components/ui/separator';
 import { Network, ZoomIn, ZoomOut, Maximize2, Download, FileDown, Info } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { Link } from 'react-router-dom';
-import { resolveCssColor } from '@/lib/cssColor';
+import { onThemeColorsChanged, resolveCssColor } from '@/lib/cssColor';
 
 // Theme colors matching existing design system
 const THEME_COLORS: Record<string, string> = {
@@ -63,6 +63,16 @@ export default function ResearchNetwork() {
   const [dimensions, setDimensions] = useState({ width: 1200, height: 800 });
   const graphRef = useRef<any>();
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // THEME_REPAINT_2026_09_10
+  // Node and link colours are resolved inside the graphData memo below, so
+  // they are frozen at the palette in force when it last ran. Flushing the
+  // colour cache alone would refresh the labels, which resolve at paint
+  // time, and leave every disc and edge in the previous theme. Bumping this
+  // counter re-runs the memo against the new palette; onThemeColorsChanged
+  // clears the cache before it calls us, so the re-read is fresh.
+  const [themeEpoch, setThemeEpoch] = useState(0);
+  useEffect(() => onThemeColorsChanged(() => setThemeEpoch((n) => n + 1)), []);
 
   // Fetch articles
   const { data: articles, isLoading: articlesLoading } = useQuery({
@@ -137,6 +147,9 @@ export default function ResearchNetwork() {
 
   // Generate graph data
   const graphData = useMemo(() => {
+    // Read so the dependency is not merely declared: this memo has no other
+    // use for the counter, it exists to force the rebuild described above.
+    void themeEpoch;
     if (!articles || !crossRefs) return { nodes: [], links: [] };
 
     // Filter articles by search
@@ -235,9 +248,10 @@ export default function ResearchNetwork() {
 
     return { nodes, links };
   // dimensions joins the deps because the radial radius is now derived from
-  // the canvas size; without it a resize would leave a stale ring.
+  // the canvas size; without it a resize would leave a stale ring. themeEpoch
+  // joins them because the colours below are resolved here, not at paint time.
   }, [articles, crossRefs, searchQuery, typeFilters, minStrength, layout,
-      connectionCounts, dimensions]);
+      connectionCounts, dimensions, themeEpoch]);
 
   // Selected article details
   const selectedArticle = useMemo(() => {
