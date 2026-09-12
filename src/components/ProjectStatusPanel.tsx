@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Database, Sigma, AlertTriangle, CircleDashed } from "lucide-react";
 import {
   MEASURED_ON,
+  CONTAMINATION_MEASURED_ON,
   TRANSLATION_STATUS,
   PANCHANG_STATUS,
   CAVEATS,
@@ -45,9 +46,16 @@ export function ProjectStatusPanel({ variant }: { variant: Variant }) {
             Where this actually stands
           </h2>
           <p className="text-sm text-muted-foreground">
-            Every figure below was measured on{" "}
-            <time dateTime={MEASURED_ON}>{MEASURED_ON}</time>. Nothing here is an
-            estimate.
+            {/* STATUS_LIVE_2026_09_12 - the contamination figures are measured
+                by a different tool, in another repository, on their own date.
+                Claiming one date for the whole page overstated it. */}
+            Corpus figures measured on{" "}
+            <time dateTime={MEASURED_ON}>{MEASURED_ON}</time>; the contamination
+            figures on{" "}
+            <time dateTime={CONTAMINATION_MEASURED_ON}>
+              {CONTAMINATION_MEASURED_ON}
+            </time>
+            . Nothing here is an estimate.
           </p>
         </div>
 
@@ -55,10 +63,13 @@ export function ProjectStatusPanel({ variant }: { variant: Variant }) {
           <>
             <Card className="mb-6">
               <CardContent className="pt-6">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
                   <Figure value={nf.format(t.works)} label="works in the corpus" />
                   <Figure value={nf.format(t.passages)} label="passages extracted" />
-                  <Figure value={nf.format(t.translated)} label="passages translated" />
+                  {/* STATUS_LIVE_2026_09_12 - "passages translated" was accurate
+                      only while English was the sole target. It is not. */}
+                  <Figure value={nf.format(t.translated)} label="English translations" />
+                  <Figure value={nf.format(t.translatedHi)} label="Hindi translations" />
                   <Figure value={nf.format(t.embeddings)} label="passages embedded" />
                 </div>
 
