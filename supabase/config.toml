@@ -42,6 +42,11 @@ verify_jwt = false
 [functions.generate-article-tags]
 verify_jwt = false
 
+# NOTE (2026-09 audit): verify_jwt = false is INTENTIONAL here, not an oversight.
+# Authorization is enforced in-function by _shared/auth-gate.ts (requireAdmin /
+# requireAdminOrCron). Platform JWT verification must stay OFF so pg_cron can
+# authenticate with the non-JWT `x-cron-secret` header. Do not "harden" this to
+# true — it would reject cron calls before the function ever runs.
 [functions.analyze-tag-relationships]
 verify_jwt = false
 
@@ -54,6 +59,11 @@ verify_jwt = false
 [functions.generate-article-og]
 verify_jwt = false
 
+# NOTE (2026-09 audit): verify_jwt = false is INTENTIONAL here, not an oversight.
+# Authorization is enforced in-function by _shared/auth-gate.ts (requireAdmin /
+# requireAdminOrCron). Platform JWT verification must stay OFF so pg_cron can
+# authenticate with the non-JWT `x-cron-secret` header. Do not "harden" this to
+# true — it would reject cron calls before the function ever runs.
 [functions.backfill-word-counts]
 verify_jwt = false
 
