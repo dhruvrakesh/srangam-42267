@@ -36,3 +36,4 @@ out/
 # COWORK_OUTPUTS_2026_09_12 - the desktop app writes scratch into this
 # folder inside the repo. It is not ours and must never be committed.
 Claude outputs/
+scripts/*.bak_st_*

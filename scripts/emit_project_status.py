@@ -78,6 +78,115 @@ CONTAMINATION = {
     "damagedShare": "69%",
 }
 
+
+# -- STATUS_TRUTH_2026_09_27 ---------------------------------------------------
+# Measured in the Lovable Cloud SQL editor with 99_verify.sql, not by this
+# script (it has no database key, by house rule). Carried with its own date.
+SITE_CORPUS = {
+    "measuredOn": "2026-09-27",
+    "texts": 1,
+    "passages": 439,
+    "published": 1,
+    "readerPage": False,
+}
+DEFAULT_TITLES = r"D:\Sanksrit Automatons\sanskrit-automatonv2\configs\doc_titles.json"
+DEFAULT_LEDGER = r"D:\Sanksrit Automatons\sanskrit-automatonv2\data\translate_outcomes.jsonl"
+_LACUNA = re.compile(r"\[\s*(?:illegible|\u0905\u0938\u094d\u092a\u0937\u094d\u091f)\s*\]", re.I)
+_PUNCT = re.compile(r"[\s\d\u0966-\u096f/|\u0964\u0965.,;:!?'\"()\[\]*_~`\-\u2013\u2014\u2026]+")
+
+
+def load_titles(path) -> dict:
+    """Human-confirmed display titles, keyed by doc code. Missing file -> {}."""
+    try:
+        raw = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    t = raw.get("titles", raw) if isinstance(raw, dict) else {}
+    return {k: v for k, v in t.items() if not k.startswith("_") and isinstance(v, str) and v.strip()}
+
+
+def measure_ledger(path) -> dict:
+    """Counts from the automaton's outcome ledger. Missing file -> {'total': 0}."""
+    d = {"total": 0, "bare": 0, "refusal": 0, "echo": 0, "empty": 0, "other": 0,
+         "salvaged": 0, "since": None, "path": str(path)}
+    try:
+        fh = open(str(path), encoding="utf-8")
+    except OSError:
+        return d
+    with fh:
+        for line in fh:
+            try:
+                r = json.loads(line)
+            except ValueError:
+                continue
+            cause = r.get("cause")
+            ts_ = str(r.get("ts") or "")[:10]
+            if ts_ and (d["since"] is None or ts_ < d["since"]):
+                d["since"] = ts_
+            if cause == "salvaged":
+                d["salvaged"] += 1
+                continue
+            d["total"] += 1
+            raw = r.get("raw") or ""
+            if cause == "refusal-filter":
+                if _LACUNA.search(raw) and _PUNCT.sub("", _LACUNA.sub(" ", raw)) == "":
+                    d["bare"] += 1
+                else:
+                    d["refusal"] += 1
+            elif cause == "echo-filter":
+                d["echo"] += 1
+            elif cause == "model-empty":
+                d["empty"] += 1
+            else:
+                d["other"] += 1
+    return d
+
+
+def _ledger_heading(c: dict) -> str:
+    if not (c.get("ledger") or {}).get("total"):
+        return "Empty and declined answers are recorded, not shown"
+    return "The model does decline, and a decline is never stored as a translation"
+
+
+def _ledger_body(c: dict) -> str:
+    L = c.get("ledger") or {}
+    if not L.get("total"):
+        return ("Every paid translation call that comes back unusable is recorded in the "
+                "pipeline's outcome ledger together with the model's raw answer. This "
+                "status run could not read that ledger, so no count is given here.")
+    parts = []
+    for n, what in ((L["bare"], "answered only with the 'illegible' marker on a damaged scan"),
+                    (L["echo"], "repeated the Sanskrit"),
+                    (L["refusal"], "declined in words"),
+                    (L["empty"], "came back with no text (this includes calls lost to a network failure)"),
+                    (L["other"], "failed another check")):
+        if n:
+            parts.append("%s %s" % (f"{n:,}", what))
+    body = ("Since %s the pipeline has kept the raw answer of every paid translation call "
+            "that came back unusable: %s so far. Of those, %s. None of them is stored or "
+            "shown as a translation. The verse stays empty and is asked again under the next "
+            "prompt, and a verse the model can only call illegible is set aside for re-OCR "
+            "instead of being paid for twice."
+            % (L["since"], f"{L['total']:,}", "; ".join(parts)))
+    if L.get("salvaged"):
+        body += (" A further %s answers were kept after an OCR caveat was trimmed from the end."
+                 % f"{L['salvaged']:,}")
+    return body
+
+
+def _site_line(c: dict) -> str:
+    s = c.get("site") or SITE_CORPUS
+    if not s.get("texts"):
+        return "The Sanskrit corpus is not yet published to this site. Tables exist; nothing is loaded."
+    one = s["texts"] == 1
+    line = ("%d Sanskrit text%s (%s passages) %s loaded into this site's corpus tables, and %d "
+            "%s marked published (measured %s)."
+            % (s["texts"], "" if one else "s", f"{s['passages']:,}", "is" if one else "are",
+               s["published"], "is" if s["published"] == 1 else "are", s["measuredOn"]))
+    if not s.get("readerPage"):
+        line += " There is no reading page for %s yet." % ("it" if one else "them")
+    return line
+
 NOT_VERSE = "COALESCE(p.text_type,'mula') NOT IN ('noise','frontmatter')"
 
 
@@ -96,7 +205,13 @@ def measure_corpus(db: Path) -> dict:
     if not db.exists():
         raise SystemExit("context.db not found at %s" % db)
     # immutable: this must never take a lock on a database the pipeline writes.
-    con = sqlite3.connect("file:%s?immutable=1" % db.as_posix(), uri=True)
+    # STATUS_TRUTH_2026_09_27: immutable=1 tells SQLite the file cannot change,
+    # so it never reads the -wal file: every translation not yet checkpointed
+    # into context.db was missing from the count (tested: 1 of 501 rows seen).
+    # mode=ro + query_only reads the WAL and writes nothing; in WAL mode a
+    # reader never blocks the pipeline writer.
+    con = sqlite3.connect("file:%s?mode=ro" % db.as_posix(), uri=True, timeout=30)
+    con.execute("PRAGMA query_only=ON")
     q = lambda s: con.execute(s).fetchone()[0]
     try:
         d = {
@@ -270,14 +385,9 @@ export const CAVEATS = [
            f"{lu['passages']:,}" if lu else "0"))},
   }},
   {{
-    heading: {ts("Not one translation was refused")},
+    heading: {ts(_ledger_heading(c))},
     body:
-      {ts(
-        "Across all %s translated passages, zero came back empty or as a refusal - "
-        "including those drawn from badly damaged scans. An automated check for "
-        "empty output therefore cannot tell us anything about them. Whether the "
-        "model never declines, or declines are discarded before storage, has not "
-        "yet been established." % f"{c['translated']:,}")},
+      {ts(_ledger_body(c))},
   }},
   {{
     heading: {ts("The entity layer has never completed a pass")},
@@ -312,7 +422,7 @@ export const PANCHANG_STATUS = {{
 }} as const;
 
 export const NOT_YET = [
-  'The Sanskrit corpus is not yet published to this site. Tables exist; nothing is loaded.',
+  {ts(_site_line(c))},
   {ts(
     "Translation fidelity has been sampled but not yet read. A blinded 86-passage "
     "draw from the most damaged work is waiting on a human reader, and %d reviews "
@@ -329,12 +439,38 @@ def main() -> int:
     ap.add_argument("--check", action="store_true",
                     help="measure and report the drift; write nothing")
     ap.add_argument("--print", dest="do_print", action="store_true")
+    # STATUS_TRUTH_2026_09_27
+    ap.add_argument("--titles", default=os.getenv("DOC_TITLES", DEFAULT_TITLES),
+                    help="human-curated doc_code -> title registry (automaton configs/doc_titles.json)")
+    ap.add_argument("--ledger", default=os.getenv("OUTCOME_LEDGER", DEFAULT_LEDGER),
+                    help="automaton data/translate_outcomes.jsonl")
+    ap.add_argument("--site-texts", type=int, default=None)
+    ap.add_argument("--site-passages", type=int, default=None)
+    ap.add_argument("--site-published", type=int, default=None)
+    ap.add_argument("--site-measured-on", default=None)
+    ap.add_argument("--site-reader", action="store_true",
+                    help="a public reading page for the corpus exists")
     args = ap.parse_args()
 
     if not OUT.parent.exists():
         raise SystemExit("run from the srangam repo root (%s missing)" % OUT.parent)
 
     c = measure_corpus(Path(args.db))
+    titles = load_titles(args.titles)          # STATUS_TRUTH_2026_09_27
+    for w in c["completeWorks"]:
+        w["name"] = titles.get(w["name"], _readable(w["name"]))
+    if c["largestUntouched"]:
+        lu0 = c["largestUntouched"]["name"]
+        c["largestUntouched"]["name"] = titles.get(lu0, lu0)
+    c["ledger"] = measure_ledger(args.ledger)
+    site = dict(SITE_CORPUS)
+    for k, v in (("texts", args.site_texts), ("passages", args.site_passages),
+                 ("published", args.site_published), ("measuredOn", args.site_measured_on)):
+        if v is not None:
+            site[k] = v
+    if args.site_reader:
+        site["readerPage"] = True
+    c["site"] = site
     p = measure_panchang(Path(args.panchang))
     today = date.today().isoformat()
     new = render(c, p, today)
@@ -366,6 +502,13 @@ def main() -> int:
     print("panchang : %d .se1 file(s), ephemeris_diff=%s, tests by %s"
           % (p["se1Files"], p["hasEphemerisDiff"], p["testsMetric"]))
 
+    L = c["ledger"]
+    print("titles   : %d curated (%s); complete work shown as %s"
+          % (len(titles), args.titles, ", ".join(w["name"] for w in c["completeWorks"]) or "-"))
+    print("ledger   : %d unusable since %s (bare %d, echo %d, refusal %d, empty %d, other %d), salvaged %d"
+          % (L["total"], L["since"], L["bare"], L["echo"], L["refusal"], L["empty"], L["other"], L["salvaged"]))
+    print("site     : %d text(s), %d passage(s), %d published, measured %s, reader page %s"
+          % (site["texts"], site["passages"], site["published"], site["measuredOn"], site["readerPage"]))
     if args.do_print:
         print("\n" + new)
     if args.check:
