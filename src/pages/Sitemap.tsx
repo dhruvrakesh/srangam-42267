@@ -49,6 +49,7 @@ export default function Sitemap() {
       icon: <BookOpen size={20} />,
       items: [
         { title: "Reading Room", path: "/reading-room", description: "Academic library and resources" },
+        { title: "Sanskrit Texts", path: "/texts", description: "Published Sanskrit texts, verse by verse (TEXTS_READER_2026_09_27)" },
         { title: "Sources & Method", path: "/sources-method", description: "Research methodology and standards" },
         { title: "Field Notes", path: "/field-notes", description: "Ongoing research updates" },
       ]

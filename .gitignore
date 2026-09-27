@@ -37,3 +37,4 @@ out/
 # folder inside the repo. It is not ours and must never be committed.
 Claude outputs/
 scripts/*.bak_st_*
+*.bak_tr_*

@@ -60,6 +60,10 @@ export function Footer() {
               <Link to="/reading-room" className="block text-sm text-muted-foreground hover:text-ocean transition-colors">
                 Reading Room
               </Link>
+              {/* TEXTS_READER_2026_09_27 */}
+              <Link to="/texts" className="block text-sm text-muted-foreground hover:text-ocean transition-colors">
+                Sanskrit Texts
+              </Link>
               <Link to="/sources-method" className="block text-sm text-muted-foreground hover:text-ocean transition-colors font-medium">
                 Sources & Method
               </Link>
