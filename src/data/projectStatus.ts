@@ -35,7 +35,7 @@ export const TRANSLATION_STATUS = {
   passages: 54292,
   translated: 18631,
   /** Hindi verses in translations_l10n. Absent from this file until 2026-09-12. */
-  translatedHi: 9594,
+  translatedHi: 9596,
   completeWorks: [
     { name: "Mahābhārata, Book I", passages: 6957, coverage: "100%" }
   ],
@@ -73,7 +73,7 @@ export const CAVEATS = [
   {
     heading: "The model does decline, and a decline is never stored as a translation",
     body:
-      "Since 2026-09-27 the pipeline has kept the raw answer of every paid translation call that came back unusable: 76 so far. Of those, 72 answered only with the 'illegible' marker on a damaged scan; 3 repeated the Sanskrit; 1 came back with no text (this includes calls lost to a network failure). None of them is stored or shown as a translation. The verse stays empty and is asked again under the next prompt, and a verse the model can only call illegible is set aside for re-OCR instead of being paid for twice.",
+      "Since 2026-09-27 the pipeline has kept the raw answer of every paid translation call that came back unusable: 78 so far. Of those, 73 answered only with the 'illegible' marker on a damaged scan; 4 repeated the Sanskrit; 1 came back with no text (this includes calls lost to a network failure). None of them is stored or shown as a translation. The verse stays empty and is asked again under the next prompt, and a verse the model can only call illegible is set aside for re-OCR instead of being paid for twice.",
   },
   {
     heading: "The entity layer has never completed a pass",
