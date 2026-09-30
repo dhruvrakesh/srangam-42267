@@ -96,7 +96,10 @@ export function Footer() {
         <div className="border-t border-border mt-8 pt-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-sm text-muted-foreground">
-              © 2024 Srangam Project. All rights reserved.
+              © 2024 Srangam Project, the research platform of{" "}
+              <a href="https://nartiang.org/projects/manuscripts" target="_blank" rel="noopener noreferrer" className="hover:text-ocean underline-offset-4 hover:underline">
+                Nartiang Foundation
+              </a>. All rights reserved.
             </p>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <Link to="/about" className="hover:text-ocean transition-colors">
