@@ -72,3 +72,6 @@ verify_jwt = false
 
 [functions.backfill-article-pins]
 verify_jwt = false
+
+[functions.embed-published-passages]
+verify_jwt = false
