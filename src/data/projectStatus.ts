@@ -20,7 +20,7 @@
  * population at >= 0.20. Measured directly from per-passage values, the real
  * figure at >= 0.15 is 1,013.
  */
-export const MEASURED_ON = "2026-09-27";
+export const MEASURED_ON = "2026-10-07";
 
 /**
  * The contamination figures below are NOT measured by the generator. They
@@ -31,17 +31,17 @@ export const MEASURED_ON = "2026-09-27";
 export const CONTAMINATION_MEASURED_ON = "2026-09-08";
 
 export const TRANSLATION_STATUS = {
-  works: 62,
-  passages: 54292,
-  translated: 18631,
+  works: 66,
+  passages: 75734,
+  translated: 21673,
   /** Hindi verses in translations_l10n. Absent from this file until 2026-09-12. */
-  translatedHi: 9596,
+  translatedHi: 12502,
   completeWorks: [
     { name: "Mahābhārata, Book I", passages: 6957, coverage: "100%" }
   ],
-  entities: 7573,
-  entityMentions: 31543,
-  embeddings: 18440,
+  entities: 8212,
+  entityMentions: 32649,
+  embeddings: 21689,
   /** Human fidelity reviews recorded. Not a sample size - a total. */
   humanReviews: 40,
   /**
@@ -68,12 +68,12 @@ export const CAVEATS = [
   {
     heading: "Half the corpus has not been touched",
     body:
-      "18,631 of the 54,292 passages carry an English translation. The remainder is not spread thinly: 31,563 passages, 58.1% of the corpus, sit in 13 documents that are under 5% translated. The largest is SP 4214 Pataal Khanda from Padma Puran 1895 - Sri Venkateshwar Press - 16,606 passages, not one of them translated. A coverage figure quoted without that concentration would read as steady progress across the whole corpus, which is not what has happened.",
+      "21,673 of the 75,734 passages carry an English translation. The remainder is not spread thinly: 49,181 passages, 64.9% of the corpus, sit in 15 documents that are under 5% translated. The largest is SP 4214 Pataal Khanda from Padma Puran 1895 - Sri Venkateshwar Press - 21,128 passages, not one of them translated. A coverage figure quoted without that concentration would read as steady progress across the whole corpus, which is not what has happened.",
   },
   {
     heading: "The model does decline, and a decline is never stored as a translation",
     body:
-      "Since 2026-09-27 the pipeline has kept the raw answer of every paid translation call that came back unusable: 78 so far. Of those, 73 answered only with the 'illegible' marker on a damaged scan; 4 repeated the Sanskrit; 1 came back with no text (this includes calls lost to a network failure). None of them is stored or shown as a translation. The verse stays empty and is asked again under the next prompt, and a verse the model can only call illegible is set aside for re-OCR instead of being paid for twice.",
+      "Since 2026-09-27 the pipeline has kept the raw answer of every paid translation call that came back unusable: 1,356 so far. Of those, 332 answered only with the 'illegible' marker on a damaged scan; 994 repeated the Sanskrit; 10 declined in words; 20 came back with no text (this includes calls lost to a network failure). None of them is stored or shown as a translation. The verse stays empty and is asked again under the next prompt, and a verse the model can only call illegible is set aside for re-OCR instead of being paid for twice. A further 45 answers were kept after an OCR caveat was trimmed from the end.",
   },
   {
     heading: "The entity layer has never completed a pass",
@@ -102,6 +102,6 @@ export const PANCHANG_STATUS = {
 } as const;
 
 export const NOT_YET = [
-  "1 Sanskrit text (439 passages) is loaded into this site's corpus tables, and 1 is marked published (measured 2026-09-27). There is no reading page for it yet.",
-  "Translation fidelity has been sampled but not yet read. A blinded 86-passage draw from the most damaged work is waiting on a human reader, and 40 reviews exist in total against 18,631 translated passages.",
+  "Only 2 of the 66 works in the corpus can be read on this site so far (1,655 passages at /texts, measured 2026-10-07); the rest exist only in the working corpus.",
+  "Translation fidelity has been sampled but not yet read. A blinded 86-passage draw from the most damaged work is waiting on a human reader, and 40 reviews exist in total against 21,673 translated passages.",
 ] as const;

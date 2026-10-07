@@ -82,12 +82,12 @@ CONTAMINATION = {
 # -- STATUS_TRUTH_2026_09_27 ---------------------------------------------------
 # Measured in the Lovable Cloud SQL editor with 99_verify.sql, not by this
 # script (it has no database key, by house rule). Carried with its own date.
-SITE_CORPUS = {
-    "measuredOn": "2026-09-27",
-    "texts": 1,
-    "passages": 439,
-    "published": 1,
-    "readerPage": False,
+SITE_CORPUS = {   # SITE_LINE_2026_10_07: re-measured 2026-10-07 (99_verify.sql, /texts lists both)
+    "measuredOn": "2026-10-07",
+    "texts": 2,
+    "passages": 1655,
+    "published": 2,
+    "readerPage": True,
 }
 DEFAULT_TITLES = r"D:\Sanksrit Automatons\sanskrit-automatonv2\configs\doc_titles.json"
 DEFAULT_LEDGER = r"D:\Sanksrit Automatons\sanskrit-automatonv2\data\translate_outcomes.jsonl"
@@ -179,6 +179,12 @@ def _site_line(c: dict) -> str:
     if not s.get("texts"):
         return "The Sanskrit corpus is not yet published to this site. Tables exist; nothing is loaded."
     one = s["texts"] == 1
+    if s.get("readerPage") and c.get("works"):   # SITE_LINE_2026_10_07
+        # With /texts live, "loaded" is no longer what is not yet true; that the corpus can be
+        # read here is. Said as a share of the works, so the panel cannot read as finished.
+        return ("Only %d of the %d works in the corpus can be read on this site so far (%s passages "
+                "at /texts, measured %s); the rest exist only in the working corpus."
+                % (s["published"], c["works"], f"{s['passages']:,}", s["measuredOn"]))
     line = ("%d Sanskrit text%s (%s passages) %s loaded into this site's corpus tables, and %d "
             "%s marked published (measured %s)."
             % (s["texts"], "" if one else "s", f"{s['passages']:,}", "is" if one else "are",
