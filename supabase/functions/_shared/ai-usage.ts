@@ -19,7 +19,7 @@
  * `public.srangam_ai_usage`; if you add a column there, add it here too.
  */
 
-import { createClient, type SupabaseClient } from 'jsr:@supabase/supabase-js@2';
+import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 
 export interface AIUsageTelemetry {
   /** Name of the calling edge function, e.g. 'backfill-article-pins'. */
