@@ -1384,6 +1384,44 @@ export type Database = {
         }
         Relationships: []
       }
+      srangam_passage_vectors: {
+        Row: {
+          created_at: string
+          dim: number
+          embedding: unknown
+          model: string
+          passage_id: string
+          source_hash: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dim?: number
+          embedding: unknown
+          model: string
+          passage_id: string
+          source_hash: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dim?: number
+          embedding?: unknown
+          model?: string
+          passage_id?: string
+          source_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_passage_vectors_passage_id_fkey"
+            columns: ["passage_id"]
+            isOneToOne: true
+            referencedRelation: "srangam_text_passages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       srangam_purana_references: {
         Row: {
           adhyaya: string | null
@@ -1529,6 +1567,80 @@ export type Database = {
           validation_status?: string | null
         }
         Relationships: []
+      }
+      srangam_stories: {
+        Row: {
+          approved_at: string | null
+          audience: string
+          cites: Json
+          created_at: string
+          from_ref: string
+          id: string
+          image_url: string | null
+          notes: string | null
+          published: boolean
+          quote_ref: string | null
+          quote_sa: string | null
+          story_en: string
+          story_hi: string | null
+          story_key: number
+          text_id: string
+          title: string
+          title_hi: string | null
+          to_ref: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          audience?: string
+          cites?: Json
+          created_at?: string
+          from_ref: string
+          id?: string
+          image_url?: string | null
+          notes?: string | null
+          published?: boolean
+          quote_ref?: string | null
+          quote_sa?: string | null
+          story_en: string
+          story_hi?: string | null
+          story_key: number
+          text_id: string
+          title: string
+          title_hi?: string | null
+          to_ref: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          audience?: string
+          cites?: Json
+          created_at?: string
+          from_ref?: string
+          id?: string
+          image_url?: string | null
+          notes?: string | null
+          published?: boolean
+          quote_ref?: string | null
+          quote_sa?: string | null
+          story_en?: string
+          story_hi?: string | null
+          story_key?: number
+          text_id?: string
+          title?: string
+          title_hi?: string | null
+          to_ref?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "srangam_stories_text_id_fkey"
+            columns: ["text_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_texts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       srangam_tags: {
         Row: {
@@ -1885,6 +1997,19 @@ export type Database = {
           },
         ]
       }
+      srangam_cross_reference_stats: {
+        Row: {
+          avg_strength: number | null
+          distinct_types: number | null
+          max_strength: number | null
+          min_strength: number | null
+          null_strength: number | null
+          source_articles: number | null
+          target_articles: number | null
+          total: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       _cron_invoke_edge: {
@@ -2234,6 +2359,22 @@ export type Database = {
         }[]
       }
       longtransactionsenabled: { Args: never; Returns: boolean }
+      match_text_passages: {
+        Args: {
+          doc_codes?: string[]
+          match_count?: number
+          query_embedding: unknown
+        }
+        Returns: {
+          doc_code: string
+          idx: number
+          page_no: number
+          passage_id: string
+          similarity: number
+          translation: string
+          verse_ref: string
+        }[]
+      }
       populate_geometry_columns:
         | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }
         | { Args: { use_typmod?: boolean }; Returns: string }
@@ -2278,6 +2419,16 @@ export type Database = {
       srangam_increment_term_usage: {
         Args: { term_key: string }
         Returns: undefined
+      }
+      srangam_passages_to_embed: {
+        Args: { p_doc_code?: string; p_limit?: number }
+        Returns: {
+          content: string
+          doc_code: string
+          passage_id: string
+          source_hash: string
+          total_pending: number
+        }[]
       }
       srangam_search_articles_fulltext: {
         Args: { result_limit?: number; search_query: string }
