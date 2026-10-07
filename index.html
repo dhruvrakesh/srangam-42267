@@ -23,7 +23,18 @@
          Phase 1.2 (2026-07-12): points at the WebP variant (172 KB vs 2.7 MB PNG).
          type="image/webp" makes non-WebP browsers skip this preload and fall
          back to the <picture> PNG source at render time. -->
-    <link rel="preload" as="image" href="/images/hero_indian-ocean_aerial_21x9_v1.webp" type="image/webp" fetchpriority="high" />
+    <!-- LOAD_W8_2026_10_07: the hero is on the home page only, so only the home page preloads it (it was
+         172 KB at high priority on every route, ahead of the scripts). Same link as before. -->
+    <script>
+      (function () {
+        var p = location.pathname;
+        if (p !== '/' && p !== '/index.html') return;
+        var l = document.createElement('link');
+        l.rel = 'preload'; l.as = 'image'; l.type = 'image/webp'; l.href = '/images/hero_indian-ocean_aerial_21x9_v1.webp';
+        l.setAttribute('fetchpriority', 'high');
+        document.head.appendChild(l);
+      })();
+    </script>
 
     <!-- Fonts -->
 

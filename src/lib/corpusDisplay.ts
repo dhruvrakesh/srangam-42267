@@ -19,6 +19,19 @@ export function displayTranslation(t: string | null | undefined): string {
     .trim();
 }
 
+/**
+ * READER_MARKS_2026_10_07: the OCR writes an ornamental rule of the printed page as a line reading
+ * "<decorative line>". It is not text: the reader draws a short rule instead. Only lines that are
+ * exactly that marker are removed; everything else is returned as published.
+ */
+const DECORATIVE_LINE = /^\s*<decorative line>\s*$/i;
+
+export function splitDecoration(s: string | null | undefined): { text: string; rule: boolean } {
+  const lines = (s ?? '').split('\n');
+  const kept = lines.filter((l) => !DECORATIVE_LINE.test(l));
+  return { text: kept.join('\n').trim(), rule: kept.length !== lines.length };
+}
+
 /** "p12.3", with the edition's own verse reference when the source has one. */
 export function passageLabel(p: { page_no: number; idx: number; verse_ref?: string | null }): string {
   const base = `p${p.page_no}.${p.idx}`;

@@ -16,7 +16,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { loadPassages, loadTextByDocCode } from '@/lib/corpusTexts';
 import {
-  PASSAGES_PER_PAGE, displayTranslation, isLowQuality, pageFromQuery, passageLabel,
+  PASSAGES_PER_PAGE, displayTranslation, isLowQuality, pageFromQuery, passageLabel, splitDecoration,
 } from '@/lib/corpusDisplay';
 
 const nf = new Intl.NumberFormat('en-IN');
@@ -168,12 +168,16 @@ export default function TextReader() {
                       </span>
                     )}
                   </div>
+                  {/* READER_MARKS_2026_10_07: an ornamental rule of the page, drawn, not printed as text */}
+                  {(splitDecoration(p.sanskrit).rule || splitDecoration(p.iast).rule) && (
+                    <div aria-hidden="true" className="mb-3 h-px w-24 bg-border" />
+                  )}
                   <p lang="sa" className="font-devanagari text-lg leading-relaxed whitespace-pre-line text-foreground">
-                    {p.sanskrit}
+                    {splitDecoration(p.sanskrit).text}
                   </p>
-                  {p.iast && (
+                  {splitDecoration(p.iast).text && (
                     <p lang="sa-Latn" className="mt-2 italic text-sm leading-relaxed whitespace-pre-line text-muted-foreground">
-                      {p.iast}
+                      {splitDecoration(p.iast).text}
                     </p>
                   )}
                   <p lang="en" className="mt-3 font-serif leading-relaxed whitespace-pre-line text-foreground">

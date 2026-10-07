@@ -85,7 +85,8 @@ const DataHealth = lazy(() => import("./pages/admin/DataHealth"));
 const GeographyMedia = lazy(() => import("./pages/admin/GeographyMedia"));
 const CorpusCorrelations = lazy(() => import("./pages/admin/CorpusCorrelations"));
 const Auth = lazy(() => import("./pages/Auth"));
-import { AdminLayout } from "./components/admin/AdminLayout";
+// LOAD_W8_2026_10_07: admin only, so out of the entry bundle (with the sidebar it uses).
+const AdminLayout = lazy(() => import("./components/admin/AdminLayout").then((m) => ({ default: m.AdminLayout })));
 
 // Sources Pages
 const Edicts = lazy(() => import("./pages/sources/Edicts"));
