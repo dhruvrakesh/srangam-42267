@@ -75,3 +75,6 @@ verify_jwt = false
 
 [functions.embed-published-passages]
 verify_jwt = false
+
+[functions.search-texts]
+verify_jwt = false

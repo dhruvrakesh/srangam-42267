@@ -6,6 +6,7 @@
  * src/lib/corpusTexts.ts, which keeps "failed" distinct from "empty" and
  * bounds the passage query with .range().
  */
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -56,6 +57,19 @@ export default function TextReader() {
     staleTime: 5 * 60 * 1000,
   });
   const passages = passQ.data;
+
+  // SEARCH_TEXTS_C3A_2026_10_07: a link from search lands here with #p<page>-<idx>. The browser looks
+  // for that anchor before the passages exist (and :target never applies to a later element), so
+  // once they have arrived, scroll to it and mark it.
+  const [arrived, setArrived] = useState<string | null>(null);
+  useEffect(() => {
+    const h = window.location.hash;
+    if (!h || !passages || !passages.ok || !/^#p\d+-\d+$/.test(h)) return;
+    const el = document.getElementById(h.slice(1));
+    if (!el) return;
+    setArrived(h.slice(1));
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [passages]);
 
   const go = (p: number) => {
     setSearch(p > 1 ? { p: String(p) } : {});
@@ -143,7 +157,7 @@ export default function TextReader() {
           {passages?.ok && (
             <ol className="space-y-6" start={(page - 1) * PASSAGES_PER_PAGE + 1}>
               {passages.rows.map((p) => (
-                <li key={p.id} id={`p${p.page_no}-${p.idx}`} className="border-b border-border pb-6 last:border-b-0">
+                <li key={p.id} id={`p${p.page_no}-${p.idx}`} className={`border-b border-border pb-6 last:border-b-0 scroll-mt-24 target:rounded-md target:bg-amber-50/70 target:px-3 dark:target:bg-amber-950/30${arrived === `p${p.page_no}-${p.idx}` ? ' rounded-md bg-amber-50/70 px-3 dark:bg-amber-950/30' : ''}`}>
                   <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
                     <a href={`#p${p.page_no}-${p.idx}`} className="font-mono hover:text-foreground">
                       {passageLabel(p)}

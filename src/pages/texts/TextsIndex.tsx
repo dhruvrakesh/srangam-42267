@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { listPublishedTexts } from '@/lib/corpusTexts';
+import TextSearch from '@/components/texts/TextSearch';   // SEARCH_TEXTS_C3A_2026_10_07
 
 const nf = new Intl.NumberFormat('en-IN');
 
@@ -45,6 +46,8 @@ export default function TextsIndex() {
           Sanskrit is shown exactly as it was read from the page, damage included.
         </p>
       </header>
+
+      {r && r.ok && r.rows.length > 0 && <TextSearch />}
 
       {q.isLoading && (
         <div className="space-y-4" aria-busy="true">
