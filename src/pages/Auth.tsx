@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { safeNext } from "@/lib/safeNext";   // CORPUS_READER_C5_2026_10_08
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -13,18 +13,26 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { signIn, signUp, user } = useAuth();
-  const navigate = useNavigate();
+  const { signIn, signUp, user, isAdmin, roleChecked } = useAuth();   // AUTH_ROLE_2026_10_08
   // CORPUS_READER_C5_2026_10_08: ?next=/corpus... brings a reader back to the page they came from. Only a
-  // path on this site is followed; without it the destination is /admin/tags, as before.
+  // path on this site is followed; without it an admin goes to /admin/tags and anyone else to
+  // /corpus (AUTH_ROLE_2026_10_08).
   const [params] = useSearchParams();
   const next = safeNext(params.get("next"));
   const reader = !!next && next.startsWith("/corpus");
 
-  // Redirect if already logged in
+  // Redirect if already logged in. AUTH_ROLE_2026_10_08: only once the role is known, so that an
+  // account that is not an admin goes to the corpus, not to /admin and back here. <Navigate>
+  // is the rendered form of navigate(), which React does not want called during render.
   if (user) {
-    navigate(next ?? "/admin/tags");
-    return null;
+    if (!roleChecked) {
+      return (
+        <div className="min-h-screen flex items-center justify-center" role="status" aria-label="Signing in">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      );
+    }
+    return <Navigate to={next ?? (isAdmin ? "/admin/tags" : "/corpus")} replace />;
   }
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -33,7 +41,7 @@ export default function Auth() {
     
     try {
       await signIn(email, password);
-      navigate(next ?? "/admin/tags");
+      // AUTH_ROLE_2026_10_08: the redirect above takes over once the session and the role are known.
     } catch (error) {
       // Error is handled by AuthContext
     } finally {

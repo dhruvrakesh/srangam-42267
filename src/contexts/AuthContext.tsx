@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -7,6 +7,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   isAdmin: boolean;
+  /** AUTH_ROLE_2026_10_08: true once isAdmin is known for the signed-in user (always true signed out). */
+  roleChecked: boolean;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
@@ -19,6 +21,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  // AUTH_ROLE_2026_10_08: whose role isAdmin holds, and who is signed in now. Gates wait for
+  // roleChecked instead of reading a role that is still on its way; a late answer for a
+  // user who has meanwhile signed out is dropped.
+  const [roleFor, setRoleFor] = useState<string | null>(null);
+  const currentUid = useRef<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
@@ -30,7 +37,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       _role: "admin",
     });
     if (error) console.warn("has_role RPC failed", error);
+    if (currentUid.current !== userId) return;   // AUTH_ROLE_2026_10_08
     setIsAdmin(data === true);
+    setRoleFor(userId);
   };
 
   useEffect(() => {
@@ -39,6 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+        currentUid.current = session?.user?.id ?? null;   // AUTH_ROLE_2026_10_08
         
         if (session?.user) {
           // Defer admin check to avoid blocking auth state change
@@ -47,6 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }, 0);
         } else {
           setIsAdmin(false);
+          setRoleFor(null);   // AUTH_ROLE_2026_10_08
         }
         
         setIsLoading(false);
@@ -57,6 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      currentUid.current = session?.user?.id ?? null;   // AUTH_ROLE_2026_10_08
       
       if (session?.user) {
         checkAdminRole(session.user.id);
@@ -139,6 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         session,
         isAdmin,
+        roleChecked: !user || roleFor === user.id,   // AUTH_ROLE_2026_10_08
         isLoading,
         signIn,
         signUp,
