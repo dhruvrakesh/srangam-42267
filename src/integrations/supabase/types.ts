@@ -2195,6 +2195,18 @@ export type Database = {
           verse_ref: string
         }[]
       }
+      corpus_reader_outline: {
+        Args: { p_doc: string; p_per_page?: number }
+        Returns: {
+          idx: number
+          kind: string
+          label: string
+          last_page_no: number
+          ord: number
+          page_no: number
+          reader_page: number
+        }[]
+      }
       corpus_reader_page: {
         Args: { p_doc: string; p_limit?: number; p_offset?: number }
         Returns: {
