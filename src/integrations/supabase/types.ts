@@ -2166,6 +2166,80 @@ export type Database = {
       }
       corpus_keys: { Args: { p_group: string; p_table: string }; Returns: Json }
       corpus_manifest: { Args: { p_tables?: string[] }; Returns: Json }
+      corpus_reader_allowed: { Args: never; Returns: boolean }
+      corpus_reader_docs: {
+        Args: { p_doc?: string }
+        Returns: {
+          category: string
+          doc_code: string
+          english: number
+          hindi: number
+          passages: number
+          published: boolean
+          stories: number
+          synced_at: string
+          title: string
+          vectors: number
+        }[]
+      }
+      corpus_reader_match: {
+        Args: { doc_codes?: string[]; k?: number; query_embedding: unknown }
+        Returns: {
+          doc_code: string
+          idx: number
+          ord: number
+          page_no: number
+          similarity: number
+          snippet: string
+          title: string
+          verse_ref: string
+        }[]
+      }
+      corpus_reader_page: {
+        Args: { p_doc: string; p_limit?: number; p_offset?: number }
+        Returns: {
+          chapter: string
+          engine: string
+          hindi: string
+          iast: string
+          idx: number
+          ord: number
+          page_no: number
+          quality_score: number
+          sanskrit: string
+          text_type: string
+          translated_at: string
+          translation: string
+          translation_qa: number
+          verse_ref: string
+        }[]
+      }
+      corpus_reader_search: {
+        Args: { k?: number; p_doc?: string; q: string }
+        Returns: {
+          doc_code: string
+          idx: number
+          ord: number
+          page_no: number
+          score: number
+          snippet: string
+          title: string
+          verse_ref: string
+        }[]
+      }
+      corpus_reader_similar: {
+        Args: { k?: number; p_doc: string; p_idx: number; p_page: number }
+        Returns: {
+          doc_code: string
+          idx: number
+          ord: number
+          page_no: number
+          similarity: number
+          snippet: string
+          title: string
+          verse_ref: string
+        }[]
+      }
       corpus_retire: {
         Args: { p_group: string; p_keys: Json; p_run?: string; p_table: string }
         Returns: Json
