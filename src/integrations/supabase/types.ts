@@ -2160,6 +2160,20 @@ export type Database = {
           provider: string
         }[]
       }
+      corpus_ingest: {
+        Args: { p_rows: Json; p_run?: string; p_table: string }
+        Returns: Json
+      }
+      corpus_keys: { Args: { p_group: string; p_table: string }; Returns: Json }
+      corpus_manifest: { Args: { p_tables?: string[] }; Returns: Json }
+      corpus_retire: {
+        Args: { p_group: string; p_keys: Json; p_run?: string; p_table: string }
+        Returns: Json
+      }
+      corpus_run: {
+        Args: { p_finish?: boolean; p_info?: Json; p_run: string }
+        Returns: Json
+      }
       disablelongtransactions: { Args: never; Returns: string }
       dropgeometrycolumn:
         | {
