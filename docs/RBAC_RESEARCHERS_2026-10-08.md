@@ -3,10 +3,20 @@
 The site's roles, who may do what, and how a fellow researcher is invited to read the working
 corpus. The database decides everything. The pages only show what it allows.
 
-The SQL is in the automaton repository:
+The SQL is in the automaton repository. It is applied in the Lovable Cloud SQL editor, as S1-S4
+were: no file is added to `supabase/migrations` and no history row is written.
 
-- `docs/cloud/C7a_rbac_roles_2026-10-08.sql` (two enum values; run it alone, first);
-- `docs/cloud/C7_rbac_researchers_2026-10-08.sql` (everything else, in one transaction).
+- `docs/cloud/C7_checks_2026-10-08.sql`: read-only checks, one query per paste (P1-P7 before, V0 after C7a, V1-V7 after C7);
+- `docs/cloud/C7a_rbac_roles_2026-10-08.sql`: two enum values, pasted ALONE;
+- `docs/cloud/C7_rbac_researchers_2026-10-08.sql`: everything else, one transaction, in one paste.
+
+The order is P1-P7, C7a alone, V0, C7, V1-V7. The editor runs one paste as one transaction, and
+PostgreSQL will not read a new enum value in the transaction that added it (55P04). So nothing
+else may share C7a's paste, not even a `SELECT enum_range(...)`. A first attempt on 2026-10-08
+(21:14) did exactly that and was rolled back whole; C7's guard then refused to run. Nothing changed.
+
+Before C7 the site behaves exactly as before: `my_roles()` does not exist, the roles follow
+`has_role`, and the new pages say that C7 is not applied.
 
 ## The roles
 

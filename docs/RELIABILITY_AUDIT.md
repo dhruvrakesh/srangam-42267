@@ -1125,3 +1125,52 @@ The gate is forward-protective: any future row attached to a draft article will 
 
 ### Invariant 22 (Phase S.2)
 Public SELECT on every per-article child table (bibliography, evidence, chapters, metadata, cross_references, purana_references) MUST gate on parent `srangam_articles.status = 'published'`. Cross-reference-style tables with two article FKs MUST gate on **both** endpoints. Adding a new child table without this gate is a security regression.
+
+
+---
+
+## Phase X — Roles: a super admin and invited researchers (RBAC_RESEARCHERS_2026_10_08, RBAC_DOCS_2026_10_08, 2026-10-08)
+
+The SQL is in the automaton repository: `docs/cloud/C7a_rbac_roles_2026-10-08.sql`,
+`docs/cloud/C7_rbac_researchers_2026-10-08.sql`, and the checks in `docs/cloud/C7_checks_2026-10-08.sql`.
+It is applied through the Lovable Cloud SQL editor, as S1-S4 were: no file in supabase/migrations,
+no history row. What follows holds once C7 is applied. Before it, the site behaves as in Phase N
+(`my_roles()` is missing, roles follow `has_role`, the new pages say C7 is not applied).
+
+### X.1 — Roles
+- `app_role` gains `super_admin` and `researcher` (C7a, in its own paste: PostgreSQL will not use a new
+  enum value in the transaction that added it).
+- `super_admin` is held by one account, always alongside `admin`, so every `has_role(auth.uid(),'admin')`
+  policy and every `requireAdmin()` edge gate treats it exactly as before.
+- `researcher` reads the working corpus in the modes `signed_in` and `readers` (`corpus_reader_allowed()`),
+  and gains nothing else.
+
+### X.2 — Who writes roles
+- `"Only admins can manage roles"` (FOR ALL) is replaced by `"Only super admins can manage roles"`.
+  `"Admins can view all roles"` (SELECT) stays. No site code writes `user_roles`.
+- A trigger records every insert, update and delete on `user_roles` in `rbac.audit`, including changes
+  made in the SQL editor (with no actor).
+
+### X.3 — Invitations
+- `rbac.invites` (schema `rbac`, not exposed; RLS on, no policies, no grants) keeps only the SHA-256 of
+  each link token. One open invitation per email; a new one voids the old.
+- Accepting needs the signed-in account's email to equal the invited one and to be confirmed (email
+  verification is required, M.3), and the link to be open (not accepted, withdrawn or expired).
+
+### X.4 — RPCs (Invariant 15)
+- `anon`: `research_invite_peek` only (status, a masked email, the expiry; never the email itself).
+- `authenticated`: `my_roles` (the caller's own roles only, so no enumeration, M.2), `is_super_admin`,
+  `research_invite_accept`, and, each re-checking the caller for `super_admin`: `research_invite_create`,
+  `research_invites_list`, `research_invite_revoke`, `rbac_members_list`, `researcher_remove`,
+  `rbac_audit_list`, `corpus_access_mode`, `corpus_access_mode_set`.
+- All SECURITY DEFINER with `SET search_path = ''`.
+
+### Accepted (by design)
+- `rbac.invites` and `rbac.audit` have RLS enabled and no policies: they are read only through the
+  functions above, as the `corpus` schema is.
+
+### Invariants added (Phase X)
+23. Only `super_admin` writes `user_roles` from the site; the super admin also holds `admin`.
+24. Invitation tokens are stored only as SHA-256; a link works once, for one confirmed address, until it expires.
+25. The only RBAC function callable by `anon` is `research_invite_peek`.
+26. Every change to `user_roles` is recorded in `rbac.audit`.
