@@ -18,6 +18,7 @@ import {
   Database,
   HeartPulse,
   Map as MapIcon,
+  UserPlus,
 } from "lucide-react";
 import {
   Sidebar,
@@ -99,11 +100,18 @@ const adminNavItems = [
     url: "/admin/corpus-correlations",
     icon: Network,
   },
+  // RBAC_RESEARCHERS_2026_10_08: invitations and roles, for the super admin only.
+  {
+    title: "Researchers",
+    url: "/admin/researchers",
+    icon: UserPlus,
+    superOnly: true,
+  },
 ];
 
 export function AdminLayout() {
   const location = useLocation();
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, isAdmin, isSuperAdmin, signOut } = useAuth();   // RBAC_RESEARCHERS_2026_10_08
 
   return (
     <ErrorBoundary>
@@ -115,7 +123,7 @@ export function AdminLayout() {
                 <SidebarGroupLabel>Admin Panel</SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SidebarMenu>
-                    {adminNavItems.map((item) => {
+                    {adminNavItems.filter((item) => !item.superOnly || isSuperAdmin).map((item) => {
                       const isActive = location.pathname === item.url;
                       return (
                         <SidebarMenuItem key={item.title}>
@@ -142,20 +150,21 @@ export function AdminLayout() {
           <main className="flex-1 w-full">
             {/* Sidebar trigger visible on mobile/collapsed state */}
             <div className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
-              <div className="flex items-center gap-2">
+              <div className="flex min-w-0 items-center gap-2">
                 <SidebarTrigger className="mr-2" />
-                <h1 className="text-lg font-semibold text-foreground">
+                <h1 className="truncate text-base font-semibold text-foreground sm:text-lg">
                   Admin Dashboard
                 </h1>
               </div>
               
-              <div className="flex items-center gap-3">
+              {/* RBAC_RESEARCHERS_2026_10_08: the email and the button label give way on a phone. */}
+              <div className="flex shrink-0 items-center gap-2 sm:gap-3">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <User className="h-4 w-4" />
-                  <span className="truncate max-w-[150px]">{user?.email}</span>
+                  <User className="hidden h-4 w-4 sm:block" />
+                  <span className="hidden truncate max-w-[150px] sm:inline" title={user?.email ?? undefined}>{user?.email}</span>
                   {isAdmin && (
-                    <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-medium">
-                      Admin
+                    <span className="whitespace-nowrap px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-medium">
+                      {isSuperAdmin ? "Super admin" : "Admin"}
                     </span>
                   )}
                 </div>
@@ -164,9 +173,10 @@ export function AdminLayout() {
                   size="sm"
                   onClick={() => signOut()}
                   className="gap-2"
+                  aria-label="Sign Out"
                 >
                   <LogOut className="h-4 w-4" />
-                  Sign Out
+                  <span className="hidden sm:inline">Sign Out</span>
                 </Button>
               </div>
             </div>

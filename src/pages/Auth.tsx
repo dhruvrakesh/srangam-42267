@@ -19,7 +19,11 @@ export default function Auth() {
   // /corpus (AUTH_ROLE_2026_10_08).
   const [params] = useSearchParams();
   const next = safeNext(params.get("next"));
-  const reader = !!next && next.startsWith("/corpus");
+  // RBAC_RESEARCHERS_2026_10_08: an invited researcher comes here from /invite/<token>, and goes
+  // back there; ?tab=signup opens the sign-up form for someone who has no account yet.
+  const invite = !!next && next.startsWith("/invite/");
+  const reader = !!next && (next.startsWith("/corpus") || invite);
+  const startTab = params.get("tab") === "signup" ? "signup" : "login";
 
   // Redirect if already logged in. AUTH_ROLE_2026_10_08: only once the role is known, so that an
   // account that is not an admin goes to the corpus, not to /admin and back here. <Navigate>
@@ -54,7 +58,7 @@ export default function Auth() {
     setIsLoading(true);
     
     try {
-      await signUp(email, password);
+      await signUp(email, password, next ?? undefined);   // RBAC_RESEARCHERS_2026_10_08
       // After signup, switch to login tab
       setPassword("");
     } catch (error) {
@@ -70,11 +74,13 @@ export default function Auth() {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">{reader ? "Srangam" : "Srangam Admin"}</CardTitle>
           <CardDescription className="text-center">
-            {reader ? "Sign in to read the working corpus" : "Sign in to manage content"}
+            {invite
+              ? "Sign in, or create an account, with the email address your invitation was sent to"
+              : reader ? "Sign in to read the working corpus" : "Sign in to manage content"}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="login" className="w-full">
+          <Tabs defaultValue={startTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
@@ -87,7 +93,7 @@ export default function Auth() {
                   <Input
                     id="login-email"
                     type="email"
-                    placeholder="admin@example.com"
+                    placeholder={reader ? "you@example.com" : "admin@example.com"}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -119,7 +125,7 @@ export default function Auth() {
                   <Input
                     id="signup-email"
                     type="email"
-                    placeholder="admin@example.com"
+                    placeholder={reader ? "you@example.com" : "admin@example.com"}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required

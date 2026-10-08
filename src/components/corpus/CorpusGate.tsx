@@ -2,6 +2,8 @@
  * The working corpus is for signed-in readers - CORPUS_READER_C5_2026_10_08.
  * This only decides what to show while signed out; the database decides who may read
  * (corpus_reader_allowed()), and its refusal is shown by the pages themselves.
+ * RBAC_RESEARCHERS_2026_10_08: fellow researchers join by invitation (/invite/<token>), so the
+ * refusal says how to get in.
  */
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -17,7 +19,9 @@ export function CorpusRefused({ message }: { message?: string | null }) {
         <div>
           <p className="font-semibold">{message || 'The working corpus is open to signed-in readers only.'}</p>
           <p className="text-muted-foreground mt-1">
-            Your account is signed in but is not on the reader list. Ask the editor to add you.
+            Your account is signed in but is not on the reader list. The working corpus is open to
+            invited researchers: if you have an invitation link, open it while signed in with the
+            address it was sent to; otherwise ask the editor for one.
           </p>
         </div>
       </CardContent>
@@ -47,7 +51,7 @@ export default function CorpusGate({ children }: { children: ReactNode }) {
             <p className="text-muted-foreground leading-relaxed">
               Every text in the Srangam corpus, as it stands on the translation desk: the Sanskrit,
               the IAST, the English and the Hindi, before review and publication. It is open to
-              signed-in readers.
+              signed-in readers; fellow researchers join by invitation.
             </p>
             <Link to={`/auth?next=${next}`} className="inline-block font-medium text-burgundy hover:underline">
               Sign in to read it

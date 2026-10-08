@@ -74,6 +74,8 @@ const CorpusDoc = lazy(() => import("./pages/corpus/CorpusDoc"));
 // CORPUS_LIBRARY_C6_2026_10_08: the library's stories and names
 const CorpusStories = lazy(() => import("./pages/corpus/CorpusStories"));
 const CorpusNames = lazy(() => import("./pages/corpus/CorpusNames"));
+// RBAC_RESEARCHERS_2026_10_08: where an invited researcher lands
+const InviteAccept = lazy(() => import("./pages/InviteAccept"));
 const JyotishHoroscope = lazy(() => import("./pages/JyotishHoroscope"));
 
 // Admin Pages
@@ -90,6 +92,7 @@ const ContextManagement = lazy(() => import("./pages/admin/ContextManagement"));
 const DataHealth = lazy(() => import("./pages/admin/DataHealth"));
 const GeographyMedia = lazy(() => import("./pages/admin/GeographyMedia"));
 const CorpusCorrelations = lazy(() => import("./pages/admin/CorpusCorrelations"));
+const Researchers = lazy(() => import("./pages/admin/Researchers"));   // RBAC_RESEARCHERS_2026_10_08
 const Auth = lazy(() => import("./pages/Auth"));
 // LOAD_W8_2026_10_07: admin only, so out of the entry bundle (with the sidebar it uses).
 const AdminLayout = lazy(() => import("./components/admin/AdminLayout").then((m) => ({ default: m.AdminLayout })));
@@ -235,6 +238,8 @@ const App = () => (
 
                   {/* Auth Route */}
                   <Route path="/auth" element={<Auth />} />
+                  {/* RBAC_RESEARCHERS_2026_10_08: research invitations */}
+                  <Route path="/invite/:token" element={<InviteAccept />} />
                   
                   {/* Admin Routes with Layout - Protected */}
                   <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
@@ -251,6 +256,7 @@ const App = () => (
                     <Route path="geography-media" element={<GeographyMedia />} />
                     <Route path="corpus-correlations" element={<CorpusCorrelations />} />
                     <Route path="data-health" element={<DataHealth />} />
+                    <Route path="researchers" element={<Researchers />} />
                   </Route>
                   
                   <Route path="*" element={<NotFound />} />

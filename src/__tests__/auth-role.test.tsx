@@ -4,6 +4,9 @@
  * sent admins to /auth and back after each sign-in: the gate decided before has_role had answered.
  * The real AuthProvider, ProtectedRoute and Auth page, against a mocked supabase whose has_role
  * answer is held back until the test releases it.
+ * RBAC_RESEARCHERS_2026_10_08: AuthProvider also asks my_roles() (C7), at the same time. Here it
+ * answers at once as the database did before C7 (no such function), so every test below is the
+ * same as before; rbac-auth.test.tsx covers the roles themselves.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, render, screen, waitFor } from '@testing-library/react';
@@ -18,7 +21,7 @@ const h = vi.hoisted(() => ({
   listeners: [] as Listener[],
   pending: [] as Array<{ uid: string; resolve: (v: RoleAnswer) => void }>,
   answer: null as null | boolean,      // when set, has_role answers at once
-  rpcCalls: 0,
+  rpcCalls: 0,                         // has_role calls only
 }));
 
 vi.mock('@/integrations/supabase/client', () => ({
@@ -33,7 +36,10 @@ vi.mock('@/integrations/supabase/client', () => ({
       signUp: vi.fn(() => Promise.resolve({ error: null })),
       signOut: vi.fn(() => Promise.resolve({ error: null })),
     },
-    rpc: (_fn: string, args: { _user_id: string }) => {
+    rpc: (fn: string, args: { _user_id: string }) => {
+      if (fn === 'my_roles') {
+        return Promise.resolve({ data: null, error: { code: 'PGRST202', message: 'Could not find the function public.my_roles' } });
+      }
       h.rpcCalls += 1;
       if (h.answer !== null) return Promise.resolve({ data: h.answer, error: null });
       return new Promise((resolve) => h.pending.push({ uid: args._user_id, resolve }));
