@@ -10,7 +10,7 @@
  *   decides who may read: corpus_reader_allowed() / corpus_reader_match() (C5). This function holds
  *   no privilege of its own and never uses the service role.
  * - The question is embedded exactly as search-texts does (gemini-embedding-001, 1536 dimensions,
- *   RETRIEVAL_QUERY; ../search-texts/lib.ts). The mirror's vectors are the local ones cut to 1536
+ *   RETRIEVAL_QUERY; a verbatim copy of the search-texts helpers in ./embed.ts). The mirror's vectors are the local ones cut to 1536
  *   dimensions; on 2026-10-08 they matched the site's cloud-made vectors at cosine 1.0000 over
  *   1,216 passages (M4), so questions and passages share one space. About $0.000003 a question.
  * - No text is generated: the reader sees passages and references.
@@ -19,7 +19,8 @@
  */
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
-import { embedQuery, parseInput, RateLimiter, toHalfvecLiteral, VectorCache } from '../search-texts/lib.ts';
+// READER_NAV_2026_10_08: its own copy (embed.ts); Lovable deploys a function's own folder only.
+import { embedQuery, parseInput, RateLimiter, toHalfvecLiteral, VectorCache } from './embed.ts';
 import { isRefusal, readerToken, shapeHits } from './lib.ts';
 
 const corsHeaders = {

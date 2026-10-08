@@ -187,3 +187,25 @@ export function share(part: number, whole: number): string {
   if (!whole) return '-';
   return `${Math.round((100 * part) / whole)}%`;
 }
+
+// ---- READER_NAV_2026_10_08: the contents of one text (docs/cloud/C5b, corpus_reader_outline) ----
+
+export interface MirrorOutlineRow {
+  kind: 'page' | 'colophon';
+  ord: number;
+  reader_page: number;
+  page_no: number;
+  idx: number;
+  last_page_no: number | null;
+  label: string | null;
+}
+
+/** True when the database has no corpus_reader_outline yet (C5b not applied): the reader then
+ *  falls back to plain page numbers instead of calling it a failure. */
+export function outlineMissing(r: MirrorResult<unknown>): boolean {
+  return !r.ok && !r.refused && /corpus_reader_outline|PGRST202|could not find the function|does not exist/i.test(r.error ?? '');
+}
+
+export function loadMirrorOutline(docCode: string): Promise<MirrorResult<MirrorOutlineRow>> {
+  return rpc<MirrorOutlineRow>('corpus_reader_outline', { p_doc: docCode, p_per_page: PASSAGES_PER_PAGE });
+}

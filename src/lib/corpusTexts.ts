@@ -128,3 +128,45 @@ export async function loadPassages(
   const rows = (res?.data ?? []) as CorpusPassage[];
   return okRows<CorpusPassage>(rows, res?.count ?? 0);
 }
+// ---- READER_NAV_2026_10_08: the contents of a published text -----------------------------------
+
+export interface PassageKey {
+  page_no: number;
+  idx: number;
+}
+
+/** At most this many keys are read for a contents list (published texts hold about 1,200). */
+export const MAX_KEYS = 5000;
+
+/** PostgREST returns at most 1,000 rows a request on Supabase, whatever the range asks for. */
+const KEYS_CHUNK = 1000;
+
+/**
+ * Every passage's (page_no, idx) of one published text, in reading order: two small integers a
+ * row, read only when the reader opens the contents, 1,000 at a time (each request bounded with
+ * .range(), the query ceiling).
+ */
+export async function loadPassageKeys(textId: string | undefined, total: number): Promise<Loaded<PassageKey>> {
+  if (!textId) return okRows<PassageKey>([], 0);
+  const n = Math.max(1, Math.min(Math.trunc(total) || 1, MAX_KEYS));
+  const sb = supabase as any;
+  const rows: PassageKey[] = [];
+  for (let from = 0; from < n; from += KEYS_CHUNK) {
+    const to = Math.min(from + KEYS_CHUNK, n) - 1;
+    const res = await withTimeout(
+      sb.from('srangam_text_passages')
+        .select('page_no, idx')
+        .eq('text_id', textId)
+        .order('page_no', { ascending: true })
+        .order('idx', { ascending: true })
+        .range(from, to),
+      'loadPassageKeys',
+    );
+    if (res && res.__timeout) return failRows<PassageKey>(res.__timeout);
+    if (res && res.error) return failRows<PassageKey>(res.error.message ?? String(res.error));
+    const got = (res?.data ?? []) as PassageKey[];
+    rows.push(...got);
+    if (got.length < to - from + 1) break;   // the text ended early
+  }
+  return okRows<PassageKey>(rows, rows.length);
+}

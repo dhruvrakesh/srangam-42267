@@ -17,7 +17,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import CorpusGate, { CorpusRefused } from '@/components/corpus/CorpusGate';
-import { passageLabel } from '@/lib/corpusDisplay';
+import { displayTitle, passageLabel } from '@/lib/corpusDisplay';   // READER_NAV_2026_10_08: displayTitle
 import {
   listMirrorDocs, MAX_QUERY, MIN_WORDS, mirrorHref, type MirrorHit, type MirrorResult,
   searchMirrorMeaning, searchMirrorWords, share, snippetParts,
@@ -51,7 +51,7 @@ function Hits({ r }: { r: MirrorResult<MirrorHit> }) {
       {r.rows.map((h) => (
         <li key={`${h.doc_code}-${h.page_no}-${h.idx}`} className="border-b border-border pb-4 last:border-b-0">
           <div className="flex flex-wrap items-baseline gap-x-2 text-xs text-muted-foreground">
-            <span className="font-serif text-sm text-foreground">{h.title}</span>
+            <span className="font-serif text-sm text-foreground">{displayTitle(h.title, h.doc_code)}</span>
             <span className="font-mono">{passageLabel(h)}</span>
             {typeof h.similarity === 'number' && <span>meaning match {Math.round(h.similarity * 100)}%</span>}
           </div>
@@ -190,7 +190,7 @@ function CorpusHomeBody() {
                   <CardContent className="pt-4 pb-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                     <div className="min-w-0 flex-1">
                       <Link to={`/corpus/${encodeURIComponent(d.doc_code)}`} className="font-serif text-lg text-foreground hover:text-burgundy">
-                        {d.title}
+                        {displayTitle(d.title, d.doc_code)}
                       </Link>
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                         {d.category && <Badge variant="secondary">{d.category}</Badge>}
