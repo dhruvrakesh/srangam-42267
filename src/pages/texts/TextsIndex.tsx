@@ -45,6 +45,12 @@ export default function TextsIndex() {
           AI assistance. Each text is published only after an automated publication check; the
           Sanskrit is shown exactly as it was read from the page, damage included.
         </p>
+        {/* CORPUS_READER_C5_2026_10_08 */}
+        <p className="mt-2 text-sm text-muted-foreground">
+          Signed-in readers can also explore{" "}
+          <Link to="/corpus" className="text-burgundy hover:underline">the whole working corpus</Link>,
+          every text on the translation desk before publication.
+        </p>
       </header>
 
       {r && r.ok && r.rows.length > 0 && <TextSearch />}

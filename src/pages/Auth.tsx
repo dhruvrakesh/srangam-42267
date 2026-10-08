@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { safeNext } from "@/lib/safeNext";   // CORPUS_READER_C5_2026_10_08
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,10 +15,15 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
+  // CORPUS_READER_C5_2026_10_08: ?next=/corpus... brings a reader back to the page they came from. Only a
+  // path on this site is followed; without it the destination is /admin/tags, as before.
+  const [params] = useSearchParams();
+  const next = safeNext(params.get("next"));
+  const reader = !!next && next.startsWith("/corpus");
 
   // Redirect if already logged in
   if (user) {
-    navigate("/admin/tags");
+    navigate(next ?? "/admin/tags");
     return null;
   }
 
@@ -27,7 +33,7 @@ export default function Auth() {
     
     try {
       await signIn(email, password);
-      navigate("/admin/tags");
+      navigate(next ?? "/admin/tags");
     } catch (error) {
       // Error is handled by AuthContext
     } finally {
@@ -54,9 +60,9 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Srangam Admin</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">{reader ? "Srangam" : "Srangam Admin"}</CardTitle>
           <CardDescription className="text-center">
-            Sign in to manage content
+            {reader ? "Sign in to read the working corpus" : "Sign in to manage content"}
           </CardDescription>
         </CardHeader>
         <CardContent>

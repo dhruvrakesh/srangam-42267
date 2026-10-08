@@ -68,6 +68,9 @@ const SanskritTranslator = lazy(() => import("./pages/SanskritTranslator"));
 // TEXTS_READER_2026_09_27 - the published Sanskrit corpus (srangam_texts)
 const TextsIndex = lazy(() => import("./pages/texts/TextsIndex"));
 const TextReader = lazy(() => import("./pages/texts/TextReader"));
+// CORPUS_READER_C5_2026_10_08: the working corpus for signed-in readers
+const CorpusHome = lazy(() => import("./pages/corpus/CorpusHome"));
+const CorpusDoc = lazy(() => import("./pages/corpus/CorpusDoc"));
 const JyotishHoroscope = lazy(() => import("./pages/JyotishHoroscope"));
 
 // Admin Pages
@@ -154,6 +157,9 @@ const App = () => (
               {/* TEXTS_READER_2026_09_27 */}
               <Route path="/texts" element={<TextsIndex />} />
               <Route path="/texts/:docCode" element={<TextReader />} />
+              {/* CORPUS_READER_C5_2026_10_08 */}
+              <Route path="/corpus" element={<CorpusHome />} />
+              <Route path="/corpus/:docCode" element={<CorpusDoc />} />
               
               {/* Sources Routes */}
               <Route path="/sources" element={<SourcesIndex />} />
