@@ -53,7 +53,7 @@ function Toggle({ label, aria, checked, onChange, title }: {
 }
 
 export default function ReaderToolbar({
-  page, lastPage, perPage, total, go, prefs, setPrefs, hindi = false, noise = false, onContents, children,
+  page, lastPage, perPage, total, go, prefs, setPrefs, hindi = false, noise = false, names = false, onContents, children,
 }: {
   page: number;
   lastPage: number;
@@ -66,6 +66,8 @@ export default function ReaderToolbar({
   hindi?: boolean;
   /** Offer the scanner-noise toggle (the text has passages typed as noise). */
   noise?: boolean;
+  /** CORPUS_LIBRARY_C6_2026_10_08: offer the names toggle (the corpus reader shows name chips). */
+  names?: boolean;
   onContents?: () => void;
   /** A find box, shown at the end of the bar. */
   children?: ReactNode;
@@ -124,6 +126,15 @@ export default function ReaderToolbar({
             title="On wide screens, the Sanskrit on the left and the translation on the right"
           />
         </span>
+        {names && (
+          <Toggle
+            label="Names"
+            aria="Show the names in each passage"
+            checked={prefs.names}
+            onChange={(v) => setPrefs({ names: v })}
+            title="The people, deities and places recognised in each passage"
+          />
+        )}
         {noise && (
           <Toggle
             label="Scanner noise"

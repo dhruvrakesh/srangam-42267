@@ -1,5 +1,8 @@
 /**
  * /corpus - the working corpus for signed-in readers. CORPUS_READER_C5_2026_10_08.
+ * CORPUS_LIBRARY_C6_2026_10_08: the library. Every text on its shelf (the desk's own shelves),
+ * with its titles, series, how far it is translated, its pipeline stages (each with the desk's own
+ * reason, as a tooltip), its stories, and a filter and a sort; the sections Stories and Names.
  *
  * Every document in the private mirror (not only the published ones), with its counts, and two
  * searches over all of it: by words (database full-text search, English stemmed and IAST) and by
@@ -7,11 +10,12 @@
  * database functions check the reader; a refusal is shown as a refusal, a failure as a failure.
  */
 import { FormEvent, useMemo, useState } from 'react';
+import CorpusNav from '@/components/corpus/CorpusNav';
+import LibraryShelves from '@/components/corpus/LibraryShelves';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { AlertTriangle, BookOpen, Info, Layers, Loader2, Search } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { AlertTriangle, Info, Layers, Loader2, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -133,7 +137,8 @@ function CorpusHomeBody() {
   }, [r]);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <CorpusNav />
       <header className="mb-6">
         <h1 className="font-serif text-3xl font-semibold text-foreground flex items-center gap-3">
           <Layers className="w-7 h-7 text-burgundy" aria-hidden="true" />
@@ -183,39 +188,7 @@ function CorpusHomeBody() {
             {nf.format(totals.english)} in English ({share(totals.english, totals.passages)}) &middot;{' '}
             {nf.format(totals.hindi)} in Hindi &middot; {nf.format(totals.vectors)} searchable by meaning
           </p>
-          <ul className="space-y-3">
-            {r.rows.map((d) => (
-              <li key={d.doc_code}>
-                <Card className="hover:border-burgundy/50 transition-colors">
-                  <CardContent className="pt-4 pb-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                    <div className="min-w-0 flex-1">
-                      <Link to={`/corpus/${encodeURIComponent(d.doc_code)}`} className="font-serif text-lg text-foreground hover:text-burgundy">
-                        {displayTitle(d.title, d.doc_code)}
-                      </Link>
-                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                        {d.category && <Badge variant="secondary">{d.category}</Badge>}
-                        <span>{nf.format(d.passages)} passages</span>
-                        <span>&middot; English {share(d.english, d.passages)}</span>
-                        {d.hindi > 0 && <span>&middot; Hindi {nf.format(d.hindi)}</span>}
-                        {d.stories > 0 && <span>&middot; {nf.format(d.stories)} stories</span>}
-                        {d.published && (
-                          <Link to={`/texts/${encodeURIComponent(d.doc_code)}`} className="text-burgundy hover:underline">
-                            &middot; published
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-                    <Link
-                      to={`/corpus/${encodeURIComponent(d.doc_code)}`}
-                      className="inline-flex items-center text-sm text-burgundy hover:underline shrink-0"
-                    >
-                      <BookOpen className="w-4 h-4 mr-1" aria-hidden="true" /> Read
-                    </Link>
-                  </CardContent>
-                </Card>
-              </li>
-            ))}
-          </ul>
+          <LibraryShelves docs={r.rows} />
         </>
       )}
     </div>

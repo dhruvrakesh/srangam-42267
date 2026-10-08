@@ -3,6 +3,9 @@
  * READER_NAV_2026_10_08: a reading bar that stays in view (pages, contents, what to show, find in
  * this text), the reference in the margin, the Sanskrit beside the translations on wide screens,
  * misread lines and scanner noise marked rather than shown as text, and the next page fetched ahead.
+ * CORPUS_LIBRARY_C6_2026_10_08: the names in each passage as chips (C6 corpus_reader_page_names),
+ * the library's sections at the top, and ?at=<page>.<passage> links (from stories and citations)
+ * that land on the right page.
  *
  * 50 passages to a page, ?p=3 in the URL, #p<page>-<idx> anchors (links from search land on them).
  * For each passage, the passages nearest in meaning across the whole corpus (stored vectors; no AI call).
@@ -11,12 +14,14 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, ArrowLeft, Info, Loader2, Search, Sparkles, X } from 'lucide-react';
+import { AlertTriangle, Info, Loader2, Search, Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import CorpusGate, { CorpusRefused } from '@/components/corpus/CorpusGate';
+import CorpusNav from '@/components/corpus/CorpusNav';
+import PassageNames from '@/components/reader/PassageNames';
 import PassageBlock from '@/components/reader/PassageBlock';
 import ReaderToolbar, { FootPager } from '@/components/reader/ReaderToolbar';
 import ReaderContents, { type ContentsState } from '@/components/reader/ReaderContents';
@@ -29,6 +34,7 @@ import {
   searchMirrorWords, similarPassages, snippetParts, type MirrorOutlineRow, type MirrorPassage, type MirrorResult,
 } from '@/lib/corpusMirror';
 import { useReaderPrefs } from '@/lib/readerPrefs';
+import { loadPageNames, namesByPassage, parseAt, type PageName } from '@/lib/corpusLibrary';
 
 const nf = new Intl.NumberFormat('en-IN');
 const STALE = 2 * 60 * 1000;
@@ -174,14 +180,48 @@ function CorpusDocBody() {
   const page = pageFromQuery(search.get('p'), total);
   const lastPage = Math.max(1, Math.ceil(total / PASSAGES_PER_PAGE));
   const title = doc ? displayTitle(doc.title, doc.doc_code) : '';
+  const atRaw = search.get('at');
+  const at = parseAt(atRaw);
 
   const passQ = useQuery({
     queryKey: ['mirror', 'page', docCode, page],
     queryFn: () => loadMirrorPage(docCode, page),
-    enabled: !!doc,
+    enabled: !!doc && !at,
     staleTime: STALE,
   });
   const passages = passQ.data;
+
+  // CORPUS_LIBRARY_C6_2026_10_08: ?at=18.2 (a story's citation, a margin reference) -> the reader
+  // page that holds scan page 18 (from the contents, C5b), at passage 18.2.
+  useEffect(() => {
+    if (!at || !doc) return undefined;
+    let gone = false;
+    void (async () => {
+      const r = await qc.fetchQuery({
+        queryKey: ['mirror', 'outline', docCode],
+        queryFn: () => loadMirrorOutline(docCode),
+        staleTime: 10 * 60 * 1000,
+      });
+      if (gone) return;
+      const rp = r.ok ? readerPageForScan(toStarts(r.rows), at.page) : null;
+      navigate({ search: rp && rp > 1 ? `?p=${rp}` : '', hash: `#p${at.page}-${at.idx}` }, { replace: true });
+    })();
+    return () => { gone = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [atRaw, doc, docCode]);
+
+  // The names in this page's passages, when the reader wants them.
+  const namesQ = useQuery({
+    queryKey: ['mirror', 'pagenames', docCode, page],
+    queryFn: () => loadPageNames(docCode, page),
+    enabled: !!doc && !at && prefs.names && !!passages?.ok,
+    staleTime: STALE,
+  });
+  const names = useMemo(
+    () => (namesQ.data?.ok ? namesByPassage(namesQ.data.rows) : new Map<string, PageName[]>()),
+    [namesQ.data],
+  );
+  const namesOffered = !(namesQ.data && namesQ.data.missing);
 
   // The next page is fetched while this one is read, so "Next" is instant.
   useEffect(() => {
@@ -272,9 +312,7 @@ function CorpusDocBody() {
       <Helmet>
         <title>{doc ? `${title} | Working Corpus | Srangam` : 'Working Corpus | Srangam'}</title>
       </Helmet>
-      <Link to="/corpus" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
-        <ArrowLeft className="w-4 h-4 mr-1" aria-hidden="true" /> The working corpus
-      </Link>
+      <CorpusNav />
 
       {docQ.isLoading && <Skeleton className="h-24 w-full" />}
       {docQ.data && !docQ.data.ok && <Failure what="This text" r={docQ.data} />}
@@ -309,7 +347,7 @@ function CorpusDocBody() {
 
           <ReaderToolbar
             page={page} lastPage={lastPage} perPage={PASSAGES_PER_PAGE} total={total} go={go}
-            prefs={prefs} setPrefs={setPrefs} hindi={hasHindi} noise={anyNoise}
+            prefs={prefs} setPrefs={setPrefs} hindi={hasHindi} noise={anyNoise} names={namesOffered}
             onContents={() => { setWantOutline(true); setContentsOpen(true); }}
           >
             <FindInText docCode={docCode} />
@@ -332,15 +370,17 @@ function CorpusDocBody() {
               {passages.rows.map((p) => {
                 const id = `p${p.page_no}-${p.idx}`;
                 const hasEn = !!displayTranslation(p.translation);
+                const here = prefs.names ? names.get(id) : undefined;
                 return (
                   <PassageBlock
                     key={id}
                     p={p}
                     prefs={prefs}
                     highlighted={arrived === id}
-                    extra={hasEn ? (
+                    extra={hasEn || here ? (
                       <>
-                        <button
+                        {here && <PassageNames names={here} />}
+                        {hasEn && <button
                           type="button"
                           onClick={() => setOpen(open === id ? null : id)}
                           aria-expanded={open === id}
@@ -349,7 +389,7 @@ function CorpusDocBody() {
                         >
                           <Sparkles className="w-3 h-3 mr-1" aria-hidden="true" />
                           {open === id ? 'Hide similar passages' : 'Similar passages in the corpus'}
-                        </button>
+                        </button>}
                         {open === id && <div className="basis-full"><Similar docCode={docCode} p={p} /></div>}
                       </>
                     ) : null}

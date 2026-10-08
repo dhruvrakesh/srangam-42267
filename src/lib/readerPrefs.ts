@@ -14,9 +14,11 @@ export interface ReaderPrefs {
   hindi: boolean;
   /** Show passages the automaton typed as scanner noise (folded away by default). */
   noise: boolean;
+  /** CORPUS_LIBRARY_C6_2026_10_08: the names recognised in each passage, as chips (corpus reader). */
+  names: boolean;
 }
 
-export const DEFAULT_PREFS: ReaderPrefs = { layout: 'side', iast: true, english: true, hindi: true, noise: false };
+export const DEFAULT_PREFS: ReaderPrefs = { layout: 'side', iast: true, english: true, hindi: true, noise: false, names: true };
 
 const KEY = 'srangam.reader.v1';
 
@@ -30,6 +32,7 @@ export function parsePrefs(raw: string | null): ReaderPrefs {
       english: typeof o.english === 'boolean' ? o.english : DEFAULT_PREFS.english,
       hindi: typeof o.hindi === 'boolean' ? o.hindi : DEFAULT_PREFS.hindi,
       noise: typeof o.noise === 'boolean' ? o.noise : DEFAULT_PREFS.noise,
+      names: typeof o.names === 'boolean' ? o.names : DEFAULT_PREFS.names,
     };
   } catch {
     return { ...DEFAULT_PREFS };

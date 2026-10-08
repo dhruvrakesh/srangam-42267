@@ -209,3 +209,18 @@ export function outlineMissing(r: MirrorResult<unknown>): boolean {
 export function loadMirrorOutline(docCode: string): Promise<MirrorResult<MirrorOutlineRow>> {
   return rpc<MirrorOutlineRow>('corpus_reader_outline', { p_doc: docCode, p_per_page: PASSAGES_PER_PAGE });
 }
+
+// ---- CORPUS_LIBRARY_C6_2026_10_08: shared by the library pages (src/lib/corpusLibrary.ts) ----
+
+/** Call one of the reader functions with the same contract as everything above. */
+export function callMirror<T>(fn: string, args: Record<string, unknown>): Promise<MirrorResult<T>> {
+  return rpc<T>(fn, args);
+}
+
+/** True when the database has no such function yet (its SQL is not applied): pages then fall back
+ *  quietly instead of calling it a failure. */
+export function functionMissing(r: MirrorResult<unknown>, fn: string): boolean {
+  if (r.ok || r.refused) return false;
+  const e = r.error ?? '';
+  return e.includes(fn) && /PGRST202|could not find the function|does not exist|schema cache/i.test(e);
+}

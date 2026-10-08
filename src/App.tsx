@@ -71,6 +71,9 @@ const TextReader = lazy(() => import("./pages/texts/TextReader"));
 // CORPUS_READER_C5_2026_10_08: the working corpus for signed-in readers
 const CorpusHome = lazy(() => import("./pages/corpus/CorpusHome"));
 const CorpusDoc = lazy(() => import("./pages/corpus/CorpusDoc"));
+// CORPUS_LIBRARY_C6_2026_10_08: the library's stories and names
+const CorpusStories = lazy(() => import("./pages/corpus/CorpusStories"));
+const CorpusNames = lazy(() => import("./pages/corpus/CorpusNames"));
 const JyotishHoroscope = lazy(() => import("./pages/JyotishHoroscope"));
 
 // Admin Pages
@@ -159,6 +162,11 @@ const App = () => (
               <Route path="/texts/:docCode" element={<TextReader />} />
               {/* CORPUS_READER_C5_2026_10_08 */}
               <Route path="/corpus" element={<CorpusHome />} />
+              {/* CORPUS_LIBRARY_C6_2026_10_08 */}
+              <Route path="/corpus/stories" element={<CorpusStories />} />
+              <Route path="/corpus/stories/:docCode/:storyId" element={<CorpusStories />} />
+              <Route path="/corpus/names" element={<CorpusNames />} />
+              <Route path="/corpus/names/:canonical" element={<CorpusNames />} />
               <Route path="/corpus/:docCode" element={<CorpusDoc />} />
               
               {/* Sources Routes */}
