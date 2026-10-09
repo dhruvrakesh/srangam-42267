@@ -2160,12 +2160,31 @@ export type Database = {
           provider: string
         }[]
       }
+      corpus_access_mode: { Args: never; Returns: string }
+      corpus_access_mode_set: { Args: { p_mode: string }; Returns: string }
       corpus_ingest: {
         Args: { p_rows: Json; p_run?: string; p_table: string }
         Returns: Json
       }
       corpus_keys: { Args: { p_group: string; p_table: string }; Returns: Json }
       corpus_manifest: { Args: { p_tables?: string[] }; Returns: Json }
+      corpus_media_config_get: { Args: { p_key: string }; Returns: string }
+      corpus_media_config_set: {
+        Args: { p_key: string; p_value: string }
+        Returns: string
+      }
+      corpus_media_file_get: {
+        Args: { p_rendition: string; p_sha: string }
+        Returns: Json
+      }
+      corpus_media_file_put: { Args: { p_row: Json }; Returns: boolean }
+      corpus_media_retire: {
+        Args: { p_media: string[]; p_novels: number[] }
+        Returns: Json
+      }
+      corpus_media_state: { Args: never; Returns: Json }
+      corpus_media_upsert: { Args: { p_rows: Json }; Returns: number }
+      corpus_novels_upsert: { Args: { p_rows: Json }; Returns: number }
       corpus_reader_allowed: { Args: never; Returns: boolean }
       corpus_reader_docs: {
         Args: { p_doc?: string }
@@ -2193,6 +2212,121 @@ export type Database = {
           snippet: string
           title: string
           verse_ref: string
+        }[]
+      }
+      corpus_reader_media: {
+        Args: {
+          k?: number
+          p_doc?: string
+          p_offset?: number
+          p_story?: number
+        }
+        Returns: {
+          anchor_idx: number
+          anchor_page: number
+          anchor_verse_ref: string
+          approved_at_local: string
+          caption_en: string
+          caption_hi: string
+          context_note: string
+          doc_code: string
+          doc_title: string
+          has_display: boolean
+          has_thumb: boolean
+          height: number
+          kind: string
+          license: string
+          media_key: string
+          model: string
+          sha256: string
+          status: string
+          story_id: number
+          title: string
+          total: number
+          width: number
+        }[]
+      }
+      corpus_reader_media_file: {
+        Args: { p_rendition: string; p_sha: string }
+        Returns: {
+          bytes: number
+          file_id: string
+          mime: string
+          storage: string
+        }[]
+      }
+      corpus_reader_name: {
+        Args: { k?: number; p_canonical: string; p_offset?: number }
+        Returns: {
+          doc_code: string
+          idx: number
+          ord: number
+          page_no: number
+          snippet: string
+          surface: string
+          title: string
+          total: number
+          verse_ref: string
+        }[]
+      }
+      corpus_reader_names: {
+        Args: {
+          k?: number
+          p_exact?: boolean
+          p_kind?: string
+          p_offset?: number
+          q?: string
+        }
+        Returns: {
+          canonical: string
+          kind: string
+          mentions: number
+          notes: string
+          texts: number
+          total: number
+          variants: string[]
+        }[]
+      }
+      corpus_reader_novel: {
+        Args: { p_id: number }
+        Returns: {
+          approved_at_local: string
+          aspect: string
+          audience: string
+          cover_seq: number
+          doc_code: string
+          doc_title: string
+          image_model: string
+          media: Json
+          model: string
+          novel_id: number
+          pages: number
+          plan: Json
+          status: string
+          story_id: number
+          story_title: string
+          title: string
+          title_hi: string
+          verify: Json
+        }[]
+      }
+      corpus_reader_novels: {
+        Args: { p_doc?: string }
+        Returns: {
+          approved_at_local: string
+          audience: string
+          cover_has_thumb: boolean
+          cover_sha: string
+          doc_code: string
+          doc_title: string
+          novel_id: number
+          pages: number
+          status: string
+          story_id: number
+          story_title: string
+          title: string
+          title_hi: string
+          updated_at_local: string
         }[]
       }
       corpus_reader_outline: {
@@ -2226,6 +2360,27 @@ export type Database = {
           verse_ref: string
         }[]
       }
+      corpus_reader_page_names: {
+        Args: { p_doc: string; p_limit?: number; p_offset?: number }
+        Returns: {
+          canonical: string
+          idx: number
+          kind: string
+          notes: string
+          page_no: number
+          surface: string
+        }[]
+      }
+      corpus_reader_progress: {
+        Args: never
+        Returns: {
+          doc_code: string
+          reason: string
+          stage: string
+          status: string
+          updated_at_local: string
+        }[]
+      }
       corpus_reader_search: {
         Args: { k?: number; p_doc?: string; q: string }
         Returns: {
@@ -2250,6 +2405,32 @@ export type Database = {
           snippet: string
           title: string
           verse_ref: string
+        }[]
+      }
+      corpus_reader_stories: {
+        Args: { p_doc?: string; p_full?: boolean }
+        Returns: {
+          approved_at_local: string
+          cites: string
+          doc_code: string
+          doc_title: string
+          from_idx: number
+          from_ord: number
+          from_page: number
+          model: string
+          quote_ref: string
+          quote_sa: string
+          status: string
+          story_en: string
+          story_hi: string
+          story_id: number
+          title: string
+          title_hi: string
+          to_idx: number
+          to_page: number
+          updated_at_local: string
+          verify: string
+          why: string
         }[]
       }
       corpus_retire: {
@@ -2458,6 +2639,7 @@ export type Database = {
           term: string
         }[]
       }
+      is_super_admin: { Args: never; Returns: boolean }
       longtransactionsenabled: { Args: never; Returns: boolean }
       match_text_passages: {
         Args: {
@@ -2475,6 +2657,7 @@ export type Database = {
           verse_ref: string
         }[]
       }
+      my_roles: { Args: never; Returns: string[] }
       populate_geometry_columns:
         | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }
         | { Args: { use_typmod?: boolean }; Returns: string }
@@ -2515,7 +2698,67 @@ export type Database = {
       }
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
+      rbac_audit_list: {
+        Args: { k?: number }
+        Returns: {
+          action: string
+          actor_email: string
+          at: string
+          detail: Json
+          target_email: string
+        }[]
+      }
+      rbac_members_list: {
+        Args: never
+        Returns: {
+          email: string
+          invited_by_email: string
+          last_sign_in_at: string
+          on_reader_list: boolean
+          roles: string[]
+          since: string
+          user_id: string
+        }[]
+      }
       reconcile_stuck_admin_jobs: { Args: never; Returns: number }
+      research_invite_accept: { Args: { p_token: string }; Returns: string }
+      research_invite_create: {
+        Args: { p_days?: number; p_email: string; p_note?: string }
+        Returns: {
+          email: string
+          expires_at: string
+          invite_id: string
+          reissued: boolean
+          token: string
+        }[]
+      }
+      research_invite_peek: {
+        Args: { p_token: string }
+        Returns: {
+          email_hint: string
+          expires_at: string
+          for_you: boolean
+          role: string
+          status: string
+        }[]
+      }
+      research_invite_revoke: { Args: { p_id: string }; Returns: boolean }
+      research_invites_list: {
+        Args: { k?: number }
+        Returns: {
+          accepted_at: string
+          accepted_by_email: string
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by_email: string
+          note: string
+          revoked_at: string
+          status: string
+        }[]
+      }
+      researcher_remove: { Args: { p_user: string }; Returns: boolean }
       srangam_increment_term_usage: {
         Args: { term_key: string }
         Returns: undefined
@@ -3153,7 +3396,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user"
+      app_role: "admin" | "moderator" | "user" | "super_admin" | "researcher"
     }
     CompositeTypes: {
       geometry_dump: {
@@ -3289,7 +3532,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user"],
+      app_role: ["admin", "moderator", "user", "super_admin", "researcher"],
     },
   },
 } as const
