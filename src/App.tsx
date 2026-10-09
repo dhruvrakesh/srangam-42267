@@ -74,6 +74,9 @@ const CorpusDoc = lazy(() => import("./pages/corpus/CorpusDoc"));
 // CORPUS_LIBRARY_C6_2026_10_08: the library's stories and names
 const CorpusStories = lazy(() => import("./pages/corpus/CorpusStories"));
 const CorpusNames = lazy(() => import("./pages/corpus/CorpusNames"));
+// CORPUS_MEDIA_C8_2026_10_09: the pictures and the graphic novels
+const CorpusImages = lazy(() => import("./pages/corpus/CorpusImages"));
+const CorpusNovels = lazy(() => import("./pages/corpus/CorpusNovels"));
 // RBAC_RESEARCHERS_2026_10_08: where an invited researcher lands
 const InviteAccept = lazy(() => import("./pages/InviteAccept"));
 const JyotishHoroscope = lazy(() => import("./pages/JyotishHoroscope"));
@@ -170,6 +173,10 @@ const App = () => (
               <Route path="/corpus/stories/:docCode/:storyId" element={<CorpusStories />} />
               <Route path="/corpus/names" element={<CorpusNames />} />
               <Route path="/corpus/names/:canonical" element={<CorpusNames />} />
+              {/* CORPUS_MEDIA_C8_2026_10_09 */}
+              <Route path="/corpus/images" element={<CorpusImages />} />
+              <Route path="/corpus/novels" element={<CorpusNovels />} />
+              <Route path="/corpus/novels/:novelId" element={<CorpusNovels />} />
               <Route path="/corpus/:docCode" element={<CorpusDoc />} />
               
               {/* Sources Routes */}

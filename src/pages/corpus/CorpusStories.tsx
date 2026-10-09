@@ -6,6 +6,8 @@
  * APPROVED stories; an editor (admin) also sees drafts and candidates, marked as such. Approval is
  * a person's decision on the desk; the two-hourly mirror run carries it here. Every citation is a
  * link into the text (?at=page.passage).
+ * CORPUS_MEDIA_C8_2026_10_09: a story's picture heads its page, with a link to its graphic novel when it has one
+ * (src/components/corpus/StoryPlate.tsx; quiet when there is none).
  */
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -16,6 +18,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import CorpusGate, { CorpusRefused } from '@/components/corpus/CorpusGate';
 import CorpusNav from '@/components/corpus/CorpusNav';
+import StoryPlate from '@/components/corpus/StoryPlate';
 import {
   atHref, bookTitle, fromHref, isStory, loadStories, parseCites, parseVerify, storyHref, type LibResult, type StoryRow,
 } from '@/lib/corpusLibrary';
@@ -185,6 +188,8 @@ function StoryPage({ docCode, storyId }: { docCode: string; storyId: number }) {
             <h1 className="mt-2 font-serif text-3xl font-semibold leading-tight text-foreground">{s.title || `Story ${s.story_id}`}</h1>
             {s.title_hi && <p lang="hi" className="mt-1 font-devanagari text-xl text-muted-foreground">{s.title_hi}</p>}
           </header>
+
+          <StoryPlate docCode={s.doc_code} storyId={s.story_id} />
 
           {s.quote_sa && (
             <blockquote className="mb-6 border-l-4 border-burgundy/60 pl-4">
