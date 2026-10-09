@@ -2160,6 +2160,178 @@ export type Database = {
           provider: string
         }[]
       }
+      corner_collection: {
+        Args: { p_id: number }
+        Returns: {
+          audience: string
+          can_edit: boolean
+          created_at: string
+          id: number
+          intro: string
+          items: Json
+          mine: boolean
+          published_at: string
+          status: string
+          title: string
+          title_hi: string
+          updated_at: string
+        }[]
+      }
+      corner_collection_publish: {
+        Args: { p_id: number; p_publish: boolean }
+        Returns: {
+          collection_status: string
+          message: string
+        }[]
+      }
+      corner_collection_retire: {
+        Args: { p_id: number }
+        Returns: {
+          collection_status: string
+          message: string
+        }[]
+      }
+      corner_collection_save: {
+        Args: {
+          p_audience: string
+          p_id: number
+          p_intro: string
+          p_items: Json
+          p_title: string
+          p_title_hi: string
+        }
+        Returns: {
+          collection_id: number
+          collection_status: string
+        }[]
+      }
+      corner_collections: {
+        Args: { p_scope?: string }
+        Returns: {
+          audience: string
+          cover_has_thumb: boolean
+          cover_sha: string
+          created_at: string
+          id: number
+          items: number
+          mine: boolean
+          owner: string
+          published_at: string
+          status: string
+          title: string
+          title_hi: string
+          updated_at: string
+        }[]
+      }
+      corner_desk_heartbeat: { Args: { p_info: Json }; Returns: Json }
+      corner_desk_pull: {
+        Args: { p_limit: number; p_worker: string }
+        Returns: Json
+      }
+      corner_desk_report: {
+        Args: {
+          p_cost: number
+          p_id: number
+          p_log: string
+          p_message: string
+          p_result: Json
+          p_status: string
+        }
+        Returns: boolean
+      }
+      corner_desk_state: { Args: never; Returns: Json }
+      corner_kinds: {
+        Args: never
+        Returns: {
+          cost_bearing: boolean
+          editor_only: boolean
+          enabled: boolean
+          est_usd: number
+          kind: string
+          label: string
+          unit: string
+        }[]
+      }
+      corner_me: {
+        Args: never
+        Returns: {
+          can_request: boolean
+          committed_today: number
+          daily_cap_usd: number
+          is_editor: boolean
+          is_super_admin: boolean
+          mine_open: number
+          pending: number
+          queued: number
+          researchers_need_approval: boolean
+          running: number
+          worker_info: Json
+          worker_last_seen: string
+        }[]
+      }
+      corner_request_cancel: {
+        Args: { p_id: number }
+        Returns: {
+          message: string
+          request_status: string
+        }[]
+      }
+      corner_request_create: {
+        Args: {
+          p_doc: string
+          p_kind: string
+          p_note?: string
+          p_params?: Json
+        }
+        Returns: {
+          est_usd: number
+          message: string
+          request_id: number
+          request_status: string
+        }[]
+      }
+      corner_request_decide: {
+        Args: { p_approve: boolean; p_id: number; p_note?: string }
+        Returns: {
+          message: string
+          request_status: string
+        }[]
+      }
+      corner_requests: {
+        Args: {
+          k?: number
+          p_offset?: number
+          p_scope?: string
+          p_status?: string
+        }
+        Returns: {
+          cost_usd: number
+          decided_at: string
+          decision_note: string
+          doc_code: string
+          doc_title: string
+          est_usd: number
+          finished_at: string
+          id: number
+          kind: string
+          label: string
+          message: string
+          mine: boolean
+          note: string
+          params: Json
+          preview: Json
+          requested_at: string
+          requester: string
+          result: Json
+          started_at: string
+          status: string
+          total: number
+        }[]
+      }
+      corner_settings_set: {
+        Args: { p_key: string; p_value: string }
+        Returns: string
+      }
       corpus_access_mode: { Args: never; Returns: string }
       corpus_access_mode_set: { Args: { p_mode: string }; Returns: string }
       corpus_ingest: {
