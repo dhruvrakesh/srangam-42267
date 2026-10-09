@@ -9,8 +9,15 @@
  * A reader who is not invited sees how to get in, and the published anthologies.
  *
  * Deep links prefill a form: ?tab=ask&kind=<kind>&doc=<code>&story_id=&image_id=&novel_id=&from=&to=&at=
+ *
+ * CORNER_STATE_S1_2026_10_09: the page knows where things are. The strip says when the desk comes
+ * next (and, for editors, the mirror, the pictures and the desk's spend); every request shows its
+ * stages with their times and, while the desk works on it, its progress (corner_request_track,
+ * quietly left out while the database does not have it); the lists are asked again every 20
+ * seconds while one of them is open, and a request that is done or failed meanwhile is announced
+ * once; a finished request links on to its next steps; editors have a Sync tab (?tab=sync).
  */
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -25,19 +32,29 @@ import { Textarea } from '@/components/ui/textarea';
 import CorpusGate from '@/components/corpus/CorpusGate';
 import CorpusNav from '@/components/corpus/CorpusNav';
 import CorpusImage from '@/components/corpus/CorpusImage';
-import { ActionNote, CornerClosed, CornerProblem, RequestBadge } from '@/components/corpus/CornerParts';
+import {
+  ActionNote, CornerClosed, CornerProblem, RequestBadge,
+} from '@/components/corpus/CornerParts';
+import {
+  DeskChips, NextSteps, StageBar, SyncPanel,
+} from '@/components/corpus/CornerState';
+import { toast } from '@/hooks/use-toast';
 import { MediaStatus } from '@/components/corpus/MediaParts';
 import { listMirrorDocs, type MirrorDoc } from '@/lib/corpusMirror';
 import { bookTitle, isStory, loadStories, parseVerify, type StoryRow } from '@/lib/corpusLibrary';
 import { isMedia, isNovel, loadMedia, loadNovels, type MediaRow, type NovelRow } from '@/lib/corpusMedia';
 import {
-  aboutUsd, AUDIENCE_LABEL, canWithdraw, cancelRequest, cleanRef, CORNER_KEY, createRequest, decideRequest, deskIsLate,
-  estimateFor, formatUsd, imageIdOf, isOpen, lastSeenText, loadCollections, loadKinds, loadMe, loadRequests, num,
-  parsePages, requestSummary, resultLinks, setSetting, verifyText, when, type CollectionRow, type CornerKind,
-  type CornerMe, type CornerRequest, type SettingKey,
+  aboutUsd, AUDIENCE_LABEL, canWithdraw, cancelRequest, cleanRef, CORNER_KEY, createRequest, decideRequest,
+  deskIsLate, estimateFor, formatUsd, imageIdOf, lastSeenText, loadCollections, loadKinds, loadMe, num, parsePages,
+  requestSummary, resultLinks, setSetting, verifyText, when, type CollectionRow, type CornerKind, type CornerMe,
+  type CornerRequest, type CornerResult, type SettingKey,
 } from '@/lib/corner';
+import {
+  finishNotice, listRefresh, loadLiveRequests, meRefresh, newlyFinished, nextRound, nextSteps, parseDeskInfo,
+  ROUND_MIN, type FinishNotice, type LiveRequest,
+} from '@/lib/cornerState';
 
-type Tab = 'ask' | 'mine' | 'queue' | 'anthologies' | 'settings';
+type Tab = 'ask' | 'mine' | 'queue' | 'sync' | 'anthologies' | 'settings';
 
 const KIND_TITLES: Record<string, string> = {
   story_range: 'A story from passages you choose', story_write: 'Write a proposed episode',
@@ -55,21 +72,42 @@ function storyName(s: Pick<StoryRow, 'story_id' | 'title' | 'status'>): string {
 
 // ---- the desk's state -----------------------------------------------------------------------
 
+/** The time now, again every half minute, so "next round about 15:48" turns into "a round is due". */
+function useNow(ms = 30 * 1000): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), ms);
+    return () => clearInterval(t);
+  }, [ms]);
+  return now;
+}
+
+const capFirst = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+
 function DeskStrip({ me }: { me: CornerMe }) {
-  const late = deskIsLate(me.worker_last_seen);
+  const now = useNow();
+  const late = deskIsLate(me.worker_last_seen, now);
+  const info = me.is_editor ? parseDeskInfo(me.worker_info) : null;
+  const round = nextRound(me.worker_last_seen, now, info?.sync?.every_min ?? ROUND_MIN);
   return (
-    <section aria-label="The desk" className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-md border border-border bg-muted/30 px-4 py-3 text-sm">
-      <span className={`inline-flex items-center gap-1.5 ${late ? 'font-medium text-amber-700 dark:text-amber-300' : 'text-foreground'}`}>
-        {late ? <AlertTriangle className="h-4 w-4" aria-hidden="true" /> : <Clock className="h-4 w-4 text-muted-foreground" aria-hidden="true" />}
-        Desk last seen: {lastSeenText(me.worker_last_seen)}
-        {late && <span className="font-normal text-muted-foreground"> (approved requests wait until it is back)</span>}
-      </span>
-      <span className="text-muted-foreground">{num(me.queued)} queued · {num(me.running)} being worked on</span>
-      {me.is_editor && <span className="text-muted-foreground">{num(me.pending)} waiting for an editor</span>}
-      {num(me.mine_open) > 0 && <span className="text-muted-foreground">{num(me.mine_open)} of yours open</span>}
-      {me.is_editor && (
-        <span className="text-foreground">Today: {formatUsd(me.committed_today)} of {formatUsd(me.daily_cap_usd)} committed</span>
-      )}
+    <section aria-label="The desk" className="mb-6 space-y-2 rounded-md border border-border bg-muted/30 px-4 py-3 text-sm">
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+        <span className={`inline-flex flex-wrap items-center gap-x-1.5 ${late ? 'font-medium text-amber-700 dark:text-amber-300' : 'text-foreground'}`}>
+          {late ? <AlertTriangle className="h-4 w-4" aria-hidden="true" /> : <Clock className="h-4 w-4 text-muted-foreground" aria-hidden="true" />}
+          Desk last seen: {lastSeenText(me.worker_last_seen, now)}
+          {late && <span className="font-normal text-muted-foreground"> (approved requests wait until it is back)</span>}
+        </span>
+        {round.state !== 'never' && (
+          <span className={round.state === 'next' ? 'text-muted-foreground' : 'font-medium text-amber-700 dark:text-amber-300'}>{capFirst(round.text)}</span>
+        )}
+        <span className="text-muted-foreground">{num(me.queued)} queued · {num(me.running)} being worked on</span>
+        {me.is_editor && <span className="text-muted-foreground">{num(me.pending)} waiting for an editor</span>}
+        {num(me.mine_open) > 0 && <span className="text-muted-foreground">{num(me.mine_open)} of yours open</span>}
+        {me.is_editor && (
+          <span className="text-foreground">Today: {formatUsd(me.committed_today)} of {formatUsd(me.daily_cap_usd)} committed</span>
+        )}
+      </div>
+      {info && <DeskChips info={info} now={now} />}
     </section>
   );
 }
@@ -377,7 +415,14 @@ function Preview({ p }: { p: NonNullable<CornerRequest['preview']> }) {
   );
 }
 
-function RequestCard({ r, children }: { r: CornerRequest; children?: ReactNode }) {
+/** The next steps of a done request, once corner_kinds() has said what this viewer may ask for. */
+function Next({ r, editor }: { r: CornerRequest; editor: boolean }) {
+  const kinds = useQuery({ queryKey: [...KEY, 'kinds'], queryFn: loadKinds, staleTime: 5 * 60 * 1000 });
+  if (kinds.isLoading) return null;
+  return <NextSteps links={nextSteps(r, { isEditor: editor, kinds: kinds.data?.ok ? kinds.data.rows : null })} />;
+}
+
+function RequestCard({ r, editor, children }: { r: LiveRequest; editor: boolean; children?: ReactNode }) {
   const links = resultLinks(r);
   const doc = r.doc_code ? bookTitle({ doc_code: r.doc_code, title: r.doc_title }).title : null;
   return (
@@ -390,6 +435,7 @@ function RequestCard({ r, children }: { r: CornerRequest; children?: ReactNode }
             <span className="font-mono text-xs text-muted-foreground">#{r.id}</span>
           </div>
           <p className="text-foreground">{doc && <span className="text-muted-foreground">{doc} · </span>}{requestSummary(r.kind, r.params)}</p>
+          <StageBar r={r} />
           <p className="text-xs text-muted-foreground">
             Asked {when(r.requested_at)}{r.requester ? ` by ${r.requester}` : ''}
             {num(r.est_usd) > 0 && ` · estimate ${aboutUsd(num(r.est_usd))}`}
@@ -405,6 +451,7 @@ function RequestCard({ r, children }: { r: CornerRequest; children?: ReactNode }
               {links.map((l) => <Link key={l.href} to={l.href} className="font-medium text-burgundy underline decoration-burgundy/40 underline-offset-2 hover:decoration-burgundy">{l.label}</Link>)}
             </p>
           )}
+          {r.status === 'done' && <Next r={r} editor={editor} />}
           {children}
         </CardContent>
       </Card>
@@ -428,14 +475,23 @@ function Withdraw({ id }: { id: number }) {
   );
 }
 
-const anyOpen = (d: { ok: boolean; rows: CornerRequest[] } | undefined) => !!d?.ok && d.rows.some((r) => isOpen(r.status));
+/** Tells the page what a list showed, so a request that finishes meanwhile is announced once. */
+const WatchRows = createContext<(rows: readonly CornerRequest[]) => void>(() => undefined);
 
-function MineTab() {
+function useWatch(d: CornerResult<LiveRequest> | undefined) {
+  const watch = useContext(WatchRows);
+  useEffect(() => {
+    if (d?.ok) watch(d.rows);
+  }, [d, watch]);
+}
+
+function MineTab({ me }: { me: CornerMe }) {
   const q = useQuery({
     queryKey: [...KEY, 'requests', 'mine'],
-    queryFn: () => loadRequests('mine', { k: 100 }),
-    refetchInterval: (query) => (anyOpen(query.state.data) ? 30 * 1000 : false),
+    queryFn: () => loadLiveRequests('mine', { k: 100 }),
+    refetchInterval: (query) => listRefresh(query.state.data),
   });
+  useWatch(q.data);
   return (
     <div className="space-y-4">
       {q.isLoading && <div className="space-y-3" aria-busy="true"><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /></div>}
@@ -446,7 +502,7 @@ function MineTab() {
       {q.data?.ok && q.data.rows.length > 0 && (
         <ol className="space-y-3">
           {q.data.rows.map((r) => (
-            <RequestCard key={r.id} r={r}>{canWithdraw(r.status) && <Withdraw id={r.id} />}</RequestCard>
+            <RequestCard key={r.id} r={r} editor={me.is_editor}>{canWithdraw(r.status) && <Withdraw id={r.id} />}</RequestCard>
           ))}
         </ol>
       )}
@@ -480,18 +536,20 @@ function Decide({ r }: { r: CornerRequest }) {
 
 const HISTORY_STATUSES = ['pending', 'approved', 'claimed', 'running', 'done', 'failed', 'rejected', 'cancelled'];
 
-function QueueTab() {
+function QueueTab({ me }: { me: CornerMe }) {
   const [status, setStatus] = useState('');
   const queue = useQuery({
     queryKey: [...KEY, 'requests', 'queue'],
-    queryFn: () => loadRequests('queue', { k: 100 }),
-    refetchInterval: 30 * 1000,
+    queryFn: () => loadLiveRequests('queue', { k: 100 }),
+    refetchInterval: (query) => listRefresh(query.state.data) || 30 * 1000,
   });
   const all = useQuery({
     queryKey: [...KEY, 'requests', 'all', status],
-    queryFn: () => loadRequests('all', { status: status || null, k: 50 }),
-    refetchInterval: (query) => (anyOpen(query.state.data) ? 30 * 1000 : false),
+    queryFn: () => loadLiveRequests('all', { status: status || null, k: 50 }),
+    refetchInterval: (query) => listRefresh(query.state.data),
   });
+  useWatch(queue.data);
+  useWatch(all.data);
   return (
     <div className="space-y-8">
       <section aria-labelledby="queue-head" className="space-y-3">
@@ -500,7 +558,7 @@ function QueueTab() {
         {queue.data && !queue.data.ok && <CornerProblem r={queue.data} what="The queue" />}
         {queue.data?.ok && queue.data.rows.length === 0 && <p className="text-sm text-muted-foreground">Nothing is waiting for a decision.</p>}
         {queue.data?.ok && queue.data.rows.length > 0 && (
-          <ol className="space-y-3">{queue.data.rows.map((r) => <RequestCard key={r.id} r={r}><Decide r={r} /></RequestCard>)}</ol>
+          <ol className="space-y-3">{queue.data.rows.map((r) => <RequestCard key={r.id} r={r} editor={me.is_editor}><Decide r={r} /></RequestCard>)}</ol>
         )}
       </section>
       <section aria-labelledby="history-head" className="space-y-3">
@@ -517,7 +575,7 @@ function QueueTab() {
         {all.isLoading && <Skeleton className="h-24 w-full" />}
         {all.data && !all.data.ok && <CornerProblem r={all.data} what="The requests" />}
         {all.data?.ok && all.data.rows.length === 0 && <p className="text-sm text-muted-foreground">No request{status ? ` is ${status}` : ' yet'}.</p>}
-        {all.data?.ok && all.data.rows.length > 0 && <ol className="space-y-3">{all.data.rows.map((r) => <RequestCard key={r.id} r={r} />)}</ol>}
+        {all.data?.ok && all.data.rows.length > 0 && <ol className="space-y-3">{all.data.rows.map((r) => <RequestCard key={r.id} r={r} editor={me.is_editor} />)}</ol>}
       </section>
     </div>
   );
@@ -631,11 +689,43 @@ function SettingsTab({ me }: { me: CornerMe }) {
   );
 }
 
+// ---- sync (editors) -------------------------------------------------------------------------
+
+function SyncTab({ me }: { me: CornerMe }) {
+  const now = useNow();
+  return <SyncPanel me={me} info={parseDeskInfo(me.worker_info)} now={now} />;
+}
+
 // ---- the page -------------------------------------------------------------------------------
+
+/** Announces, once each, the requests that finish while the page is open: a polite live line
+ *  on the page and a toast. */
+function useFinishWatch() {
+  const qc = useQueryClient();
+  const seen = useRef(new Map<number, string>());
+  const told = useRef(new Set<number>());
+  const [notes, setNotes] = useState<FinishNotice[]>([]);
+  const watch = useCallback((rows: readonly CornerRequest[]) => {
+    const fresh = newlyFinished(seen.current, rows).filter((r) => !told.current.has(r.id));
+    for (const r of rows) if (r && typeof r.id === 'number') seen.current.set(r.id, r.status);
+    if (!fresh.length) return;
+    const said = fresh.map((r) => {
+      told.current.add(r.id);
+      return finishNotice(r);
+    });
+    setNotes((prev) => [...prev, ...said].slice(-3));
+    for (const n of said) toast({ title: n.title, description: n.detail ?? undefined, variant: n.ok ? 'default' : 'destructive' });
+    void qc.invalidateQueries({ queryKey: [...KEY, 'me'] });
+  }, [qc]);
+  return { watch, notes };
+}
 
 function Corner({ me }: { me: CornerMe }) {
   const [search, setSearch] = useSearchParams();
-  const allowed: Tab[] = ['ask', 'mine', ...(me.is_editor ? ['queue' as Tab] : []), 'anthologies', ...(me.is_super_admin ? ['settings' as Tab] : [])];
+  const { watch, notes } = useFinishWatch();
+  const allowed: Tab[] = [
+    'ask', 'mine', ...(me.is_editor ? ['queue' as Tab, 'sync' as Tab] : []), 'anthologies', ...(me.is_super_admin ? ['settings' as Tab] : []),
+  ];
   const asked = search.get('tab') as Tab | null;
   const tab: Tab = asked && allowed.includes(asked) ? asked : 'ask';
   const go = (t: string) => {
@@ -644,25 +734,37 @@ function Corner({ me }: { me: CornerMe }) {
     setSearch(next, { replace: true });
   };
   return (
-    <Tabs value={tab} onValueChange={go}>
-      <TabsList className="mb-4 h-auto flex-wrap justify-start">
-        <TabsTrigger value="ask">Ask the desk</TabsTrigger>
-        <TabsTrigger value="mine">My requests{num(me.mine_open) > 0 ? ` (${num(me.mine_open)})` : ''}</TabsTrigger>
-        {me.is_editor && <TabsTrigger value="queue">Queue{num(me.pending) > 0 ? ` (${num(me.pending)})` : ''}</TabsTrigger>}
-        <TabsTrigger value="anthologies">Anthologies</TabsTrigger>
-        {me.is_super_admin && <TabsTrigger value="settings">Settings</TabsTrigger>}
-      </TabsList>
-      <TabsContent value="ask"><AskTab me={me} /></TabsContent>
-      <TabsContent value="mine"><MineTab /></TabsContent>
-      {me.is_editor && <TabsContent value="queue"><QueueTab /></TabsContent>}
-      <TabsContent value="anthologies"><CollectionCards scope="all" canMake /></TabsContent>
-      {me.is_super_admin && <TabsContent value="settings"><SettingsTab me={me} /></TabsContent>}
-    </Tabs>
+    <WatchRows.Provider value={watch}>
+      <div aria-live="polite" className={notes.length ? 'mb-4 space-y-1' : undefined}>
+        {notes.map((n) => (
+          <p key={n.id} className={`flex items-start gap-1.5 text-sm ${n.ok ? 'text-emerald-800 dark:text-emerald-300' : 'text-red-700 dark:text-red-300'}`}>
+            {n.ok ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" /> : <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />}
+            <span>{n.line}</span>
+          </p>
+        ))}
+      </div>
+      <Tabs value={tab} onValueChange={go}>
+        <TabsList className="mb-4 h-auto flex-wrap justify-start">
+          <TabsTrigger value="ask">Ask the desk</TabsTrigger>
+          <TabsTrigger value="mine">My requests{num(me.mine_open) > 0 ? ` (${num(me.mine_open)})` : ''}</TabsTrigger>
+          {me.is_editor && <TabsTrigger value="queue">Queue{num(me.pending) > 0 ? ` (${num(me.pending)})` : ''}</TabsTrigger>}
+          {me.is_editor && <TabsTrigger value="sync">Sync</TabsTrigger>}
+          <TabsTrigger value="anthologies">Anthologies</TabsTrigger>
+          {me.is_super_admin && <TabsTrigger value="settings">Settings</TabsTrigger>}
+        </TabsList>
+        <TabsContent value="ask"><AskTab me={me} /></TabsContent>
+        <TabsContent value="mine"><MineTab me={me} /></TabsContent>
+        {me.is_editor && <TabsContent value="queue"><QueueTab me={me} /></TabsContent>}
+        {me.is_editor && <TabsContent value="sync"><SyncTab me={me} /></TabsContent>}
+        <TabsContent value="anthologies"><CollectionCards scope="all" canMake /></TabsContent>
+        {me.is_super_admin && <TabsContent value="settings"><SettingsTab me={me} /></TabsContent>}
+      </Tabs>
+    </WatchRows.Provider>
   );
 }
 
 function Body() {
-  const me = useQuery({ queryKey: [...KEY, 'me'], queryFn: loadMe, staleTime: 60 * 1000, refetchInterval: 60 * 1000 });
+  const me = useQuery({ queryKey: [...KEY, 'me'], queryFn: loadMe, staleTime: 60 * 1000, refetchInterval: (query) => meRefresh(query.state.data) });
   const row = me.data?.ok ? me.data.rows[0] : undefined;
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">

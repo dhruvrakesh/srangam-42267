@@ -14,6 +14,10 @@
  * The reads go through callMirror; the actions keep the server's own sentence (a refusal such as
  * "Only an editor may ask for this." or a reason such as "title: 3 to 200 characters"), which the
  * pages show as it is.
+ *
+ * CORNER_STATE_S1_2026_10_09: where each request is, the desk's next round, the next steps of a
+ * finished request and the desk's report of the mirror and the pictures live in cornerState.ts, so
+ * the pages that only share this file (stories, pictures, novels, through DeskActions) stay small.
  */
 import { supabase } from '@/integrations/supabase/client';
 import { callMirror, functionMissing, type MirrorDoc } from '@/lib/corpusMirror';
@@ -97,7 +101,7 @@ export interface CollectionState { collection_status: string; message: string }
 
 // ---- reads ----------------------------------------------------------------------------------
 
-async function lib<T>(fn: string, args: Record<string, unknown>): Promise<CornerResult<T>> {
+export async function lib<T>(fn: string, args: Record<string, unknown>): Promise<CornerResult<T>> {
   const r = await callMirror<T>(fn, args);
   return { ...r, missing: functionMissing(r, fn) };
 }
@@ -131,7 +135,7 @@ export function loadCollection(id: number): Promise<CornerResult<CollectionFull>
 const TIMEOUT_MS = 15000;
 const REFUSED_RE = /signed-in readers only|permission denied|not allowed|42501/i;
 
-const failed = <T,>(error: string, refused = false): CornerResult<T> => ({ ok: false, rows: [], error, refused, missing: false });
+export const failed = <T,>(error: string, refused = false): CornerResult<T> => ({ ok: false, rows: [], error, refused, missing: false });
 
 type RpcAnswer = { data: unknown; error: { message?: string; code?: string } | null };
 type Timeout = { __timeout: true };
@@ -254,7 +258,7 @@ export const TONE_CLASS: Record<Tone, string> = {
   muted: 'bg-muted text-muted-foreground',
 };
 
-const s = (v: unknown): string => (v == null ? '' : String(v).trim());
+export const s = (v: unknown): string => (v == null ? '' : String(v).trim());
 
 /** What a request asks for, in a line ("Passages 25.2-25.9: 'Vitasta flows'"). */
 export function requestSummary(kind: string, params: Record<string, unknown> | null | undefined): string {
@@ -281,11 +285,11 @@ export function requestSummary(kind: string, params: Record<string, unknown> | n
   }
 }
 
-const idOf = (v: unknown): number | null => {
+export const idOf = (v: unknown): number | null => {
   const m = /^(?:img:)?(\d{1,10})$/.exec(s(v));
   return m && Number(m[1]) > 0 ? Number(m[1]) : null;
 };
-const idsOf = (v: unknown): number[] => (Array.isArray(v) ? v.map(idOf).filter((x): x is number => x != null).slice(0, 20) : []);
+export const idsOf = (v: unknown): number[] => (Array.isArray(v) ? v.map(idOf).filter((x): x is number => x != null).slice(0, 20) : []);
 
 /** The number of a picture of a text ("img:103" -> 103); other keys (covers, novel pages) are null. */
 export function imageIdOf(mediaKey: string | null | undefined): number | null {
@@ -325,6 +329,8 @@ export function resultLinks(row: Pick<CornerRequest, 'kind' | 'doc_code' | 'para
   many(idsOf(r.story_ids), story, 'Story');
   many(idsOf(r.image_ids), picture, 'Picture');
   many(idsOf(r.novel_ids), novel, 'Graphic novel');
+  // CORNER_STATE_S1_2026_10_09: story_mine reports the episodes it proposed as `candidates`.
+  if (STORY_KINDS.has(row.kind)) many(idsOf(r.candidates), story, 'Story');
   const ids = idsOf(r.ids);
   if (STORY_KINDS.has(row.kind)) many(ids, story, 'Story');
   else if (PICTURE_KINDS.has(row.kind)) many(ids, picture, 'Picture');
