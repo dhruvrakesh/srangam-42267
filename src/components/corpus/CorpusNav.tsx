@@ -2,16 +2,18 @@
  * The working corpus's own sections - CORPUS_LIBRARY_C6_2026_10_08: the library (every text on its
  * shelf), the stories drawn from the texts, the names index, and the published texts.
  * CORPUS_MEDIA_C8_2026_10_09: and the pictures and the graphic novels drawn from them.
+ * CORNER_C9_2026_10_09: and the Researchers' Corner, with its anthologies.
  */
 import { Link, useLocation } from 'react-router-dom';
-import { BookImage, BookMarked, Images, Library, Users, BookOpen } from 'lucide-react';
+import { BookImage, BookMarked, Images, Library, Users, BookOpen, NotebookPen } from 'lucide-react';
 
 const ITEMS = [
-  { to: '/corpus', label: 'Library', icon: Library, match: (p: string) => p === '/corpus' || (/^\/corpus\/[^/]+$/.test(p) && !/^\/corpus\/(stories|names|images|novels)$/.test(p)) },
+  { to: '/corpus', label: 'Library', icon: Library, match: (p: string) => p === '/corpus' || (/^\/corpus\/[^/]+$/.test(p) && !/^\/corpus\/(stories|names|images|novels|corner|anthologies)$/.test(p)) },
   { to: '/corpus/stories', label: 'Stories', icon: BookMarked, match: (p: string) => p.startsWith('/corpus/stories') },
   { to: '/corpus/names', label: 'Names', icon: Users, match: (p: string) => p.startsWith('/corpus/names') },
   { to: '/corpus/images', label: 'Pictures', icon: Images, match: (p: string) => p.startsWith('/corpus/images') },
   { to: '/corpus/novels', label: 'Graphic novels', icon: BookImage, match: (p: string) => p.startsWith('/corpus/novels') },
+  { to: '/corpus/corner', label: 'Corner', icon: NotebookPen, match: (p: string) => p.startsWith('/corpus/corner') || p.startsWith('/corpus/anthologies') },
   { to: '/texts', label: 'Published texts', icon: BookOpen, match: () => false },
 ];
 

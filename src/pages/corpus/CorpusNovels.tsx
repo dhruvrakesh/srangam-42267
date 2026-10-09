@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import CorpusGate from '@/components/corpus/CorpusGate';
 import CorpusNav from '@/components/corpus/CorpusNav';
 import CorpusImage from '@/components/corpus/CorpusImage';
+import DeskActions from '@/components/corpus/DeskActions';
 import { CitedText, GeneratedNote, MediaProblem, MediaStatus } from '@/components/corpus/MediaParts';
 import { atHref, bookTitle, storyHref } from '@/lib/corpusLibrary';
 import {
@@ -173,6 +174,7 @@ function NovelReader({ id }: { id: number }) {
               </nav>
             )}
           </div>
+          <DeskActions target={{ type: 'novel', doc_code: n.doc_code, novel_id: n.novel_id, status: n.status, pages: n.pages }} />
 
           {plan.cast.length > 0 && (
             <section className="mb-8" aria-label="The cast">
@@ -206,6 +208,7 @@ function NovelReader({ id }: { id: number }) {
                         <span className="font-mono">page {p.n}</span>
                         {m && <MediaStatus status={m.status} />}
                       </div>
+                      <DeskActions target={{ type: 'novel', doc_code: n.doc_code, novel_id: n.novel_id, status: n.status, page: p.n, page_status: m?.status ?? null }} className="mb-3" />
                       {lang !== 'hi' && p.caption && (
                         <p className={`font-serif leading-relaxed text-foreground ${young ? 'text-xl' : 'text-lg'}`}>
                           <CitedText text={p.caption} docCode={n.doc_code} lang="en" />

@@ -18,6 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import CorpusGate from '@/components/corpus/CorpusGate';
 import CorpusNav from '@/components/corpus/CorpusNav';
 import CorpusImage from '@/components/corpus/CorpusImage';
+import DeskActions from '@/components/corpus/DeskActions';
 import { GeneratedNote, MediaProblem, MediaStatus } from '@/components/corpus/MediaParts';
 import { atHref, bookTitle, storyHref } from '@/lib/corpusLibrary';
 import { anchorRef, isGenerated, isMedia, KIND_LABELS, loadMedia, MEDIA_PAGE, type MediaRow } from '@/lib/corpusMedia';
@@ -81,6 +82,7 @@ function Lightbox({ list, at, go, close }: { list: MediaRow[]; at: number; go: (
           {m.caption_hi && <p lang="hi" className="font-devanagari text-base leading-relaxed text-foreground/90">{m.caption_hi}</p>}
           {m.context_note && <p className="whitespace-pre-line text-muted-foreground">{m.context_note}</p>}
           {isGenerated(m.kind) ? <GeneratedNote model={m.model} /> : m.license && <p className="text-xs text-muted-foreground">{m.license}</p>}
+          <DeskActions target={{ type: 'picture', doc_code: m.doc_code, media_key: m.media_key, status: m.status }} className="mt-2" />
           {m.approved_at_local && <p className="text-xs text-muted-foreground">Approved {m.approved_at_local.slice(0, 10)}.</p>}
         </div>
         <nav className="flex justify-between text-sm" aria-label="Other pictures">

@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import CorpusGate, { CorpusRefused } from '@/components/corpus/CorpusGate';
 import CorpusNav from '@/components/corpus/CorpusNav';
 import StoryPlate from '@/components/corpus/StoryPlate';
+import DeskActions from '@/components/corpus/DeskActions';
 import {
   atHref, bookTitle, fromHref, isStory, loadStories, parseCites, parseVerify, storyHref, type LibResult, type StoryRow,
 } from '@/lib/corpusLibrary';
@@ -190,6 +191,7 @@ function StoryPage({ docCode, storyId }: { docCode: string; storyId: number }) {
           </header>
 
           <StoryPlate docCode={s.doc_code} storyId={s.story_id} />
+          <DeskActions target={{ type: 'story', doc_code: s.doc_code, story_id: s.story_id, status: s.status }} />
 
           {s.quote_sa && (
             <blockquote className="mb-6 border-l-4 border-burgundy/60 pl-4">
