@@ -99,6 +99,8 @@ function Lightbox({ list, at, go, close }: { list: MediaRow[]; at: number; go: (
   );
 }
 
+const INDEX_K = 200;   // LOAD_L1_2026_10_09: the pictures counted for the text buttons
+
 function Body() {
   const [search, setSearch] = useSearchParams();
   const doc = search.get('doc');
@@ -106,15 +108,21 @@ function Body() {
   const [pages, setPages] = useState(1);
   useEffect(() => setPages(1), [doc]);
 
-  const index = useQuery({ queryKey: ['mirror', 'media', 'index'], queryFn: () => loadMedia({ k: 200 }), staleTime: 5 * 60 * 1000 });
-  const list = useQuery({
+  const index = useQuery({ queryKey: ['mirror', 'media', 'index'], queryFn: () => loadMedia({ k: INDEX_K }), staleTime: 5 * 60 * 1000 });
+  // LOAD_L1_2026_10_09: with no text chosen, the first pages are the first rows of the index (the
+  // same function, the same order), so the database is asked once, not twice, for the same rows.
+  const fromIndex = !doc && MEDIA_PAGE * pages <= INDEX_K;
+  const asked = useQuery({
     queryKey: ['mirror', 'media', doc ?? '*', pages],
     queryFn: () => loadMedia({ doc, k: MEDIA_PAGE * pages }),
     staleTime: 5 * 60 * 1000,
-    placeholderData: (prev) => prev,
+    placeholderData: (prev) => prev ?? (doc ? undefined : index.data),
+    enabled: !fromIndex,
   });
+  const list = fromIndex ? { data: index.data, isLoading: index.isLoading, isFetching: index.isFetching } : asked;
   const all = useMemo(() => (index.data?.ok ? index.data.rows.filter(isMedia) : []), [index.data]);
-  const rows = useMemo(() => (list.data?.ok ? list.data.rows.filter(isMedia) : []), [list.data]);
+  const rows = useMemo(() => (list.data?.ok ? list.data.rows.filter(isMedia).slice(0, MEDIA_PAGE * pages) : []),
+    [list.data, pages]);
   const total = rows[0]?.total ?? 0;
   const texts = useMemo(() => {
     const m = new Map<string, { title: string; n: number }>();
@@ -156,12 +164,12 @@ function Body() {
         <div className="mb-6 flex flex-wrap items-center gap-2 text-sm" role="group" aria-label="Pictures of one text">
           <button type="button" onClick={() => set({ doc: null, pic: null })} aria-pressed={!doc}
             className={`rounded-full border px-3 py-1 ${!doc ? 'border-burgundy bg-burgundy text-white' : 'border-border text-muted-foreground hover:text-foreground'}`}>
-            All texts{all.length < 200 ? ` (${all.length})` : ''}
+            All texts{all.length < INDEX_K ? ` (${all.length})` : ''}
           </button>
           {texts.map(([code, t]) => (
             <button key={code} type="button" onClick={() => set({ doc: code, pic: null })} aria-pressed={doc === code}
               className={`rounded-full border px-3 py-1 ${doc === code ? 'border-burgundy bg-burgundy text-white' : 'border-border text-muted-foreground hover:text-foreground'}`}>
-              {t.title}{all.length < 200 ? ` (${t.n})` : ''}
+              {t.title}{all.length < INDEX_K ? ` (${t.n})` : ''}
             </button>
           ))}
         </div>

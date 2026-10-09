@@ -179,6 +179,19 @@ describe('/corpus/images', () => {
     expect(await within(await screen.findByRole('dialog')).findByText('तीन अखाड़े')).toBeInTheDocument();
   });
 
+  it('LOAD_L1_2026_10_09: all texts are asked once; a text is asked for itself', async () => {
+    sb.byFn.corpus_reader_media = { data: [PIC('img:3'), PIC('img:5', { doc_code: 'nilamata_seg', doc_title: 'Nīlamata Purāṇa', title: 'Vitastā', sha256: SHA('e') })], error: null };
+    mount('/corpus/images');
+    expect(await screen.findByText('Types of Wrestling Arenas')).toBeInTheDocument();
+    expect(screen.getByText('Vitastā')).toBeInTheDocument();
+    expect(sb.calls.filter((c) => c.fn === 'corpus_reader_media').map((c) => c.args)).toEqual([
+      expect.objectContaining({ k: 200 }),
+    ]);
+    fireEvent.click(screen.getByRole('button', { name: /Nīlamata Purāṇa/ }));
+    await waitFor(() => expect(sb.calls.filter((c) => c.fn === 'corpus_reader_media').length).toBe(2));
+    expect(sb.calls.filter((c) => c.fn === 'corpus_reader_media')[1].args).toMatchObject({ p_doc: 'nilamata_seg', k: 60 });
+  });
+
   it('without C8 it says so quietly; a refusal is a refusal', async () => {
     sb.byFn.corpus_reader_media = { data: null, error: { code: 'PGRST202', message: 'Could not find the function public.corpus_reader_media(k, p_doc, p_offset, p_story) in the schema cache' } };
     const { unmount } = mount('/corpus/images');

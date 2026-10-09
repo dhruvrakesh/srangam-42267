@@ -22,6 +22,7 @@ const h = vi.hoisted(() => ({
   pending: [] as Array<{ uid: string; resolve: (v: RoleAnswer) => void }>,
   answer: null as null | boolean,      // when set, has_role answers at once
   rpcCalls: 0,                         // has_role calls only
+  myRolesCalls: 0,                     // LOAD_L1_2026_10_09
 }));
 
 vi.mock('@/integrations/supabase/client', () => ({
@@ -38,6 +39,7 @@ vi.mock('@/integrations/supabase/client', () => ({
     },
     rpc: (fn: string, args: { _user_id: string }) => {
       if (fn === 'my_roles') {
+        h.myRolesCalls += 1;   // LOAD_L1_2026_10_09
         return Promise.resolve({ data: null, error: { code: 'PGRST202', message: 'Could not find the function public.my_roles' } });
       }
       h.rpcCalls += 1;
@@ -85,7 +87,7 @@ const release = async (value: boolean) => {
 };
 
 beforeEach(() => {
-  h.session = null; h.listeners = []; h.pending = []; h.answer = null; h.rpcCalls = 0;
+  h.session = null; h.listeners = []; h.pending = []; h.answer = null; h.rpcCalls = 0; h.myRolesCalls = 0;
 });
 
 describe('ProtectedRoute', () => {
@@ -169,5 +171,49 @@ describe('the role answer', () => {
     expect(screen.getByTestId('probe').textContent).toBe('admin|false|false');
     await release(true);
     expect(screen.getByTestId('probe').textContent).toBe('admin|true|true');
+  });
+});
+
+describe('LOAD_L1_2026_10_09: one question per page load', () => {
+  it('the listener and getSession, together, ask has_role and my_roles once', async () => {
+    h.session = { user: { id: 'admin' } };
+    mount('/');
+    await act(async () => {
+      h.listeners.forEach((cb) => cb('INITIAL_SESSION', { user: { id: 'admin' } }));
+      h.listeners.forEach((cb) => cb('SIGNED_IN', { user: { id: 'admin' } }));
+      await new Promise((r) => setTimeout(r, 5));
+    });
+    await waitFor(() => expect(h.pending.length).toBe(1));
+    expect(h.rpcCalls).toBe(1);
+    expect(h.myRolesCalls).toBe(1);
+    await release(true);
+    expect(screen.getByTestId('probe').textContent).toBe('admin|true|true');
+  });
+
+  it('once answered, a later event asks again (a role changed since is seen)', async () => {
+    h.session = { user: { id: 'admin' } }; h.answer = true;
+    mount('/');
+    await waitFor(() => expect(screen.getByTestId('probe').textContent).toBe('admin|true|true'));
+    expect(h.rpcCalls).toBe(1);
+    h.answer = false;
+    await act(async () => {
+      h.listeners.forEach((cb) => cb('TOKEN_REFRESHED', { user: { id: 'admin' } }));
+      await new Promise((r) => setTimeout(r, 5));
+    });
+    await waitFor(() => expect(screen.getByTestId('probe').textContent).toBe('admin|false|true'));
+    expect(h.rpcCalls).toBe(2);
+  });
+
+  it('another user signing in is not given the first user\'s answer', async () => {
+    h.session = { user: { id: 'admin' } };
+    mount('/');
+    await waitFor(() => expect(h.pending.length).toBe(1));
+    await act(async () => {
+      h.listeners.forEach((cb) => cb('SIGNED_IN', { user: { id: 'reader' } }));
+      await new Promise((r) => setTimeout(r, 5));
+    });
+    expect(h.pending.map((p) => p.uid)).toEqual(['admin', 'reader']);
+    await act(async () => { h.pending.splice(0).forEach((p) => p.resolve({ data: p.uid === 'admin', error: null })); });
+    expect(screen.getByTestId('probe').textContent).toBe('reader|false|true');
   });
 });

@@ -36,10 +36,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [roleFor, setRoleFor] = useState<string | null>(null);
   const [roles, setRoles] = useState<string[]>([]);   // RBAC_RESEARCHERS_2026_10_08
   const currentUid = useRef<string | null>(null);
+  // LOAD_L1_2026_10_09: the question about a user's roles that is on its way. On a page load the
+  // auth listener and getSession() asked has_role and my_roles three times over within a few
+  // milliseconds (seen on the live site, 2026-10-09); now they share the one answer.
+  const rolesInFlight = useRef<{ uid: string; done: Promise<void> } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  const checkAdminRole = async (userId: string) => {
+  const checkAdminRole = (userId: string, fresh = false): Promise<void> => {
+    const on = rolesInFlight.current;   // LOAD_L1_2026_10_09
+    if (!fresh && on && on.uid === userId) return on.done;
+    const done = askRoles(userId).finally(() => {
+      if (rolesInFlight.current?.done === done) rolesInFlight.current = null;
+    });
+    rolesInFlight.current = { uid: userId, done };
+    return done;
+  };
+
+  const askRoles = async (userId: string) => {
     // Phase M.2: role checks go through SECURITY DEFINER RPC, not direct
     // table reads. Returns only a boolean — no row exposure, no enumeration.
     // RBAC_RESEARCHERS_2026_10_08: my_roles() (C7) returns the caller's own roles, asked at the same
@@ -72,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshRoles = async () => {
     const uid = currentUid.current;   // RBAC_RESEARCHERS_2026_10_08
-    if (uid) await checkAdminRole(uid);
+    if (uid) await checkAdminRole(uid, true);   // LOAD_L1_2026_10_09: always a new question
   };
 
   useEffect(() => {
@@ -92,6 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setIsAdmin(false);
           setRoleFor(null);   // AUTH_ROLE_2026_10_08
           setRoles([]);       // RBAC_RESEARCHERS_2026_10_08
+          rolesInFlight.current = null;   // LOAD_L1_2026_10_09: signing in again asks again
         }
         
         setIsLoading(false);
