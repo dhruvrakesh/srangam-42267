@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, ChevronDown, Globe, Menu as MenuIcon, X, Home, Map as MapIcon, BookOpen, List, LayoutDashboard } from "lucide-react";
+import { Search, ChevronDown, Globe, Menu as MenuIcon, X, Home, Map as MapIcon, BookOpen, List, LayoutDashboard, Library, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/Logo";
 import { EnhancedLanguageSwitcher } from "@/components/language/EnhancedLanguageSwitcher";
@@ -21,6 +21,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { SearchResults } from "@/components/navigation/SearchResults";
+// NAV_RBAC_2026_10_10: the working corpus (and Learn) for those who may read it; Admin for admins only.
+import { useAuth } from "@/contexts/AuthContext";
+import { useCorpusAccess } from "@/lib/corpusAccess";
+import { CorpusMenu, CorpusMobileLinks } from "@/components/navigation/CorpusMenu";
 
 type NavItem = { 
   label: string; 
@@ -47,6 +51,12 @@ export function HeaderNav() {
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const [combo, setCombo] = useState<string[]>([]);
   const navigate = useNavigate();
+  // NAV_RBAC_2026_10_10: what the header offers depends on who is signed in. Signed out: "Sign in"
+  // (once the session is read). An admin or the super admin: "Admin". Whoever may read the working
+  // corpus (researchers, admins, the super admin, a reader list): the "Corpus" menu, with Learn.
+  const { user, isAdmin, roleChecked, isLoading } = useAuth();
+  const corpus = useCorpusAccess();
+  const account: "admin" | "signin" | null = !user ? (isLoading ? null : "signin") : roleChecked && isAdmin ? "admin" : null;
 
   useEffect(() => {
     // Load navigation config
@@ -146,7 +156,7 @@ export function HeaderNav() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[300px] sm:w-[400px]">
-              <MobileNavContent cfg={cfg} onItemClick={() => setMobileOpen(false)} />
+              <MobileNavContent cfg={cfg} onItemClick={() => setMobileOpen(false)} corpus={corpus.canRead} account={account} />
             </SheetContent>
           </Sheet>
 
@@ -176,12 +186,23 @@ export function HeaderNav() {
               {cfg.primary.map((item) => (
                 <NavNode key={item.label} item={item} onItemClick={handleNavClick} />
               ))}
-              <Button variant="outline" size="sm" asChild className="ml-2">
-                <Link to="/admin" className="gap-2">
-                  <LayoutDashboard className="h-4 w-4" />
-                  <span className="font-medium">Admin</span>
-                </Link>
-              </Button>
+              {corpus.canRead && <CorpusMenu onItemClick={handleNavClick} />}
+              {account === "admin" && (
+                <Button variant="outline" size="sm" asChild className="ml-2">
+                  <Link to="/admin" className="gap-2">
+                    <LayoutDashboard className="h-4 w-4" />
+                    <span className="font-medium">Admin</span>
+                  </Link>
+                </Button>
+              )}
+              {account === "signin" && (
+                <Button variant="outline" size="sm" asChild className="ml-2">
+                  <Link to="/auth" className="gap-2">
+                    <LogIn className="h-4 w-4" />
+                    <span className="font-medium">Sign in</span>
+                  </Link>
+                </Button>
+              )}
             </nav>
           </div>
 
@@ -250,7 +271,7 @@ export function HeaderNav() {
       </header>
 
       {/* Bottom mobile tabs */}
-      <MobileBottomTabs />
+      <MobileBottomTabs corpus={corpus.canRead} />
     </>
   );
 }
@@ -329,10 +350,15 @@ function NavNode({
 
 function MobileNavContent({ 
   cfg, 
-  onItemClick 
+  onItemClick,
+  corpus = false,
+  account = null,
 }: { 
   cfg: NavConfig; 
   onItemClick: () => void;
+  /** NAV_RBAC_2026_10_10 */
+  corpus?: boolean;
+  account?: "admin" | "signin" | null;
 }) {
   return (
     <div className="flex flex-col h-full">
@@ -367,30 +393,47 @@ function MobileNavContent({
           </div>
         ))}
         
-        {/* Admin Link - Mobile */}
-        <div className="pt-4 border-t border-border">
-          <Link
-            to="/admin"
-            className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent hover:text-accent-foreground font-medium"
-            onClick={onItemClick}
-          >
-            <LayoutDashboard className="h-4 w-4" />
-            Admin Dashboard
-          </Link>
-        </div>
+        {/* NAV_RBAC_2026_10_10: the working corpus (with Learn) for its readers */}
+        {corpus && <CorpusMobileLinks onItemClick={onItemClick} />}
+
+        {/* Admin Link - Mobile (admins only); Sign in while signed out */}
+        {account === "admin" && (
+          <div className="pt-4 border-t border-border">
+            <Link
+              to="/admin"
+              className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent hover:text-accent-foreground font-medium"
+              onClick={onItemClick}
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              Admin Dashboard
+            </Link>
+          </div>
+        )}
+        {account === "signin" && (
+          <div className="pt-4 border-t border-border">
+            <Link
+              to="/auth"
+              className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent hover:text-accent-foreground font-medium"
+              onClick={onItemClick}
+            >
+              <LogIn className="h-4 w-4" />
+              Sign in
+            </Link>
+          </div>
+        )}
       </nav>
     </div>
   );
 }
 
-function MobileBottomTabs() {
+function MobileBottomTabs({ corpus = false }: { corpus?: boolean }) {
   // Phase Q / MC-01: safe-area padding so iOS home indicator doesn't crop
   // tabs; min-w-0 on the grid prevents long labels forcing horizontal scroll.
   return (
     <nav
       className="fixed bottom-0 inset-x-0 z-40 bg-background border-t border-border shadow-sm lg:hidden pb-[env(safe-area-inset-bottom)]"
     >
-      <div className="grid grid-cols-4 text-xs min-w-0">
+      <div className={cn("grid text-xs min-w-0", corpus ? "grid-cols-5" : "grid-cols-4")}>
         <Link
           to="/"
           className="flex flex-col items-center py-2 px-1 hover:bg-accent hover:text-accent-foreground min-h-[48px] justify-center min-w-0"
@@ -412,6 +455,15 @@ function MobileBottomTabs() {
           <MapIcon className="h-5 w-5 mb-1" />
           <span className="truncate">Map</span>
         </Link>
+        {corpus && (
+          <Link
+            to="/corpus"
+            className="flex flex-col items-center py-2 px-1 hover:bg-accent hover:text-accent-foreground min-h-[48px] justify-center min-w-0"
+          >
+            <Library className="h-5 w-5 mb-1" />
+            <span className="truncate">Corpus</span>
+          </Link>
+        )}
         <Link
           to="/search"
           className="flex flex-col items-center py-2 px-1 hover:bg-accent hover:text-accent-foreground min-h-[48px] justify-center min-w-0"

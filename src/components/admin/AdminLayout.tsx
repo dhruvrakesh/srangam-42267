@@ -19,6 +19,9 @@ import {
   HeartPulse,
   Map as MapIcon,
   UserPlus,
+  Library,
+  NotebookPen,
+  GraduationCap,
 } from "lucide-react";
 import {
   Sidebar,
@@ -109,6 +112,15 @@ const adminNavItems = [
   },
 ];
 
+// NAV_RBAC_2026_10_10: the working corpus from the admin panel (every admin reads it): its library,
+// the Corner (where editors approve researchers' requests) and Learn. The labels avoid the word
+// "Researchers", which names the super admin's invitations page above.
+const corpusNavItems = [
+  { title: "Library", url: "/corpus", icon: Library },
+  { title: "Corner (ask the desk)", url: "/corpus/corner", icon: NotebookPen },
+  { title: "Learn", url: "/corpus/learn", icon: GraduationCap },
+];
+
 export function AdminLayout() {
   const location = useLocation();
   const { user, isAdmin, isSuperAdmin, signOut } = useAuth();   // RBAC_RESEARCHERS_2026_10_08
@@ -144,6 +156,31 @@ export function AdminLayout() {
                   </SidebarMenu>
                 </SidebarGroupContent>
               </SidebarGroup>
+              {/* NAV_RBAC_2026_10_10 */}
+              {isAdmin && (
+                <SidebarGroup>
+                  <SidebarGroupLabel>Working corpus</SidebarGroupLabel>
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      {corpusNavItems.map((item) => (
+                        <SidebarMenuItem key={item.title}>
+                          <SidebarMenuButton asChild isActive={location.pathname === item.url}>
+                            <NavLink
+                              to={item.url}
+                              end
+                              className="flex items-center gap-3"
+                              activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                            >
+                              <item.icon className="h-4 w-4" />
+                              <span>{item.title}</span>
+                            </NavLink>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      ))}
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </SidebarGroup>
+              )}
             </SidebarContent>
           </Sidebar>
 

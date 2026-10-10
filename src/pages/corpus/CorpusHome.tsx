@@ -148,6 +148,12 @@ function CorpusHomeBody() {
           Every text on the translation desk, as it stands today: Devanagari, IAST, the English and the
           Hindi. Published texts are also at <Link to="/texts" className="text-burgundy hover:underline">/texts</Link>.
         </p>
+        {/* NAV_RBAC_2026_10_10: where to start */}
+        <p className="mt-2 text-sm text-muted-foreground">
+          New here? <Link to="/corpus/learn" className="text-burgundy hover:underline">Learn</Link> walks you
+          through every tool in short quests; the <Link to="/corpus/corner" className="text-burgundy hover:underline">Researchers&apos; Corner</Link> is
+          where you ask the desk for stories, pictures and graphic novels.
+        </p>
       </header>
 
       <Card className="mb-6">
