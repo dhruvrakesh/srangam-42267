@@ -2240,6 +2240,21 @@ export type Database = {
         Returns: boolean
       }
       corner_desk_state: { Args: never; Returns: Json }
+      corner_ideas: {
+        Args: { p_doc: string }
+        Returns: {
+          asked_at: string
+          at: string
+          brief: string
+          draw_request_id: number
+          draw_status: string
+          drawn: boolean
+          image_id: number
+          kind: string
+          request_id: number
+          title: string
+        }[]
+      }
       corner_kinds: {
         Args: never
         Returns: {
@@ -2250,6 +2265,55 @@ export type Database = {
           kind: string
           label: string
           unit: string
+        }[]
+      }
+      corner_mail_claim: {
+        Args: { p_limit: number }
+        Returns: {
+          body: string
+          id: number
+          mail_from: string
+          reply_to: string
+          subject: string
+          to_email: string
+        }[]
+      }
+      corner_mail_done: {
+        Args: {
+          p_error: string
+          p_id: number
+          p_ok: boolean
+          p_provider_id: string
+        }
+        Returns: boolean
+      }
+      corner_mail_invite: {
+        Args: { p_invite: string; p_token: string }
+        Returns: string
+      }
+      corner_mail_prefs: {
+        Args: never
+        Returns: {
+          is_editor: boolean
+          mail_enabled: boolean
+          mail_from: string
+          on_my_requests: boolean
+          on_queue: boolean
+        }[]
+      }
+      corner_mail_prefs_set: {
+        Args: { p_on_my_requests: boolean; p_on_queue: boolean }
+        Returns: boolean
+      }
+      corner_mail_state: {
+        Args: never
+        Returns: {
+          failed_7d: number
+          last_error: string
+          last_sent_at: string
+          mail_enabled: boolean
+          sent_today: number
+          waiting: number
         }[]
       }
       corner_me: {
@@ -2297,6 +2361,19 @@ export type Database = {
           request_status: string
         }[]
       }
+      corner_request_track: {
+        Args: { p_ids: number[] }
+        Returns: {
+          attempts: number
+          claimed_at: string
+          decided_at: string
+          finished_at: string
+          id: number
+          progress: Json
+          started_at: string
+          status: string
+        }[]
+      }
       corner_requests: {
         Args: {
           k?: number
@@ -2326,6 +2403,17 @@ export type Database = {
           started_at: string
           status: string
           total: number
+        }[]
+      }
+      corner_retired_pictures: {
+        Args: { p_doc: string }
+        Returns: {
+          caption_en: string
+          has_file: boolean
+          image_id: number
+          kind: string
+          retired_at: string
+          title: string
         }[]
       }
       corner_settings_set: {
@@ -2812,6 +2900,44 @@ export type Database = {
         }[]
       }
       is_super_admin: { Args: never; Returns: boolean }
+      learn_mark: { Args: { p_quest: string }; Returns: boolean }
+      learn_me: {
+        Args: never
+        Returns: {
+          done: boolean
+          done_at: string
+          editors_only: boolean
+          mode: string
+          quest: string
+          track: string
+          xp: number
+        }[]
+      }
+      learn_summary: {
+        Args: never
+        Returns: {
+          badges: string[]
+          level: string
+          level_index: number
+          next_level: string
+          next_level_xp: number
+          quests_done: number
+          quests_total: number
+          xp: number
+        }[]
+      }
+      learn_team: {
+        Args: never
+        Returns: {
+          email: string
+          last_activity: string
+          level: string
+          quests_done: number
+          roles: string[]
+          user_id: string
+          xp: number
+        }[]
+      }
       longtransactionsenabled: { Args: never; Returns: boolean }
       match_text_passages: {
         Args: {
