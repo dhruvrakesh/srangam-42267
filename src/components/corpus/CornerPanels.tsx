@@ -369,17 +369,18 @@ export function MailAdminCard({ prefs }: { prefs: MailPrefs }) {
           </div>
         </MailRow>
         <MailRow k="mail_reply_to" label="Reply-to" value={() => cleanReplyTo(reply)} shown={(v) => v || '(none)'}
-          hint="Where replies go: one address, or empty for none. The address saved now is not shown here; saving replaces it.">
+          hint="Where replies go: an inbox someone reads, such as a Gmail address, or empty for none. nartiang.org receives no mail (it has no MX record), so an address there loses every reply. The address saved now is not shown here; saving replaces it.">
           <div className="min-w-0 flex-1 space-y-1.5">
             <Label htmlFor="mail-reply">Address</Label>
-            <Input id="mail-reply" type="email" value={reply} onChange={(e) => setReply(e.target.value)} maxLength={254} placeholder="desk@nartiang.org" />
+            {/* CORNER_UX_U1_2026_10_10: the placeholder looked like a saved value, and named an address that cannot receive mail */}
+            <Input id="mail-reply" type="email" value={reply} onChange={(e) => setReply(e.target.value)} maxLength={254} placeholder="an inbox you read" />
           </div>
         </MailRow>
         <MailRow k="site_url" label="The site's address in the emails" value={() => cleanSiteUrl(site)}
           hint={`https:// and the host, no path, such as ${DEFAULT_SITE}. The address saved now is not shown here; saving replaces it.`}>
           <div className="min-w-0 flex-1 space-y-1.5">
             <Label htmlFor="mail-site">Address</Label>
-            <Input id="mail-site" value={site} onChange={(e) => setSite(e.target.value)} maxLength={200} placeholder={DEFAULT_SITE} />
+            <Input id="mail-site" value={site} onChange={(e) => setSite(e.target.value)} maxLength={200} placeholder={`such as ${DEFAULT_SITE}`} />
           </div>
         </MailRow>
       </CardContent>

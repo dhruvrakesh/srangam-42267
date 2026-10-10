@@ -27,6 +27,15 @@
  * queue. These panels are CornerPanels.tsx, loaded when first shown. After every request (and an
  * editor's decision) the waiting emails are sent (cornerMail.flushMail). Without C10b or C12 the page
  * is as before.
+ *
+ * CORNER_UX_U1_2026_10_10: Ask the desk is guided (src/lib/cornerGuide.ts, CornerGuide.tsx). A line
+ * on the working corpus so far ("the offering so far"); before a text is chosen, where to begin (the
+ * texts with English and no story yet, the text chosen last time, "Surprise me") and no forms; after,
+ * what the text has, "What would you like to make?" (a story, a picture, a graphic novel, everything:
+ * ?goal=, or the goal of ?kind=), and "Ready in this text": what can be asked for now, each with "Set
+ * it up", which fills its form and goes to it. The passages of a story or a picture can be chosen in
+ * the text itself (PassagePicker.tsx, loaded when first opened). Nothing is asked of the desk but by a
+ * form's own button.
  */
 import {
   createContext, lazy, Suspense, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode,
@@ -53,7 +62,7 @@ import {
 } from '@/components/corpus/CornerState';
 import { toast } from '@/hooks/use-toast';
 import { MediaStatus } from '@/components/corpus/MediaParts';
-import { listMirrorDocs, type MirrorDoc } from '@/lib/corpusMirror';
+import { listMirrorDocs } from '@/lib/corpusMirror';
 import { bookTitle, isStory, loadStories, parseVerify, type StoryRow } from '@/lib/corpusLibrary';
 import { isMedia, isNovel, loadMedia, loadNovels, type MediaRow, type NovelRow } from '@/lib/corpusMedia';
 import {
@@ -67,6 +76,16 @@ import {
   finishNotice, listRefresh, loadLiveRequests, meRefresh, newlyFinished, nextRound, nextSteps, parseDeskInfo,
   ROUND_MIN, type FinishNotice, type LiveRequest,
 } from '@/lib/cornerState';
+// CORNER_UX_U1_2026_10_10: the guide
+import {
+  GoalPicker, OfferingStrip, ReadyList, SurpriseButton, TextShelf, TextSummary,
+} from '@/components/corpus/CornerGuide';
+import {
+  briefFrom, goalCounts, goalOf, loadOffering, OFFERING_KEY, parseGoal, rangeNote, readyNow, recallDoc, rememberDoc, shows,
+  surpriseText, textState, translatedTexts, type Goal, type Picked, type Suggestion,
+} from '@/lib/cornerGuide';
+
+const PassagePicker = lazy(() => import('@/components/corpus/PassagePicker'));
 
 // CORNER_C10_MAIL_2026_10_09: the new panels, loaded when first shown
 const panels = () => import('@/components/corpus/CornerPanels');
@@ -189,6 +208,11 @@ function AskCard({ kind, k, doc, params, ready, estimate, highlight, help, child
         </form>
         {r && r.ok && <ActionNote ok text={`${x?.message ?? 'Asked.'}${x?.request_id ? ` (request #${x.request_id})` : ''}`} mineLink />}
         {r && !r.ok && <ActionNote ok={false} text={r.error} />}
+        {r && r.ok && (
+          <p className="text-xs text-muted-foreground">
+            It counts towards your quests in <Link to="/corpus/learn" className="text-burgundy hover:underline">Learn</Link>.
+          </p>
+        )}
       </CardContent>
     </Card>
   );
@@ -237,18 +261,24 @@ function AskTab({ me }: { me: CornerMe }) {
   const want = search.get('kind');
   const init = (kind: string, key: string) => (want === kind ? (search.get(key) ?? '') : '');
   const [doc, setDoc] = useState(search.get('doc') ?? '');
+  // CORNER_UX_U1_2026_10_10: what to make, the form to go to, the text chosen last time
+  const [goal, setGoal] = useState<Goal>(() => parseGoal(search.get('goal')) ?? goalOf(want) ?? 'all');
+  const [focus, setFocus] = useState<string | null>(want);
+  const [focusTick, setFocusTick] = useState(0);
+  const [lastDoc] = useState<string | null>(() => (search.get('doc') ? null : recallDoc()));
 
   const docs = useQuery({ queryKey: ['mirror', 'docs'], queryFn: listMirrorDocs, staleTime: 2 * 60 * 1000 });
   const kinds = useQuery({ queryKey: [...KEY, 'kinds'], queryFn: loadKinds, staleTime: 5 * 60 * 1000 });
   const stories = useQuery({ queryKey: ['mirror', 'stories', 'list', doc], queryFn: () => loadStories(doc, false), enabled: !!doc, staleTime: 2 * 60 * 1000 });
   const novels = useQuery({ queryKey: ['mirror', 'novels', 'doc', doc], queryFn: () => loadNovels(doc), enabled: !!doc, staleTime: 2 * 60 * 1000 });
   const media = useQuery({ queryKey: ['mirror', 'media', 'pick', doc], queryFn: () => loadMedia({ doc, k: 200 }), enabled: !!doc, staleTime: 2 * 60 * 1000 });
+  // the strip's query (OfferingStrip asks the same); its answer also says the database has C13, so that a
+  // researcher is shown the drafts and the work in progress
+  const offering = useQuery({ queryKey: OFFERING_KEY, queryFn: loadOffering, staleTime: 5 * 60 * 1000 });
 
-  const texts = useMemo(() => (docs.data?.ok ? docs.data.rows : [])
-    .filter((d: MirrorDoc) => d && typeof d.doc_code === 'string' && d.english > 0)
-    .map((d) => ({ ...d, label: bookTitle(d).title }))
-    .sort((a, b) => a.label.localeCompare(b.label)), [docs.data]);
+  const texts = useMemo(() => translatedTexts(docs.data?.ok ? docs.data.rows : []), [docs.data]);
   const text = texts.find((d) => d.doc_code === doc);
+  const lastText = lastDoc ? texts.find((d) => d.doc_code === lastDoc) ?? null : null;
   const known = useMemo(() => new Map((kinds.data?.ok ? kinds.data.rows : []).map((k) => [k.kind, k])), [kinds.data]);
   const all = useMemo(() => (stories.data?.ok ? stories.data.rows.filter(isStory) : []), [stories.data]);
   const nov = useMemo(() => (novels.data?.ok ? novels.data.rows.filter(isNovel) : []), [novels.data]);
@@ -280,17 +310,42 @@ function AskTab({ me }: { me: CornerMe }) {
   const [cNovel, setCNovel] = useState(init('novel_cast', 'novel_id'));
   const [gNovel, setGNovel] = useState(init('novel_draw', 'novel_id'));
   const [gPages, setGPages] = useState('');
+  // CORNER_UX_U1_2026_10_10: passages chosen in the text (their place in it, for the range's length)
+  const [picker, setPicker] = useState<'range' | 'one' | null>(null);
+  const [rFromP, setRFromP] = useState<Picked | null>(null);
+  const [rToP, setRToP] = useState<Picked | null>(null);
+  const [pAtP, setPAtP] = useState<Picked | null>(null);
+  const [pBriefAuto, setPBriefAuto] = useState<string | null>(null);
 
   const chooseDoc = (v: string) => {
     setDoc(v);
     for (const f of [setWStory, setIStory, setDImage, setNStory, setCNovel, setGNovel]) f('');
+    for (const f of [setRFromP, setRToP, setPAtP]) f(null);
+    // a passage of one text means nothing in another; a brief the picker wrote goes with its passage
+    for (const f of [setRFrom, setRTo, setPAt]) f('');
+    if (pBriefAuto !== null && pBrief === pBriefAuto) setPBrief('');
+    setPBriefAuto(null);
+    setPicker(null);
+    rememberDoc(v);
+  };
+  const surprise = () => {
+    const t = surpriseText(texts, doc);
+    if (t) chooseDoc(t.doc_code);
   };
 
+  const hasDoc = !!doc;
+  const loaded = !!doc && !!stories.data?.ok && !!novels.data?.ok && !!media.data?.ok;
   useEffect(() => {
-    if (!want) return;
-    const t = setTimeout(() => document.getElementById(`ask-${want}`)?.scrollIntoView?.({ behavior: 'smooth', block: 'start' }), 50);
+    if (!focus || !hasDoc) return;
+    // again once the text's lists have come (they push the forms down), and to the form's first field
+    // after "Set it up"
+    const t = setTimeout(() => {
+      const el = document.getElementById(`ask-${focus}`);
+      el?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+      if (focusTick > 0) el?.querySelector<HTMLElement>('select, input, textarea')?.focus({ preventScroll: true });
+    }, 50);
     return () => clearTimeout(t);
-  }, [want]);
+  }, [focus, focusTick, hasDoc, loaded]);
 
   const usable = (kind: string) => kindUsable(kind, known.get(kind), me.is_editor);
   const isInt = (v: string, lo: number, hi: number) => Number.isInteger(Number(v)) && v.trim() !== '' && Number(v) >= lo && Number(v) <= hi;
@@ -299,7 +354,7 @@ function AskTab({ me }: { me: CornerMe }) {
   const card = (kind: string, params: Record<string, unknown>, ready: boolean, children: ReactNode, o: { help?: string; extra?: { english?: number | null; pages?: number | null } } = {}) =>
     usable(kind) ? (
       <AskCard key={kind} kind={kind} k={known.get(kind)} doc={doc} params={params} ready={ready}
-        estimate={est(kind, params, o.extra)} highlight={want === kind} help={o.help}>
+        estimate={est(kind, params, o.extra)} highlight={focus === kind} help={o.help}>
         {children}
       </AskCard>
     ) : null;
@@ -309,20 +364,91 @@ function AskTab({ me }: { me: CornerMe }) {
   const drawNovel = nov.find((n) => String(n.novel_id) === gNovel);
   const pagesOk = gPages.trim() === '' || parsePages(gPages) != null;
 
+  // CORNER_UX_U1_2026_10_10: what is ready in this text, once its stories, pictures and novels are read
+  const seesDrafts = me.is_editor || !!offering.data?.ok;
+  const ready = loaded ? readyNow({ stories: all, pics, novels: nov, usable, seesDrafts, textStories: text?.stories ?? 0 }) : [];
+  const counts = goalCounts(ready);
+  const readyShown = ready.filter((s) => shows(goal, s.goal)).slice(0, 4);
+  const readyEst = (s: Suggestion) => est(s.kind, s.kind === 'novel_plan' ? { story_id: Number(s.fill.story_id), pages: 12 } : {},
+    s.kind === 'story_mine' ? { english: text?.english ?? 0 } : {});
+  const setUp = (s: Suggestion) => {
+    if (s.kind === 'story_write') setWStory(s.fill.story_id ?? '');
+    if (s.kind === 'story_illustrate') setIStory(s.fill.story_id ?? '');
+    if (s.kind === 'novel_plan') setNStory(s.fill.story_id ?? '');
+    if (goal !== 'all' && goal !== s.goal) setGoal(s.goal);
+    setFocus(s.kind);
+    setFocusTick((t) => t + 1);
+  };
+  const pick = (which: 'from' | 'to' | 'at', p: Picked, english: string | null) => {
+    if (which === 'from') { setRFrom(p.ref); setRFromP(p); }
+    if (which === 'to') { setRTo(p.ref); setRToP(p); }
+    if (which === 'at') {
+      setPAt(p.ref); setPAtP(p);
+      // the brief starts from the passage's English, and follows the passage until it is written in
+      if (!pBrief.trim() || pBrief === pBriefAuto) {
+        const b = briefFrom(english);
+        setPBrief(b); setPBriefAuto(b);
+      }
+    }
+  };
+  const rNote = rangeNote(rFromP, rToP);
+  const pickerButton = (mode: 'range' | 'one', label: string) => (
+    <Button type="button" size="sm" variant="outline" className="h-8" disabled={!doc}
+      onClick={() => setPicker(picker === mode ? null : mode)} aria-expanded={picker === mode}>
+      {picker === mode ? 'Hide the text' : label}
+    </Button>
+  );
+  const pickerPanel = (mode: 'range' | 'one') => (picker === mode && doc ? (
+    <Suspense fallback={<Skeleton className="h-24 w-full" />}>
+      <PassagePicker doc={doc} passages={text?.passages ?? 0} mode={mode} from={rFromP} to={rToP} at={pAtP}
+        onPick={pick} onClose={() => setPicker(null)} />
+    </Suspense>
+  ) : null);
+  const withStories = texts.filter((t) => !t.untold);
+  const untold = texts.filter((t) => t.untold);
+  const option = (d: (typeof texts)[number]) => (
+    <option key={d.doc_code} value={d.doc_code}>{d.label}</option>
+  );
+
   return (
     <div className="space-y-8">
+      <OfferingStrip texts={texts} />
       <div className="max-w-xl space-y-2">
         {docs.data && !docs.data.ok && <CornerProblem r={{ ...docs.data, missing: false }} what="The list of texts" />}
         <Field id="ask-doc" label="The text" hint={text ? `${text.english} of its ${text.passages} passages are translated into English.` : 'The desk works from the translated passages of one text at a time.'}>
-          <select id="ask-doc" className={SELECT} value={doc} onChange={(e) => chooseDoc(e.target.value)} disabled={docs.isLoading}>
-            <option value="">{docs.isLoading ? 'Loading the texts...' : 'Choose a text'}</option>
-            {texts.map((d) => <option key={d.doc_code} value={d.doc_code}>{d.label}</option>)}
-            {doc && !text && docs.data?.ok && <option value={doc}>{doc}</option>}
-          </select>
+          <div className="flex items-center gap-2">
+            <select id="ask-doc" className={SELECT} value={doc} onChange={(e) => chooseDoc(e.target.value)} disabled={docs.isLoading}>
+              <option value="">{docs.isLoading ? 'Loading the texts...' : 'Choose a text'}</option>
+              {untold.length > 0 && withStories.length > 0 ? (
+                <>
+                  <optgroup label="Waiting for their first story">{untold.map(option)}</optgroup>
+                  <optgroup label="With stories">{withStories.map(option)}</optgroup>
+                </>
+              ) : texts.map(option)}
+              {doc && !text && docs.data?.ok && <option value={doc}>{doc}</option>}
+            </select>
+            {texts.length > 1 && <SurpriseButton onSurprise={surprise} disabled={docs.isLoading} />}
+          </div>
         </Field>
+        {text && <TextSummary text={text} state={loaded ? textState(all, pics, nov) : null} ready={loaded} />}
       </div>
 
-      <section aria-labelledby="ask-stories">
+      {!doc && docs.data?.ok && (
+        <div className="space-y-3">
+          <TextShelf texts={texts} last={lastText} onChoose={chooseDoc} />
+          <p className="text-sm text-muted-foreground">Choose a text, then what to make from it: a story, a picture or a graphic novel.</p>
+        </div>
+      )}
+
+      {doc && (
+        <div className="space-y-6">
+          <GoalPicker goal={goal} counts={counts} onGoal={setGoal} />
+          <ReadyList items={readyShown} estimate={readyEst} onSetUp={setUp} doc={doc} />
+        </div>
+      )}
+
+      {doc && (
+      <section aria-labelledby="ask-stories" hidden={!shows(goal, 'story')}>
         <h2 id="ask-stories" className="mb-3 flex items-center gap-2 font-serif text-xl font-semibold text-foreground">
           <BookMarked className="h-5 w-5 text-burgundy" aria-hidden="true" /> Stories
         </h2>
@@ -330,9 +456,14 @@ function AskTab({ me }: { me: CornerMe }) {
           {card('story_range', range, !!cleanRef(rFrom) && !!cleanRef(rTo) && range.title.length >= 3 && range.title.length <= 200, (
             <>
               <div className="grid grid-cols-2 gap-3">
-                <Field id="story_range-from" label="From passage"><Input id="story_range-from" value={rFrom} onChange={(e) => setRFrom(e.target.value)} placeholder="25.2" inputMode="decimal" maxLength={13} /></Field>
-                <Field id="story_range-to" label="To passage"><Input id="story_range-to" value={rTo} onChange={(e) => setRTo(e.target.value)} placeholder="25.9" inputMode="decimal" maxLength={13} /></Field>
+                <Field id="story_range-from" label="From passage"><Input id="story_range-from" value={rFrom} onChange={(e) => { setRFrom(e.target.value); setRFromP(null); }} placeholder="such as 25.2" inputMode="decimal" maxLength={13} /></Field>
+                <Field id="story_range-to" label="To passage"><Input id="story_range-to" value={rTo} onChange={(e) => { setRTo(e.target.value); setRToP(null); }} placeholder="such as 25.9" inputMode="decimal" maxLength={13} /></Field>
               </div>
+              <div className="flex flex-wrap items-center gap-3">
+                {pickerButton('range', 'Choose them in the text')}
+                {rNote && <span className={`text-xs ${rNote.ok ? 'text-muted-foreground' : 'font-medium text-amber-700 dark:text-amber-300'}`}>{rNote.text}</span>}
+              </div>
+              {pickerPanel('range')}
               <Field id="story_range-title" label="A working title"><Input id="story_range-title" value={rTitle} onChange={(e) => setRTitle(e.target.value)} maxLength={200} /></Field>
               <Field id="story_range-why" label="Why this episode (optional)"><Textarea id="story_range-why" rows={2} value={rWhy} onChange={(e) => setRWhy(e.target.value)} maxLength={1000} /></Field>
             </>
@@ -347,17 +478,21 @@ function AskTab({ me }: { me: CornerMe }) {
           ), { help: 'The desk reads the whole text for episodes worth telling and proposes them; the estimate grows with its length.', extra: { english: text?.english ?? 0 } })}
         </div>
       </section>
+      )}
 
-      <section aria-labelledby="ask-pictures">
+      {doc && (
+      <section aria-labelledby="ask-pictures" hidden={!shows(goal, 'picture')}>
         <h2 id="ask-pictures" className="mb-3 flex items-center gap-2 font-serif text-xl font-semibold text-foreground">
           <Images className="h-5 w-5 text-burgundy" aria-hidden="true" /> Pictures
         </h2>
         <div className="grid gap-4 lg:grid-cols-2">
           {card('picture_passage', passage, !!cleanRef(pAt) && passage.title.length >= 3 && passage.brief.length >= 20, (
             <>
-              <Field id="picture_passage-at" label="The passage"><Input id="picture_passage-at" value={pAt} onChange={(e) => setPAt(e.target.value)} placeholder="25.7" inputMode="decimal" maxLength={13} /></Field>
+              <Field id="picture_passage-at" label="The passage"><Input id="picture_passage-at" value={pAt} onChange={(e) => { setPAt(e.target.value); setPAtP(null); }} placeholder="such as 25.7" inputMode="decimal" maxLength={13} /></Field>
+              <div className="flex flex-wrap items-center gap-3">{pickerButton('one', 'Choose it in the text')}</div>
+              {pickerPanel('one')}
               <Field id="picture_passage-title" label="A title"><Input id="picture_passage-title" value={pTitle} onChange={(e) => setPTitle(e.target.value)} maxLength={200} /></Field>
-              <Field id="picture_passage-brief" label="What the picture should show" hint="20 to 2000 characters: the scene, the figures, what they hold and wear, as the passage tells it.">
+              <Field id="picture_passage-brief" label="What the picture should show" hint="20 to 2000 characters: the scene, the figures, what they hold and wear, as the passage tells it. Choosing the passage in the text starts it from its English.">
                 <Textarea id="picture_passage-brief" rows={3} value={pBrief} onChange={(e) => setPBrief(e.target.value)} maxLength={2000} />
               </Field>
               <Field id="picture_passage-caption" label="A caption (optional)"><Input id="picture_passage-caption" value={pCaption} onChange={(e) => setPCaption(e.target.value)} maxLength={500} /></Field>
@@ -393,8 +528,10 @@ function AskTab({ me }: { me: CornerMe }) {
           <Suspense fallback={null}><RetiredPanel doc={doc} /></Suspense>
         )}
       </section>
+      )}
 
-      <section aria-labelledby="ask-novels">
+      {doc && (
+      <section aria-labelledby="ask-novels" hidden={!shows(goal, 'novel')}>
         <h2 id="ask-novels" className="mb-3 flex items-center gap-2 font-serif text-xl font-semibold text-foreground">
           <BookImage className="h-5 w-5 text-burgundy" aria-hidden="true" /> Graphic novels
         </h2>
@@ -430,6 +567,7 @@ function AskTab({ me }: { me: CornerMe }) {
           ), { extra: { pages: drawNovel?.pages ?? null } })}
         </div>
       </section>
+      )}
     </div>
   );
 }
@@ -544,7 +682,10 @@ function MineTab({ me }: { me: CornerMe }) {
       {q.isLoading && <div className="space-y-3" aria-busy="true"><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /></div>}
       {q.data && !q.data.ok && <CornerProblem r={q.data} what="Your requests" />}
       {q.data?.ok && q.data.rows.length === 0 && (
-        <p className="text-sm text-muted-foreground">You have not asked the desk for anything yet. <Link to="/corpus/corner?tab=ask" className="text-burgundy hover:underline">Ask it now</Link>.</p>
+        <p className="text-sm text-muted-foreground">
+          You have not asked the desk for anything yet. <Link to="/corpus/corner?tab=ask" className="text-burgundy hover:underline">Ask it now</Link>,
+          or let <Link to="/corpus/learn" className="text-burgundy hover:underline">Learn</Link> walk you through it.
+        </p>
       )}
       {q.data?.ok && q.data.rows.length > 0 && (
         <ol className="space-y-3">

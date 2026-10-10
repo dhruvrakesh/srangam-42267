@@ -232,8 +232,12 @@ function Builder({ me, start }: { me: CornerMe; start: { id: number | null; titl
   });
 
   const have = new Set(chosen.map(keyOf));
+  // CORNER_UX_U1_2026_10_10: a researcher's anthology holds approved stories only (corner_collection_save
+  // refuses any other from her), so once C13 shows her the drafts they are still not offered here.
+  const editor = me.is_editor;
   const pool = useMemo(() => (stories.data?.ok ? stories.data.rows.filter(isStory) : [])
-    .filter((s: StoryRow) => s.status !== 'candidate' && s.status !== 'retired' && s.status !== 'rejected'), [stories.data]);
+    .filter((s: StoryRow) => s.status !== 'candidate' && s.status !== 'retired' && s.status !== 'rejected')
+    .filter((s: StoryRow) => editor || s.status === 'approved'), [stories.data, editor]);
   const groups = useMemo(() => {
     const f = filter.trim().toLowerCase();
     const m = new Map<string, { title: string; rows: StoryRow[] }>();
