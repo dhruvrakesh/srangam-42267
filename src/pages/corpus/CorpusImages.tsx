@@ -6,6 +6,8 @@
  * drafts, marked as such. Approval is a person's decision on the desk; scripts/corpus_media.py
  * carries it here. ?doc=<code> shows one text; ?pic=<key> opens one picture (a link to share).
  * The graphic novels' pages are in /corpus/novels, not here.
+ * CORNER_C10_MAIL_2026_10_09: the desk's bar is given the picture's words, so its Edit form starts
+ * from them.
  */
 import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -82,7 +84,13 @@ function Lightbox({ list, at, go, close }: { list: MediaRow[]; at: number; go: (
           {m.caption_hi && <p lang="hi" className="font-devanagari text-base leading-relaxed text-foreground/90">{m.caption_hi}</p>}
           {m.context_note && <p className="whitespace-pre-line text-muted-foreground">{m.context_note}</p>}
           {isGenerated(m.kind) ? <GeneratedNote model={m.model} /> : m.license && <p className="text-xs text-muted-foreground">{m.license}</p>}
-          <DeskActions target={{ type: 'picture', doc_code: m.doc_code, media_key: m.media_key, status: m.status }} className="mt-2" />
+          <DeskActions
+            target={{
+              type: 'picture', doc_code: m.doc_code, media_key: m.media_key, status: m.status, title: m.title,
+              caption_en: m.caption_en, caption_hi: m.caption_hi, context_note: m.context_note, license: m.license,
+            }}
+            className="mt-2"
+          />
           {m.approved_at_local && <p className="text-xs text-muted-foreground">Approved {m.approved_at_local.slice(0, 10)}.</p>}
         </div>
         <nav className="flex justify-between text-sm" aria-label="Other pictures">

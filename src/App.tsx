@@ -1,6 +1,8 @@
 import React, { Suspense, lazy } from 'react';
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+// LOAD_L2_2026_10_09: the toast hosts load right after the first render instead of in the entry.
+// Radix toasts raised before the host mounts are kept in use-toast's memory state and shown on mount.
+const Toaster = lazy(() => import("@/components/ui/toaster").then((m) => ({ default: m.Toaster })));
+const Sonner = lazy(() => import("@/components/ui/sonner").then((m) => ({ default: m.Toaster })));
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -143,8 +145,10 @@ const App = () => (
           <AuthProvider>
             <LanguageProvider>
               <TooltipProvider>
-                <Toaster />
-                <Sonner />
+                <Suspense fallback={null}>
+                  <Toaster />
+                  <Sonner />
+                </Suspense>
                 <SiteSchema />
                 {import.meta.env.DEV && NarrationDebugPanel && (
                   <Suspense fallback={null}>

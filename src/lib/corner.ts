@@ -18,6 +18,13 @@
  * CORNER_STATE_S1_2026_10_09: where each request is, the desk's next round, the next steps of a
  * finished request and the desk's report of the mirror and the pictures live in cornerState.ts, so
  * the pages that only share this file (stories, pictures, novels, through DeskActions) stay small.
+ *
+ * CORNER_C10_MAIL_2026_10_09: the eight kinds of C10b (docs/cloud/C10b_corner_kinds_2026-10-09.sql):
+ * edit a story, a picture's words or a novel's page, check a story again, ideas for pictures and a
+ * cover, draw an idea, restore a retired picture; novel_cast and novel_draw may be asked "again"
+ * (redo). They are offered only once corner_kinds() lists them, so before C10b the pages are as
+ * before. Their forms and the Corner's new panels live in DeskEdit.tsx, CornerPanels.tsx and
+ * cornerC10.ts (each loaded only when used); the Corner's email is cornerMail.ts.
  */
 import { supabase } from '@/integrations/supabase/client';
 import { callMirror, functionMissing, type MirrorDoc } from '@/lib/corpusMirror';
@@ -25,6 +32,8 @@ import { parseAt, storyHref } from '@/lib/corpusLibrary';
 import { imagesHref, novelHref, type MediaResult } from '@/lib/corpusMedia';
 
 export const CORNER_MARK = 'CORNER_C9_2026_10_09';
+/** CORNER_C10_MAIL_2026_10_09: the kinds of C10b. */
+export const C10_MARK = 'CORNER_C10_MAIL_2026_10_09';
 export const CORNER_KEY = ['corner'] as const;
 export const CORNER_HREF = '/corpus/corner';
 /** How long the desk may be away before the Corner says so (its rounds are every ten minutes). */
@@ -184,7 +193,9 @@ export function cancelRequest(id: number): Promise<CornerResult<Decision>> {
   return act<Decision>('corner_request_cancel', { p_id: id });
 }
 
-export type SettingKey = 'daily_cap_usd' | 'researchers_need_approval' | 'max_pending_per_person';
+export type SettingKey = 'daily_cap_usd' | 'researchers_need_approval' | 'max_pending_per_person'
+  // CORNER_C10_MAIL_2026_10_09: the Corner's email (C12), the super admin's too
+  | 'mail_enabled' | 'mail_from' | 'mail_reply_to' | 'site_url';
 
 /** corner_settings_set answers with the value it kept (a scalar, not a table). */
 export function setSetting(key: SettingKey, value: string): Promise<CornerResult<string>> {
@@ -260,6 +271,35 @@ export const TONE_CLASS: Record<Tone, string> = {
 
 export const s = (v: unknown): string => (v == null ? '' : String(v).trim());
 
+/** CORNER_C10_MAIL_2026_10_09: the kinds C10b adds. A page offers them only once corner_kinds()
+ *  lists them (before C10b the database would refuse them as unknown). */
+export const C10_KINDS: ReadonlySet<string> = new Set([
+  'story_edit', 'story_verify', 'picture_ideas', 'picture_cover', 'picture_draw', 'picture_edit', 'picture_restore',
+  'novel_page_edit',
+]);
+/** The kinds whose result is a list of ideas for pictures ({"ideas": [...], "count"}). */
+export const IDEA_KINDS: ReadonlySet<string> = new Set(['picture_ideas', 'picture_cover']);
+
+/** May this viewer be offered this kind: as corner_kinds() says; a kind it has not listed (yet) is
+ *  offered as before, but never one of C10b's. */
+export function kindUsable(kind: string, k: Pick<CornerKind, 'enabled' | 'editor_only'> | null | undefined, isEditor: boolean): boolean {
+  if (k) return k.enabled !== false && (!k.editor_only || isEditor);
+  return !C10_KINDS.has(kind);
+}
+
+const FIELD_WORDS: Record<string, string> = {
+  title: 'title', title_hi: 'Hindi title', story_en: 'English text', story_hi: 'Hindi text', caption_en: 'caption',
+  caption_hi: 'Hindi caption', context_note: 'note', license: 'licence', scene: 'scene', caption: 'caption',
+};
+/** "(title, English text)": the fields an edit changes, from its parameters (as asked, or as the
+ *  database kept them under "fields"). */
+function fieldsText(p: Record<string, unknown>, keys: string[]): string {
+  const f = p.fields && typeof p.fields === 'object' && !Array.isArray(p.fields) ? (p.fields as Record<string, unknown>) : p;
+  const names = keys.filter((k) => k in f).map((k) => FIELD_WORDS[k] ?? k);
+  return names.length ? ` (${names.join(', ')})` : '';
+}
+const again = (p: Record<string, unknown>) => (p.redo === true || p.redo === 'true' ? ', drawn again' : '');
+
 /** What a request asks for, in a line ("Passages 25.2-25.9: 'Vitasta flows'"). */
 export function requestSummary(kind: string, params: Record<string, unknown> | null | undefined): string {
   const p = params ?? {};
@@ -272,8 +312,10 @@ export function requestSummary(kind: string, params: Record<string, unknown> | n
     case 'story_illustrate': return `A picture for story ${s(p.story_id)}`;
     case 'picture_redraw': return `Draw picture img:${s(p.image_id)} again`;
     case 'novel_plan': return `A graphic novel from story ${s(p.story_id)}: ${s(p.pages) || '12'} pages, for ${s(p.audience) || 'general'} readers`;
-    case 'novel_cast': return `The cast of graphic novel ${s(p.novel_id)}`;
-    case 'novel_draw': return `Graphic novel ${s(p.novel_id)}: ${s(p.pages) ? `pages ${s(p.pages)}` : 'every page still to be drawn'}`;
+    case 'novel_cast': return `The cast of graphic novel ${s(p.novel_id)}${again(p)}`;
+    case 'novel_draw':
+      if (again(p)) return `Graphic novel ${s(p.novel_id)}: ${s(p.pages) ? `pages ${s(p.pages)}` : 'every page'}${again(p)}`;
+      return `Graphic novel ${s(p.novel_id)}: ${s(p.pages) ? `pages ${s(p.pages)}` : 'every page still to be drawn'}`;
     case 'story_approve': return `Approve story ${s(p.story_id)}${p.force === true ? ' (even with problems)' : ''}`;
     case 'story_retire': return `Retire story ${s(p.story_id)}`;
     case 'picture_approve': return `Approve picture img:${s(p.image_id)}`;
@@ -281,6 +323,15 @@ export function requestSummary(kind: string, params: Record<string, unknown> | n
     case 'novel_page_approve': return `Approve page ${s(p.page)} of graphic novel ${s(p.novel_id)}`;
     case 'novel_approve': return `Approve graphic novel ${s(p.novel_id)}${p.force === true ? ' (even with problems)' : ''}`;
     case 'novel_retire': return `Retire graphic novel ${s(p.novel_id)}`;
+    // CORNER_C10_MAIL_2026_10_09
+    case 'story_edit': return `Edit story ${s(p.story_id)}${fieldsText(p, ['title', 'title_hi', 'story_en', 'story_hi'])}`;
+    case 'story_verify': return `Check story ${s(p.story_id)} against its citations`;
+    case 'picture_ideas': return `Ideas for up to ${s(p.max) || '6'} pictures in the text`;
+    case 'picture_cover': return 'An idea for a cover of the text';
+    case 'picture_draw': return `Draw the idea img:${s(p.image_id)}`;
+    case 'picture_edit': return `Edit the words of picture img:${s(p.image_id)}${fieldsText(p, ['title', 'caption_en', 'caption_hi', 'context_note', 'license'])}`;
+    case 'picture_restore': return `Restore picture img:${s(p.image_id)}`;
+    case 'novel_page_edit': return `Edit page ${s(p.page)} of graphic novel ${s(p.novel_id)}${fieldsText(p, ['scene', 'caption', 'caption_hi'])}`;
     default: return kind;
   }
 }
@@ -303,9 +354,15 @@ export function pictureHref(doc: string | null | undefined, imageId: number): st
 
 export interface ResultLink { label: string; href: string }
 
-const STORY_KINDS = new Set(['story_range', 'story_write', 'story_mine', 'story_approve', 'story_retire']);
-const PICTURE_KINDS = new Set(['picture_passage', 'story_illustrate', 'picture_redraw', 'picture_approve', 'picture_retire']);
-const NOVEL_KINDS = new Set(['novel_plan', 'novel_cast', 'novel_draw', 'novel_page_approve', 'novel_approve', 'novel_retire']);
+const STORY_KINDS = new Set(['story_range', 'story_write', 'story_mine', 'story_approve', 'story_retire', 'story_edit', 'story_verify']);
+const PICTURE_KINDS = new Set([
+  'picture_passage', 'story_illustrate', 'picture_redraw', 'picture_approve', 'picture_retire', 'picture_draw', 'picture_edit',
+  'picture_restore',
+]);
+const NOVEL_KINDS = new Set(['novel_plan', 'novel_cast', 'novel_draw', 'novel_page_approve', 'novel_approve', 'novel_retire', 'novel_page_edit']);
+/** CORNER_C10_MAIL_2026_10_09: an idea not drawn yet, or a retired picture, is not on the pictures'
+ *  page: these link to their picture only once the desk reports it. */
+const PICTURE_ONCE_DONE = new Set(['picture_draw', 'picture_restore']);
 
 /** Where to see what a request made or touched: from the desk's result, else from what it named. */
 export function resultLinks(row: Pick<CornerRequest, 'kind' | 'doc_code' | 'params' | 'result'>): ResultLink[] {
@@ -338,10 +395,14 @@ export function resultLinks(row: Pick<CornerRequest, 'kind' | 'doc_code' | 'para
 
   // What the request named (an episode written, a picture drawn again, a novel's cast ...).
   const ps = idOf(p.story_id);
-  const pi = idOf(p.image_id);
+  const pi = PICTURE_ONCE_DONE.has(row.kind) ? null : idOf(p.image_id);
   const pn = idOf(p.novel_id);
   if (ps != null) story(ps);
   if (pi != null) picture(pi);
+  // CORNER_C10_MAIL_2026_10_09: an edited page links to that page
+  const pg = row.kind === 'novel_page_edit' ? idOf(r.page) ?? idOf(p.page) : null;
+  const pgn = nid ?? pn;
+  if (pg != null && pgn != null) add(`Page ${pg}`, novelHref(pgn, pg));
   if (pn != null) novel(pn);
   return out;
 }

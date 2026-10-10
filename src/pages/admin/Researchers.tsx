@@ -7,14 +7,19 @@
  * the caller again; this page only hides itself from admins who are not the super admin.
  *
  * An invitation link is shown ONCE, when it is made: the database keeps only its hash. The super
- * admin copies it or opens it in their own email program (mailto:); nothing is sent from here.
+ * admin copies it or opens it in their own email program (mailto:).
+ * CORNER_C10_MAIL_2026_10_09: or sends it from nartiang.org: corner_mail_invite(invite_id, token)
+ * queues the email while the token is still known (right after it is made), then the corner-mail
+ * function is asked to send it (cornerMail.flushMail). Shown only when the database has the
+ * Corner's email (C12); the mailto path stays as it was.
  */
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
-  AlertTriangle, Check, Copy, History, Info, Loader2, Mail, ShieldCheck, UserMinus, UserPlus, Users, XCircle,
+  AlertTriangle, Check, Copy, History, Info, Loader2, Mail, Send, ShieldCheck, UserMinus, UserPlus, Users, XCircle,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,6 +39,7 @@ import {
   getAccessMode, inviteEmail, inviteLink, listAudit, listInvites, listMembers, mailtoHref, removeResearcher,
   revokeInvite, setAccessMode, type AccessMode, type CreatedInvite, type InviteStatus, type MemberRow, type RbacResult,
 } from '@/lib/rbac';
+import { flushMail, loadMailPrefs, MAIL_PREFS_KEY, mailInvite, mailShown } from '@/lib/cornerMail';
 
 const KEY = ['rbac'] as const;
 
@@ -66,6 +72,40 @@ function LoadError({ error, what }: { error: unknown; what: string }) {
   );
 }
 
+/** CORNER_C10_MAIL_2026_10_09: the invitation's email, sent from nartiang.org by the Corner's mail
+ *  (only while the token is known, so only here, right after the invitation is made). */
+function SendFromSite({ invite }: { invite: CreatedInvite }) {
+  const prefs = useQuery({ queryKey: MAIL_PREFS_KEY, queryFn: loadMailPrefs, staleTime: 60 * 1000 });
+  const send = useMutation({
+    mutationFn: () => mailInvite(invite.invite_id, invite.token),
+    onSuccess: (r) => {
+      if (!r.ok) return;
+      toast.success(`The invitation for ${invite.email} is on its way`);
+      void flushMail();
+    },
+  });
+  if (!mailShown(prefs.data)) return null;
+  const on = prefs.data.data.mail_enabled;
+  const sent = !!send.data?.ok;
+  return (
+    <div className="space-y-1.5">
+      <Button type="button" variant="outline" className="gap-2" disabled={!on || send.isPending}
+              onClick={() => send.mutate()}>
+        {send.isPending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Send className="h-4 w-4" aria-hidden="true" />}
+        {sent ? 'Send it again from nartiang.org' : 'Send it from nartiang.org'}
+      </Button>
+      {!on && (
+        <p className="text-sm text-muted-foreground">
+          Email from nartiang.org is off. Turn it on in{' '}
+          <Link to="/corpus/corner?tab=settings" className="text-primary underline underline-offset-2">the Researchers&apos; Corner, Settings</Link>.
+        </p>
+      )}
+      {sent && <p role="status" className="text-sm text-emerald-800 dark:text-emerald-300">Queued: it is sent from nartiang.org within a minute or two.</p>}
+      {send.data && !send.data.ok && <p role="alert" className="text-sm text-destructive">{send.data.error}</p>}
+    </div>
+  );
+}
+
 function NewInvite({ invite, onDone }: { invite: CreatedInvite; onDone: () => void }) {
   const link = inviteLink(window.location.origin, invite.token);
   const mail = inviteEmail(link, invite.email, invite.expires_at, null);
@@ -88,6 +128,7 @@ function NewInvite({ invite, onDone }: { invite: CreatedInvite; onDone: () => vo
       <p className="text-sm text-muted-foreground">
         This link is shown once. Copy it now, or open it in your email program, and send it to the researcher.
       </p>
+      <SendFromSite invite={invite} />
       <div className="flex flex-col gap-2 sm:flex-row">
         <Input readOnly value={link} aria-label="Invitation link" className="font-mono text-xs" onFocus={(e) => e.currentTarget.select()} />
         <div className="flex gap-2">

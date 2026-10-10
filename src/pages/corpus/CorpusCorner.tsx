@@ -16,8 +16,21 @@
  * quietly left out while the database does not have it); the lists are asked again every 20
  * seconds while one of them is open, and a request that is done or failed meanwhile is announced
  * once; a finished request links on to its next steps; editors have a Sync tab (?tab=sync).
+ *
+ * CORNER_C10_MAIL_2026_10_09: Ask has ideas for pictures (picture_ideas, how many, 1 to 12) and an
+ * idea for a cover (picture_cover); under them the text's ideas waiting to be drawn (corner_ideas),
+ * each with "Draw this idea" (picture_draw), and for editors the text's retired pictures with
+ * "Restore" (picture_restore). A finished request of ideas lists them in My requests, each with
+ * "Draw this idea". Settings is everyone's once the database has the Corner's email (C12): "Email me
+ * when my requests finish", for editors also when a researcher's request waits, and for the super
+ * admin email on or off, From, Reply-to and the site's address; the Sync tab has a line on the email
+ * queue. These panels are CornerPanels.tsx, loaded when first shown. After every request (and an
+ * editor's decision) the waiting emails are sent (cornerMail.flushMail). Without C10b or C12 the page
+ * is as before.
  */
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import {
+  createContext, lazy, Suspense, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode,
+} from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -45,14 +58,24 @@ import { bookTitle, isStory, loadStories, parseVerify, type StoryRow } from '@/l
 import { isMedia, isNovel, loadMedia, loadNovels, type MediaRow, type NovelRow } from '@/lib/corpusMedia';
 import {
   aboutUsd, AUDIENCE_LABEL, canWithdraw, cancelRequest, cleanRef, CORNER_KEY, createRequest, decideRequest,
-  deskIsLate, estimateFor, formatUsd, imageIdOf, lastSeenText, loadCollections, loadKinds, loadMe, num, parsePages,
-  requestSummary, resultLinks, setSetting, verifyText, when, type CollectionRow, type CornerKind, type CornerMe,
-  type CornerRequest, type CornerResult, type SettingKey,
+  deskIsLate, estimateFor, formatUsd, IDEA_KINDS, imageIdOf, kindUsable, lastSeenText, loadCollections, loadKinds, loadMe,
+  num, parsePages, requestSummary, resultLinks, setSetting, verifyText, when, type CollectionRow, type CornerKind,
+  type CornerMe, type CornerRequest, type CornerResult, type SettingKey,
 } from '@/lib/corner';
+import { flushMail, loadMailPrefs, MAIL_PREFS_KEY, mailShown, type MailPrefs } from '@/lib/cornerMail';
 import {
   finishNotice, listRefresh, loadLiveRequests, meRefresh, newlyFinished, nextRound, nextSteps, parseDeskInfo,
   ROUND_MIN, type FinishNotice, type LiveRequest,
 } from '@/lib/cornerState';
+
+// CORNER_C10_MAIL_2026_10_09: the new panels, loaded when first shown
+const panels = () => import('@/components/corpus/CornerPanels');
+const IdeasPanel = lazy(() => panels().then((x) => ({ default: x.IdeasPanel })));
+const RetiredPanel = lazy(() => panels().then((x) => ({ default: x.RetiredPanel })));
+const IdeasResult = lazy(() => panels().then((x) => ({ default: x.IdeasResult })));
+const MailPrefsCard = lazy(() => panels().then((x) => ({ default: x.MailPrefsCard })));
+const MailAdminCard = lazy(() => panels().then((x) => ({ default: x.MailAdminCard })));
+const MailLine = lazy(() => panels().then((x) => ({ default: x.MailLine })));
 
 type Tab = 'ask' | 'mine' | 'queue' | 'sync' | 'anthologies' | 'settings';
 
@@ -61,6 +84,10 @@ const KIND_TITLES: Record<string, string> = {
   story_mine: 'Find episodes in a text', picture_passage: 'A picture for a passage', story_illustrate: 'A picture for a story',
   picture_redraw: 'Draw a picture again', novel_plan: 'Plan a graphic novel from a story',
   novel_cast: "Draw a graphic novel's cast", novel_draw: "Draw a graphic novel's pages",
+  // CORNER_C10_MAIL_2026_10_09 (corner_kinds() gives their labels; these are used before it answers)
+  picture_ideas: 'Ideas for pictures in a text', picture_cover: 'An idea for a cover', picture_draw: 'Draw an idea',
+  story_edit: 'Edit a story', story_verify: 'Check a story against its citations', picture_edit: "Edit a picture's words",
+  picture_restore: 'Restore a retired picture', novel_page_edit: "Edit a graphic novel's page",
 };
 
 const SELECT = 'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm';
@@ -131,7 +158,11 @@ function AskCard({ kind, k, doc, params, ready, estimate, highlight, help, child
   const [note, setNote] = useState('');
   const m = useMutation({
     mutationFn: () => createRequest(kind, doc, params, note),
-    onSuccess: (r) => { if (r.ok) void qc.invalidateQueries({ queryKey: KEY }); },
+    onSuccess: (r) => {
+      if (!r.ok) return;
+      void qc.invalidateQueries({ queryKey: KEY });
+      void flushMail();
+    },
   });
   const title = k?.label || KIND_TITLES[kind] || kind;
   const r = m.data;
@@ -236,6 +267,7 @@ function AskTab({ me }: { me: CornerMe }) {
   const [rWhy, setRWhy] = useState('');
   const [wStory, setWStory] = useState(init('story_write', 'story_id'));
   const [mMax, setMMax] = useState('6');
+  const [iMax, setIMax] = useState('6');
   const [pAt, setPAt] = useState(init('picture_passage', 'at'));
   const [pTitle, setPTitle] = useState('');
   const [pBrief, setPBrief] = useState('');
@@ -260,10 +292,8 @@ function AskTab({ me }: { me: CornerMe }) {
     return () => clearTimeout(t);
   }, [want]);
 
-  const usable = (kind: string) => {
-    const k = known.get(kind);
-    return !k || (k.enabled && (!k.editor_only || me.is_editor));
-  };
+  const usable = (kind: string) => kindUsable(kind, known.get(kind), me.is_editor);
+  const isInt = (v: string, lo: number, hi: number) => Number.isInteger(Number(v)) && v.trim() !== '' && Number(v) >= lo && Number(v) <= hi;
   const est = (kind: string, params: Record<string, unknown> = {}, extra: { english?: number | null; pages?: number | null } = {}) =>
     estimateFor(known.get(kind), params, extra);
   const card = (kind: string, params: Record<string, unknown>, ready: boolean, children: ReactNode, o: { help?: string; extra?: { english?: number | null; pages?: number | null } } = {}) =>
@@ -347,7 +377,21 @@ function AskTab({ me }: { me: CornerMe }) {
               </select>
             </Field>
           ))}
+          {card('picture_ideas', { max: Number(iMax) }, isInt(iMax, 1, 12), (
+            <Field id="picture_ideas-max" label="How many ideas, at most (1 to 12)">
+              <Input id="picture_ideas-max" type="number" min={1} max={12} value={iMax} onChange={(e) => setIMax(e.target.value)} className="w-28" />
+            </Field>
+          ), { help: 'The desk reads the text and proposes pictures worth drawing, each with a title, the passage and what it should show. Nothing is drawn yet: ask for the ideas you like to be drawn.' })}
+          {card('picture_cover', {}, true, null, {
+            help: 'The desk proposes one picture for the cover of this text. Nothing is drawn yet: ask for it to be drawn when you like it.',
+          })}
         </div>
+        {doc && usable('picture_draw') && known.has('picture_draw') && (
+          <Suspense fallback={null}><IdeasPanel doc={doc} me={me} /></Suspense>
+        )}
+        {doc && me.is_editor && usable('picture_restore') && known.has('picture_restore') && (
+          <Suspense fallback={null}><RetiredPanel doc={doc} /></Suspense>
+        )}
       </section>
 
       <section aria-labelledby="ask-novels">
@@ -451,6 +495,9 @@ function RequestCard({ r, editor, children }: { r: LiveRequest; editor: boolean;
               {links.map((l) => <Link key={l.href} to={l.href} className="font-medium text-burgundy underline decoration-burgundy/40 underline-offset-2 hover:decoration-burgundy">{l.label}</Link>)}
             </p>
           )}
+          {r.status === 'done' && IDEA_KINDS.has(r.kind) && r.doc_code && (
+            <Suspense fallback={null}><IdeasResult r={r} editor={editor} /></Suspense>
+          )}
           {r.status === 'done' && <Next r={r} editor={editor} />}
           {children}
         </CardContent>
@@ -515,7 +562,11 @@ function Decide({ r }: { r: CornerRequest }) {
   const [note, setNote] = useState('');
   const m = useMutation({
     mutationFn: (approve: boolean) => decideRequest(r.id, approve, note),
-    onSuccess: (x) => { if (x.ok) void qc.invalidateQueries({ queryKey: KEY }); },
+    onSuccess: (x) => {
+      if (!x.ok) return;
+      void qc.invalidateQueries({ queryKey: KEY });
+      void flushMail();   // CORNER_C10_MAIL_2026_10_09: a rejection's email goes now
+    },
   });
   return (
     <div className="space-y-2 border-t border-border pt-3">
@@ -656,7 +707,19 @@ function SettingRow({ k, label, hint, value, children }: { k: SettingKey; label:
   );
 }
 
-function SettingsTab({ me }: { me: CornerMe }) {
+/** CORNER_C10_MAIL_2026_10_09: everyone's email choice (when the database has the Corner's email),
+ *  then the super admin's settings, then the super admin's email settings. */
+function SettingsTab({ me, mail }: { me: CornerMe; mail: MailPrefs | null }) {
+  return (
+    <div className="space-y-6">
+      {mail && <Suspense fallback={<Skeleton className="h-24 w-full max-w-2xl" />}><MailPrefsCard prefs={mail} editor={me.is_editor} /></Suspense>}
+      {me.is_super_admin && <CornerSettings me={me} />}
+      {mail && me.is_super_admin && <Suspense fallback={<Skeleton className="h-48 w-full max-w-2xl" />}><MailAdminCard prefs={mail} /></Suspense>}
+    </div>
+  );
+}
+
+function CornerSettings({ me }: { me: CornerMe }) {
   const [cap, setCap] = useState(num(me.daily_cap_usd).toFixed(2));
   const [need, setNeed] = useState(!!me.researchers_need_approval);
   const [maxp, setMaxp] = useState('20');
@@ -691,9 +754,14 @@ function SettingsTab({ me }: { me: CornerMe }) {
 
 // ---- sync (editors) -------------------------------------------------------------------------
 
-function SyncTab({ me }: { me: CornerMe }) {
+function SyncTab({ me, mail }: { me: CornerMe; mail: boolean }) {
   const now = useNow();
-  return <SyncPanel me={me} info={parseDeskInfo(me.worker_info)} now={now} />;
+  return (
+    <div className="space-y-4">
+      <SyncPanel me={me} info={parseDeskInfo(me.worker_info)} now={now} />
+      {mail && <Suspense fallback={null}><MailLine now={now} /></Suspense>}
+    </div>
+  );
 }
 
 // ---- the page -------------------------------------------------------------------------------
@@ -723,8 +791,12 @@ function useFinishWatch() {
 function Corner({ me }: { me: CornerMe }) {
   const [search, setSearch] = useSearchParams();
   const { watch, notes } = useFinishWatch();
+  // CORNER_C10_MAIL_2026_10_09: the Corner's email, when the database has it (C12)
+  const prefs = useQuery({ queryKey: MAIL_PREFS_KEY, queryFn: loadMailPrefs, staleTime: 5 * 60 * 1000 });
+  const mail = mailShown(prefs.data) ? prefs.data.data : null;
+  const settings = me.is_super_admin || !!mail;
   const allowed: Tab[] = [
-    'ask', 'mine', ...(me.is_editor ? ['queue' as Tab, 'sync' as Tab] : []), 'anthologies', ...(me.is_super_admin ? ['settings' as Tab] : []),
+    'ask', 'mine', ...(me.is_editor ? ['queue' as Tab, 'sync' as Tab] : []), 'anthologies', ...(settings ? ['settings' as Tab] : []),
   ];
   const asked = search.get('tab') as Tab | null;
   const tab: Tab = asked && allowed.includes(asked) ? asked : 'ask';
@@ -750,14 +822,14 @@ function Corner({ me }: { me: CornerMe }) {
           {me.is_editor && <TabsTrigger value="queue">Queue{num(me.pending) > 0 ? ` (${num(me.pending)})` : ''}</TabsTrigger>}
           {me.is_editor && <TabsTrigger value="sync">Sync</TabsTrigger>}
           <TabsTrigger value="anthologies">Anthologies</TabsTrigger>
-          {me.is_super_admin && <TabsTrigger value="settings">Settings</TabsTrigger>}
+          {settings && <TabsTrigger value="settings">Settings</TabsTrigger>}
         </TabsList>
         <TabsContent value="ask"><AskTab me={me} /></TabsContent>
         <TabsContent value="mine"><MineTab me={me} /></TabsContent>
         {me.is_editor && <TabsContent value="queue"><QueueTab me={me} /></TabsContent>}
-        {me.is_editor && <TabsContent value="sync"><SyncTab me={me} /></TabsContent>}
+        {me.is_editor && <TabsContent value="sync"><SyncTab me={me} mail={!!mail} /></TabsContent>}
         <TabsContent value="anthologies"><CollectionCards scope="all" canMake /></TabsContent>
-        {me.is_super_admin && <TabsContent value="settings"><SettingsTab me={me} /></TabsContent>}
+        {settings && <TabsContent value="settings"><SettingsTab me={me} mail={mail} /></TabsContent>}
       </Tabs>
     </WatchRows.Provider>
   );

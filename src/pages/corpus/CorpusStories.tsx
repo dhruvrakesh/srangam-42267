@@ -8,6 +8,8 @@
  * link into the text (?at=page.passage).
  * CORPUS_MEDIA_C8_2026_10_09: a story's picture heads its page, with a link to its graphic novel when it has one
  * (src/components/corpus/StoryPlate.tsx; quiet when there is none).
+ * CORNER_C10_MAIL_2026_10_09: the desk's bar is given the story's titles and texts, so its Edit form
+ * starts from them.
  */
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -191,7 +193,10 @@ function StoryPage({ docCode, storyId }: { docCode: string; storyId: number }) {
           </header>
 
           <StoryPlate docCode={s.doc_code} storyId={s.story_id} />
-          <DeskActions target={{ type: 'story', doc_code: s.doc_code, story_id: s.story_id, status: s.status }} />
+          <DeskActions target={{
+            type: 'story', doc_code: s.doc_code, story_id: s.story_id, status: s.status,
+            title: s.title, title_hi: s.title_hi, story_en: s.story_en, story_hi: s.story_hi,
+          }} />
 
           {s.quote_sa && (
             <blockquote className="mb-6 border-l-4 border-burgundy/60 pl-4">

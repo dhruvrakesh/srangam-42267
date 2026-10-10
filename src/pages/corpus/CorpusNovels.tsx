@@ -6,6 +6,8 @@
  * spoken (each with its citation), and the scene the artist was asked for. A reader sees APPROVED
  * novels; an editor (admin) also sees novels still being planned or drawn, marked as such.
  * Every citation is a link into the text (?at=page.passage).
+ * CORNER_C10_MAIL_2026_10_09: the desk's bar on a page is given the page's scene and captions (its
+ * Edit form starts from them); the novel's bar knows how many sheets and pages are drawn.
  */
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -174,7 +176,10 @@ function NovelReader({ id }: { id: number }) {
               </nav>
             )}
           </div>
-          <DeskActions target={{ type: 'novel', doc_code: n.doc_code, novel_id: n.novel_id, status: n.status, pages: n.pages }} />
+          <DeskActions target={{
+            type: 'novel', doc_code: n.doc_code, novel_id: n.novel_id, status: n.status, pages: n.pages,
+            drawn: { cast: pics.cast.size, pages: pics.pages.size },
+          }} />
 
           {plan.cast.length > 0 && (
             <section className="mb-8" aria-label="The cast">
@@ -208,7 +213,13 @@ function NovelReader({ id }: { id: number }) {
                         <span className="font-mono">page {p.n}</span>
                         {m && <MediaStatus status={m.status} />}
                       </div>
-                      <DeskActions target={{ type: 'novel', doc_code: n.doc_code, novel_id: n.novel_id, status: n.status, page: p.n, page_status: m?.status ?? null }} className="mb-3" />
+                      <DeskActions
+                        target={{
+                          type: 'novel', doc_code: n.doc_code, novel_id: n.novel_id, status: n.status, page: p.n, page_status: m?.status ?? null,
+                          scene: p.scene, caption: p.caption, caption_hi: p.caption_hi,
+                        }}
+                        className="mb-3"
+                      />
                       {lang !== 'hi' && p.caption && (
                         <p className={`font-serif leading-relaxed text-foreground ${young ? 'text-xl' : 'text-lg'}`}>
                           <CitedText text={p.caption} docCode={n.doc_code} lang="en" />

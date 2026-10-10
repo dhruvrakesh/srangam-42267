@@ -15,7 +15,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { IconBasalt, IconPort, IconLotus, IconDharmaChakra } from '@/components/icons';
-import { CulturalTermTooltip } from '@/components/language/CulturalTermTooltip';
 import { DharmicTooltip } from '@/components/i18n/DharmicTooltip';
 
 // Define the data for each route card. Each entry lists the path to
@@ -29,9 +28,10 @@ const cards = [
     icon: IconBasalt,
     title: 'Earth & Sea Sangam',
     items: [
-      // Use CulturalTermTooltip for terms that exist in the cultural terms
-      // dataset. For example, samudra (sea) appears in `cultural-terms.ts`.
-      <>Intertidal ecology & <CulturalTermTooltip term="samudra">samudra</CulturalTermTooltip> memory</>,
+      // LOAD_L2_2026_10_09: "samudra" is not in the cultural-terms dataset, so CulturalTermTooltip only
+      // ever rendered it as this plain <span>, after downloading the whole 548 kB dataset to find that
+      // out. Wrap a term in CulturalTermTooltip again once it is in the dataset.
+      <>Intertidal ecology & <span>samudra</span> memory</>,
       'Chola maritime myths',
       'Rivers meeting the ocean'
     ],
