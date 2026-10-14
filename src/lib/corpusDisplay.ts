@@ -100,6 +100,25 @@ export function sourceLines(
   };
 }
 
+// ---- PROVISIONAL_EN_2026_10_14: English made from a misread reading --------------------------
+// The automaton's own test (scripts/redeem.py, repair_text.JUNK): a verse with eight or more
+// Devanagari signs that also carries a Latin word (a letter, then a letter or a stray ' ! ") was
+// read by the scanner with debris, and its English was made from that reading. It is provisional:
+// it is translated again once the scan is repaired. Nothing stored is changed.
+const DEVANAGARI_SIGN = /[\u0900-\u097F]/g;
+const LATIN_WORD = /(^|[^A-Za-z])[A-Za-z][A-Za-z'!"]+/;
+
+/** True when the verse's Sanskrit carries the scanner's Latin-letter debris. */
+export function madeFromMisread(sanskrit: string | null | undefined): boolean {
+  const s = sanskrit ?? '';
+  return (s.match(DEVANAGARI_SIGN) ?? []).length >= 8 && LATIN_WORD.test(s);
+}
+
+/** The reader's note on such an English, for its chip and its "About" line. */
+export const PROVISIONAL_NOTE =
+  'The scanner misread letters of this verse (Latin letters among the Devanagari), and the English ' +
+  'was made from that reading. It is provisional: it will be translated again once the scan is repaired.';
+
 /** The stored title, or the document code made readable when no title was recorded. */
 export function displayTitle(title: string | null | undefined, docCode: string): string {
   const t = (title ?? '').trim();

@@ -12,7 +12,8 @@ import { useState, type ReactNode } from 'react';
 import { Info } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
-  displayTranslation, gutterRef, isLowQuality, passageWhere, sourceLines, splitDecoration, type SourceLine,
+  displayTranslation, gutterRef, isLowQuality, madeFromMisread, passageWhere, PROVISIONAL_NOTE, sourceLines,
+  splitDecoration, type SourceLine,
 } from '@/lib/corpusDisplay';
 import type { ReaderPrefs } from '@/lib/readerPrefs';
 
@@ -94,6 +95,13 @@ function About({ p }: { p: ReaderPassage }) {
               <dd>automatic translation check {pct(p.translation_qa)}</dd>
             </>
           )}
+          {/* PROVISIONAL_EN_2026_10_14 */}
+          {p.translation && p.translation.trim() && madeFromMisread(p.sanskrit) && (
+            <>
+              <dt className="text-muted-foreground">English</dt>
+              <dd>provisional: {PROVISIONAL_NOTE}</dd>
+            </>
+          )}
           {p.text_type && (
             <>
               <dt className="text-muted-foreground">Kind</dt>
@@ -137,6 +145,7 @@ export default function PassageBlock({
   const lines = sourceLines(sa.text, ia.text);
   const en = displayTranslation(p.translation);
   const hi = p.hindi && p.hindi.trim() ? displayTranslation(p.hindi) : '';
+  const provisional = !!en && madeFromMisread(p.sanskrit);   // PROVISIONAL_EN_2026_10_14
   const typeChip = p.text_type && !['mula', 'noise', 'colophon'].includes(p.text_type) ? p.text_type : null;
 
   return (
@@ -193,6 +202,14 @@ export default function PassageBlock({
                 title={`OCR confidence ${pct(p.quality_score as number)}: the printed page was hard to read, so the Sanskrit may hold misreadings.`}
               >
                 hard-to-read scan
+              </span>
+            )}
+            {provisional && prefs.english && (
+              <span
+                className="rounded bg-orange-100 px-1.5 py-0.5 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200"
+                title={PROVISIONAL_NOTE}
+              >
+                provisional English
               </span>
             )}
             {typeChip && <span className="rounded bg-muted px-1.5 py-0.5" title={TYPE_NOTES[typeChip] ?? typeChip}>{typeChip}</span>}
