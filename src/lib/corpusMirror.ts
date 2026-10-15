@@ -10,7 +10,7 @@
  * `refused` tells "you may not read this" apart from "it failed to load".
  */
 import { supabase } from '@/integrations/supabase/client';
-import { PASSAGES_PER_PAGE } from '@/lib/corpusDisplay';
+import { PASSAGES_PER_PAGE, type SourceRow } from '@/lib/corpusDisplay';
 
 const TIMEOUT_MS = 15000;
 export const MIN_WORDS = 2;
@@ -110,6 +110,15 @@ export function loadMirrorPage(docCode: string, page: number): Promise<MirrorRes
   return rpc<MirrorPassage>('corpus_reader_page', {
     p_doc: docCode, p_offset: (p - 1) * PASSAGES_PER_PAGE, p_limit: PASSAGES_PER_PAGE,
   });
+}
+
+/**
+ * READER_SOURCES_2026_10_14 (S2): where each page's Sanskrit comes from (an e-text, a vision model,
+ * Tesseract), by page and engine (C17, public.corpus_reader_sources). One call a text. Before C17 is
+ * pasted the call fails, and the reader shows what it showed before.
+ */
+export function loadMirrorSources(docCode: string): Promise<MirrorResult<SourceRow>> {
+  return rpc<SourceRow>('corpus_reader_sources', { p_doc: docCode });
 }
 
 export function searchMirrorWords(q: string, docCode?: string | null): Promise<MirrorResult<MirrorHit>> {

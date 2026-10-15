@@ -12,7 +12,7 @@ import { useState, type ReactNode } from 'react';
 import { Info } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
-  displayTranslation, gutterRef, isLowQuality, madeFromMisread, passageWhere, PROVISIONAL_NOTE, sourceLines,
+  displayTranslation, gutterRef, isLowQuality, madeFromMisread, passageWhere, PROVISIONAL_NOTE, readingOf, sourceLines,
   splitDecoration, type SourceLine,
 } from '@/lib/corpusDisplay';
 import type { ReaderPrefs } from '@/lib/readerPrefs';
@@ -30,6 +30,8 @@ export interface ReaderPassage {
   engine?: string | null;
   translated_at?: string | null;
   translation_qa?: number | null;
+  /** READER_SOURCES_2026_10_14: where the Sanskrit comes from (passages.ocr_engine), when the reader knows it. */
+  reading?: string | null;
 }
 
 export const TYPE_NOTES: Record<string, string> = {
@@ -61,6 +63,7 @@ function Lines({ lines, note }: { lines: SourceLine[]; note: string }) {
 }
 
 function About({ p }: { p: ReaderPassage }) {
+  const reading = readingOf(p.reading);   // READER_SOURCES_2026_10_14
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -77,10 +80,17 @@ function About({ p }: { p: ReaderPassage }) {
         <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1">
           <dt className="text-muted-foreground">Where</dt>
           <dd>{passageWhere(p)}</dd>
-          {typeof p.quality_score === 'number' && p.quality_score > 0 && (
+          {/* READER_SOURCES_2026_10_14: an e-text is named, not given an OCR confidence */}
+          {reading && !reading.scan && (
+            <>
+              <dt className="text-muted-foreground">Source</dt>
+              <dd>{reading.label}</dd>
+            </>
+          )}
+          {(!reading || reading.scan) && typeof p.quality_score === 'number' && p.quality_score > 0 && (
             <>
               <dt className="text-muted-foreground">Scan</dt>
-              <dd>OCR confidence {pct(p.quality_score)}{isLowQuality(p.quality_score) ? ': the printed page was hard to read' : ''}</dd>
+              <dd>{reading ? `${reading.label}; ` : ''}OCR confidence {pct(p.quality_score)}{isLowQuality(p.quality_score) ? ': the printed page was hard to read' : ''}</dd>
             </>
           )}
           {p.engine && (
@@ -109,7 +119,11 @@ function About({ p }: { p: ReaderPassage }) {
             </>
           )}
         </dl>
-        <p className="mt-2 text-muted-foreground">Read by machine from the scan and translated by machine; not reviewed.</p>
+        <p className="mt-2 text-muted-foreground">
+          {reading && !reading.scan
+            ? 'Typed from the edition (an e-text) and translated by machine; not reviewed.'
+            : 'Read by machine from the scan and translated by machine; not reviewed.'}
+        </p>
       </PopoverContent>
     </Popover>
   );
@@ -146,6 +160,8 @@ export default function PassageBlock({
   const en = displayTranslation(p.translation);
   const hi = p.hindi && p.hindi.trim() ? displayTranslation(p.hindi) : '';
   const provisional = !!en && madeFromMisread(p.sanskrit);   // PROVISIONAL_EN_2026_10_14
+  const reading = readingOf(p.reading);   // READER_SOURCES_2026_10_14: an e-text is never a hard-to-read scan
+  const hardToRead = isLowQuality(p.quality_score) && !(reading && !reading.scan);
   const typeChip = p.text_type && !['mula', 'noise', 'colophon'].includes(p.text_type) ? p.text_type : null;
 
   return (
@@ -196,7 +212,7 @@ export default function PassageBlock({
           </div>
 
           <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-            {isLowQuality(p.quality_score) && (
+            {hardToRead && (
               <span
                 className="rounded bg-amber-100 px-1.5 py-0.5 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
                 title={`OCR confidence ${pct(p.quality_score as number)}: the printed page was hard to read, so the Sanskrit may hold misreadings.`}

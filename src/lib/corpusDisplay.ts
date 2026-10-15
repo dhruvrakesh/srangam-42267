@@ -119,6 +119,53 @@ export const PROVISIONAL_NOTE =
   'The scanner misread letters of this verse (Latin letters among the Devanagari), and the English ' +
   'was made from that reading. It is provisional: it will be translated again once the scan is repaired.';
 
+// ---- READER_SOURCES_2026_10_14 (S2): where a passage's Sanskrit comes from --------------------
+// The mirror keeps the automaton's passages.ocr_engine. An e-text (the BORI Critical Edition's own
+// text of the Mahabharata, from GRETIL) was typed from the edition, not read from a scan: the OCR
+// formula's quality score means nothing for it. So an e-text is not called "OCR", and is never marked
+// a hard-to-read scan. A passage whose engine is not recorded is shown as before.
+
+export interface Reading {
+  kind: 'etext' | 'vision' | 'tesseract' | 'resegment' | 'other';
+  /** How the reader names it: "the BORI Critical Edition e-text (from GRETIL)". */
+  label: string;
+  /** True when the Sanskrit was read from a scan (its OCR confidence then means something). */
+  scan: boolean;
+}
+
+/** The reading behind a passage's Sanskrit, from its ocr_engine; null when none is recorded. */
+export function readingOf(engine: string | null | undefined): Reading | null {
+  const e = (engine ?? '').trim().toLowerCase();
+  if (!e) return null;
+  if (e === 'gretil-bori-etext') return { kind: 'etext', label: 'the BORI Critical Edition e-text (from GRETIL)', scan: false };
+  if (e.startsWith('gretil') || e.includes('etext')) return { kind: 'etext', label: 'an e-text, typed from the edition', scan: false };
+  if (e.includes('vision')) return { kind: 'vision', label: 'read from the scan by a vision model', scan: true };
+  if (e.startsWith('tesseract')) return { kind: 'tesseract', label: 'read from the scan by Tesseract OCR', scan: true };
+  if (e.startsWith('resegment')) return { kind: 'resegment', label: 'read from the scan, then cut into verses again', scan: true };
+  return { kind: 'other', label: `read by ${(engine ?? '').trim()}`, scan: true };
+}
+
+/** One page's engines, as public.corpus_reader_sources returns them (C17). */
+export interface SourceRow {
+  page_no: number;
+  ocr_engine: string | null;
+  passages: number;
+}
+
+/** page -> the engine of most of its passages (a page whose engine is not recorded is left out). */
+export function readingsByPage(rows: SourceRow[] | null | undefined): Map<number, string> {
+  const best = new Map<number, { engine: string | null; n: number }>();
+  for (const r of rows ?? []) {
+    if (!r || typeof r.page_no !== 'number') continue;
+    const n = Number(r.passages) || 0;
+    const cur = best.get(r.page_no);
+    if (!cur || n > cur.n) best.set(r.page_no, { engine: r.ocr_engine ?? null, n });
+  }
+  const out = new Map<number, string>();
+  best.forEach((v, page) => { if (v.engine) out.set(page, v.engine); });
+  return out;
+}
+
 /** The stored title, or the document code made readable when no title was recorded. */
 export function displayTitle(title: string | null | undefined, docCode: string): string {
   const t = (title ?? '').trim();

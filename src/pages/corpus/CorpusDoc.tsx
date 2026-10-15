@@ -27,10 +27,10 @@ import ReaderToolbar, { FootPager } from '@/components/reader/ReaderToolbar';
 import ReaderContents, { type ContentsState } from '@/components/reader/ReaderContents';
 import {
   PASSAGES_PER_PAGE, displayTitle, displayTranslation, pageFromQuery, passageLabel, readerPageForScan,
-  type PageStart,
+  readingsByPage, type PageStart,
 } from '@/lib/corpusDisplay';
 import {
-  loadMirrorDoc, loadMirrorOutline, loadMirrorPage, mirrorHref, outlineMissing, searchMirrorMeaning,
+  loadMirrorDoc, loadMirrorOutline, loadMirrorPage, loadMirrorSources, mirrorHref, outlineMissing, searchMirrorMeaning,
   searchMirrorWords, similarPassages, snippetParts, type MirrorOutlineRow, type MirrorPassage, type MirrorResult,
 } from '@/lib/corpusMirror';
 import { useReaderPrefs } from '@/lib/readerPrefs';
@@ -190,6 +190,19 @@ function CorpusDocBody() {
     staleTime: STALE,
   });
   const passages = passQ.data;
+
+  // READER_SOURCES_2026_10_14 (S2): where each page's Sanskrit comes from, once a text (C17). Until C17 is
+  // pasted the call fails and nothing changes: the passages are shown as before.
+  const sourcesQ = useQuery({
+    queryKey: ['mirror', 'sources', docCode],
+    queryFn: () => loadMirrorSources(docCode),
+    enabled: !!doc,
+    staleTime: 10 * 60 * 1000,
+  });
+  const readingByPage = useMemo(
+    () => readingsByPage(sourcesQ.data?.ok ? sourcesQ.data.rows : []),
+    [sourcesQ.data],
+  );
 
   // CORPUS_LIBRARY_C6_2026_10_08: ?at=18.2 (a story's citation, a margin reference) -> the reader
   // page that holds scan page 18 (from the contents, C5b), at passage 18.2.
@@ -374,7 +387,7 @@ function CorpusDocBody() {
                 return (
                   <PassageBlock
                     key={id}
-                    p={p}
+                    p={readingByPage.has(p.page_no) ? { ...p, reading: readingByPage.get(p.page_no) } : p}
                     prefs={prefs}
                     highlighted={arrived === id}
                     extra={hasEn || here ? (
