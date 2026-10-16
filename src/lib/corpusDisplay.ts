@@ -105,12 +105,15 @@ export function sourceLines(
 // Devanagari signs that also carries a Latin word (a letter, then a letter or a stray ' ! ") was
 // read by the scanner with debris, and its English was made from that reading. It is provisional:
 // it is translated again once the scan is repaired. Nothing stored is changed.
+// ORNAMENT_2026_10_16: a line that is only the OCR's ornament marker ("<decorative line>", which the reader draws as a
+// rule) is not debris: the automaton's test sets it aside too (scholar_translate.ORNAMENT, redeem.ORNAMENT). The
+// marker inside a line of text, and any other Latin word, is debris as before.
 const DEVANAGARI_SIGN = /[\u0900-\u097F]/g;
 const LATIN_WORD = /(^|[^A-Za-z])[A-Za-z][A-Za-z'!"]+/;
 
-/** True when the verse's Sanskrit carries the scanner's Latin-letter debris. */
+/** True when the verse's Sanskrit carries the scanner's Latin-letter debris (its ornament lines set aside). */
 export function madeFromMisread(sanskrit: string | null | undefined): boolean {
-  const s = sanskrit ?? '';
+  const s = splitDecoration(sanskrit).text;   // ORNAMENT_2026_10_16
   return (s.match(DEVANAGARI_SIGN) ?? []).length >= 8 && LATIN_WORD.test(s);
 }
 
