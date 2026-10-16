@@ -7,6 +7,8 @@
  * Booksmith editions and the HTML exports); on phones, and when the reader chooses "stacked", they
  * follow one another. Every note is a tooltip or a small popover; nothing stored is changed:
  * misread lines are shown as read, muted and labelled, and scanner noise is folded, not removed.
+ * CLASSIFY_HINDI_2026_10_16: the edition's own matter (frontmatter: its front matter, or its editor's translation in a
+ * modern language) is folded too, and is never "Not translated yet": it is not the Sanskrit.
  */
 import { useState, type ReactNode } from 'react';
 import { Info } from 'lucide-react';
@@ -40,7 +42,8 @@ export const TYPE_NOTES: Record<string, string> = {
   prose: 'Prose.',
   colophon: 'The closing line of a chapter or section.',
   noise: 'Scanner noise: marks on the page that are not text.',
-  frontmatter: "The printed book's front matter.",
+  // CLASSIFY_HINDI_2026_10_16: an edition's own Hindi (its editor's translation, notes, preface) is typed frontmatter too
+  frontmatter: "The edition's own matter: its front matter, or its editor's translation or notes in a modern language. Not the Sanskrit, so not translated.",
 };
 
 const pct = (x: number) => `${Math.round(x * 100)}%`;
@@ -153,6 +156,17 @@ export default function PassageBlock({
     );
   }
 
+  // CLASSIFY_HINDI_2026_10_16: the edition's own matter is folded until asked for
+  if (p.text_type === 'frontmatter' && !unfolded) {
+    return (
+      <li id={id} data-page={p.page_no} className={`scroll-mt-40 flex items-center gap-3 border-b border-border py-2 text-xs text-muted-foreground${mark}`}>
+        <a href={`#${id}`} className="w-11 shrink-0 text-right font-mono sm:w-[3.25rem]" title={where}>{gutterRef(p)}</a>
+        <span title={TYPE_NOTES.frontmatter}>{"The edition's own matter, not the Sanskrit."}</span>
+        <button type="button" onClick={() => setUnfolded(true)} className="underline hover:text-foreground">Show it</button>
+      </li>
+    );
+  }
+
   const side = prefs.layout === 'side';
   const sa = splitDecoration(p.sanskrit);
   const ia = splitDecoration(p.iast);
@@ -204,7 +218,7 @@ export default function PassageBlock({
               {prefs.english && en && (
                 <p lang="en" className="whitespace-pre-line font-serif leading-relaxed text-foreground">{en}</p>
               )}
-              {prefs.english && !en && <p className="text-sm italic text-muted-foreground">Not translated yet.</p>}
+              {prefs.english && !en && p.text_type !== 'frontmatter' && <p className="text-sm italic text-muted-foreground">Not translated yet.</p>}
               {prefs.hindi && hi && (
                 <p lang="hi" className="mt-2 whitespace-pre-line font-devanagari leading-relaxed text-foreground/90">{hi}</p>
               )}
