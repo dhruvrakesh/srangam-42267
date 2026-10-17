@@ -4,7 +4,13 @@
 // regressions without a real layout engine.
 
 import '@testing-library/jest-dom';
+import { configure } from '@testing-library/react';
 import { SANCTIONED_OVERFLOW_RE, hasSanctionedInlineOverflowX } from './overflow-rules';
+
+// TEST_WAIT_2026_10_16: findBy* and waitFor wait up to 5 s, not Testing Library's 1 s. The suite runs 41 files at
+// once in jsdom; on a busy computer a page that renders correctly took longer than 1 s to show (16 Oct). A test
+// that is wrong still fails, a few seconds later. vitest.config.ts gives a test 20 s to match.
+configure({ asyncUtilTimeout: 5000 });
 
 if (typeof window !== 'undefined') {
   if (!window.matchMedia) {

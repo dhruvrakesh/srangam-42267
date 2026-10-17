@@ -1545,3 +1545,22 @@ the Markandeya Purana 1.4 and 1.6, and the Tantric Texts series 135.1.
 56. A line that is only the OCR's ornament marker is never read as the scanner's debris: the reader's provisional
     test and the automaton's (scholar_translate.readiness, redeem.classify) set it aside alike; a Latin word anywhere
     else is debris as before.
+
+## Phase AJ - The tests wait as a busy computer needs (TEST_WAIT_2026_10_16, 2026-10-16)
+
+On 16 Oct the suite was run while the automaton's benchmark was running. Six tests failed in one run (reader-nav and
+texts-reader at Vitest's 5 s test timeout; a link not yet shown), one other in the next (corner-mail: the Settings
+checkbox not found within Testing Library's 1 s), the jsdom environment taking 527 s over 41 files. The failures moved
+between runs and none was in the code the ornament release changed (Phase AI): the waits were too short for a busy
+computer, not the pages wrong.
+
+### AJ.1 - What changes
+- src/test/setup.ts: configure({ asyncUtilTimeout: 5000 }) (@testing-library/react, passed to @testing-library/dom):
+  findBy* and waitFor wait up to 5 s.
+- vitest.config.ts: testTimeout 20000.
+- src/__tests__/test-wait.test.ts: the two settings asserted (2 tests).
+- A test that is wrong still fails, a few seconds later. Nothing the site builds or serves changes.
+
+### Invariants added (Phase AJ)
+57. The suite's waits are set once, in the setup and the config (5 s for an element to appear, 20 s for a test), not
+    test by test; a test that needs more says why in a comment.
