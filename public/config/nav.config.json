@@ -1,6 +1,7 @@
 {
   "primary": [
     {"label": "Articles", "href": "/articles", "desc": "All published research"},
+    {"label": "Editions", "href": "/editions", "desc": "Sanskrit texts with a scholarly English and notes"},
     {
       "label": "Themes",
       "desc": "Browse by research topic",

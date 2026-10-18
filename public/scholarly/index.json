@@ -1,0 +1,41 @@
+{
+ "generated_by": "publish_editions.py (EDITIONS_SITE_2026_10_18)",
+ "site": "https://srangam.nartiang.org",
+ "editions": [
+  {
+   "slug": "devimahatmya",
+   "title": "Devīmāhātmya",
+   "subtitle": "Mārkaṇḍeya Purāṇa, adhyāyas 81 to 93: the Sanskrit with a scholarly English and notes",
+   "file": "/scholarly/devimahatmya.html",
+   "doc": "markandeya_purana__w_gretil",
+   "pages": [
+    626,
+    780
+   ],
+   "verses": 669,
+   "shown": 677,
+   "passed": 632,
+   "flagged": 37,
+   "accepted": 0,
+   "engines": "Claude Sonnet 5.5",
+   "judge": "Gemini 2.5 Flash",
+   "source": {
+    "name": "Mārkaṇḍeyapurāṇa 1-93, GRETIL (Göttingen Register of Electronic Texts in Indian Languages, SUB Göttingen)",
+    "url": "https://gretil.sub.uni-goettingen.de/gretil/corpustei/transformations/html/sa_mArkaNDeyapurANa1-93.htm",
+    "credit": "data entry by members of the Sansknet Project",
+    "licence": "CC BY-NC-SA 4.0",
+    "licence_url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "note": "GRETIL notes that this e-text is not proof-read; the translator's doubts about its readings are in the notes"
+   },
+   "licence": {
+    "name": "CC BY-NC-SA 4.0",
+    "url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "note": "made from the GRETIL text and shared on the same terms, for non-commercial use with credit"
+   },
+   "bytes": 1042316,
+   "content_sha256": "b411e539bed9a258c6303a18a7678744805bc80cdaf78cb43d1038277f91652a",
+   "made_at": "2026-10-18T13:50:28+00:00",
+   "mark": "EDITIONS_SITE_2026_10_18"
+  }
+ ]
+}

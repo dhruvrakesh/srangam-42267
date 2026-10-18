@@ -23,6 +23,8 @@ export const CORPUS_LINKS: readonly CorpusLink[] = [
   { label: "Researchers' Corner", href: '/corpus/corner', desc: 'Ask the desk for stories, pictures and novels; make anthologies' },
   { label: 'Learn', href: '/corpus/learn', desc: 'Short quests that teach every tool, with XP, levels and badges' },
   { label: 'Published texts', href: '/texts', desc: 'The texts reviewed and published to everyone' },
+  // EDITIONS_SITE_2026_10_18
+  { label: 'Scholarly editions', href: '/editions', desc: 'The Sanskrit with a scholarly English and notes, open to everyone' },
 ];
 
 /** The header's menu (wide screens). */

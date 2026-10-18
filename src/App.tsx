@@ -84,6 +84,8 @@ const CorpusCorner = lazy(() => import("./pages/corpus/CorpusCorner"));
 const CorpusAnthology = lazy(() => import("./pages/corpus/CorpusAnthology"));
 // STATE_LEARN_2026_10_09: Learn, the quests that teach every tool
 const CorpusLearn = lazy(() => import("./pages/corpus/CorpusLearn"));
+// EDITIONS_SITE_2026_10_18: the scholarly editions, open to everyone (public/scholarly/, written by the automaton)
+const Editions = lazy(() => import("./pages/Editions"));
 // RBAC_RESEARCHERS_2026_10_08: where an invited researcher lands
 const InviteAccept = lazy(() => import("./pages/InviteAccept"));
 const JyotishHoroscope = lazy(() => import("./pages/JyotishHoroscope"));
@@ -175,6 +177,8 @@ const App = () => (
               {/* TEXTS_READER_2026_09_27 */}
               <Route path="/texts" element={<TextsIndex />} />
               <Route path="/texts/:docCode" element={<TextReader />} />
+              {/* EDITIONS_SITE_2026_10_18 */}
+              <Route path="/editions" element={<Editions />} />
               {/* CORPUS_READER_C5_2026_10_08 */}
               <Route path="/corpus" element={<CorpusHome />} />
               {/* CORPUS_LIBRARY_C6_2026_10_08 */}
