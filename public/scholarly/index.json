@@ -36,6 +36,41 @@
    "content_sha256": "b411e539bed9a258c6303a18a7678744805bc80cdaf78cb43d1038277f91652a",
    "made_at": "2026-10-18T13:50:28+00:00",
    "mark": "EDITIONS_SITE_2026_10_18"
+  },
+  {
+   "slug": "markandeya-purana-19-31",
+   "title": "Mārkaṇḍeya Purāṇa, adhyāyas 19 to 31",
+   "subtitle": "Kārtavīrya and Dattātreya; Kuvalayāśva and Madālasā; Madālasā's teaching of Alarka on the householder's duties and the śrāddha: the Sanskrit with a scholarly English and notes",
+   "file": "/scholarly/markandeya-purana-19-31.html",
+   "doc": "markandeya_purana__w_gretil",
+   "pages": [
+    81,
+    124
+   ],
+   "verses": 739,
+   "shown": 768,
+   "passed": 659,
+   "flagged": 80,
+   "accepted": 0,
+   "engines": "Claude Sonnet 5.5",
+   "judge": "Gemini 2.5 Flash",
+   "source": {
+    "name": "Mārkaṇḍeyapurāṇa 1-93, GRETIL (Göttingen Register of Electronic Texts in Indian Languages, SUB Göttingen)",
+    "url": "https://gretil.sub.uni-goettingen.de/gretil/corpustei/transformations/html/sa_mArkaNDeyapurANa1-93.htm",
+    "credit": "data entry by members of the Sansknet Project",
+    "licence": "CC BY-NC-SA 4.0",
+    "licence_url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "note": "GRETIL notes that this e-text is not proof-read; the translator's doubts about its readings are in the notes"
+   },
+   "licence": {
+    "name": "CC BY-NC-SA 4.0",
+    "url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "note": "made from the GRETIL text and shared on the same terms, for non-commercial use with credit"
+   },
+   "bytes": 1207823,
+   "content_sha256": "10edcc2f49549dfe38d57079342c8d8efbcc7f0015fcc3922ef82c6048064398",
+   "made_at": "2026-10-18T15:04:01+00:00",
+   "mark": "EDITIONS_SITE_2026_10_18"
   }
  ]
 }

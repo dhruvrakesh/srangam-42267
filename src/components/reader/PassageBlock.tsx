@@ -9,6 +9,8 @@
  * misread lines are shown as read, muted and labelled, and scanner noise is folded, not removed.
  * CLASSIFY_HINDI_2026_10_16: the edition's own matter (frontmatter: its front matter, or its editor's translation in a
  * modern language) is folded too, and is never "Not translated yet": it is not the Sanskrit.
+ * SCHOLAR_READER_2026_10_18: a verse's scholarly English, when the reader has one (docs/cloud/C18), stands above the
+ * working English, which folds under it ("Working English (machine)").
  */
 import { useState, type ReactNode } from 'react';
 import { Info } from 'lucide-react';
@@ -18,6 +20,8 @@ import {
   splitDecoration, type SourceLine,
 } from '@/lib/corpusDisplay';
 import type { ReaderPrefs } from '@/lib/readerPrefs';
+import type { ScholarReading } from '@/lib/scholarReading';
+import ScholarEnglish from '@/components/reader/ScholarEnglish';
 
 export interface ReaderPassage {
   page_no: number;
@@ -34,6 +38,8 @@ export interface ReaderPassage {
   translation_qa?: number | null;
   /** READER_SOURCES_2026_10_14: where the Sanskrit comes from (passages.ocr_engine), when the reader knows it. */
   reading?: string | null;
+  /** SCHOLAR_READER_2026_10_18: the verse's scholarly English (corpus_reader_scholar), when there is one. */
+  scholar?: ScholarReading | null;
 }
 
 export const TYPE_NOTES: Record<string, string> = {
@@ -172,6 +178,7 @@ export default function PassageBlock({
   const ia = splitDecoration(p.iast);
   const lines = sourceLines(sa.text, ia.text);
   const en = displayTranslation(p.translation);
+  const sch = p.scholar ?? null;   // SCHOLAR_READER_2026_10_18
   const hi = p.hindi && p.hindi.trim() ? displayTranslation(p.hindi) : '';
   const provisional = !!en && madeFromMisread(p.sanskrit);   // PROVISIONAL_EN_2026_10_14
   const reading = readingOf(p.reading);   // READER_SOURCES_2026_10_14: an e-text is never a hard-to-read scan
@@ -215,10 +222,18 @@ export default function PassageBlock({
               )}
             </div>
             <div className={`min-w-0 ${side ? 'mt-3 lg:mt-0 lg:border-l lg:border-border lg:pl-8' : 'mt-3'}`}>
-              {prefs.english && en && (
+              {/* SCHOLAR_READER_2026_10_18: the scholarly English first; the working English folds under it */}
+              {prefs.english && sch && <ScholarEnglish s={sch} />}
+              {prefs.english && en && !sch && (
                 <p lang="en" className="whitespace-pre-line font-serif leading-relaxed text-foreground">{en}</p>
               )}
-              {prefs.english && !en && p.text_type !== 'frontmatter' && <p className="text-sm italic text-muted-foreground">Not translated yet.</p>}
+              {prefs.english && en && sch && (
+                <details className="mt-2">
+                  <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">Working English (machine)</summary>
+                  <p lang="en" className="mt-1 whitespace-pre-line font-serif text-sm leading-relaxed text-foreground/80">{en}</p>
+                </details>
+              )}
+              {prefs.english && !en && !sch && p.text_type !== 'frontmatter' && <p className="text-sm italic text-muted-foreground">Not translated yet.</p>}
               {prefs.hindi && hi && (
                 <p lang="hi" className="mt-2 whitespace-pre-line font-devanagari leading-relaxed text-foreground/90">{hi}</p>
               )}

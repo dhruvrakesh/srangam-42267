@@ -121,6 +121,40 @@ export function loadMirrorSources(docCode: string): Promise<MirrorResult<SourceR
   return rpc<SourceRow>('corpus_reader_sources', { p_doc: docCode });
 }
 
+// ---- SCHOLAR_READER_2026_10_18: the scholarly English (docs/cloud/C18; src/lib/scholarReading.ts) ----
+
+export interface MirrorScholarRow {
+  page_no: number;
+  idx: number;
+  /** The English; null for a verse whose sentence is given with an earlier verse. */
+  scholar: string | null;
+  /** JSON text: status, flag, accepted, judge, notes, doubts, range, with (parsed by parseScholar). */
+  meta: string | null;
+  fidelity: number | null;
+  fluency: number | null;
+  engine: string | null;
+  made_at: string | null;
+}
+
+export interface MirrorScholarCount {
+  verses: number;
+  flagged: number;
+}
+
+/** The scholarly English of one reader page: the same window of passages as loadMirrorPage. Before C18 is pasted
+ *  the call fails, and the reader shows what it showed before. */
+export function loadMirrorScholar(docCode: string, page: number): Promise<MirrorResult<MirrorScholarRow>> {
+  const p = Math.max(1, Math.trunc(page) || 1);
+  return rpc<MirrorScholarRow>('corpus_reader_scholar', {
+    p_doc: docCode, p_offset: (p - 1) * PASSAGES_PER_PAGE, p_limit: PASSAGES_PER_PAGE,
+  });
+}
+
+/** How many of a text's verses have a scholarly English, and how many wait for a person. Once a text. */
+export function loadMirrorScholarCount(docCode: string): Promise<MirrorResult<MirrorScholarCount>> {
+  return rpc<MirrorScholarCount>('corpus_reader_scholar_count', { p_doc: docCode });
+}
+
 export function searchMirrorWords(q: string, docCode?: string | null): Promise<MirrorResult<MirrorHit>> {
   const query = clean(q);
   if (query.length < MIN_WORDS) return Promise.resolve(fail<MirrorHit>(`Type at least ${MIN_WORDS} characters.`));

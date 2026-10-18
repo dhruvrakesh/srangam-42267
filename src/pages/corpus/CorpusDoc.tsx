@@ -9,6 +9,8 @@
  *
  * 50 passages to a page, ?p=3 in the URL, #p<page>-<idx> anchors (links from search land on them).
  * For each passage, the passages nearest in meaning across the whole corpus (stored vectors; no AI call).
+ * SCHOLAR_READER_2026_10_18: a verse's scholarly English (C18, corpus_reader_scholar) above its working English, and
+ * the text's count of them in the header. Asked once a text, then once a page only for a text that has them.
  */
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -30,9 +32,11 @@ import {
   readingsByPage, type PageStart,
 } from '@/lib/corpusDisplay';
 import {
-  loadMirrorDoc, loadMirrorOutline, loadMirrorPage, loadMirrorSources, mirrorHref, outlineMissing, searchMirrorMeaning,
-  searchMirrorWords, similarPassages, snippetParts, type MirrorOutlineRow, type MirrorPassage, type MirrorResult,
+  loadMirrorDoc, loadMirrorOutline, loadMirrorPage, loadMirrorScholar, loadMirrorScholarCount, loadMirrorSources, mirrorHref,
+  outlineMissing, searchMirrorMeaning, searchMirrorWords, similarPassages, snippetParts, type MirrorOutlineRow,
+  type MirrorPassage, type MirrorResult,
 } from '@/lib/corpusMirror';
+import { scholarByPassage, type ScholarReading } from '@/lib/scholarReading';
 import { useReaderPrefs } from '@/lib/readerPrefs';
 import { loadPageNames, namesByPassage, parseAt, type PageName } from '@/lib/corpusLibrary';
 
@@ -154,6 +158,10 @@ function FindInText({ docCode }: { docCode: string }) {
   );
 }
 
+// SCHOLAR_READER_2026_10_18: a passage with its scholarly English, when this page has one for it.
+const withScholar = <T extends object>(p: T, s: ScholarReading | undefined): T & { scholar?: ScholarReading } =>
+  (s ? { ...p, scholar: s } : p);
+
 const toStarts = (rows: MirrorOutlineRow[]): PageStart[] =>
   rows.filter((r) => r.kind === 'page').map((r) => ({
     reader_page: r.reader_page, page_no: r.page_no, idx: r.idx, last_page_no: r.last_page_no,
@@ -204,6 +212,25 @@ function CorpusDocBody() {
     [sourcesQ.data],
   );
 
+  // SCHOLAR_READER_2026_10_18: how many verses have a scholarly English, once a text (C18); then this page's, only
+  // for a text that has them. Until C18 is pasted the count fails and nothing else is asked: the reader is as before.
+  const scholarCountQ = useQuery({
+    queryKey: ['mirror', 'scholarcount', docCode],
+    queryFn: () => loadMirrorScholarCount(docCode),
+    enabled: !!doc,
+    staleTime: 10 * 60 * 1000,
+  });
+  const scholarCount = scholarCountQ.data?.ok ? scholarCountQ.data.rows[0] ?? null : null;
+  const scholarVerses = Number(scholarCount?.verses ?? 0) || 0;
+  const scholarFlagged = Number(scholarCount?.flagged ?? 0) || 0;
+  const scholarQ = useQuery({
+    queryKey: ['mirror', 'scholar', docCode, page],
+    queryFn: () => loadMirrorScholar(docCode, page),
+    enabled: !!doc && !at && scholarVerses > 0,
+    staleTime: STALE,
+  });
+  const scholarBy = useMemo(() => scholarByPassage(scholarQ.data?.ok ? scholarQ.data.rows : []), [scholarQ.data]);
+
   // CORPUS_LIBRARY_C6_2026_10_08: ?at=18.2 (a story's citation, a margin reference) -> the reader
   // page that holds scan page 18 (from the contents, C5b), at passage 18.2.
   useEffect(() => {
@@ -245,6 +272,16 @@ function CorpusDocBody() {
       staleTime: STALE,
     });
   }, [doc, passages, page, lastPage, docCode, qc]);
+
+  // SCHOLAR_READER_2026_10_18: the next page's scholarly English too, for a text that has it.
+  useEffect(() => {
+    if (!doc || scholarVerses <= 0 || page >= lastPage) return;
+    void qc.prefetchQuery({
+      queryKey: ['mirror', 'scholar', docCode, page + 1],
+      queryFn: () => loadMirrorScholar(docCode, page + 1),
+      staleTime: STALE,
+    });
+  }, [doc, scholarVerses, page, lastPage, docCode, qc]);
 
   // Contents: read only when asked for (the panel, or a scan page to go to).
   const [wantOutline, setWantOutline] = useState(false);
@@ -345,6 +382,10 @@ function CorpusDocBody() {
             <p className="mt-1 text-sm text-muted-foreground">
               {nf.format(doc.passages)} passages &middot; {nf.format(doc.english)} in English
               {doc.hindi > 0 ? <> &middot; {nf.format(doc.hindi)} in Hindi</> : null}
+              {scholarVerses > 0 ? (
+                <> &middot; <span title={scholarFlagged > 0 ? `${nf.format(scholarFlagged)} of them wait for a person's reading` : undefined}>
+                  {nf.format(scholarVerses)} in scholarly English</span></>
+              ) : null}
               {doc.category ? <> &middot; {doc.category}</> : null}
               {doc.published ? <> &middot; <Link to={`/texts/${encodeURIComponent(doc.doc_code)}`} className="text-burgundy hover:underline">published reader</Link></> : null}
             </p>
@@ -356,6 +397,17 @@ function CorpusDocBody() {
                 page and passage; hover over anything marked for a note.
               </span>
             </p>
+            {scholarVerses > 0 && (
+              <p className="mt-1.5 flex items-start gap-2 text-xs text-muted-foreground" data-scholar="about">
+                <Info className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" aria-hidden="true" />
+                <span>
+                  Verses marked <span className="font-semibold">Scholarly English</span> were translated afresh in the
+                  register of an unabridged critical translation, read by a critic and revised, and judged verse by verse
+                  against the Sanskrit; their notes are in the small popover beside each. A flag means a verse waits for a
+                  person&apos;s reading. The working English folds under it.
+                </span>
+              </p>
+            )}
           </header>
 
           <ReaderToolbar
@@ -387,7 +439,7 @@ function CorpusDocBody() {
                 return (
                   <PassageBlock
                     key={id}
-                    p={readingByPage.has(p.page_no) ? { ...p, reading: readingByPage.get(p.page_no) } : p}
+                    p={withScholar(readingByPage.has(p.page_no) ? { ...p, reading: readingByPage.get(p.page_no) } : p, scholarBy.get(id))}
                     prefs={prefs}
                     highlighted={arrived === id}
                     extra={hasEn || here ? (
