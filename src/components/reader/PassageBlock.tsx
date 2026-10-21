@@ -11,6 +11,8 @@
  * modern language) is folded too, and is never "Not translated yet": it is not the Sanskrit.
  * SCHOLAR_READER_2026_10_18: a verse's scholarly English, when the reader has one (docs/cloud/C18), stands above the
  * working English, which folds under it ("Working English (machine)").
+ * ETEXT_NOISE_2026_10_21: an e-text (typed from an edition, not scanned) has no scanner: what the automaton folds as noise
+ * in one is the e-text's own header or notes (GRETIL's English header on the Surya Siddhanta's page 1), and is called so.
  */
 import { useState, type ReactNode } from 'react';
 import { Info } from 'lucide-react';
@@ -48,6 +50,8 @@ export const TYPE_NOTES: Record<string, string> = {
   prose: 'Prose.',
   colophon: 'The closing line of a chapter or section.',
   noise: 'Scanner noise: marks on the page that are not text.',
+  // ETEXT_NOISE_2026_10_21: noise in an e-text is not a scanner's: it is the e-text's own header, credits or notes
+  etext_noise: "Not the text: the e-text's own header, credits or notes (GRETIL's English header, for one), kept as written and folded.",
   // CLASSIFY_HINDI_2026_10_16: an edition's own Hindi (its editor's translation, notes, preface) is typed frontmatter too
   frontmatter: "The edition's own matter: its front matter, or its editor's translation or notes in a modern language. Not the Sanskrit, so not translated.",
 };
@@ -124,7 +128,7 @@ function About({ p }: { p: ReaderPassage }) {
           {p.text_type && (
             <>
               <dt className="text-muted-foreground">Kind</dt>
-              <dd>{TYPE_NOTES[p.text_type] ?? p.text_type}</dd>
+              <dd>{(p.text_type === 'noise' && reading && !reading.scan ? TYPE_NOTES.etext_noise : TYPE_NOTES[p.text_type]) ?? p.text_type}</dd>
             </>
           )}
         </dl>
@@ -153,10 +157,14 @@ export default function PassageBlock({
   const mark = highlighted ? ' rounded-md bg-amber-50/70 dark:bg-amber-950/30' : '';
 
   if (p.text_type === 'noise' && !prefs.noise && !unfolded) {
+    const typed = readingOf(p.reading);   // ETEXT_NOISE_2026_10_21: an e-text has no scanner
+    const etext = !!typed && !typed.scan;
     return (
       <li id={id} data-page={p.page_no} className={`scroll-mt-40 flex items-center gap-3 border-b border-border py-2 text-xs text-muted-foreground${mark}`}>
         <a href={`#${id}`} className="w-11 shrink-0 text-right font-mono sm:w-[3.25rem]" title={where}>{gutterRef(p)}</a>
-        <span title={TYPE_NOTES.noise}>Scanner noise, not text.</span>
+        <span title={etext ? TYPE_NOTES.etext_noise : TYPE_NOTES.noise}>
+          {etext ? "Not the text: the e-text's own header or notes." : 'Scanner noise, not text.'}
+        </span>
         <button type="button" onClick={() => setUnfolded(true)} className="underline hover:text-foreground">Show it</button>
       </li>
     );
