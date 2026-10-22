@@ -1647,3 +1647,43 @@ so the reader folds them; but the reader called them "Scanner noise, not text.",
 ### Invariants added (Phase AM)
 60. The reader names what it folds by where the text came from: noise in an e-text is the e-text's own matter, never
     a scanner's; noise in a scan, or where the source is not recorded, is scanner noise as before.
+
+## Phase AN - One canonical a page; retired duplicates redirect (SEO_GSC_2026_10_22, 2026-10-22)
+
+Found on 22 Oct, reading Search Console's `nartiang.org` domain property (it includes srangam.nartiang.org) URL by
+URL: 62 srangam pages "Discovered - currently not indexed" (never crawled), 4 "Crawled - currently not indexed",
+and one soft 404, `/articles/shiva-bunjil-altair-connections`. Two causes in this repo:
+- index.html carried a static `<link rel="canonical" href="https://srangam.nartiang.org">` (since Feb 2026) and a
+  static og:url. Helmet adds each page's own canonical but never removes a tag it did not write, so every page
+  rendered TWO canonicals, the homepage's first: Google ignores both or folds the page into the homepage.
+  nartiang.org removed the same tag on 2026-07-04 for the same reason.
+- The three duplicates retired by consolidate_03_merge_duplicates.sql (status draft, 2026-09-06) still answered
+  "Article not found" at HTTP 200, and all three were still in public/sitemap.xml (the edge function had already
+  dropped them). Unknown routes (NotFound) and not-found articles carried no noindex.
+Lovable now pre-renders published pages for verified crawlers (its docs, read 2026-10-22), so these tags are exactly
+what Google reads. Full record: docs/SEO_GSC_STATUS_2026-10-22.md.
+
+### AN.1 - What changes
+- index.html: the static canonical and og:url removed (comment says why); description, og:title, og:description,
+  twitter:title and twitter:description carry data-rh="true", so a page's Helmet replaces them instead of adding a
+  second copy. Pages without a Helmet keep them as before.
+- src/pages/articles/ArticlesRouter.tsx: shiva-bunjil-altair-connections -> celestial-bridge-shaivism-bunjil,
+  vishnu-shiva-hari-hara -> har-har-hari-hari, deep-dive-indoiranian-origins -> asura-exiles-mitanni
+  (<Navigate replace>; static segments outrank :slug).
+- src/components/oceanic/article/ArticleError.tsx: "Article not found" carries noindex, follow (timeouts and other
+  errors do not). src/pages/NotFound.tsx: a title and noindex, follow.
+- public/sitemap.xml: the three retired slugs removed (77 -> 74 URLs). Nothing else in it changed.
+- Nothing stored changes; nothing more is asked of the database.
+
+### AN.2 - Not done, named
+- `/editions` is in public/sitemap.xml (added by hand on 18 Oct) but not in the generate-sitemap edge function, so
+  `node scripts/refresh-sitemap.mjs` would drop it. Add it to the function's static list (an edge deploy) before the
+  next refresh; until then run the script with --check only.
+- tsc reports one error that predates this phase: src/pages/Editions.tsx(111,78) TS2339 'error' on EditionsResult.
+
+### Invariants added (Phase AN)
+61. index.html carries no canonical and no og:url: every page owns its canonical through Helmet, and a fallback meta
+    tag that a page also sets carries data-rh="true" so the page's own replaces it.
+62. A retired article never answers "not found" to a URL Google knows: a merged duplicate redirects to the article it
+    duplicated, and leaves the sitemap in the same change.
+63. A page that says "not found" says noindex.

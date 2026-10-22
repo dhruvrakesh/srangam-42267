@@ -4,11 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Srangam — Histories of the Indian Ocean World</title>
-    <meta name="description" content="Exploring the interconnected histories of the Indian Ocean through archaeology, epigraphy, and deep time" />
+    <meta name="description" content="Exploring the interconnected histories of the Indian Ocean through archaeology, epigraphy, and deep time" data-rh="true" />
     <meta name="author" content="Srangam Project" />
     
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://srangam.nartiang.org" />
+    <!-- SEO-GSC-2026-10-22: the static canonical to the homepage is REMOVED. It shipped on every route next to
+         the page's own Helmet canonical, so every article carried two conflicting canonicals (Google ignores
+         both, or folds the page into the homepage). Each page sets its own canonical via react-helmet-async
+         (Home.tsx, ArticleHead.tsx, ...). Same rule as nartiang.org's index.html. Do not add it back. -->
     
     <!-- Google Search Console Verification (replace with actual code after setup) -->
     <!-- <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE" /> -->
@@ -50,10 +52,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Brahmi&family=Noto+Sans+Grantha&family=Noto+Sans+Kawi&family=Noto+Sans+Cham&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 
     <!-- Open Graph -->
-    <meta property="og:title" content="Srangam — Histories of the Indian Ocean World" />
-    <meta property="og:description" content="Dharmic Scholarship for the Digital Age — Exploring the interconnected histories of the Indian Ocean through archaeology, epigraphy, and deep time" />
+    <!-- SEO-GSC-2026-10-22: data-rh="true" lets react-helmet-async replace these fallbacks when a page sets its own;
+         without it the rendered page carried two descriptions / og:titles, the homepage's first. og:url removed:
+         a static og:url named the homepage on every shared article (ArticleHead and Home set their own). -->
+    <meta property="og:title" content="Srangam — Histories of the Indian Ocean World" data-rh="true" />
+    <meta property="og:description" content="Dharmic Scholarship for the Digital Age — Exploring the interconnected histories of the Indian Ocean through archaeology, epigraphy, and deep time" data-rh="true" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://srangam.nartiang.org" />
     <meta property="og:image" content="https://srangam.nartiang.org/brand/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -62,8 +66,8 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Srangam — Histories of the Indian Ocean World" />
-    <meta name="twitter:description" content="Dharmic Scholarship for the Digital Age — Exploring the interconnected histories of the Indian Ocean" />
+    <meta name="twitter:title" content="Srangam — Histories of the Indian Ocean World" data-rh="true" />
+    <meta name="twitter:description" content="Dharmic Scholarship for the Digital Age — Exploring the interconnected histories of the Indian Ocean" data-rh="true" />
     <meta name="twitter:image" content="https://srangam.nartiang.org/brand/og-image.png" />
   </head>
 

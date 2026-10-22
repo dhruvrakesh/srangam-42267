@@ -1,5 +1,7 @@
 # Srangam — SEO Discovery Audit & Phased Plan
 
+> **2026-10-22 - read `docs/SEO_GSC_STATUS_2026-10-22.md` first** (Search Console URL by URL; the static homepage canonical removed from index.html; retired duplicates redirect; the robots.txt-as-sitemap entry to remove in GSC).
+
 **Date:** 2026-07-19 · **Status:** authoritative for the search-discovery track; companion to
 `ENTERPRISE_MASTER_PLAN_2026-07-12.md` (site phases 1–6) and `SEO_CONFIGURATION.md`
 (Feb 2026 design). Honours the working agreement: one concern per commit with stated

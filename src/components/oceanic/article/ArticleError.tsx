@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, RefreshCw, ArrowLeft } from 'lucide-react';
@@ -28,6 +29,12 @@ export function ArticleError({ error, slug }: ArticleErrorProps) {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
+      {/* SEO-GSC-2026-10-22: a missing article answers HTTP 200 (SPA); without noindex Search Console files it as a soft 404. */}
+      {isNotFound && (
+        <Helmet>
+          <meta name="robots" content="noindex, follow" />
+        </Helmet>
+      )}
       <Card className="max-w-md w-full">
         <CardContent className="pt-6 text-center">
           <div className="mx-auto w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mb-4">

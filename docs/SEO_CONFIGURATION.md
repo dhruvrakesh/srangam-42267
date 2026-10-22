@@ -1,5 +1,7 @@
 # SEO Configuration Guide
 
+> **2026-10-22 - read `docs/SEO_GSC_STATUS_2026-10-22.md` first** (Search Console URL by URL; the static homepage canonical removed from index.html; retired duplicates redirect; the robots.txt-as-sitemap entry to remove in GSC).
+
 **Last Updated**: 2026-02-15
 **Last Audit**: 2026-02-15
 
