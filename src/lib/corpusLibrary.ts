@@ -168,6 +168,12 @@ export function parseAt(v: string | null | undefined): { page: number; idx: numb
 export interface NameRow { canonical: string; kind: string | null; notes: string | null; variants: string[] | null; mentions: number; texts: number; total: number }
 export interface NameHit { doc_code: string; title: string; page_no: number; idx: number; verse_ref: string | null; ord: number | null; surface: string | null; snippet: string | null; total: number }
 export interface PageName { page_no: number; idx: number; canonical: string; surface: string | null; kind: string | null; notes: string | null }
+/** NAME_LINKS_SITE_2026_10_23: a name that one passage names beside another (corpus_reader_name_links, docs/cloud/C20 in
+ *  the automaton repo), with the first passage that names both. Being named together is not a kinship. */
+export interface NameLink {
+  canonical: string; kind: string | null; passages: number; texts: number;
+  doc_code: string; title: string; page_no: number; idx: number; ord: number | null;
+}
 
 export const NAME_KINDS = ['person', 'deity', 'place', 'people', 'river', 'mountain', 'other'] as const;
 export const KIND_LABELS: Record<string, string> = {
@@ -217,6 +223,11 @@ export function loadNames(o: { q?: string; kind?: string | null; k?: number; off
 
 export function loadName(canonical: string, offset = 0, k = 50): Promise<LibResult<NameHit>> {
   return lib<NameHit>('corpus_reader_name', { p_canonical: canonical, k, p_offset: Math.max(0, offset) });
+}
+
+/** NAME_LINKS_SITE_2026_10_23: the names named together with one name, most passages first (at most 50). */
+export function loadNameLinks(canonical: string, k = 20): Promise<LibResult<NameLink>> {
+  return lib<NameLink>('corpus_reader_name_links', { p_canonical: canonical, k: Math.max(1, Math.min(50, k)) });
 }
 
 export function loadPageNames(docCode: string, page: number): Promise<LibResult<PageName>> {

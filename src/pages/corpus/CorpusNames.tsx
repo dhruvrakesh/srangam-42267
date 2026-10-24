@@ -5,6 +5,8 @@
  * mountains the translation desk recognised in the passages (corpus.entities, corpus.mentions),
  * how often and in how many texts each is named, and, for one name, every passage that names it,
  * in reading order, with a link into the text. Machine-recognised, not reviewed.
+ * NAME_LINKS_SITE_2026_10_23: and, for one name, the names our passages name beside it ("Named together with"), from
+ * corpus_reader_name_links (docs/cloud/C20 in the automaton repo); until C20 is applied the section is not shown.
  */
 import { FormEvent, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -21,7 +23,7 @@ import CorpusNav from '@/components/corpus/CorpusNav';
 import { displayTranslation, passageLabel } from '@/lib/corpusDisplay';
 import { mirrorHref } from '@/lib/corpusMirror';
 import {
-  bookTitle, KIND_LABELS, loadName, loadNames, NAME_KINDS, nameHref, type LibResult,
+  bookTitle, KIND_LABELS, loadName, loadNameLinks, loadNames, NAME_KINDS, nameHref, type LibResult, type NameLink,
 } from '@/lib/corpusLibrary';
 
 const nf = new Intl.NumberFormat('en-IN');
@@ -143,6 +145,38 @@ function NamesIndex() {
   );
 }
 
+/** NAME_LINKS_SITE_2026_10_23: the names a passage names beside this one, most passages first. */
+function NamedWith({ canonical, rows }: { canonical: string; rows: NameLink[] }) {
+  return (
+    <section aria-labelledby="named-with" className="mb-8">
+      <h2 id="named-with" className="mb-1 flex items-center gap-2 font-serif text-xl font-semibold text-foreground">
+        <Users className="h-5 w-5 text-burgundy" aria-hidden="true" /> Named together with
+      </h2>
+      <p className="mb-3 max-w-3xl text-sm text-muted-foreground">
+        The names that one passage names beside {canonical}, most passages first. Being named together says that two
+        belong to one story or one scene; it does not say how they are related.
+      </p>
+      <ul className="flex flex-wrap gap-2">
+        {rows.map((r) => (
+          <li key={r.canonical} className="rounded-md border border-border px-2.5 py-1.5 text-sm">
+            <Link to={nameHref(r.canonical)} className="font-serif text-foreground hover:text-burgundy">{r.canonical}</Link>
+            <span className="ml-1.5 text-xs text-muted-foreground">
+              {nf.format(r.passages)} {r.passages === 1 ? 'passage' : 'passages'}{r.texts > 1 ? ` \u00b7 ${r.texts} texts` : ''}
+            </span>
+            <Link
+              to={mirrorHref(r)}
+              className="ml-2 text-xs text-burgundy hover:underline"
+              title={`The first passage that names both, in ${bookTitle({ doc_code: r.doc_code, title: r.title }).title}`}
+            >
+              first together
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 function NamePage({ canonical }: { canonical: string }) {
   const [offset, setOffset] = useState(0);
   const head = useQuery({
@@ -155,7 +189,13 @@ function NamePage({ canonical }: { canonical: string }) {
     queryFn: () => loadName(canonical, offset, HITS),
     staleTime: 5 * 60 * 1000,
   });
+  const links = useQuery({   // NAME_LINKS_SITE_2026_10_23
+    queryKey: ['mirror', 'name-links', canonical],
+    queryFn: () => loadNameLinks(canonical, 20),
+    staleTime: 10 * 60 * 1000,
+  });
   const e = head.data?.ok ? head.data.rows[0] : undefined;
+  const lk = links.data?.ok ? links.data.rows : [];
   const r = hits.data;
   const total = r?.ok && r.rows.length ? Number(r.rows[0].total) : 0;
 
@@ -174,6 +214,8 @@ function NamePage({ canonical }: { canonical: string }) {
         {e?.variants && e.variants.length > 0 && <p className="mt-2 text-sm text-muted-foreground">Also written: <span className="italic">{e.variants.join(', ')}</span></p>}
         {e?.notes && <p className="mt-2 max-w-3xl text-sm leading-relaxed text-foreground/90">{e.notes}</p>}
       </header>
+
+      {lk.length > 0 && <NamedWith canonical={canonical} rows={lk} />}
 
       {hits.isLoading && <Skeleton className="h-40 w-full" />}
       {r && !r.ok && <Problem r={r} what="The passages" />}
