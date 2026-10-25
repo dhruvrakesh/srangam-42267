@@ -16,6 +16,8 @@ export interface CorpusLink { label: string; href: string; desc: string }
 
 export const CORPUS_LINKS: readonly CorpusLink[] = [
   { label: 'Library', href: '/corpus', desc: 'Every text on the translation desk: Sanskrit, IAST, English and Hindi' },
+  // SCHOLAR_SITE_2026_10_25
+  { label: 'Scholarly English', href: '/corpus/scholarly', desc: 'Every text with a scholarly English: read as prose, or verse by verse beside the Sanskrit' },
   { label: 'Stories', href: '/corpus/stories', desc: 'Episodes retold from the texts, each line cited' },
   { label: 'Names', href: '/corpus/names', desc: 'People, places and things, and where they appear' },
   { label: 'Pictures', href: '/corpus/images', desc: 'Pictures drawn for passages and stories' },

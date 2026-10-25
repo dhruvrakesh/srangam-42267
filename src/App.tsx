@@ -84,6 +84,9 @@ const CorpusCorner = lazy(() => import("./pages/corpus/CorpusCorner"));
 const CorpusAnthology = lazy(() => import("./pages/corpus/CorpusAnthology"));
 // STATE_LEARN_2026_10_09: Learn, the quests that teach every tool
 const CorpusLearn = lazy(() => import("./pages/corpus/CorpusLearn"));
+// SCHOLAR_SITE_2026_10_25: every text in scholarly English, and each read as prose (docs/cloud/C22)
+const CorpusScholarly = lazy(() => import("./pages/corpus/CorpusScholarly"));
+const CorpusProse = lazy(() => import("./pages/corpus/CorpusProse"));
 // EDITIONS_SITE_2026_10_18: the scholarly editions, open to everyone (public/scholarly/, written by the automaton)
 const Editions = lazy(() => import("./pages/Editions"));
 // RBAC_RESEARCHERS_2026_10_08: where an invited researcher lands
@@ -196,6 +199,9 @@ const App = () => (
               <Route path="/corpus/anthologies/:collectionId" element={<CorpusAnthology />} />
               {/* STATE_LEARN_2026_10_09 */}
               <Route path="/corpus/learn" element={<CorpusLearn />} />
+              {/* SCHOLAR_SITE_2026_10_25 */}
+              <Route path="/corpus/scholarly" element={<CorpusScholarly />} />
+              <Route path="/corpus/:docCode/prose" element={<CorpusProse />} />
               <Route path="/corpus/:docCode" element={<CorpusDoc />} />
               
               {/* Sources Routes */}

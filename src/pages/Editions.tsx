@@ -4,6 +4,8 @@
  * Each edition is a static page the automaton writes (scripts/publish_editions.py): the Sanskrit beside a scholarly
  * English, with notes at the end of each chapter, its credits and its licence. This page lists them from
  * public/scholarly/index.json (src/lib/editions.ts). A failed load is shown as a failure, never as "none".
+ * SCHOLAR_SITE_2026_10_25: and, where the automaton made it, the edition read as prose; the failure's text read with
+ * `'error' in r` (the site's tsconfig has no strictNullChecks, so `!r.ok` does not narrow the union: tsc failed here).
  */
 import type { ReactNode } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -54,6 +56,7 @@ function EditionCard({ e }: { e: Edition }) {
         </p>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1">
           <a href={e.file} className={`font-medium ${LINK}`}>Read the edition</a>
+          {e.prose && <a href={e.prose} className={`font-medium ${LINK}`}>Read it as prose</a>}
           <span className="text-xs text-muted-foreground">
             {megabytes(e.bytes)}{made && <> &middot; made {made}</>}
           </span>
@@ -108,7 +111,7 @@ export default function Editions() {
             <div>
               <p className="font-semibold">The editions could not be loaded.</p>
               <p className="text-muted-foreground mt-1">This is a loading failure, not an empty list. Please try again shortly.</p>
-              <p className="text-xs text-muted-foreground mt-2 font-mono">{r.error}</p>
+              <p className="text-xs text-muted-foreground mt-2 font-mono">{'error' in r ? r.error : ''}</p>
             </div>
           </CardContent>
         </Card>

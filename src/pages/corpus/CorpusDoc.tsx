@@ -11,6 +11,7 @@
  * For each passage, the passages nearest in meaning across the whole corpus (stored vectors; no AI call).
  * SCHOLAR_READER_2026_10_18: a verse's scholarly English (C18, corpus_reader_scholar) above its working English, and
  * the text's count of them in the header. Asked once a text, then once a page only for a text that has them.
+ * SCHOLAR_SITE_2026_10_25: and, for such a text, a link to read it as prose (/corpus/:docCode/prose).
  */
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -37,6 +38,7 @@ import {
   type MirrorPassage, type MirrorResult,
 } from '@/lib/corpusMirror';
 import { scholarByPassage, type ScholarReading } from '@/lib/scholarReading';
+import { proseHref } from '@/lib/scholarSite';   // SCHOLAR_SITE_2026_10_25
 import { useReaderPrefs } from '@/lib/readerPrefs';
 import { loadPageNames, namesByPassage, parseAt, type PageName } from '@/lib/corpusLibrary';
 
@@ -384,7 +386,8 @@ function CorpusDocBody() {
               {doc.hindi > 0 ? <> &middot; {nf.format(doc.hindi)} in Hindi</> : null}
               {scholarVerses > 0 ? (
                 <> &middot; <span title={scholarFlagged > 0 ? `${nf.format(scholarFlagged)} of them wait for a person's reading` : undefined}>
-                  {nf.format(scholarVerses)} in scholarly English</span></>
+                  {nf.format(scholarVerses)} in scholarly English</span>
+                  {' '}(<Link to={proseHref(doc.doc_code)} className="text-burgundy hover:underline">read it as prose</Link>)</>
               ) : null}
               {doc.category ? <> &middot; {doc.category}</> : null}
               {doc.published ? <> &middot; <Link to={`/texts/${encodeURIComponent(doc.doc_code)}`} className="text-burgundy hover:underline">published reader</Link></> : null}

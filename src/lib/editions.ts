@@ -5,6 +5,7 @@
  * and their list, public/scholarly/index.json, which /editions reads here. No database and no sign-in: the files
  * are served as they are. A missing index (or the site's own page answering for it) means no edition is published
  * yet; any other failure is a failure, never "none".
+ * SCHOLAR_SITE_2026_10_25: an edition may also be read as prose, public/scholarly/<slug>-prose.html (its `prose`).
  */
 
 export const EDITIONS_INDEX = '/scholarly/index.json';
@@ -29,6 +30,8 @@ export interface Edition {
   title: string;
   subtitle: string;
   file: string;
+  /** SCHOLAR_SITE_2026_10_25: the edition read as prose, '/scholarly/<slug>-prose.html', or '' when there is none. */
+  prose: string;
   verses: number;
   passed: number;
   flagged: number;
@@ -63,8 +66,10 @@ export function cleanEditions(raw: unknown): Edition[] {
     if (!SLUG.test(slug) || !FILE.test(file) || file !== `/scholarly/${slug}.html` || !str(e.title)) continue;
     const s = (e.source && typeof e.source === 'object' ? e.source : {}) as Record<string, unknown>;
     const l = (e.licence && typeof e.licence === 'object' ? e.licence : {}) as Record<string, unknown>;
+    const prose = str(e.prose, 120);   // SCHOLAR_SITE_2026_10_25: only its own prose page
     out.push({
-      slug, file, title: str(e.title, 200), subtitle: str(e.subtitle, 300),
+      slug, file, prose: prose === `/scholarly/${slug}-prose.html` ? prose : '',
+      title: str(e.title, 200), subtitle: str(e.subtitle, 300),
       verses: num(e.verses), passed: num(e.passed), flagged: num(e.flagged),
       engines: str(e.engines, 200), judge: str(e.judge, 200),
       source: {
