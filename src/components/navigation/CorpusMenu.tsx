@@ -20,6 +20,8 @@ export const CORPUS_LINKS: readonly CorpusLink[] = [
   { label: 'Scholarly English', href: '/corpus/scholarly', desc: 'Every text with a scholarly English: read as prose, or verse by verse beside the Sanskrit' },
   { label: 'Stories', href: '/corpus/stories', desc: 'Episodes retold from the texts, each line cited' },
   { label: 'Names', href: '/corpus/names', desc: 'People, places and things, and where they appear' },
+  // INDEX_SITE_2026_10_25
+  { label: 'Genealogies', href: '/corpus/genealogies', desc: 'The lines of descent of the Purana, Mahabharata and Vedic indexes, each step with its verse' },
   { label: 'Pictures', href: '/corpus/images', desc: 'Pictures drawn for passages and stories' },
   { label: 'Graphic novels', href: '/corpus/novels', desc: 'Approved stories told again page by page' },
   { label: "Researchers' Corner", href: '/corpus/corner', desc: 'Ask the desk for stories, pictures and novels; make anthologies' },

@@ -7,6 +7,8 @@
  * in reading order, with a link into the text. Machine-recognised, not reviewed.
  * NAME_LINKS_SITE_2026_10_23: and, for one name, the names our passages name beside it ("Named together with"), from
  * corpus_reader_name_links (docs/cloud/C20 in the automaton repo); until C20 is applied the section is not shown.
+ * INDEX_SITE_2026_10_25: and "In the indexes": the persons of the three indexes tied to the name, each a link to its
+ * line of descent, and what the indexes state of it (src/components/corpus/InTheIndexes.tsx, docs/cloud/C21).
  */
 import { FormEvent, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -20,6 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import CorpusGate, { CorpusRefused } from '@/components/corpus/CorpusGate';
 import CorpusNav from '@/components/corpus/CorpusNav';
+import InTheIndexes from '@/components/corpus/InTheIndexes';
 import { displayTranslation, passageLabel } from '@/lib/corpusDisplay';
 import { mirrorHref } from '@/lib/corpusMirror';
 import {
@@ -216,6 +219,7 @@ function NamePage({ canonical }: { canonical: string }) {
       </header>
 
       {lk.length > 0 && <NamedWith canonical={canonical} rows={lk} />}
+      <InTheIndexes canonical={canonical} />
 
       {hits.isLoading && <Skeleton className="h-40 w-full" />}
       {r && !r.ok && <Problem r={r} what="The passages" />}

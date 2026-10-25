@@ -87,6 +87,9 @@ const CorpusLearn = lazy(() => import("./pages/corpus/CorpusLearn"));
 // SCHOLAR_SITE_2026_10_25: every text in scholarly English, and each read as prose (docs/cloud/C22)
 const CorpusScholarly = lazy(() => import("./pages/corpus/CorpusScholarly"));
 const CorpusProse = lazy(() => import("./pages/corpus/CorpusProse"));
+// INDEX_SITE_2026_10_25: the indexes' lines of descent, each step with what it rests on (docs/cloud/C21)
+const CorpusGenealogies = lazy(() => import("./pages/corpus/CorpusGenealogies"));
+const CorpusGenealogy = lazy(() => import("./pages/corpus/CorpusGenealogy"));
 // EDITIONS_SITE_2026_10_18: the scholarly editions, open to everyone (public/scholarly/, written by the automaton)
 const Editions = lazy(() => import("./pages/Editions"));
 // RBAC_RESEARCHERS_2026_10_08: where an invited researcher lands
@@ -202,6 +205,9 @@ const App = () => (
               {/* SCHOLAR_SITE_2026_10_25 */}
               <Route path="/corpus/scholarly" element={<CorpusScholarly />} />
               <Route path="/corpus/:docCode/prose" element={<CorpusProse />} />
+              {/* INDEX_SITE_2026_10_25 */}
+              <Route path="/corpus/genealogies" element={<CorpusGenealogies />} />
+              <Route path="/corpus/genealogies/:source/:entry" element={<CorpusGenealogy />} />
               <Route path="/corpus/:docCode" element={<CorpusDoc />} />
               
               {/* Sources Routes */}

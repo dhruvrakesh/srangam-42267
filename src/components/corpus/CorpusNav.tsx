@@ -5,15 +5,17 @@
  * CORNER_C9_2026_10_09: and the Researchers' Corner, with its anthologies.
  * LEARN_T1_2026_10_09: and Learn, the quests that teach every tool.
  * SCHOLAR_SITE_2026_10_25: and the scholarly English, every text that has it and each read as prose.
+ * INDEX_SITE_2026_10_25: and the genealogies, the indexes' lines of descent with what each step rests on.
  */
 import { Link, useLocation } from 'react-router-dom';
-import { BookImage, BookMarked, Images, Library, Users, BookOpen, NotebookPen, GraduationCap, ScrollText } from 'lucide-react';
+import { BookImage, BookMarked, Images, Library, Users, BookOpen, NotebookPen, GraduationCap, ScrollText, GitBranch } from 'lucide-react';
 
 const ITEMS = [
-  { to: '/corpus', label: 'Library', icon: Library, match: (p: string) => p === '/corpus' || (/^\/corpus\/[^/]+$/.test(p) && !/^\/corpus\/(stories|names|images|novels|corner|anthologies|learn|scholarly)$/.test(p)) },
+  { to: '/corpus', label: 'Library', icon: Library, match: (p: string) => p === '/corpus' || (/^\/corpus\/[^/]+$/.test(p) && !/^\/corpus\/(stories|names|images|novels|corner|anthologies|learn|scholarly|genealogies)$/.test(p)) },
   { to: '/corpus/scholarly', label: 'Scholarly English', icon: ScrollText, match: (p: string) => p.startsWith('/corpus/scholarly') || /^\/corpus\/[^/]+\/prose$/.test(p) },
   { to: '/corpus/stories', label: 'Stories', icon: BookMarked, match: (p: string) => p.startsWith('/corpus/stories') },
   { to: '/corpus/names', label: 'Names', icon: Users, match: (p: string) => p.startsWith('/corpus/names') },
+  { to: '/corpus/genealogies', label: 'Genealogies', icon: GitBranch, match: (p: string) => p.startsWith('/corpus/genealogies') },
   { to: '/corpus/images', label: 'Pictures', icon: Images, match: (p: string) => p.startsWith('/corpus/images') },
   { to: '/corpus/novels', label: 'Graphic novels', icon: BookImage, match: (p: string) => p.startsWith('/corpus/novels') },
   { to: '/corpus/corner', label: 'Corner', icon: NotebookPen, match: (p: string) => p.startsWith('/corpus/corner') || p.startsWith('/corpus/anthologies') },
