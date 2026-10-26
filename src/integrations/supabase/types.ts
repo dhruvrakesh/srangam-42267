@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "13.0.5"
   }
   public: {
     Tables: {
@@ -2333,6 +2333,22 @@ export type Database = {
           worker_last_seen: string
         }[]
       }
+      corner_offering: {
+        Args: never
+        Returns: {
+          anthologies: number
+          done_7d: number
+          done_all: number
+          novels: number
+          passages_en: number
+          pictures: number
+          stories_approved: number
+          stories_draft: number
+          stories_proposed: number
+          texts: number
+          untold: number
+        }[]
+      }
       corner_request_cancel: {
         Args: { p_id: number }
         Returns: {
@@ -2422,6 +2438,16 @@ export type Database = {
       }
       corpus_access_mode: { Args: never; Returns: string }
       corpus_access_mode_set: { Args: { p_mode: string }; Returns: string }
+      corpus_index_delete: {
+        Args: { p_keys: Json; p_table: string }
+        Returns: Json
+      }
+      corpus_index_ingest: {
+        Args: { p_rows: Json; p_table: string }
+        Returns: Json
+      }
+      corpus_index_keys: { Args: { p_table: string }; Returns: Json }
+      corpus_index_manifest: { Args: never; Returns: Json }
       corpus_ingest: {
         Args: { p_rows: Json; p_run?: string; p_table: string }
         Returns: Json
@@ -2459,6 +2485,53 @@ export type Database = {
           synced_at: string
           title: string
           vectors: number
+        }[]
+      }
+      corpus_reader_index_find: {
+        Args: { p_fold: string; p_k?: number; p_source?: string }
+        Returns: {
+          canonical: string
+          down: number
+          entry: number
+          exact: boolean
+          head: string
+          sex: string
+          source: string
+          up: number
+        }[]
+      }
+      corpus_reader_index_lines: {
+        Args: { p_source?: string }
+        Returns: {
+          both_steps: number
+          entries: number[]
+          heads: string[]
+          length: number
+          rank: number
+          source: string
+        }[]
+      }
+      corpus_reader_index_of_name: {
+        Args: { p_canonical: string }
+        Returns: {
+          result: Json
+        }[]
+      }
+      corpus_reader_index_overview: {
+        Args: never
+        Returns: {
+          result: Json
+        }[]
+      }
+      corpus_reader_index_tree: {
+        Args: {
+          p_down?: number
+          p_entry: number
+          p_source: string
+          p_via?: number
+        }
+        Returns: {
+          result: Json
         }[]
       }
       corpus_reader_match: {
@@ -2527,6 +2600,20 @@ export type Database = {
           title: string
           total: number
           verse_ref: string
+        }[]
+      }
+      corpus_reader_name_links: {
+        Args: { k?: number; p_canonical: string }
+        Returns: {
+          canonical: string
+          doc_code: string
+          idx: number
+          kind: string
+          ord: number
+          page_no: number
+          passages: number
+          texts: number
+          title: string
         }[]
       }
       corpus_reader_names: {
@@ -2641,6 +2728,62 @@ export type Database = {
           updated_at_local: string
         }[]
       }
+      corpus_reader_scholar: {
+        Args: { p_doc: string; p_limit?: number; p_offset?: number }
+        Returns: {
+          engine: string
+          fidelity: number
+          fluency: number
+          idx: number
+          made_at: string
+          meta: string
+          page_no: number
+          scholar: string
+        }[]
+      }
+      corpus_reader_scholar_count: {
+        Args: { p_doc: string }
+        Returns: {
+          flagged: number
+          verses: number
+        }[]
+      }
+      corpus_reader_scholar_docs: {
+        Args: never
+        Returns: {
+          accepted: number
+          category: string
+          doc_code: string
+          fidelity: number
+          first_idx: number
+          first_ord: number
+          first_page: number
+          flagged: number
+          last_made: string
+          passages: number
+          title: string
+          verses: number
+        }[]
+      }
+      corpus_reader_scholar_prose: {
+        Args: {
+          p_after_idx?: number
+          p_after_page?: number
+          p_doc: string
+          p_limit?: number
+        }
+        Returns: {
+          chapter: string
+          colophon: boolean
+          has_sanskrit: boolean
+          idx: number
+          made_at: string
+          meta: string
+          page_no: number
+          scholar: string
+          verse_ref: string
+        }[]
+      }
       corpus_reader_search: {
         Args: { k?: number; p_doc?: string; q: string }
         Returns: {
@@ -2665,6 +2808,14 @@ export type Database = {
           snippet: string
           title: string
           verse_ref: string
+        }[]
+      }
+      corpus_reader_sources: {
+        Args: { p_doc: string }
+        Returns: {
+          ocr_engine: string
+          page_no: number
+          passages: number
         }[]
       }
       corpus_reader_stories: {
