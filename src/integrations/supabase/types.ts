@@ -2784,6 +2784,19 @@ export type Database = {
           verse_ref: string
         }[]
       }
+      corpus_reader_scholar_search: {
+        Args: { k?: number; p_doc?: string; q: string }
+        Returns: {
+          doc_code: string
+          idx: number
+          ord: number
+          page_no: number
+          score: number
+          snippet: string
+          title: string
+          verse_ref: string
+        }[]
+      }
       corpus_reader_search: {
         Args: { k?: number; p_doc?: string; q: string }
         Returns: {
