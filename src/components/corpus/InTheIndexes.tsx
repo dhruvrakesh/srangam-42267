@@ -3,16 +3,20 @@
  * tied to this name (each a link to its line of descent, /corpus/genealogies/:source/:entry) and what the indexes state
  * of it, with the entry's own words and references (corpus_reader_index_of_name, docs/cloud/C21 in the automaton repo).
  * Shown only when there is something to show: before C21, or for a name the indexes do not tie, nothing is drawn.
+ * B2_SITE_2026_10_28 (docs/cloud/C23): and what the historians say of the name, in the book's order, with the book's
+ * words and page ("What the historians say"); before C23, or for a name they do not speak of, nothing more is drawn.
  */
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { GitBranch } from 'lucide-react';
+import { GitBranch, ScrollText } from 'lucide-react';
+import ScholarClaims from '@/components/corpus/ScholarClaims';
 import {
   GENEALOGIES, groupStatements, loadIndexOfName, nameHrefOf, personHref, relationLabel, SOURCE_SHORT, SOURCES,
 } from '@/lib/indexSite';
 
 const LINK = 'text-burgundy hover:underline';
 const SHOWN = 12;
+const CLAIMS_SHOWN = 8;
 
 /** A name in a statement: a link to its page when it is another of our names. */
 function nameOf(n: string, c: string | null, here: string) {
@@ -28,12 +32,33 @@ export default function InTheIndexes({ canonical }: { canonical: string }) {
     staleTime: 10 * 60 * 1000,
   });
   const v = q.data?.ok ? q.data.value : null;
-  if (!v || (!v.persons.length && !v.statements.length)) return null;
+  const claims = v?.claims ?? [];
+  if (!v || (!v.persons.length && !v.statements.length && !claims.length)) return null;
+  const claimsMore = (Number(v.claims_n) || claims.length) - Math.min(claims.length, CLAIMS_SHOWN);
+  const historians = claims.length > 0 && (
+    <section aria-labelledby="historians-say" className="mb-8">
+      <h2 id="historians-say" className="mb-1 flex items-center gap-2 font-serif text-xl font-semibold text-foreground">
+        <ScrollText className="h-5 w-5 text-burgundy" aria-hidden="true" /> What the historians say
+      </h2>
+      <p className="mb-2 max-w-3xl text-sm text-muted-foreground">
+        {claims.every((c) => c.work === 'phai1923')
+          ? <>The claims of Hemchandra Raychaudhuri&apos;s Political History of Ancient India (1923) that speak of {canonical},</>
+          : <>The claims of the historians&apos; works that speak of {canonical},</>}{' '}
+        in the book&apos;s order, each with the book&apos;s words as the scan reads them and its page.
+      </p>
+      <ScholarClaims claims={claims.slice(0, CLAIMS_SHOWN)} here={canonical} label={`What the historians say of ${canonical}`} />
+      {claimsMore > 0 && (
+        <p className="mt-2 text-xs text-muted-foreground">and {claimsMore} more {claimsMore === 1 ? 'claim' : 'claims'} of the book.</p>
+      )}
+    </section>
+  );
+  if (!v.persons.length && !v.statements.length) return <>{historians}</>;
   const order = (s: string) => { const i = (SOURCES as readonly string[]).indexOf(s); return i < 0 ? 9 : i; };
   const lined = v.persons.filter((p) => p.has_line).sort((a, b) => order(a.source) - order(b.source));
   const said = v.statements.slice(0, SHOWN);
   const more = (Number(v.statements_n) || 0) - said.length;
   return (
+    <>
     <section aria-labelledby="in-the-indexes" className="mb-8">
       <h2 id="in-the-indexes" className="mb-1 flex items-center gap-2 font-serif text-xl font-semibold text-foreground">
         <GitBranch className="h-5 w-5 text-burgundy" aria-hidden="true" /> In the indexes
@@ -81,5 +106,7 @@ export default function InTheIndexes({ canonical }: { canonical: string }) {
         <p className="mt-2 text-xs text-muted-foreground">and {more} more {more === 1 ? 'statement' : 'statements'} in the indexes.</p>
       )}
     </section>
+    {historians}
+    </>
   );
 }

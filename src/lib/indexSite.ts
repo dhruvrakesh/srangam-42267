@@ -14,6 +14,13 @@
  *   corpus_reader_index_tree(source, entry, via, n)   one person: the line up and down, each step's evidence;
  *   corpus_reader_index_of_name(canonical)            a name of ours: its persons in the indexes and what they state.
  * The overview, a tree and a name come as one row, { result }. Nothing from the database is rendered as HTML.
+ *
+ * B2_SITE_2026_10_28 (docs/cloud/C23): a scholar's view of each relation. The desk weighs every kinship of the indexes
+ * against Hemchandra Raychaudhuri's Political History of Ancient India (1923; public domain), read from its scan page
+ * by page, each claim checked against the page's own words: a statement carries `scholars` (the book states it too:
+ * agrees; another relation of the same two: differs; the other way round: reversed), a step its best `scholar`, a
+ * tree the claims of its shown statements (`claims`, by key) and the works (`works`), a name what the works say of it
+ * (`claims`, `claims_n`), the overview the works with their counts. Before C23 none of these come, and nothing changes.
  */
 import { callMirror, functionMissing, type MirrorResult } from '@/lib/corpusMirror';
 
@@ -87,6 +94,8 @@ export interface Statement {
   best_text: string;
   best_ref: string;
   together: Record<string, [number, string]>;
+  /** B2_SITE_2026_10_28: what the scholars' works say of this relation (C23; absent before it). */
+  scholars?: ScholarView[];
 }
 
 export interface Step {
@@ -98,6 +107,8 @@ export interface Step {
   ours: string;
   epic: Record<string, [number, string]>;
   items: Statement[];
+  /** B2_SITE_2026_10_28: the best scholar's verdict of the step's statements (agrees, differs, reversed; C23). */
+  scholar?: string;
 }
 
 export interface Rung extends IndexPerson {
@@ -122,6 +133,9 @@ export interface Tree {
   down: Descendant[][];
   verses: Record<string, string>;
   texts: Record<string, TextInfo>;
+  /** B2_SITE_2026_10_28 (C23): the scholars' works, and the claims the shown statements rest on, by key. */
+  works?: Record<string, TextInfo>;
+  claims?: Record<string, Claim>;
 }
 
 export interface SourceInfo {
@@ -139,6 +153,8 @@ export interface SourceInfo {
 export interface Overview {
   sources: SourceInfo[];
   texts: (TextInfo & { code: string })[];
+  /** B2_SITE_2026_10_28 (C23): the scholars' works with their claims. */
+  works?: WorkInfo[];
   run: { mark?: string; counts?: Record<string, number>; checked?: string; synced_at?: string } | null;
 }
 
@@ -148,7 +164,14 @@ export interface LineRow { source: string; rank: number; entries: number[]; head
 
 export interface NamePerson { source: string; entry: number; head: string; sex: string; up: number; down: number; parents: number; children: number; has_line: boolean }
 
-export interface OfName { persons: NamePerson[]; statements: Statement[]; statements_n: number }
+export interface OfName {
+  persons: NamePerson[];
+  statements: Statement[];
+  statements_n: number;
+  /** B2_SITE_2026_10_28 (C23): what the scholars' works say of the name, in the book's order (60 at most). */
+  claims?: Claim[];
+  claims_n?: number;
+}
 
 /** A list from the mirror, and whether the database has the function at all (C21 not applied: missing). */
 export interface IndexResult<T> extends MirrorResult<T> { missing: boolean }
@@ -246,8 +269,16 @@ const CITED: Record<string, Chip> = {
   'no verse': { label: 'no such verse', tone: 'no', title: 'The edition has no verse of that number' },
 };
 
-/** The chips of a step, as the desk draws them: the cited verse, the epics, our passages, how the persons were told apart. */
-export function stepChips(st: Pick<Step, 'cited' | 'epic' | 'ours' | 'joined'>): Chip[] {
+/** B2_SITE_2026_10_28: a scholar's view of a step (C23), as a chip. */
+const SCHOLAR_CHIP: Record<string, Chip> = {
+  agrees: { label: 'Raychaudhuri agrees', tone: 'ok', title: 'Raychaudhuri\'s Political History of Ancient India (1923) states this relation too' },
+  differs: { label: 'Raychaudhuri: another relation', tone: 'half', title: 'Raychaudhuri (1923) states another relation of the same two persons' },
+  reversed: { label: 'Raychaudhuri: the other way', tone: 'half', title: 'Raychaudhuri (1923) states this relation the other way round' },
+};
+
+/** The chips of a step, as the desk draws them: the cited verse, the epics, our passages, the scholar's view
+ *  (B2_SITE_2026_10_28), how the persons were told apart. */
+export function stepChips(st: Pick<Step, 'cited' | 'epic' | 'ours' | 'joined'> & { scholar?: string }): Chip[] {
   const out: Chip[] = [];
   const c = CITED[st.cited];
   if (c) out.push(c);
@@ -257,6 +288,8 @@ export function stepChips(st: Pick<Step, 'cited' | 'epic' | 'ours' | 'joined'>):
   }
   if (st.ours === 'named together') out.push({ label: 'ours: together', tone: 'ok', title: 'One of our own passages names both' });
   else if (st.ours === 'named near') out.push({ label: 'ours: near', tone: 'ep', title: 'Our own passages name both within a few passages' });
+  const sc = st.scholar ? SCHOLAR_CHIP[st.scholar] : undefined;
+  if (sc) out.push(sc);
   if (st.joined === 'verse') out.push({ label: 'by a shared verse', tone: 'half', title: 'The name has several entries; the one whose entry cites the same verse was taken' });
   else if (st.joined === 'named') out.push({ label: 'a name only', tone: 'no', title: 'The index names this person, but its entries of that name cannot be told apart' });
   if (!out.length) out.push({ label: 'the index alone', tone: 'no', title: 'Only the index states this step' });
@@ -393,3 +426,108 @@ export const INDEX_CREDIT =
   'own words, and given here with those words under the Cologne licence, CC BY-NC-SA 3.0.';
 export const LICENCE_URL = 'https://creativecommons.org/licenses/by-nc-sa/3.0/';
 export const CAUTION = 'A verse where both names stand says where to read; it does not by itself prove the relation.';
+
+// ---- B2_SITE_2026_10_28: a scholar's view (docs/cloud/C23) -------------------------------------------------------
+
+/** A scholar's view of one relation of an index, as the desk weighs it (kin_index.py): the book states the relation
+ *  too (agrees), another relation of the same two (differs), or the same relation the other way round (reversed). */
+export interface ScholarView { work: string; verdict: string; note: string; claims: string[] }
+
+export interface ClaimCite { printed?: string; work?: string; locus?: string; ours?: string | null; note?: string }
+
+/** One claim of a scholar's work, read from its scan page (scholar_claims.py), its quotation found on the page. */
+export interface Claim {
+  key: string;
+  work: string;
+  pdf_page: number;
+  printed: string | null;
+  n: number;
+  subject: string;
+  relation: string;
+  object: string | null;
+  claim: string;
+  quote: string | null;
+  quote_check: string | null;
+  stance: string | null;
+  hedge: string | null;
+  subject_canonical: string | null;
+  subject_how: string | null;
+  object_canonical: string | null;
+  object_how: string | null;
+  cites: ClaimCite[];
+}
+
+export interface WorkInfo extends TextInfo { code: string; claims: number }
+
+/** Short names for the scholars' works, as a chip shows them. */
+export const WORK_SHORT: Record<string, string> = { phai1923: 'Raychaudhuri' };
+
+/** The verdicts in the order the desk ranks them (kin_index.py SCHOLAR_ORDER). */
+export const VERDICTS = ['agrees', 'differs', 'reversed'] as const;
+
+/** A scholar's verdict, in words: "Raychaudhuri (1923) states it too". */
+export function verdictText(v: Pick<ScholarView, 'work' | 'verdict'>, works?: Record<string, Pick<TextInfo, 'title'>>): string {
+  const who = WORK_SHORT[v.work] ?? works?.[v.work]?.title ?? v.work;
+  const year = /(\d{4})$/.exec(v.work)?.[1];
+  const name = year ? `${who} (${year})` : who;
+  switch (v.verdict) {
+    case 'agrees': return `${name} states it too`;
+    case 'differs': return `${name} states another relation of the two`;
+    case 'reversed': return `${name} states it the other way round`;
+    default: return name;
+  }
+}
+
+/** How a name of the book was tied to one of ours: certain (the same name, or with its number), else probable. */
+export function tieLabel(how: string | null | undefined): '' | 'certain' | 'probable' {
+  if (!how) return '';
+  return how === 'exact' || how === 'numbered exact' ? 'certain' : 'probable';
+}
+
+/** The book's page as the book prints it ("p. 37"; a front-matter page "p. ii"), else the scan's. */
+export function claimPage(c: Pick<Claim, 'printed' | 'pdf_page'>): string {
+  return c.printed ? `p. ${c.printed}` : `scan p. ${c.pdf_page}`;
+}
+
+/** The claims a statement's views rest on, in order, each once, those the tree has. */
+export function viewClaims(views: readonly ScholarView[] | undefined, claims: Record<string, Claim> | undefined): Claim[] {
+  const out: Claim[] = [];
+  const seen = new Set<string>();
+  for (const v of views ?? []) {
+    for (const k of v.claims ?? []) {
+      const c = claims?.[k];
+      if (c && !seen.has(k)) { seen.add(k); out.push(c); }
+    }
+  }
+  return out;
+}
+
+const TONE_RANK: Record<Tone, number> = { ok: 3, ep: 2, half: 1, no: 0 };
+
+/** How well a step is attested, for the strip over the line: the best of its chips ("the index alone" is "no"). */
+export function stepStrength(st: Pick<Step, 'cited' | 'epic' | 'ours' | 'joined'> & { scholar?: string }): Tone {
+  let best: Tone = 'no';
+  for (const c of stepChips(st)) {
+    if (c.label === 'a name only' || c.label === 'by a shared verse') continue;   // how the persons were told apart
+    if (TONE_RANK[c.tone] > TONE_RANK[best]) best = c.tone;
+  }
+  return best;
+}
+
+/** The line's steps counted by what they rest on, for its header. */
+export function lineCounts(steps: readonly (Pick<Step, 'cited' | 'epic' | 'ours'> & { scholar?: string })[]) {
+  let verse = 0; let epic = 0; let ours = 0; let agrees = 0; let otherwise = 0;
+  for (const s of steps) {
+    if (s.cited === 'both') verse += 1;
+    if (EPICS.some((e) => (s.epic?.[e.code]?.[0] ?? 0) > 0)) epic += 1;
+    if (s.ours === 'named together') ours += 1;
+    if (s.scholar === 'agrees') agrees += 1;
+    else if (s.scholar === 'differs' || s.scholar === 'reversed') otherwise += 1;
+  }
+  return { verse, epic, ours, agrees, otherwise };
+}
+
+/** The credit of the scholars' works, from their rows (C23): the work, its edition and its rights. */
+export const CLAIMS_CREDIT =
+  'The scholars\' claims were read from the scan of each work page by page by a model, each checked against the ' +
+  'page\'s own words; the quotations are as the scan reads them, uncorrected. Only works in the public domain are shown.';

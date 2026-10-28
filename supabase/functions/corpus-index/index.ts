@@ -1,5 +1,6 @@
 /**
  * corpus-index (C21, the automaton's docs/INDEX_SITE_2026-10-25.md)  C21_INDEX_SITE_2026_10_25
+ * C23_INDEX_CLAIMS_2026_10_28: and the scholars' claims (docs/B2_AND_X1C_2026-10-28.md); lib.ts names the tables.
  *
  * The door from the PC's scripts/index_sync.py into the indexes' genealogies in the private
  * mirror (corpus.index_*, docs/cloud/C21_index_site_2026-10-25.sql). Needs C21 applied first.

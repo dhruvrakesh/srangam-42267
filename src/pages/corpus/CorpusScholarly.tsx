@@ -6,6 +6,7 @@
  * the judge's mean fidelity, and two ways in: verse by verse beside the Sanskrit (the reader, at its first such
  * verse), and as prose (/corpus/<doc>/prose). Until C22 is pasted the page says so and points to the editions; a
  * refusal is a refusal, a failure a failure.
+ * X1C_SITE_2026_10_28: a search in the scholarly English of every text, or of one (docs/cloud/C24).
  */
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
@@ -15,6 +16,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import CorpusGate, { CorpusRefused } from '@/components/corpus/CorpusGate';
 import CorpusNav from '@/components/corpus/CorpusNav';
+import ScholarSearch from '@/components/corpus/ScholarSearch';
 import { displayTitle } from '@/lib/corpusDisplay';
 import { functionMissing, mirrorHref, share } from '@/lib/corpusMirror';
 import { loadScholarDocs, meanScore, proseHref, type ScholarDoc } from '@/lib/scholarSite';
@@ -118,6 +120,7 @@ function CorpusScholarlyBody() {
           <p className="mb-2 text-sm text-muted-foreground">
             {nf.format(r.rows.length)} {r.rows.length === 1 ? 'text' : 'texts'}, {nf.format(total)} verses in scholarly English.
           </p>
+          <ScholarSearch docs={r.rows} />
           <ul aria-label="Texts in scholarly English">
             {r.rows.map((d) => <DocRow key={d.doc_code} d={d} />)}
           </ul>

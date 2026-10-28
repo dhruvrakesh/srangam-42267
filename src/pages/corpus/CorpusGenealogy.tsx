@@ -8,6 +8,12 @@
  * their words and references, the Sanskrit verses where both names stand (GRETIL; the names marked), the epics' verses
  * that name both (the Mahabharata's counted, never quoted), our own passages that name both, each a link into the
  * reader; then the children and grandchildren. Nothing from the database is rendered as HTML.
+ *
+ * B2_SITE_2026_10_28 (docs/cloud/C23): each step's chips carry the scholar's view (Raychaudhuri, 1923: agrees, another
+ * relation, the other way), and a statement's evidence the claims it rests on, with the book's words and page; a strip
+ * over the line shows every step at a glance, by what it rests on, and chooses one; "In our corpus" gathers what our
+ * own texts hold of the person and the line: our names on the line, how often our texts name the person and in how
+ * many texts, the names they name with it (named together, not a kinship), and what the historians say of it.
  */
 import { useMemo, useState, type ReactNode } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -19,11 +25,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import CorpusGate, { CorpusRefused } from '@/components/corpus/CorpusGate';
 import CorpusNav from '@/components/corpus/CorpusNav';
 import IndexCredits from '@/components/corpus/IndexCredits';
-import { bookTitle } from '@/lib/corpusLibrary';
+import ScholarClaims from '@/components/corpus/ScholarClaims';
+import { bookTitle, loadNameLinks, loadNames } from '@/lib/corpusLibrary';
 import {
-  citeBlocks, citedNote, collapseNames, epicLine, GENEALOGIES, generationLabel, loadIndexTree, markForms, nameHrefOf,
-  personHref, placeHref, relationLabel, SOURCE_SHORT, stepChips, TEXT_SHORT, VERSE_CLAMP, type Chip, type Rung,
-  type Statement, type Step, type Tree,
+  citeBlocks, citedNote, collapseNames, epicLine, GENEALOGIES, generationLabel, lineCounts, loadIndexOfName,
+  loadIndexTree, markForms, nameHrefOf, personHref, placeHref, relationLabel, SOURCE_SHORT, stepChips, stepStrength,
+  TEXT_SHORT, verdictText, VERSE_CLAMP, viewClaims, type Chip, type Rung, type Statement, type Step, type Tone,
+  type Tree,
 } from '@/lib/indexSite';
 
 const LINK = 'text-burgundy hover:underline';
@@ -32,6 +40,20 @@ const TONE: Record<Chip['tone'], string> = {
   half: 'border-amber-500/40 bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-300',
   no: 'border-border bg-muted text-muted-foreground',
   ep: 'border-indigo-400/40 bg-indigo-50 text-indigo-800 dark:bg-indigo-950/30 dark:text-indigo-300',
+};
+
+/** B2_SITE_2026_10_28: the strip over the line, a step's colour by the best of what it rests on. */
+const STRIP: Record<Tone, string> = {
+  ok: 'bg-emerald-500/70',
+  ep: 'bg-indigo-400/70',
+  half: 'bg-amber-400/70',
+  no: 'bg-muted',
+};
+const STRENGTH: Record<Tone, string> = {
+  ok: 'a verse with both names, one of our passages, or the historian',
+  ep: 'the epics name both',
+  half: 'one name in the cited verse, or the historian states it otherwise',
+  no: 'the index alone',
 };
 
 function Chips({ chips }: { chips: Chip[] }) {
@@ -127,7 +149,25 @@ function StatementView({ it, tree }: { it: Statement; tree: Tree }) {
           ))}
         </p>
       )}
+      {it.scholars && it.scholars.length > 0 && <ScholarView it={it} tree={tree} />}
     </li>
+  );
+}
+
+/** B2_SITE_2026_10_28: what the historians say of this relation, and the book's words it rests on. */
+function ScholarView({ it, tree }: { it: Statement; tree: Tree }) {
+  const views = it.scholars ?? [];
+  const claims = viewClaims(views, tree.claims);
+  return (
+    <div className="mt-2 rounded-md border border-violet-400/40 bg-violet-50/40 px-3 py-2 dark:bg-violet-950/20" role="group" aria-label="The historian's view">
+      {views.map((v, i) => (
+        <p key={`${v.work}-${i}`} className="text-xs text-foreground">
+          <b>{verdictText(v, tree.works)}</b>
+          {!claims.length && v.note ? <span className="text-muted-foreground"> &middot; {v.note}</span> : null}
+        </p>
+      ))}
+      <ScholarClaims claims={claims} label="The book's words" compact />
+    </div>
   );
 }
 
@@ -211,6 +251,39 @@ function RungBox({ r, me, source }: { r: Rung; me: boolean; source: string }) {
   );
 }
 
+/** B2_SITE_2026_10_28: every step of the line at a glance, eldest first, each a button that chooses it. */
+function EvidenceStrip({ tree, at, choose }: { tree: Tree; at: number; choose: (i: number) => void }) {
+  if (tree.steps.length < 2) return null;
+  return (
+    <div className="mb-4">
+      <ol aria-label="The steps at a glance" className="flex h-5 w-full overflow-hidden rounded border border-border">
+        {tree.steps.map((st, i) => {
+          const t = stepStrength(st);
+          const a = tree.line[i]?.head ?? '';
+          const b = tree.line[i + 1]?.head ?? '';
+          return (
+            <li key={`${st.parent}-${st.child}-${i}`} className="min-w-[6px] flex-1 border-r border-background last:border-r-0">
+              <button
+                type="button"
+                onClick={() => choose(i)}
+                aria-pressed={at === i}
+                aria-label={`Step ${i + 1}, ${a} to ${b}: ${STRENGTH[t]}`}
+                title={`${a} → ${b}: ${STRENGTH[t]}`}
+                className={`block h-full w-full ${STRIP[t]} ${at === i ? 'ring-2 ring-inset ring-burgundy' : 'hover:opacity-80'}`}
+              />
+            </li>
+          );
+        })}
+      </ol>
+      <p className="mt-1 flex flex-wrap gap-x-3 text-[11px] text-muted-foreground" aria-hidden="true">
+        {(['ok', 'ep', 'half', 'no'] as Tone[]).map((t) => (
+          <span key={t} className="inline-flex items-center gap-1"><span className={`inline-block h-2.5 w-2.5 rounded-sm ${STRIP[t]}`} />{STRENGTH[t]}</span>
+        ))}
+      </p>
+    </div>
+  );
+}
+
 function Ladder({ tree, at, choose }: { tree: Tree; at: number; choose: (i: number) => void }) {
   return (
     <ol aria-label="The line" className="space-y-0">
@@ -280,12 +353,92 @@ function firstStep(tree: Tree): number {
   return f >= 0 ? f : 0;
 }
 
+/** B2_SITE_2026_10_28: what our own texts hold of the person and the line (docs/cloud/C6, C20, C23). */
+function OurCorpus({ tree }: { tree: Tree }) {
+  const me = tree.line[tree.me] ?? tree.person;
+  const c = me.canonical;
+  const onLine = useMemo(() => {
+    const out: string[] = [];
+    for (const r of tree.line) if (r.canonical && !out.includes(r.canonical)) out.push(r.canonical);
+    return out;
+  }, [tree]);
+  // the same queries, by the same keys, as the name's page (CorpusNames.tsx): going there from here is instant
+  const name = useQuery({
+    queryKey: ['mirror', 'names', 'exact', c],
+    queryFn: () => loadNames({ q: c ?? '', exact: true, k: 1 }),
+    enabled: !!c,
+    staleTime: 5 * 60 * 1000,
+  });
+  const links = useQuery({
+    queryKey: ['mirror', 'name-links', c],
+    queryFn: () => loadNameLinks(c ?? '', 20),
+    enabled: !!c,
+    staleTime: 10 * 60 * 1000,
+  });
+  const said = useQuery({
+    queryKey: ['mirror', 'index-of-name', c],
+    queryFn: () => loadIndexOfName(c ?? ''),
+    enabled: !!c,
+    staleTime: 10 * 60 * 1000,
+  });
+  const row = name.data?.ok ? name.data.rows.find((x) => x.canonical === c) : undefined;
+  const together = links.data?.ok ? links.data.rows.slice(0, 12) : [];
+  const claims = said.data?.ok ? said.data.value?.claims ?? [] : [];
+  const claimsN = said.data?.ok ? Number(said.data.value?.claims_n) || claims.length : 0;
+  if (!onLine.length && !row && !together.length && !claims.length) return null;
+  return (
+    <section aria-labelledby="our-corpus" className="mt-8">
+      <h2 id="our-corpus" className="mb-2 font-serif text-xl font-semibold text-foreground">In our corpus</h2>
+      {onLine.length > 0 && (
+        <p className="text-sm text-muted-foreground">
+          On this line, named in our texts:{' '}
+          {onLine.map((n, i) => (
+            <span key={n}>{i > 0 ? ' · ' : ''}<Link to={nameHrefOf(n)} className={LINK}>{n}</Link></span>
+          ))}
+        </p>
+      )}
+      {row && (
+        <p className="mt-2 text-sm text-muted-foreground">
+          Our texts name <Link to={nameHrefOf(row.canonical)} className={LINK}>{row.canonical}</Link> in{' '}
+          {Number(row.mentions || 0).toLocaleString('en-IN')} {Number(row.mentions) === 1 ? 'passage' : 'passages'} of{' '}
+          {Number(row.texts || 0).toLocaleString('en-IN')} {Number(row.texts) === 1 ? 'text' : 'texts'}.
+        </p>
+      )}
+      {together.length > 0 && (
+        <div className="mt-2">
+          <p className="text-sm text-muted-foreground">Named together with {c} in our passages (being named together is not a kinship):</p>
+          <ul className="mt-1 flex flex-wrap gap-1.5" aria-label={`Named together with ${c}`}>
+            {together.map((l) => (
+              <li key={l.canonical}>
+                <Link to={nameHrefOf(l.canonical)} className="inline-block rounded-md border border-border px-2 py-0.5 text-sm hover:border-burgundy" title={`First in ${l.title}`}>
+                  {l.canonical} <span className="text-xs text-muted-foreground">{l.passages}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {claims.length > 0 && (
+        <div className="mt-3">
+          <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">What the historians say of {c}</h3>
+          <ScholarClaims claims={claims.slice(0, 4)} here={c} label={`What the historians say of ${c}`} compact />
+          {claimsN > 4 && c && (
+            <p className="mt-1 text-xs"><Link to={nameHrefOf(c)} className={LINK}>All {claimsN} on the page of {c}</Link></p>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
 function TreeView({ tree }: { tree: Tree }) {
   const [chosen, setChosen] = useState<number | null>(null);
   const at = chosen ?? firstStep(tree);
   const me = tree.line[tree.me] ?? tree.person;
   const verified = useMemo(() => tree.steps.filter((s) => s.cited === 'both').length, [tree]);
+  const counts = useMemo(() => lineCounts(tree.steps), [tree]);
   const texts = Object.entries(tree.texts ?? {}).map(([code, t]) => ({ code, ...t }));
+  const works = Object.entries(tree.works ?? {}).map(([code, t]) => ({ code, ...t }));
   return (
     <>
       <Helmet><title>{`${me.head} | Genealogies | Srangam`}</title></Helmet>
@@ -297,8 +450,11 @@ function TreeView({ tree }: { tree: Tree }) {
         <p className="mt-1 text-sm text-muted-foreground">
           {tree.title ?? SOURCE_SHORT[tree.source] ?? tree.source} &middot; {tree.line.length} generations shown &middot;{' '}
           {verified} of {tree.steps.length} steps with both names in the cited verse
+          {counts.agrees > 0 ? <> &middot; {counts.agrees} the historian states too</> : null}
+          {counts.otherwise > 0 ? <> &middot; {counts.otherwise} he states otherwise</> : null}
         </p>
       </header>
+      <EvidenceStrip tree={tree} at={Math.max(0, Math.min(tree.steps.length - 1, at))} choose={setChosen} />
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <section aria-label="The line of descent">
           <Ladder tree={tree} at={at} choose={setChosen} />
@@ -313,7 +469,8 @@ function TreeView({ tree }: { tree: Tree }) {
           </Card>
         </section>
       </div>
-      <IndexCredits texts={texts} />
+      <OurCorpus tree={tree} />
+      <IndexCredits texts={texts} works={works} />
     </>
   );
 }

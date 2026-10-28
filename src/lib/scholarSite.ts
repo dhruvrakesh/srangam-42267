@@ -12,8 +12,14 @@
  * A sentence over verses stands whole after its range; a paragraph begins where a speaker does, or after eight; each
  * note is numbered after its anchor's first appearance, the translator's doubt about the reading last; a verse flagged
  * by the judge and not yet read by a person is marked. Nothing from the database is rendered as HTML.
+ *
+ * X1C_SITE_2026_10_28: and a search over it (docs/cloud/C24):
+ *   corpus_reader_scholar_search(q, k, p_doc)        the words in the scholarly English (stemmed, and as written),
+ *                                                    live verses of live texts, with corpus_reader_search's rows.
  */
-import { callMirror, type MirrorResult } from '@/lib/corpusMirror';
+import {
+  callMirror, functionMissing, MAX_QUERY, MIN_WORDS, type MirrorHit, type MirrorResult,
+} from '@/lib/corpusMirror';
 import { emphasisParts, parseScholar, scholarStatus } from '@/lib/scholarReading';
 
 export interface ScholarDoc {
@@ -56,6 +62,27 @@ export function loadScholarProse(
   return callMirror<ProseRow>('corpus_reader_scholar_prose', {
     p_doc: docCode, p_after_page: after ? after.page : null, p_after_idx: after ? after.idx : null, p_limit: limit,
   });
+}
+
+/** X1C_SITE_2026_10_28: a search in the scholarly English, and whether the database has it (C24 not applied). */
+export interface ScholarSearchResult extends MirrorResult<MirrorHit> { missing: boolean }
+
+export const SCHOLAR_SEARCH = 'corpus_reader_scholar_search';
+export const SCHOLAR_SEARCH_OFF = 'The search in the scholarly English is not switched on yet. The search by words works now.';
+
+/** The words in the scholarly English of every text (or one): at most 50 verses, the best first. The English's own
+ *  marks (*Manu*, the verse's end //) are taken out of the snippet; its [[ ]] marks are the words found. */
+export async function searchScholar(q: string, docCode: string | null = null, k = 30): Promise<ScholarSearchResult> {
+  const query = (q ?? '').replace(/\s+/g, ' ').trim();
+  if (query.length < MIN_WORDS) {
+    return { ok: false, rows: [], error: `Type at least ${MIN_WORDS} characters.`, refused: false, missing: false };
+  }
+  const r = await callMirror<MirrorHit>(SCHOLAR_SEARCH, {
+    q: query.slice(0, MAX_QUERY), k: Math.max(1, Math.min(50, k)), p_doc: docCode || null,
+  });
+  if (functionMissing(r, SCHOLAR_SEARCH)) return { ...r, error: SCHOLAR_SEARCH_OFF, missing: true };
+  if (!r.ok) return { ...r, missing: false };
+  return { ...r, rows: r.rows.map((h) => ({ ...h, snippet: h.snippet == null ? h.snippet : h.snippet.replace(/\*/g, '').replace(/\s*\/\/\s*/g, ' ').trim() })), missing: false };
 }
 
 /** The prose page of a text. */

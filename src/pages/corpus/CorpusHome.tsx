@@ -8,6 +8,7 @@
  * searches over all of it: by words (database full-text search, English stemmed and IAST) and by
  * meaning (the edge function search-corpus). Reads only through src/lib/corpusMirror.ts, whose
  * database functions check the reader; a refusal is shown as a refusal, a failure as a failure.
+ * X1C_SITE_2026_10_28: a third way, in the scholarly English (docs/cloud/C24, src/components/corpus/ScholarSearch.tsx).
  */
 import { FormEvent, useMemo, useState } from 'react';
 import CorpusNav from '@/components/corpus/CorpusNav';
@@ -21,6 +22,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import CorpusGate, { CorpusRefused } from '@/components/corpus/CorpusGate';
+import { ScholarHits } from '@/components/corpus/ScholarSearch';
+import { searchScholar, type ScholarSearchResult } from '@/lib/scholarSite';
 import { displayTitle, passageLabel } from '@/lib/corpusDisplay';   // READER_NAV_2026_10_08: displayTitle
 import {
   listMirrorDocs, MAX_QUERY, MIN_WORDS, mirrorHref, type MirrorHit, type MirrorResult,
@@ -28,7 +31,17 @@ import {
 } from '@/lib/corpusMirror';
 
 const nf = new Intl.NumberFormat('en-IN');
-type Mode = 'words' | 'meaning';
+type Mode = 'words' | 'meaning' | 'scholar';
+
+const MODE_LABEL: Record<Mode, string> = { words: 'By words', meaning: 'By meaning', scholar: 'In the scholarly English' };
+const MODE_HELP: Record<Mode, string> = {
+  words: 'Finds the words in the English (any form: "sacrifice" finds "sacrificed") and in the IAST as written.',
+  meaning: 'Ask in plain English. Finds the passages closest in meaning, across every text.',
+  scholar: 'Finds the words in the scholarly English, the second translation made verse by verse and judged against the Sanskrit (any form of a word).',
+};
+const MODE_HINT: Record<Mode, string> = {
+  words: 'e.g. cremation ground', meaning: 'e.g. why did the king sell his wife and son?', scholar: 'e.g. the eighth Manu',
+};
 
 function Snippet({ text }: { text: string | null }) {
   return (
@@ -75,10 +88,10 @@ function CorpusSearch() {
   const [mode, setMode] = useState<Mode>('words');
   const [q, setQ] = useState('');
   const m = useMutation({
-    mutationFn: ({ query, how }: { query: string; how: Mode }) =>
-      how === 'words' ? searchMirrorWords(query) : searchMirrorMeaning(query),
+    mutationFn: ({ query, how }: { query: string; how: Mode }): Promise<MirrorResult<MirrorHit> | ScholarSearchResult> =>
+      how === 'words' ? searchMirrorWords(query) : how === 'scholar' ? searchScholar(query) : searchMirrorMeaning(query),
   });
-  const ready = q.trim().length >= (mode === 'words' ? MIN_WORDS : 3);
+  const ready = q.trim().length >= (mode === 'meaning' ? 3 : MIN_WORDS);
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (ready && !m.isPending) m.mutate({ query: q, how: mode });
@@ -88,7 +101,7 @@ function CorpusSearch() {
       <CardContent className="pt-6">
         <h2 className="font-serif text-lg font-semibold text-foreground">Search the whole corpus</h2>
         <div className="mt-3 inline-flex rounded-md border border-border p-0.5 text-sm" role="group" aria-label="Search by">
-          {(['words', 'meaning'] as Mode[]).map((x) => (
+          {(['words', 'meaning', 'scholar'] as Mode[]).map((x) => (
             <button
               key={x}
               type="button"
@@ -96,15 +109,11 @@ function CorpusSearch() {
               onClick={() => { setMode(x); m.reset(); }}
               className={`rounded px-3 py-1 ${mode === x ? 'bg-burgundy text-white' : 'text-muted-foreground hover:text-foreground'}`}
             >
-              {x === 'words' ? 'By words' : 'By meaning'}
+              {MODE_LABEL[x]}
             </button>
           ))}
         </div>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {mode === 'words'
-            ? 'Finds the words in the English (any form: "sacrifice" finds "sacrificed") and in the IAST as written.'
-            : 'Ask in plain English. Finds the passages closest in meaning, across every text.'}
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">{MODE_HELP[mode]}</p>
         <form onSubmit={submit} role="search" className="mt-3 flex flex-col sm:flex-row gap-2">
           <label htmlFor="corpus-q" className="sr-only">Search the working corpus</label>
           <Input
@@ -112,7 +121,7 @@ function CorpusSearch() {
             value={q}
             maxLength={MAX_QUERY}
             onChange={(e) => setQ(e.target.value)}
-            placeholder={mode === 'words' ? 'e.g. cremation ground' : 'e.g. why did the king sell his wife and son?'}
+            placeholder={MODE_HINT[mode]}
           />
           <Button type="submit" disabled={!ready || m.isPending} className="sm:w-32">
             {m.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
@@ -120,7 +129,9 @@ function CorpusSearch() {
             Search
           </Button>
         </form>
-        <div aria-live="polite" className="mt-4">{m.data && <Hits r={m.data} />}</div>
+        <div aria-live="polite" className="mt-4">
+          {m.data && (m.variables?.how === 'scholar' ? <ScholarHits r={m.data as ScholarSearchResult} /> : <Hits r={m.data} />)}
+        </div>
       </CardContent>
     </Card>
   );

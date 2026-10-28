@@ -5,6 +5,8 @@
  * with their counts and credits, a search by the index's own head word, and the longest lines of each index, each
  * opening on its eldest. Until C21 is pasted the page says so; before the desk's first index_sync.py --apply it
  * says that nothing has been sent; a refusal is a refusal, a failure a failure.
+ * B2_SITE_2026_10_28 (docs/cloud/C23): the historians' works whose view is shown beside the steps, with their counts
+ * and credits.
  */
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -20,7 +22,7 @@ import CorpusNav from '@/components/corpus/CorpusNav';
 import IndexCredits from '@/components/corpus/IndexCredits';
 import {
   CAUTION, findIndexPersons, loadIndexLines, loadIndexOverview, personHref, SOURCE_SHORT,
-  SOURCES, type LineRow, type Overview, type SourceInfo,
+  SOURCES, type LineRow, type Overview, type SourceInfo, type WorkInfo,
 } from '@/lib/indexSite';
 
 const nf = new Intl.NumberFormat('en-IN');
@@ -52,6 +54,16 @@ function SourceCard({ s }: { s: SourceInfo }) {
         to child &middot; {nf.format(Number(s.statements) || 0)} relations stated &middot; {nf.format(Number(s.tied) || 0)} tied
         to our names
       </p>
+    </li>
+  );
+}
+
+/** B2_SITE_2026_10_28: a historian's work, as the page lists it beside the indexes. */
+function WorkLine({ w }: { w: WorkInfo }) {
+  return (
+    <li className="text-sm text-foreground/90">
+      <span className="font-serif font-semibold text-foreground">{w.title}</span>
+      <span className="text-muted-foreground"> &middot; {nf.format(Number(w.claims) || 0)} claims read from the book, each beside the relations of the indexes it bears on</span>
     </li>
   );
 }
@@ -214,6 +226,16 @@ function Body() {
             {[...ov.sources].sort((a, b) => (SOURCES as readonly string[]).indexOf(a.source) - (SOURCES as readonly string[]).indexOf(b.source))
               .map((s) => <SourceCard key={s.source} s={s} />)}
           </ul>
+          {(ov.works ?? []).some((w) => Number(w.claims) > 0) && (
+            <section aria-labelledby="historians" className="mb-6">
+              <h2 id="historians" className="mb-1 font-serif text-lg font-semibold text-foreground">The historians&apos; view</h2>
+              <p className="mb-2 max-w-3xl text-sm text-muted-foreground">
+                Where the historian speaks of the same two persons, a step says so: he states the relation too, another
+                relation of the two, or the same the other way round, with his words and page.
+              </p>
+              <ul aria-label="The historians">{(ov.works ?? []).filter((w) => Number(w.claims) > 0).map((w) => <WorkLine key={w.code} w={w} />)}</ul>
+            </section>
+          )}
           <div className="mb-6 flex flex-wrap gap-2" role="group" aria-label="Which index">
             {[null, ...SOURCES].map((s) => (
               <Button key={s ?? 'all'} size="sm" variant={source === s ? 'default' : 'outline'} aria-pressed={source === s} onClick={() => pick(s)}>
@@ -223,7 +245,7 @@ function Body() {
           </div>
           <Finder source={source} />
           <Lines source={source} overview={ov} />
-          <IndexCredits texts={ov.texts} />
+          <IndexCredits texts={ov.texts} works={ov.works ?? []} />
         </>
       )}
     </div>
