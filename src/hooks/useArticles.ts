@@ -57,6 +57,18 @@ export class ArticleFetchTimeoutError extends Error {
 
 const FETCH_TIMEOUT_MS = 12_000;
 
+/**
+ * LOAD_CARDS_2026_11_09 - the list pages read the cards, not the bodies.
+ * Measured on 9 Nov 2026 (Playwright, a cold load of https://srangam.nartiang.org/): the home page transferred
+ * 3,091 KB, of which 2,329 KB was this one query, `select('*')` over the 50 published articles - 4.64 MB of their
+ * 4.73 MB uncompressed was `content`, read only to learn which languages have a body. The view
+ * public.srangam_article_cards (docs/cloud/C25_article_cards_2026-11-09.sql in the automaton repository) gives the
+ * card's columns and `body_languages`, computed in the database with the same rule as computeBodyLanguages. Until
+ * that view exists the old read stays the fallback, so the order of deploying the two does not matter.
+ */
+const CARD_COLUMNS =
+  'id, slug, slug_alias, title, dek, theme, tags, read_time_minutes, author, published_date, created_at, body_languages';
+
 const computeBodyLanguages = (content: unknown): SupportedLanguage[] => {
   if (!content || typeof content !== 'object') return ['en'];
   const langs = Object.entries(content as Record<string, unknown>)
@@ -72,21 +84,39 @@ export const useAllArticles = (language: SupportedLanguage = 'en') => {
       const t0 = performance.now();
 
       const fetchPromise = (async () => {
-        const { data, error } = await supabase
-          .from('srangam_articles')
-          .select('*')
+        // LOAD_CARDS_2026_11_09: the cards first (the view); the bounds are PostgREST's own ceiling, made explicit.
+        const cards = await (supabase as any)
+          .from('srangam_article_cards')
+          .select(CARD_COLUMNS)
           .eq('status', 'published')
           // Phase AB.3 — deterministic ordering so same-day rows don't flip.
           .order('published_date', { ascending: false })
           .order('created_at', { ascending: false })
+          .limit(1000)
           .abortSignal(signal);
+        let data: any[] | null = cards.data;
+        let error: any = cards.error;
 
-        if (error) {
+        if (error && (error as any)?.name !== 'AbortError') {
+          // The view is not there yet (C25 not pasted): the old read, as before.
+          const full = await supabase
+            .from('srangam_articles')
+            .select('*')
+            .eq('status', 'published')
+            .order('published_date', { ascending: false })
+            .order('created_at', { ascending: false })
+            .limit(1000)
+            .abortSignal(signal);
+          data = full.data;
+          error = full.error;
+        }
+
+        if (error || !data) {
           console.error('Error fetching database articles:', error);
           throw error;
         }
 
-        return data.map((article): DisplayArticle => {
+        return data.map((article: any): DisplayArticle => {
           const title = typeof article.title === 'object' && article.title !== null
             ? article.title as { [key: string]: string }
             : { en: String(article.title || '') };
@@ -109,7 +139,9 @@ export const useAllArticles = (language: SupportedLanguage = 'en') => {
             author: article.author,
             date: article.published_date,
             source: 'database' as const,
-            bodyLanguages: computeBodyLanguages(article.content),
+            bodyLanguages: Array.isArray(article.body_languages) && article.body_languages.length > 0
+              ? (article.body_languages as SupportedLanguage[])
+              : computeBodyLanguages(article.content),
             slugAlias: slugAlias || undefined,
             rawSlug,
           };
