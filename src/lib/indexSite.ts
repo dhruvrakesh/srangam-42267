@@ -21,6 +21,13 @@
  * agrees; another relation of the same two: differs; the other way round: reversed), a step its best `scholar`, a
  * tree the claims of its shown statements (`claims`, by key) and the works (`works`), a name what the works say of it
  * (`claims`, `claims_n`), the overview the works with their counts. Before C23 none of these come, and nothing changes.
+ *
+ * GENEALOGY_HEAL_2026_11_10 (docs/cloud/C26, docs/GENEALOGY_2026-11-10.md): asked on 10 Nov, "such a genealogy front end
+ * does not make sense for anybody ... we cant even get the genealogy of Kaunteya (Arjun) right". The desk now draws a
+ * son begotten by another (Arjuna by Indra) through his mother's husband (Pandu), never lets a line turn back on itself,
+ * joins a name of several entries by the names both entries give ("shared"), and ties an epithet ("Kaunteya, the son
+ * of Kunti, = Arjuna") to the person: a person carries `same_as` and `gloss`, a found name too (C26; absent before).
+ * The pages say in plain words what each mark means (GUIDE) and send an epithet to the person it names.
  */
 import { callMirror, functionMissing, type MirrorResult } from '@/lib/corpusMirror';
 
@@ -56,7 +63,13 @@ export interface IndexPerson extends IndexName {
   down: number;
   canonical: string | null;
   spouses: IndexName[];
+  /** GENEALOGY_HEAL_2026_11_10 (C26): the persons this entry names ("= Arjuna"), and the entry's own gloss. */
+  same_as?: SameAs[];
+  gloss?: string;
 }
+
+/** GENEALOGY_HEAL_2026_11_10: a person an entry names, and how the desk told which entry of that name is meant. */
+export interface SameAs { entry: number; head: string; how: string }
 
 export interface Cite {
   text?: string;
@@ -158,7 +171,11 @@ export interface Overview {
   run: { mark?: string; counts?: Record<string, number>; checked?: string; synced_at?: string } | null;
 }
 
-export interface FindHit { source: string; entry: number; head: string; sex: string; up: number; down: number; canonical: string | null; exact: boolean }
+export interface FindHit {
+  source: string; entry: number; head: string; sex: string; up: number; down: number; canonical: string | null; exact: boolean;
+  /** GENEALOGY_HEAL_2026_11_10 (C26): an epithet's persons; has_line false for an epithet without a line of its own. */
+  same_as?: SameAs[]; gloss?: string; has_line?: boolean;
+}
 
 export interface LineRow { source: string; rank: number; entries: number[]; heads: string[]; length: number; both_steps: number }
 
@@ -291,6 +308,7 @@ export function stepChips(st: Pick<Step, 'cited' | 'epic' | 'ours' | 'joined'> &
   const sc = st.scholar ? SCHOLAR_CHIP[st.scholar] : undefined;
   if (sc) out.push(sc);
   if (st.joined === 'verse') out.push({ label: 'by a shared verse', tone: 'half', title: 'The name has several entries; the one whose entry cites the same verse was taken' });
+  else if (st.joined === 'shared') out.push({ label: JOIN_SHARED, tone: 'half', title: 'The name has several entries; the one whose entry names three or more of the same persons was taken' });
   else if (st.joined === 'named') out.push({ label: 'a name only', tone: 'no', title: 'The index names this person, but its entries of that name cannot be told apart' });
   if (!out.length) out.push({ label: 'the index alone', tone: 'no', title: 'Only the index states this step' });
   return out;
@@ -508,7 +526,7 @@ const TONE_RANK: Record<Tone, number> = { ok: 3, ep: 2, half: 1, no: 0 };
 export function stepStrength(st: Pick<Step, 'cited' | 'epic' | 'ours' | 'joined'> & { scholar?: string }): Tone {
   let best: Tone = 'no';
   for (const c of stepChips(st)) {
-    if (c.label === 'a name only' || c.label === 'by a shared verse') continue;   // how the persons were told apart
+    if (c.label === 'a name only' || c.label === 'by a shared verse' || c.label === JOIN_SHARED) continue;   // how the persons were told apart
     if (TONE_RANK[c.tone] > TONE_RANK[best]) best = c.tone;
   }
   return best;
@@ -531,3 +549,54 @@ export function lineCounts(steps: readonly (Pick<Step, 'cited' | 'epic' | 'ours'
 export const CLAIMS_CREDIT =
   'The scholars\' claims were read from the scan of each work page by page by a model, each checked against the ' +
   'page\'s own words; the quotations are as the scan reads them, uncorrected. Only works in the public domain are shown.';
+
+// ---- GENEALOGY_HEAL_2026_11_10: the epithets, and the page in plain words -----------------------------------------
+
+/** A step whose name had several entries, joined by the names both entries give (vamsa_view.py "shared"). */
+export const JOIN_SHARED = 'by the names both entries give';
+
+const NOT_TOLD = 'several entries of that name, not told apart';
+
+/** What an entry's epithet says: one person ("Kaunteya¹ = Arjuna"), a group ("the sons of Kunti": four persons), or
+ *  several entries of one name the desk could not tell apart; '' when the entry names no one. */
+export function epithetKind(p: Pick<IndexPerson, 'same_as'>): '' | 'one' | 'group' | 'unsure' {
+  const xs = p.same_as ?? [];
+  if (!xs.length) return '';
+  if (xs.every((x) => x.how === NOT_TOLD)) return 'unsure';
+  return xs.length === 1 ? 'one' : 'group';
+}
+
+/** How the desk told an epithet's person apart, in words for a title. */
+export function epithetHow(how: string): string {
+  switch (how) {
+    case "the entry's number": return 'the index gives the entry\'s number';
+    case "the index's only entry of that name": return 'the index has one entry of that name';
+    case 'the only entry of that name with a line': return 'the only entry of that name with parents or children';
+    case 'the entry of that name with the most kin in the index': return 'the entry of that name the index says most of';
+    case 'the singular entries of this name': return 'the persons the singular entries of this name name';
+    case NOT_TOLD: return 'the index has several entries of that name and does not say which';
+    default: return how;
+  }
+}
+
+/** A word on each index under a person's name: why some marks never show for it. */
+export const SOURCE_NOTE: Record<string, string> = {
+  inm: 'Sørensen cites the Calcutta edition of the Mahābhārata (1834–39) by its running verse numbers, which the ' +
+    'critical edition does not keep, so none of his steps can show a cited verse with both names; the strip shows ' +
+    'instead how many verses of the epics name both.',
+  pui: 'Dikshitar cites the Purāṇas by book, chapter and verse; where we hold the Purāṇa in Sanskrit (GRETIL), the ' +
+    'cited verse was read and the two names looked for in it. The Vāyu is not held.',
+  vei: 'Macdonell and Keith cite the Vedic texts; their references are given as printed.',
+};
+
+/** The page in plain words: what a line is, what each mark means, and what it is not. */
+export const GUIDE: readonly { term: string; text: string }[] = [
+  { term: 'What a line is', text: 'The chain of parent-to-child steps one index states, drawn up through the father and down through the son whose own line runs longest. It is the index\'s statements joined by machine, not a dynasty a historian compiled; each step says what it rests on.' },
+  { term: 'The numbers on the left', text: '0 is the person you opened; −1 a parent, −2 a grandparent; +1 a child, +2 a grandchild.' },
+  { term: 'The coloured strip', text: 'One square for each step, eldest first; click one to see that step. Green: a verse the index cites names both persons, one of our own passages names both, or the historian beside the indexes states the relation too. Blue: verses of the Mahābhārata, Harivaṃśa or Rāmāyaṇa name both. Amber: one of the two names stands in the cited verse, or the historian states another relation. Grey: the index alone.' },
+  { term: 'The chips between two persons', text: 'verse ✓: both names stand in the verse the index cites. MBh 7, HV 2, Rām 1: that many verses of the epic name both (counted by machine; the Mahābhārata\'s words are never shown). ours: together: one of our own passages names both. A solid rail: both persons\' entries state the step; dashed: one entry does.' },
+  { term: 'Two fathers', text: 'A son begotten on a king\'s wife by a god or a sage has two fathers in the index (Arjuna: Pāṇḍu and Indra). The line runs through the mother\'s husband, as the dynasties count him; the begetter is shown beside him, and "line through" draws the line up through him instead.' },
+  { term: 'Epithets', text: 'Kaunteya ("the son of Kuntī"), Pārtha and Dhanañjaya are names of Arjuna, not persons of their own: such an entry sends you to the person it names. A plural ("the sons of Kuntī") lists the persons its singular entries name.' },
+  { term: '"a name only" and "by the names both entries give"', text: 'Many names have several entries (there are several Arjunas). Where a statement does not say which one is meant, the desk takes the entry whose own words name three or more of the same persons; where it still cannot tell, the person is "a name only" and the line stops there.' },
+  { term: 'What it is not, yet', text: 'A reconciled dynasty. The Purāṇas\' own genealogical chapters (the Viṣṇu\'s book IV, the Bhāgavata\'s book IX, the Harivaṃśa) are to be read verse by verse into dynasties of their own, each generation with its verse; until then a line here is one index\'s statements, each with its evidence.' },
+];

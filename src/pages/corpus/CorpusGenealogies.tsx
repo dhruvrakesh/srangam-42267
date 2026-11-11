@@ -7,6 +7,9 @@
  * says that nothing has been sent; a refusal is a refusal, a failure a failure.
  * B2_SITE_2026_10_28 (docs/cloud/C23): the historians' works whose view is shown beside the steps, with their counts
  * and credits.
+ * GENEALOGY_HEAL_2026_11_10 (docs/cloud/C26): the page in plain words ("How to read this page"); a name found that is an
+ * epithet ("Kaunteya = Arjuna") links to the person it names; the longest lines are fathers' lines, said to be the
+ * index's statements joined, not a dynasty.
  */
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -20,6 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import CorpusGate, { CorpusRefused } from '@/components/corpus/CorpusGate';
 import CorpusNav from '@/components/corpus/CorpusNav';
 import IndexCredits from '@/components/corpus/IndexCredits';
+import { GenealogyGuide } from '@/components/corpus/GenealogyGuide';
 import {
   CAUTION, findIndexPersons, loadIndexLines, loadIndexOverview, personHref, SOURCE_SHORT,
   SOURCES, type LineRow, type Overview, type SourceInfo, type WorkInfo,
@@ -93,7 +97,7 @@ function Finder({ source }: { source: string | null }) {
         <Input
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="By the index's head word: Janamejaya, Daśaratha, Yayāti"
+          placeholder="By the index's head word or an epithet: Janamejaya, Daśaratha, Kaunteya, Pārtha"
           aria-label="A person's name, as the index writes it"
         />
         <Button type="submit"><Search className="mr-1 h-4 w-4" aria-hidden="true" /> Find</Button>
@@ -104,14 +108,25 @@ function Finder({ source }: { source: string | null }) {
       {hits.isLoading && <Skeleton className="mt-3 h-20 w-full" />}
       {r && !r.ok && r.refused && <CorpusRefused message={r.error} />}
       {r && !r.ok && !r.refused && <div className="mt-3"><Failure what="The persons" error={r.error} /></div>}
-      {r?.ok && q && r.rows.length === 0 && <p className="mt-3 text-sm text-muted-foreground">No person of that name has a parent or a child in the indexes.</p>}
+      {r?.ok && q && r.rows.length === 0 && <p className="mt-3 text-sm text-muted-foreground">No person or epithet of that name with a parent or a child in the indexes.</p>}
       {r?.ok && r.rows.length > 0 && (
         <ul className="mt-3 divide-y divide-border rounded-lg border border-border" aria-label="Persons found">
           {r.rows.map((h) => (
             <li key={`${h.source}:${h.entry}`} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-3 py-2">
-              <Link to={personHref(h.source, h.entry)} className="font-serif text-foreground hover:text-burgundy">{h.head}</Link>
+              <span>
+                <Link to={personHref(h.source, h.entry)} className="font-serif text-foreground hover:text-burgundy">{h.head}</Link>
+                {(h.same_as ?? []).length > 0 && (
+                  <span className="ml-2 text-sm text-muted-foreground">
+                    {h.gloss ? <>&ldquo;{h.gloss}&rdquo; </> : null}={' '}
+                    {(h.same_as ?? []).map((x, i) => (
+                      <span key={x.entry}>{i > 0 ? ', ' : ''}<Link to={personHref(h.source, x.entry)} className={LINK}>{x.head}</Link></span>
+                    ))}
+                  </span>
+                )}
+              </span>
               <span className="text-xs text-muted-foreground">
-                {SOURCE_SHORT[h.source] ?? h.source} &middot; lines run up to {h.up - 1} above and {h.down - 1} below
+                {SOURCE_SHORT[h.source] ?? h.source}
+                {h.has_line === false ? <> &middot; an epithet: open the person it names</> : <> &middot; lines run up to {h.up - 1} above and {h.down - 1} below</>}
                 {h.canonical ? <> &middot; our name {h.canonical}</> : null}
               </span>
             </li>
@@ -153,10 +168,13 @@ function Lines({ source, overview }: { source: string | null; overview: Overview
   const titles = Object.fromEntries(overview.sources.map((s) => [s.source, s.title]));
   return (
     <section aria-labelledby="longest-lines" className="mb-8">
-      <h2 id="longest-lines" className="mb-1 font-serif text-xl font-semibold text-foreground">The longest lines</h2>
+      <h2 id="longest-lines" className="mb-1 font-serif text-xl font-semibold text-foreground">The longest fathers&apos; lines</h2>
       <p className="mb-3 max-w-3xl text-sm text-muted-foreground">
-        Each from a person without a parent in the index, down the child whose own line runs longest. Open one to see
-        each step with what it rests on.
+        Each runs from a man without a father in the index down through his sons, each time the son whose own line runs
+        longest, and stops before a daughter. It is one index&apos;s statements joined, not a dynasty a historian compiled:
+        open one to see each step with what it rests on. The Purāṇa Index&apos;s lines are the Purāṇas&apos; own
+        genealogies (the Ikṣvākus, the Ānavas, the Videhas, the Yādavas); Sørensen&apos;s join the epic&apos;s many
+        stories and are the less sure.
       </p>
       {q.isLoading && <Skeleton className="h-32 w-full" />}
       {r && !r.ok && (r.refused ? <CorpusRefused message={r.error} /> : <Failure what="The lines" error={r.error} />)}
@@ -210,6 +228,7 @@ function Body() {
           </span>
         </p>
       </header>
+      <GenealogyGuide />
 
       {q.isLoading && <div className="space-y-3" aria-busy="true"><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /></div>}
       {r && !r.ok && r.refused && <CorpusRefused message={r.error} />}

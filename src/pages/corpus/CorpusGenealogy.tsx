@@ -14,6 +14,10 @@
  * over the line shows every step at a glance, by what it rests on, and chooses one; "In our corpus" gathers what our
  * own texts hold of the person and the line: our names on the line, how often our texts name the person and in how
  * many texts, the names they name with it (named together, not a kinship), and what the historians say of it.
+ *
+ * GENEALOGY_HEAL_2026_11_10 (docs/cloud/C26): "How to read this page" in plain words; an epithet ("Kaunteya, the son of
+ * Kuntī, = Arjuna") sends the reader to the person it names; a word on the index's citations (Sørensen's cannot be
+ * read verse by verse); a step joined by the names both entries give says so.
  */
 import { useMemo, useState, type ReactNode } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -26,10 +30,11 @@ import CorpusGate, { CorpusRefused } from '@/components/corpus/CorpusGate';
 import CorpusNav from '@/components/corpus/CorpusNav';
 import IndexCredits from '@/components/corpus/IndexCredits';
 import ScholarClaims from '@/components/corpus/ScholarClaims';
+import { EpithetNote, GenealogyGuide } from '@/components/corpus/GenealogyGuide';
 import { bookTitle, loadNameLinks, loadNames } from '@/lib/corpusLibrary';
 import {
   citeBlocks, citedNote, collapseNames, epicLine, GENEALOGIES, generationLabel, lineCounts, loadIndexOfName,
-  loadIndexTree, markForms, nameHrefOf, personHref, placeHref, relationLabel, SOURCE_SHORT, stepChips, stepStrength,
+  loadIndexTree, markForms, nameHrefOf, personHref, placeHref, relationLabel, SOURCE_NOTE, SOURCE_SHORT, stepChips, stepStrength,
   TEXT_SHORT, verdictText, VERSE_CLAMP, viewClaims, type Chip, type Rung, type Statement, type Step, type Tone,
   type Tree,
 } from '@/lib/indexSite';
@@ -186,6 +191,7 @@ function Evidence({ tree, at }: { tree: Tree; at: number }) {
       </p>
       {st.joined === 'verse' && <p className="mt-1 text-xs text-muted-foreground">The name has several entries in the index; the one whose entry cites the same verse was taken.</p>}
       {st.joined === 'named' && <p className="mt-1 text-xs text-muted-foreground">The index names this person, but its entries of that name cannot be told apart.</p>}
+      {st.joined === 'shared' && <p className="mt-1 text-xs text-muted-foreground">The name has several entries in the index; the one whose own entry names three or more of the same persons was taken.</p>}
       <ul aria-label="The statements">{st.items.map((it) => <StatementView key={it.key} it={it} tree={tree} />)}</ul>
     </>
   );
@@ -449,11 +455,16 @@ function TreeView({ tree }: { tree: Tree }) {
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {tree.title ?? SOURCE_SHORT[tree.source] ?? tree.source} &middot; {tree.line.length} generations shown &middot;{' '}
-          {verified} of {tree.steps.length} steps with both names in the cited verse
+          {tree.source === 'inm'
+            ? <>{counts.epic} of {tree.steps.length} steps named together in the epics&apos; verses</>
+            : <>{verified} of {tree.steps.length} steps with both names in the cited verse</>}
           {counts.agrees > 0 ? <> &middot; {counts.agrees} the historian states too</> : null}
           {counts.otherwise > 0 ? <> &middot; {counts.otherwise} he states otherwise</> : null}
         </p>
+        {SOURCE_NOTE[tree.source] && <p className="mt-1 max-w-4xl text-xs text-muted-foreground">{SOURCE_NOTE[tree.source]}</p>}
       </header>
+      <EpithetNote person={tree.person} source={tree.source} />
+      <GenealogyGuide />
       <EvidenceStrip tree={tree} at={Math.max(0, Math.min(tree.steps.length - 1, at))} choose={setChosen} />
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <section aria-label="The line of descent">
