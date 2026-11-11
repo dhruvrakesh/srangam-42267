@@ -238,6 +238,66 @@ export function loadIndexOfName(canonical: string): Promise<IndexOne<OfName>> {
   return one<OfName>('corpus_reader_index_of_name', { p_canonical: canonical });
 }
 
+// ---- DYNASTIES_2026_11_11: the Puranas' own lines (docs/cloud/C28_index_dynasties_2026-11-11.sql in the automaton repo)
+
+export const DYNASTIES = '/corpus/genealogies/dynasties';
+
+/** One step of a line: a person, the father the text gives, the verse and its words, the index's person and verdict. */
+export interface DynastyStep {
+  name: string; father?: string; ref?: string; words?: string; person?: string; index_head?: string;
+  how?: string; index?: string; joined?: string; page?: boolean;
+}
+export interface DynastyCounts {
+  persons?: number; father?: number; name?: number; none?: number; joined?: number;
+  agrees?: number; differs?: number; new?: number; absent?: number;
+}
+/** A line ("vip4:1"), or a work's own row ("vip4:0": n 0, its counts). */
+export interface DynastyRow {
+  key: string; work: string; n: number; title: string; text_code: string; label: string; length: number;
+  steps: DynastyStep[]; counts: DynastyCounts; source: string;
+}
+
+export function loadDynasties(work: string | null = null): Promise<IndexResult<DynastyRow>> {
+  return list<DynastyRow>('corpus_reader_index_dynasties', { p_work: work });
+}
+
+export const WORK_ORDER: readonly string[] = ['vip4', 'bhp9', 'bhp12'];
+export const WORK_TITLE: Record<string, string> = {
+  vip4: 'Viṣṇupurāṇa, book 4', bhp9: 'Bhāgavatapurāṇa, book 9', bhp12: 'Bhāgavatapurāṇa 12.1',
+};
+
+/** What the Purana Index says of a step, in words. */
+export const INDEX_SAYS: Record<string, Chip> = {
+  agrees: { label: 'index agrees', tone: 'ok', title: 'Dikshitar\'s Purāṇa Index gives this person the same father' },
+  differs: { label: 'index differs', tone: 'half', title: 'The index has a person of this name, with another father' },
+  new: { label: 'no father in the index', tone: 'half', title: 'The index has this person, and no father for him' },
+  absent: { label: 'not in the index', tone: 'no', title: 'The index has no person of this name' },
+};
+
+/** The person's page on the genealogies (/corpus/genealogies/pui/123) when the site has one, else null. */
+export function dynastyPersonHref(s: Pick<DynastyStep, 'person' | 'page'>): string | null {
+  if (!s.page || !s.person) return null;
+  const m = /^([a-z]+):(-?\d+)$/.exec(s.person);
+  return m ? personHref(m[1], Number(m[2])) : null;
+}
+
+/** The work's counts, in a sentence. */
+export function dynastyCountsText(c: DynastyCounts): string {
+  const n = (v?: number) => new Intl.NumberFormat('en-IN').format(Number(v ?? 0));
+  const found = Number(c.father ?? 0) + Number(c.name ?? 0);
+  return `${n(c.persons)} persons; ${n(found)} found in the Purāṇa Index (${n(c.father)} with the same father); ` +
+    `${n(c.differs)} with another father there; ${n(c.absent)} not in it.`;
+}
+
+export const DYNASTY_GUIDE: readonly { term: string; text: string }[] = [
+  { term: 'What a line is', text: 'The persons the Purāṇa itself names, father to son, as its genealogical book tells them: each step is a statement of the text ("his son was Vikukṣi"), with the verse that makes it. A line starts from a father the text names without his own father here.' },
+  { term: 'How it was read', text: 'A model (Claude) read the Sanskrit chapter by chapter and listed every statement of kinship it makes, with the verse and the words that say it; each was then checked by machine against GRETIL\'s text of that verse. Only the statements whose words and both names stand in their verse are drawn here.' },
+  { term: 'Two persons of one name', text: 'A person is a name and the father the text gives him. Two persons of one name in different lines (two Sṛñjayas) are kept apart: a father is joined to a son of his name in the same chapter or the one before, or where the Purāṇa Index shows they are one person ("joined by the index").' },
+  { term: 'The chips', text: 'index agrees: Dikshitar\'s Purāṇa Index gives the person the same father. index differs: the index has a person of that name with another father (a disagreement worth reading). no father in the index: the index has the person and no father. not in the index: the index has no such person.' },
+  { term: 'The links', text: 'A name in burgundy opens that person\'s page in the Genealogies (the index\'s line, with what each step rests on).' },
+  { term: 'What it is not yet', text: 'The lines of the Viṣṇupurāṇa and of the Bhāgavatapurāṇa are drawn apart; where the two Purāṇas differ is for the reader to see, and for our findings to come.' },
+];
+
 // ---- names, folded as the desk folds them -----------------------------------------------------------------------
 
 const HONORIFIC = /^\s*(?:śrī|Śrī|sri|shri|śrīmat|bhagavat)\s+/i;           // vamsa_view.py HONORIFIC

@@ -1,6 +1,8 @@
 // corpus-index: the logic, kept free of network imports so it can be tested with plain `deno test` (lib_test.ts).
 // C21_INDEX_SITE_2026_10_25 (the automaton's docs/cloud/C21_index_site_2026-10-25.sql, docs/INDEX_SITE_2026-10-25.md).
 // C23_INDEX_CLAIMS_2026_10_28: and the scholars' claims (corpus.index_claims, docs/cloud/C23_index_claims_2026-10-28.sql).
+// DYNASTIES_2026_11_11: and the dynasties, the Puranas' own lines (corpus.index_dynasties, docs/cloud/C28_index_dynasties_
+// 2026-11-11.sql): deploy this again after C28 is pasted, then index_sync.py --apply sends them.
 //
 // The door from the PC's scripts/index_sync.py into the indexes' genealogies (corpus.index_*). The same lock as
 // corpus-ingest: a request is accepted only when it carries x-corpus-ts (unix seconds, within 5 minutes of the server
@@ -8,8 +10,8 @@
 // (x-corpus-encoding: gzip) or plain JSON. Each request maps to exactly one of the four C21 service functions, which
 // run as service_role here; the service key never leaves Supabase.
 
-export const FN_VERSION = "corpus-index i2 (C21_INDEX_SITE_2026_10_25, C23_INDEX_CLAIMS_2026_10_28)";
-export const TABLES = ["texts", "persons", "steps", "statements", "claims", "lines", "verses", "meta"];
+export const FN_VERSION = "corpus-index i3 (C21_INDEX_SITE_2026_10_25, C23_INDEX_CLAIMS_2026_10_28, C28_INDEX_DYNASTIES_2026_11_11)";
+export const TABLES = ["texts", "persons", "steps", "statements", "claims", "lines", "verses", "dynasties", "meta"];
 export const MAX_BODY_BYTES = 8 * 1024 * 1024;   // as sent (gzip)
 export const MAX_JSON_BYTES = 48 * 1024 * 1024;  // after gunzip
 export const MAX_SKEW_S = 300;

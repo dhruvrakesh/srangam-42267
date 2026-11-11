@@ -15,7 +15,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, GitBranch, Info, Search } from 'lucide-react';
+import { AlertTriangle, Crown, GitBranch, Info, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -25,7 +25,7 @@ import CorpusNav from '@/components/corpus/CorpusNav';
 import IndexCredits from '@/components/corpus/IndexCredits';
 import { GenealogyGuide } from '@/components/corpus/GenealogyGuide';
 import {
-  CAUTION, findIndexPersons, loadIndexLines, loadIndexOverview, personHref, SOURCE_SHORT,
+  CAUTION, DYNASTIES, findIndexPersons, loadIndexLines, loadIndexOverview, personHref, SOURCE_SHORT,
   SOURCES, type LineRow, type Overview, type SourceInfo, type WorkInfo,
 } from '@/lib/indexSite';
 
@@ -229,6 +229,16 @@ function Body() {
         </p>
       </header>
       <GenealogyGuide />
+      <Link to={DYNASTIES} className="mb-5 flex items-start gap-3 rounded-lg border border-burgundy/30 bg-burgundy/5 px-4 py-3 text-sm hover:bg-burgundy/10">
+        <Crown className="mt-0.5 h-5 w-5 shrink-0 text-burgundy" aria-hidden="true" />
+        <span>
+          <span className="font-semibold text-foreground">The dynasties, as the Purāṇas trace them</span>
+          <span className="block text-muted-foreground">
+            The Viṣṇupurāṇa&apos;s fourth book and the Bhāgavatapurāṇa&apos;s ninth and twelfth, read verse by verse: each
+            step with its verse and what the Purāṇa Index says of it.
+          </span>
+        </span>
+      </Link>
 
       {q.isLoading && <div className="space-y-3" aria-busy="true"><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /></div>}
       {r && !r.ok && r.refused && <CorpusRefused message={r.error} />}
