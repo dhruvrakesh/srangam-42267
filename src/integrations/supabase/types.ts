@@ -239,6 +239,13 @@ export type Database = {
             foreignKeyName: "srangam_article_analytics_article_id_fkey"
             columns: ["article_id"]
             isOneToOne: false
+            referencedRelation: "srangam_article_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "srangam_article_analytics_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
             referencedRelation: "srangam_articles"
             referencedColumns: ["id"]
           },
@@ -276,6 +283,13 @@ export type Database = {
           quote?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "srangam_article_bibliography_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_article_cards"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "srangam_article_bibliography_article_id_fkey"
             columns: ["article_id"]
@@ -324,6 +338,13 @@ export type Database = {
           sequence_number?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "srangam_article_chapters_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_article_cards"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "srangam_article_chapters_article_id_fkey"
             columns: ["article_id"]
@@ -385,6 +406,13 @@ export type Database = {
             foreignKeyName: "srangam_article_evidence_article_id_fkey"
             columns: ["article_id"]
             isOneToOne: false
+            referencedRelation: "srangam_article_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "srangam_article_evidence_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
             referencedRelation: "srangam_articles"
             referencedColumns: ["id"]
           },
@@ -426,7 +454,21 @@ export type Database = {
             foreignKeyName: "srangam_article_merges_loser_id_fkey"
             columns: ["loser_id"]
             isOneToOne: true
+            referencedRelation: "srangam_article_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "srangam_article_merges_loser_id_fkey"
+            columns: ["loser_id"]
+            isOneToOne: true
             referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "srangam_article_merges_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_article_cards"
             referencedColumns: ["id"]
           },
           {
@@ -480,6 +522,13 @@ export type Database = {
             foreignKeyName: "srangam_article_metadata_article_id_fkey"
             columns: ["article_id"]
             isOneToOne: true
+            referencedRelation: "srangam_article_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "srangam_article_metadata_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: true
             referencedRelation: "srangam_articles"
             referencedColumns: ["id"]
           },
@@ -511,6 +560,13 @@ export type Database = {
           source?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "srangam_article_pins_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_article_cards"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "srangam_article_pins_article_id_fkey"
             columns: ["article_id"]
@@ -563,6 +619,13 @@ export type Database = {
           version_number?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "srangam_article_versions_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_article_cards"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "srangam_article_versions_article_id_fkey"
             columns: ["article_id"]
@@ -1058,7 +1121,21 @@ export type Database = {
             foreignKeyName: "srangam_cross_references_source_article_id_fkey"
             columns: ["source_article_id"]
             isOneToOne: false
+            referencedRelation: "srangam_article_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "srangam_cross_references_source_article_id_fkey"
+            columns: ["source_article_id"]
+            isOneToOne: false
             referencedRelation: "srangam_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "srangam_cross_references_target_article_id_fkey"
+            columns: ["target_article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_article_cards"
             referencedColumns: ["id"]
           },
           {
@@ -1331,6 +1408,13 @@ export type Database = {
             foreignKeyName: "srangam_markdown_sources_article_id_fkey"
             columns: ["article_id"]
             isOneToOne: true
+            referencedRelation: "srangam_article_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "srangam_markdown_sources_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: true
             referencedRelation: "srangam_articles"
             referencedColumns: ["id"]
           },
@@ -1490,6 +1574,13 @@ export type Database = {
           validation_status?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "srangam_purana_references_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_article_cards"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "srangam_purana_references_article_id_fkey"
             columns: ["article_id"]
@@ -1809,6 +1900,13 @@ export type Database = {
             foreignKeyName: "srangam_translation_queue_article_id_fkey"
             columns: ["article_id"]
             isOneToOne: false
+            referencedRelation: "srangam_article_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "srangam_translation_queue_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
             referencedRelation: "srangam_articles"
             referencedColumns: ["id"]
           },
@@ -1882,6 +1980,54 @@ export type Database = {
           f_table_schema?: unknown
           srid?: number | null
           type?: string | null
+        }
+        Relationships: []
+      }
+      srangam_article_cards: {
+        Row: {
+          author: string | null
+          body_languages: string[] | null
+          created_at: string | null
+          dek: Json | null
+          id: string | null
+          published_date: string | null
+          read_time_minutes: number | null
+          slug: string | null
+          slug_alias: string | null
+          status: string | null
+          tags: string[] | null
+          theme: string | null
+          title: Json | null
+        }
+        Insert: {
+          author?: string | null
+          body_languages?: never
+          created_at?: string | null
+          dek?: Json | null
+          id?: string | null
+          published_date?: string | null
+          read_time_minutes?: number | null
+          slug?: string | null
+          slug_alias?: string | null
+          status?: string | null
+          tags?: string[] | null
+          theme?: string | null
+          title?: Json | null
+        }
+        Update: {
+          author?: string | null
+          body_languages?: never
+          created_at?: string | null
+          dek?: Json | null
+          id?: string | null
+          published_date?: string | null
+          read_time_minutes?: number | null
+          slug?: string | null
+          slug_alias?: string | null
+          status?: string | null
+          tags?: string[] | null
+          theme?: string | null
+          title?: Json | null
         }
         Relationships: []
       }
@@ -1988,6 +2134,13 @@ export type Database = {
           purana_name: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "srangam_purana_references_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "srangam_article_cards"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "srangam_purana_references_article_id_fkey"
             columns: ["article_id"]
@@ -2487,6 +2640,21 @@ export type Database = {
           vectors: number
         }[]
       }
+      corpus_reader_index_dynasties: {
+        Args: { p_work?: string }
+        Returns: {
+          counts: Json
+          key: string
+          label: string
+          length: number
+          n: number
+          source: string
+          steps: Json
+          text_code: string
+          title: string
+          work: string
+        }[]
+      }
       corpus_reader_index_find: {
         Args: { p_fold: string; p_k?: number; p_source?: string }
         Returns: {
@@ -2494,7 +2662,10 @@ export type Database = {
           down: number
           entry: number
           exact: boolean
+          gloss: string
+          has_line: boolean
           head: string
+          same_as: Json
           sex: string
           source: string
           up: number
