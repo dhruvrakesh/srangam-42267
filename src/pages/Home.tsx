@@ -20,6 +20,8 @@ import { ArrowRight, Waves, Mountain, BookOpen, Map, Users, Network, Loader2 } f
 // right after first paint.
 const GeomythologySection = lazy(() => import("@/components/home/GeomythologySection"));
 const ToolsSection = lazy(() => import("@/components/home/ToolsSection"));
+// HOME_HEAL_2026_11_14: "Start here" - the texts themselves, in plain words (lazy, as the sections below).
+const CorpusStartSection = lazy(() => import("@/components/home/CorpusStartSection"));
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Home() {
@@ -216,6 +218,11 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* HOME_HEAL_2026_11_14: start here - the texts, the editions, the dynasties (lazy) */}
+      <Suspense fallback={null}>
+        <CorpusStartSection />
+      </Suspense>
 
       {/* Featured Articles - Enhanced Browsing */}
       <section className="py-16 bg-sandalwood/20 relative">

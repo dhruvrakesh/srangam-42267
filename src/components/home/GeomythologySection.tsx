@@ -22,9 +22,12 @@ import { DharmicTooltip } from '@/components/i18n/DharmicTooltip';
 // summarising key connections to the geomythology theme, and a description
 // that provides context. When adding or updating articles, modify this
 // array accordingly.
+// HOME_HEAL_2026_11_14: each card links its article itself (/articles/<slug>), not an old short path that redirects;
+// the fourth pointed at /sacred-ecology, which no route and no article has (a 404, reported 14 Nov). It now opens Part 1
+// of the Sacred Ecology series, "Under the Sacred Tree" (groves, harvest rites, Sarna groves), as AncientIndia.tsx does.
 const cards = [
   {
-    path: '/earth-sea-sangam',
+    path: '/articles/earth-sea-sangam',
     icon: IconBasalt,
     title: 'Earth & Sea Sangam',
     items: [
@@ -39,7 +42,7 @@ const cards = [
       'Explore how coastal geomyths from Tamilakam mirror the legends of land reclamation and oceanic trade discussed in our Geomythology article.'
   },
   {
-    path: '/stone-purana',
+    path: '/articles/stone-purana',
     icon: IconPort,
     title: 'Stone Purana',
     items: [
@@ -51,7 +54,7 @@ const cards = [
       'Read how monoliths and inscriptions across the subcontinent echo the reclamation myths of Paraśurama and Kaśyapa, linking stones to stories.'
   },
   {
-    path: '/gondwana-to-himalaya',
+    path: '/articles/gondwana-to-himalaya',
     icon: IconLotus,
     title: 'Gondwana to Himalaya',
     items: [
@@ -63,7 +66,7 @@ const cards = [
       'Trace the geological journeys from ancient Gondwana to the uplift of the Himalaya and see how these shifts shape and are shaped by sacred lore.'
   },
   {
-    path: '/sacred-ecology',
+    path: '/articles/sacred-tree-harvest-rhythms',
     icon: IconDharmaChakra,
     title: 'Sacred Ecology',
     items: [

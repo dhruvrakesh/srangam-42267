@@ -252,6 +252,8 @@ const App = () => (
                   <Route path="/continuous-habitation-uttarapatha" element={<Navigate to="/articles/continuous-habitation-uttarapatha" replace />} />
                   <Route path="/somnatha-prabhasa-itihasa" element={<Navigate to="/articles/somnatha-prabhasa-itihasa" replace />} />
                   <Route path="/ringing-rocks-rhythmic-cosmology" element={<Navigate to="/articles/ringing-rocks-rhythmic-cosmology" replace />} />
+                  {/* HOME_HEAL_2026_11_14: the home page linked /sacred-ecology (a 404); kept for links already out there */}
+                  <Route path="/sacred-ecology" element={<Navigate to="/articles/sacred-tree-harvest-rhythms" replace />} />
 
                   {/* Articles browse page + dynamic article routes */}
                   <Route path="/articles/*" element={<ArticlesRouter />} />
