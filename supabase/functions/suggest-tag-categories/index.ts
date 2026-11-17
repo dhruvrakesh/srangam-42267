@@ -2,6 +2,9 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
 import { requireAdmin } from '../_shared/auth-gate.ts';
+// AI_GATEWAY_OFF_2026_11_17: the project's own keys, Gemini first and OpenAI second (_shared/ai-provider.ts);
+// never the Lovable AI Gateway. aiExtractCitations is ai-provider's generic structured-JSON call.
+import { aiExtractCitations } from '../_shared/ai-provider.ts';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
@@ -45,10 +48,9 @@ serve(async (req) => {
       );
     }
 
-    // Phase 19a: Use Lovable AI Gateway instead of OpenAI directly
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      console.error("LOVABLE_API_KEY is not configured");
+    // AI_GATEWAY_OFF_2026_11_17: the project's own Gemini key, else its OpenAI key
+    if (!Deno.env.get("GEMINI_API_KEY") && !Deno.env.get("OPENAI_API_KEY")) {
+      console.error("Neither GEMINI_API_KEY nor OPENAI_API_KEY is configured");
       return new Response(
         JSON.stringify({ error: "AI service not configured" }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -121,51 +123,35 @@ Return a JSON object with this exact structure:
       `- "${t.tag_name}" (ID: ${t.id}, Usage: ${t.usage_count || 0}${t.description ? `, Description: ${t.description}` : ''})`
     ).join('\n')}`;
 
-    // Phase 19a: Use Lovable AI Gateway with Gemini 3 Flash
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-      }),
-    });
-
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error("AI gateway error:", aiResponse.status, errorText);
-      
-      if (aiResponse.status === 429) {
+    // AI_GATEWAY_OFF_2026_11_17: Gemini 2.5 Flash on the project's key, OpenAI gpt-4o-mini if Gemini fails
+    let content = '';
+    try {
+      const ai = await aiExtractCitations({
+        system: systemPrompt,
+        user: userPrompt,
+        timeoutMs: 60_000,
+        telemetry: { function_name: 'suggest-tag-categories', purpose: 'tag_categories' },
+      });
+      console.log(`AI categorization by ${ai.provider} ${ai.model} in ${ai.latency_ms}ms`);
+      content = ai.raw;
+    } catch (aiError) {
+      // both own keys failed (Gemini, then OpenAI): said plainly, never sent to another gateway
+      const detail = aiError instanceof Error ? aiError.message : String(aiError);
+      console.error("AI error (Gemini and OpenAI keys):", detail);
+      if (/\b429\b/.test(detail)) {
         return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
+          JSON.stringify({ error: "Rate limit or quota reached on the project's Gemini and OpenAI keys. Please try again later or recharge a key." }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      
-      if (aiResponse.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "AI credits exhausted. Please add credits to continue." }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
       return new Response(
-        JSON.stringify({ error: "AI categorization failed" }),
+        JSON.stringify({ error: "AI categorization failed (Gemini and OpenAI keys)", detail: detail.slice(0, 200) }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const aiData = await aiResponse.json();
-    const content = aiData.choices?.[0]?.message?.content;
-    
     if (!content) {
-      console.error('No content in AI response:', aiData);
+      console.error('No content in AI response');
       return new Response(
         JSON.stringify({ error: 'AI returned empty response' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

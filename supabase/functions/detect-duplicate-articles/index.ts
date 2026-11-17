@@ -2,6 +2,9 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 import { classifyError } from '../_shared/error-response.ts';
 
 import { requireAdmin } from '../_shared/auth-gate.ts';
+// AI_GATEWAY_OFF_2026_11_17: the project's own keys, Gemini first and OpenAI second (_shared/ai-provider.ts);
+// never the Lovable AI Gateway. aiExtractCitations is ai-provider's generic structured-JSON call.
+import { aiExtractCitations, NoAIProviderError } from '../_shared/ai-provider.ts';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -89,15 +92,13 @@ async function calculateContentHash(content: string): Promise<string> {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// AI semantic comparison using Lovable AI
+// AI semantic comparison: the project's own Gemini key, else its OpenAI key (AI_GATEWAY_OFF_2026_11_17)
 async function checkSemanticSimilarity(
   githubExcerpt: string,
   dbExcerpt: string
 ): Promise<{ similarity_score: number; reasoning: string; is_duplicate: boolean }> {
-  const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-  
-  if (!LOVABLE_API_KEY) {
-    console.warn('LOVABLE_API_KEY not configured, skipping AI comparison');
+  if (!Deno.env.get('GEMINI_API_KEY') && !Deno.env.get('OPENAI_API_KEY')) {
+    console.warn('Neither GEMINI_API_KEY nor OPENAI_API_KEY is configured, skipping AI comparison');
     return { similarity_score: 0, reasoning: 'AI not available', is_duplicate: false };
   }
 
@@ -122,30 +123,15 @@ Return a JSON object with:
 Focus on content substance, not formatting differences.`;
 
   try {
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: 'You are an expert at comparing academic articles. Return only valid JSON.' },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.3,
-      }),
+    const ai = await aiExtractCitations({
+      system: 'You are an expert at comparing academic articles. Return only valid JSON.',
+      user: prompt,
+      timeoutMs: 30_000,
+      telemetry: { function_name: 'detect-duplicate-articles', purpose: 'duplicate_check' },
     });
+    console.log(`AI comparison by ${ai.provider} ${ai.model} in ${ai.latency_ms}ms`);
+    const content = ai.raw || '{}';
 
-    if (!response.ok) {
-      console.error('AI API error:', response.status);
-      return { similarity_score: 0, reasoning: 'AI API error', is_duplicate: false };
-    }
-
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || '{}';
-    
     // Extract JSON from markdown code blocks if present
     const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/) || content.match(/({[\s\S]*})/);
     const jsonStr = jsonMatch ? jsonMatch[1] : content;
@@ -157,8 +143,12 @@ Focus on content substance, not formatting differences.`;
       is_duplicate: result.is_duplicate || false
     };
   } catch (error) {
-    console.error('AI semantic comparison error:', error);
-    return { similarity_score: 0, reasoning: 'Error during AI analysis', is_duplicate: false };
+    if (error instanceof NoAIProviderError) {
+      return { similarity_score: 0, reasoning: 'AI not available', is_duplicate: false };
+    }
+    // both own keys failed (Gemini, then OpenAI): said plainly, never sent to another gateway
+    console.error('AI semantic comparison error (Gemini and OpenAI keys):', error);
+    return { similarity_score: 0, reasoning: 'AI API error (Gemini and OpenAI keys)', is_duplicate: false };
   }
 }
 
