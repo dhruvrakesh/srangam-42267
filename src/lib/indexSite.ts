@@ -261,9 +261,17 @@ export function loadDynasties(work: string | null = null): Promise<IndexResult<D
   return list<DynastyRow>('corpus_reader_index_dynasties', { p_work: work });
 }
 
-export const WORK_ORDER: readonly string[] = ['vip4', 'bhp9', 'bhp12'];
+// DYNASTIES_WORKS_2026_11_18: the 17 works the desk reads (vamsa_read.py, G5a and G6); the page loads one at a time
+export const WORK_ORDER: readonly string[] = [
+  'vip4', 'bhp9', 'bhp12', 'vipc4', 'hv', 'ram1', 'ram2', 'mbh1', 'matsya', 'brahma', 'bndp1', 'bndp2', 'linga1',
+  'kurma1', 'garuda1', 'agni', 'markp',
+];
 export const WORK_TITLE: Record<string, string> = {
   vip4: 'Viṣṇupurāṇa, book 4', bhp9: 'Bhāgavatapurāṇa, book 9', bhp12: 'Bhāgavatapurāṇa 12.1',
+  vipc4: 'Viṣṇupurāṇa, book 4 (critical edition)', hv: 'Harivaṃśa', ram1: 'Rāmāyaṇa, book 1', ram2: 'Rāmāyaṇa, book 2',
+  mbh1: 'Mahābhārata, Ādiparvan', matsya: 'Matsyapurāṇa', brahma: 'Brahmapurāṇa', bndp1: 'Brahmāṇḍapurāṇa, book 1',
+  bndp2: 'Brahmāṇḍapurāṇa, book 2', linga1: 'Liṅgapurāṇa, book 1', kurma1: 'Kūrmapurāṇa, book 1',
+  garuda1: 'Garuḍapurāṇa, book 1', agni: 'Agnipurāṇa', markp: 'Mārkaṇḍeyapurāṇa',
 };
 
 /** What the Purana Index says of a step, in words. */
@@ -306,6 +314,17 @@ const MARK_TAIL = /\s*(?:\((\d{1,2}|[ivxlc]{1,6})\)|\[(\d{1,2})\])\s*$/i;
 
 /** The index's head word folded as the desk folds it (relations_view.fold of split_mark): the honorific and the
  *  homonym's number left out, the diacritics taken off, letters and digits only. "Daśaratha (II)" -> "dasaratha". */
+/** DYNASTIES_WORKS_2026_11_18: a name as typed in plain letters meets it in IAST (Harishchandra and Hariścandra,
+ * Shantanu and Śaṃtanu, Yudhishthira and Yudhiṣṭhira): the nasals an n, the visarga dropped, then sh, ch, double
+ * vowels and ri set aside on both sides (the desk's vamsa_register.qkey, its rule). For finding, not for joining. */
+export function foldPlain(s: string): string {
+  let t = foldName((s ?? '').replace(/ḥ/g, '').replace(/[ṃṅñṇ]/g, 'n').replace(/m̐/g, 'n'));
+  for (const [a, b] of [['sh', 's'], ['ch', 'c'], ['aa', 'a'], ['ii', 'i'], ['uu', 'u'], ['ri', 'r'], ['w', 'v']]) {
+    t = t.split(a).join(b);
+  }
+  return t;
+}
+
 export function foldName(s: string): string {
   let t = (s ?? '').trim().replace(HONORIFIC, '');
   const lead = MARK_LEAD.exec(t);

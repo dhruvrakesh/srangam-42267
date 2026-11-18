@@ -9,6 +9,9 @@
  * the Purāṇa Index), sent by index_sync.py into corpus.index_dynasties (docs/cloud/C28 in the automaton repo).
  * Until C28 is pasted the page says so; before the desk's first send it says that nothing has been sent; a refusal is a
  * refusal, a failure a failure. Nothing from the database is rendered as HTML.
+ * DYNASTIES_WORKS_2026_11_18: one work's lines at a time (loadDynasties(work), kept 10 minutes), not every work's at
+ * once, so that the desk may send all 17 works it reads (index_sync.py --dynasty-works every) without a heavier page;
+ * a name typed in plain letters is found (foldPlain).
  */
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -22,7 +25,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import CorpusGate, { CorpusRefused } from '@/components/corpus/CorpusGate';
 import CorpusNav from '@/components/corpus/CorpusNav';
 import {
-  DYNASTY_GUIDE, dynastyCountsText, dynastyPersonHref, foldName, GENEALOGIES, INDEX_SAYS, loadDynasties,
+  DYNASTY_GUIDE, dynastyCountsText, dynastyPersonHref, foldPlain, GENEALOGIES, INDEX_SAYS, loadDynasties,
   WORK_ORDER, WORK_TITLE, type Chip, type DynastyRow, type DynastyStep,
 } from '@/lib/indexSite';
 
@@ -110,21 +113,19 @@ function Failure({ error }: { error: string | null }) {
 }
 
 function Body() {
-  const q = useQuery({ queryKey: ['index-dynasties'], queryFn: () => loadDynasties(null), staleTime: 10 * 60 * 1000 });
-  const r = q.data;
-  const rows = useMemo(() => (r && r.ok ? r.rows : []), [r]);
-  const works = useMemo(() => {
-    const have = new Set(rows.map((x) => x.work));
-    return [...WORK_ORDER.filter((w) => have.has(w)), ...[...have].filter((w) => !WORK_ORDER.includes(w)).sort()];
-  }, [rows]);
   const [work, setWork] = useState<string | null>(null);
   const [find, setFind] = useState('');
   const [all, setAll] = useState(false);
-  const w = work && works.includes(work) ? work : works[0] ?? null;
-  const head = rows.find((x) => x.work === w && x.n === 0);
-  const f = foldName(find);
-  const lines = rows.filter((x) => x.work === w && x.n > 0)
-    .filter((x) => f.length < 2 || x.steps.some((s) => foldName(s.name).includes(f)))
+  const works = WORK_ORDER;
+  const w = work && works.includes(work) ? work : works[0];
+  // DYNASTIES_WORKS_2026_11_18: the chosen work's rows only
+  const q = useQuery({ queryKey: ['index-dynasties', w], queryFn: () => loadDynasties(w), staleTime: 10 * 60 * 1000 });
+  const r = q.data;
+  const rows = useMemo(() => (r && r.ok ? r.rows.filter((x) => x.work === w) : []), [r, w]);
+  const head = rows.find((x) => x.n === 0);
+  const f = foldPlain(find);
+  const lines = rows.filter((x) => x.n > 0)
+    .filter((x) => f.length < 2 || x.steps.some((s) => foldPlain(s.name).includes(f)))
     .sort((a, b) => a.n - b.n);
   const shown = all || f.length >= 2 ? lines : lines.slice(0, SHOWN);
   return (
@@ -137,9 +138,10 @@ function Body() {
           <Crown className="h-7 w-7 text-burgundy" aria-hidden="true" /> Dynasties
         </h1>
         <p className="mt-3 max-w-3xl leading-relaxed text-muted-foreground">
-          The lines of kings and sages as the Purāṇas themselves trace them, verse by verse: the Viṣṇupurāṇa&apos;s fourth
-          book and the Bhāgavatapurāṇa&apos;s ninth and twelfth. Each step is a statement of the text, shown with its verse
-          and the Sanskrit words that make it, and with what Dikshitar&apos;s Purāṇa Index says of the same person.
+          The lines of kings and sages as the texts themselves trace them, verse by verse: the Viṣṇupurāṇa and the
+          Bhāgavatapurāṇa, and the Harivaṃśa, the Rāmāyaṇa, the Mahābhārata&apos;s Ādiparvan and ten other Purāṇa books as
+          the desk sends them. Each step is a statement of the text, shown with its verse and the Sanskrit words that make
+          it, and with what Dikshitar&apos;s Purāṇa Index says of the same person.
         </p>
       </header>
       <Guide />
@@ -152,16 +154,18 @@ function Body() {
         </CardContent></Card>
       )}
       {r && !r.ok && !r.refused && !r.missing && <Failure error={r.error} />}
-      {r && r.ok && rows.length === 0 && <p className="text-muted-foreground">No dynasty has been sent from the desk yet.</p>}
+      {(!r || r.ok) && (
+        <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Which text">
+          {works.map((x) => (
+            <Button key={x} size="sm" variant={x === w ? 'default' : 'outline'} aria-pressed={x === w} onClick={() => { setWork(x); setAll(false); }}>
+              {WORK_TITLE[x] ?? x}
+            </Button>
+          ))}
+        </div>
+      )}
+      {r && r.ok && rows.length === 0 && <p className="text-muted-foreground">No dynasty of this text has been sent from the desk yet.</p>}
       {r && r.ok && rows.length > 0 && (
         <>
-          <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Which text">
-            {works.map((x) => (
-              <Button key={x} size="sm" variant={x === w ? 'default' : 'outline'} aria-pressed={x === w} onClick={() => { setWork(x); setAll(false); }}>
-                {WORK_TITLE[x] ?? rows.find((y) => y.work === x)?.title ?? x}
-              </Button>
-            ))}
-          </div>
           {head && <p className="mb-4 text-sm text-muted-foreground" aria-label="The counts">{dynastyCountsText(head.counts)}</p>}
           <label className="mb-4 flex max-w-md items-center gap-2">
             <Search className="h-4 w-4 text-muted-foreground" aria-hidden="true" />

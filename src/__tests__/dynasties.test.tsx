@@ -79,7 +79,7 @@ describe('the Dynasties page', () => {
     sb.byFn.corpus_reader_index_dynasties = { data: ROWS, error: null };
     mount('/corpus/genealogies/dynasties');
     expect(await screen.findByText(/715 persons; 528 found in the Purāṇa Index/)).toBeTruthy();
-    expect(sb.calls.find((c) => c.fn === 'corpus_reader_index_dynasties')?.args).toEqual({ p_work: null });
+    expect(sb.calls.find((c) => c.fn === 'corpus_reader_index_dynasties')?.args).toEqual({ p_work: 'vip4' });   // DYNASTIES_WORKS_2026_11_18: one work at a time
     expect(screen.getByText('Aikṣvākas (after Ikṣvāku)')).toBeTruthy();
     const ik = screen.getByRole('link', { name: 'Ikṣvāku' });
     expect(ik.getAttribute('href')).toBe('/corpus/genealogies/pui/2');
@@ -100,7 +100,7 @@ describe('the Dynasties page', () => {
     expect(screen.queryByText('Aikṣvākas (after Ikṣvāku)')).toBeNull();
     expect(screen.getByText(/Yadu to Śatajit/)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Bhāgavatapurāṇa, book 9' }));
-    expect(screen.getByText(/716 persons/)).toBeTruthy();
+    expect(await screen.findByText(/716 persons/)).toBeTruthy();
   });
 
   it('says so before C28 is pasted, and before anything is sent', async () => {
@@ -112,7 +112,7 @@ describe('the Dynasties page', () => {
   it('says that nothing has been sent yet', async () => {
     sb.byFn.corpus_reader_index_dynasties = { data: [], error: null };
     mount('/corpus/genealogies/dynasties');
-    expect(await screen.findByText('No dynasty has been sent from the desk yet.')).toBeTruthy();
+    expect(await screen.findByText('No dynasty of this text has been sent from the desk yet.')).toBeTruthy();
   });
 
   it('is linked from the Genealogies page', async () => {
