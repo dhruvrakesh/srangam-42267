@@ -378,6 +378,8 @@ export const VAMSA_GUIDE: readonly { term: string; text: string }[] = [
   { term: 'The links', text: 'A text\'s name for a king opens that text\'s line on the Dynasties page, with the verse. The Purāṇa Index link opens Dikshitar\'s person in the Genealogies. Raychaudhuri\'s count opens the name\'s page, with what he says of it.' },
   { term: 'Hover for the source', text: 'Hold the pointer on a name to see the verse it stands in and the Sanskrit words that say it; on the chips and the scholars\' links for what they mean.' },
   { term: 'What the scholars cover', text: 'Dikshitar\'s Purāṇa Index has most of these kings. Raychaudhuri\'s Political History begins with Parikṣit, so he speaks of the later kings and of the names, rarely of the early generations; a name he uses may be another person of that name. B. C. Law\'s Ancient Indian Tribes is in copyright: it is read on the desk, and what we find with it will come here as our own findings, each cited.' },
+  // VAMSA_FINDINGS_SITE_2026_11_19
+  { term: 'Our findings', text: 'Under a dynasty, where there are any: what the desk found reading its generations with the three scholars, Dikshitar\'s Purāṇa Index, Raychaudhuri\'s Political History and B. C. Law\'s Ancient Indian Tribes. A model (Claude) proposed each finding with its sources; the machine checked that every source it names was among those it read and that no run of Law\'s words came through; a person read each against its verses and approved it. Hover a source for its words. Law is cited by page only: his book is in copyright.' },
 ];
 
 export const VAMSA_CREDIT =
@@ -385,6 +387,82 @@ export const VAMSA_CREDIT =
   'against its verse (GRETIL\'s texts), set side by side by the desk. The persons: V. R. Ramachandra Dikshitar, The ' +
   'Purāṇa Index (Madras, 1951-55). The historian: H. C. Raychaudhuri, Political History of Ancient India (1923; public ' +
   'domain), his claims read from the scan page by page. A verse says where to read; the reader judges.';
+
+// ---- VAMSA_FINDINGS_SITE_2026_11_19: our findings on the dynasties (docs/cloud/C31_vamsa_findings_2026-11-19.sql) ---
+
+/** A source of one of our findings, as the desk resolved it from what the site carries (index_sync.findings_for):
+ *  a generation, a verse, a second name a text states, Dikshitar's person, Raychaudhuri's claim, B. C. Law's page. */
+export type VamsaFindingCite =
+  | { t: 'gen'; gen: number; name: string }
+  | { t: 'verse'; work: string; ref: string; gen?: number; name?: string; words?: string; line?: number }
+  | { t: 'second'; work: string; ref: string; name?: string; other?: string; words?: string }
+  | { t: 'index'; person: string; head: string; page?: boolean }
+  | { t: 'ray'; key: string; printed: string; pdf_page: number; claim: string }
+  | { t: 'law'; page: string };
+/** One of our findings a person approved: the kind, the finding in our own words, its sources, how it was made. */
+export interface VamsaFinding {
+  n: number; kind: string; text: string; cites: VamsaFindingCite[];
+  model: string; prompt: string; read_at: string; approved_at: string;
+}
+export interface VamsaFindingsRow { key: string; vamsa: string; ord: number; title: string; findings: VamsaFinding[] }
+
+/** Every dynasty that has approved findings, with them (small: a few dozen in all). */
+export function loadVamsaFindings(): Promise<IndexResult<VamsaFindingsRow>> {
+  return list<VamsaFindingsRow>('corpus_reader_index_vamsa_findings', {});
+}
+
+export const DIKSHITAR_BOOK = 'V. R. Ramachandra Dikshitar, The Purāṇa Index (Madras, 1951-55)';
+export const RAYCHAUDHURI_BOOK = 'H. C. Raychaudhuri, Political History of Ancient India (1923)';
+export const LAW_BOOK = 'B. C. Law, Ancient Indian Tribes (Lahore, 1926)';
+
+/** What kind of finding it is. */
+export const FINDING_KIND: Record<string, Chip> = {
+  agreement: { label: 'the sources agree', tone: 'ok', title: 'The texts and the scholars cited say the same here' },
+  disagreement: { label: 'the sources differ', tone: 'half', title: 'The texts or the scholars cited say different things here: read each' },
+  new_link: { label: 'a link', tone: 'ep', title: 'A connection, or a caution about one, between persons or names that the sources suggest' },
+  open_question: { label: 'an open question', tone: 'no', title: 'A question the sources cited raise and do not settle' },
+};
+
+/** A source's short label and its tooltip; Law by page only (in copyright). */
+export function findingCiteText(c: VamsaFindingCite): { label: string; title: string } {
+  switch (c.t) {
+    case 'gen':
+      return { label: c.gen === 0 ? 'the founder' : `generation ${c.gen}`, title: `${c.name}: this generation in the list below` };
+    case 'verse': {
+      const w = WORK_TITLE[c.work] ?? c.work;
+      return { label: c.ref, title: `${w}, ${c.ref}${c.name ? `: ${c.name}` : ''}${c.words ? `. ${c.words}` : ''}` };
+    }
+    case 'second': {
+      const w = WORK_TITLE[c.work] ?? c.work;
+      const who = c.name && c.other ? `: ${c.name} is also called ${c.other}` : ': a second name the text states';
+      return { label: `${c.ref} (second name)`, title: `${w}, ${c.ref}${who}${c.words ? `. ${c.words}` : ''}` };
+    }
+    case 'index':
+      return { label: `Purāṇa Index: ${c.head}`, title: `${DIKSHITAR_BOOK}: the entry ${c.head}` };
+    case 'ray':
+      return { label: `Raychaudhuri, ${vamsaClaimPage(c)}`, title: `${RAYCHAUDHURI_BOOK}, ${vamsaClaimPage(c)}: ${c.claim}` };
+    default: {
+      const page = (c as { page?: string }).page;   // 'law': the page only, never his words
+      return {
+        label: `B. C. Law${page ? `, p. ${page}` : ''}`,
+        title: `${LAW_BOOK}${page ? `, p. ${page}` : ''}. In copyright: read on the desk and never quoted here; the finding says it in our own words.`,
+      };
+    }
+  }
+}
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+/** "2026-11-19T13:08:03" -> "19 Nov 2026" (the desk's local time, as stored). */
+export function dayOf(iso: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || '');
+  return m ? `${Number(m[3])} ${MONTHS[Number(m[2]) - 1] ?? m[2]} ${m[1]}` : '';
+}
+
+/** How a finding was made, in a sentence. */
+export function findingMade(f: Pick<VamsaFinding, 'model' | 'read_at' | 'approved_at'>): string {
+  const read = dayOf(f.read_at); const ok = dayOf(f.approved_at);
+  return `Proposed by a model (${f.model || 'Claude'})${read ? ` on ${read}` : ''}, checked by machine, read against its verses and approved by a person${ok ? ` on ${ok}` : ''}.`;
+}
 
 // ---- names, folded as the desk folds them -----------------------------------------------------------------------
 

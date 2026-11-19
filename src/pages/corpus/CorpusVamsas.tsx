@@ -12,12 +12,17 @@
  * a dynasty's generations come when it is opened, kept 10 minutes. B. C. Law's book is in copyright: not here.
  * Until C29 is pasted the page says so; a refusal is a refusal, a failure a failure. Nothing from the database is
  * rendered as HTML.
+ *
+ * VAMSA_FINDINGS_SITE_2026_11_19: and our findings on each dynasty, those a person approved (the desk's R1, read with
+ * Dikshitar, Raychaudhuri and B. C. Law), each source with its words on hover: the verse, the Index's entry,
+ * Raychaudhuri's claim; Law by page only (in copyright). One small read for every dynasty (C31's
+ * corpus_reader_index_vamsa_findings), kept 10 minutes; until C31 is pasted nothing is shown and nothing else changes.
  */
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, BookOpen, ChevronLeft, HelpCircle, Moon, Search, Sun } from 'lucide-react';
+import { AlertTriangle, BookOpen, ChevronLeft, HelpCircle, Lightbulb, Moon, Search, Sun } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -27,6 +32,7 @@ import {
   DYNASTIES, dynastyLineHref, dynastyPersonHref, foldPlain, GEN_STATUS, GENEALOGIES, INDEX_SAYS, loadVamsas,
   nameHrefOf, VAMSA_ABOUT, VAMSA_CREDIT, VAMSA_GUIDE, VAMSA_ORDER, VAMSA_TITLE, vamsaClaimPage, vamsaCountsText,
   WORK_ORDER, WORK_TITLE, type Chip, type VamsaGen, type VamsaRow,
+  FINDING_KIND, findingCiteText, findingMade, loadVamsaFindings, type VamsaFinding, type VamsaFindingCite,
 } from '@/lib/indexSite';
 
 const LINK = 'text-burgundy hover:underline';
@@ -104,10 +110,13 @@ function Scholars({ g, before }: { g: VamsaGen; before: string }) {
   );
 }
 
-function Generation({ g, before }: { g: VamsaGen; before: string }) {
+/** VAMSA_FINDINGS_SITE_2026_11_19: a generation's place on the page, for a finding's source to point at. */
+const genAnchor = (k: string, gen: number) => `vamsa-${k}-g${gen}`;
+
+function Generation({ g, before, k }: { g: VamsaGen; before: string; k?: string }) {
   const works = Object.keys(g.cells).sort(byWork);
   return (
-    <li className="border-l-2 border-burgundy/30 py-2 pl-3">
+    <li id={k ? genAnchor(k, g.gen) : undefined} className="border-l-2 border-burgundy/30 py-2 pl-3">
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
         <span className="text-xs text-muted-foreground">{g.gen === 0 ? 'the founder' : `generation ${g.gen}`}</span>
         <span className="font-semibold text-foreground">{g.name}</span>
@@ -139,12 +148,50 @@ function Generations({ k }: { k: string }) {
   if (!gens.length) return <p className="mt-2 text-sm text-muted-foreground">No generation of this dynasty has been sent from the desk yet.</p>;
   return (
     <ol className="mt-2 space-y-0.5">
-      {gens.map((g, i) => <Generation key={`${k}:${g.gen}`} g={g} before={i > 0 ? gens[i - 1].name : ''} />)}
+      {gens.map((g, i) => <Generation key={`${k}:${g.gen}`} g={g} before={i > 0 ? gens[i - 1].name : ''} k={k} />)}
     </ol>
   );
 }
 
-function DynastyCard({ d, find }: { d: VamsaRow; find: string }) {
+/** VAMSA_FINDINGS_SITE_2026_11_19: one source of a finding: its label, its words on hover, its link when there is one. */
+function Source({ k, c }: { k: string; c: VamsaFindingCite }) {
+  const { label, title } = findingCiteText(c);
+  const cls = 'rounded border border-border bg-background px-1.5 py-0.5';
+  if (c.t === 'gen') return <li><a href={`#${genAnchor(k, c.gen)}`} title={title} className={`${cls} ${LINK}`}>{label}</a></li>;
+  if (c.t === 'verse' && c.line) return <li><Link to={dynastyLineHref(c.work, c.line)} title={title} className={`${cls} ${LINK}`}>{label}</Link></li>;
+  if (c.t === 'index') {
+    const href = dynastyPersonHref({ person: c.person, page: c.page });
+    if (href) return <li><Link to={href} title={title} className={`${cls} ${LINK}`}>{label}</Link></li>;
+  }
+  return <li><span title={title} className={`${cls} text-muted-foreground`}>{label}</span></li>;
+}
+
+/** VAMSA_FINDINGS_SITE_2026_11_19: our findings on one dynasty, those a person approved. */
+function Findings({ k, items }: { k: string; items: VamsaFinding[] }) {
+  if (!items.length) return null;
+  return (
+    <section className="mt-3 rounded-md border border-burgundy/20 bg-burgundy/5 px-3 py-2" aria-label={`Our findings on ${k}`}>
+      <h3 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+        <Lightbulb className="h-4 w-4 text-burgundy" aria-hidden="true" /> Our findings ({items.length})
+      </h3>
+      <ol className="mt-1 space-y-3">
+        {items.map((f) => (
+          <li key={f.n} className="text-sm">
+            <p className="leading-relaxed"><ChipOf chip={FINDING_KIND[f.kind]} /> <span className="text-foreground">{f.text}</span></p>
+            {f.cites.length > 0 && (
+              <ul className="mt-1 flex flex-wrap gap-1.5 text-[11px]" aria-label="Its sources">
+                {f.cites.map((c, i) => <Source key={`${f.n}:${i}`} k={k} c={c} />)}
+              </ul>
+            )}
+            <p className="mt-0.5 text-[11px] text-muted-foreground">{findingMade(f)}</p>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+function DynastyCard({ d, find, findings = [] }: { d: VamsaRow; find: string; findings?: VamsaFinding[] }) {
   const [open, setOpen] = useState(false);
   const hits = find.length >= 2 ? d.names.filter((n) => foldPlain(n).includes(find)) : [];
   return (
@@ -157,8 +204,10 @@ function DynastyCard({ d, find }: { d: VamsaRow; find: string }) {
             told by {d.works.length} text{d.works.length === 1 ? '' : 's'}
           </span>
           {hits.length > 0 && <span className="ml-2 text-xs text-burgundy">found: {hits.slice(0, 4).join(', ')}</span>}
+          {findings.length > 0 && <span className="ml-2 text-xs text-burgundy">{findings.length} finding{findings.length === 1 ? '' : 's'}</span>}
         </summary>
         <p className="mt-1 text-xs text-muted-foreground">{vamsaCountsText(d.counts)}</p>
+        {open && <Findings k={d.key} items={findings} />}
         {open && <Generations k={d.key} />}
       </details>
     </li>
@@ -180,6 +229,13 @@ function Body() {
   const [find, setFind] = useState('');
   const q = useQuery({ queryKey: ['index-vamsas'], queryFn: () => loadVamsas(null), staleTime: 10 * 60 * 1000 });
   const r = q.data;
+  // VAMSA_FINDINGS_SITE_2026_11_19: one read for every dynasty's findings; nothing shown until C31 is pasted
+  const fq = useQuery({ queryKey: ['index-vamsa-findings'], queryFn: loadVamsaFindings, staleTime: 10 * 60 * 1000 });
+  const findingsOf = useMemo(() => {
+    const m: Record<string, VamsaFinding[]> = {};
+    if (fq.data && fq.data.ok) for (const x of fq.data.rows) m[x.key] = Array.isArray(x.findings) ? x.findings : [];
+    return m;
+  }, [fq.data]);
   const f = foldPlain(find);
   const all = useMemo(() => (r && r.ok ? [...r.rows].sort((a, b) => a.ord - b.ord || a.key.localeCompare(b.key)) : []), [r]);
   const shown = f.length >= 2
@@ -234,7 +290,7 @@ function Body() {
                 </h2>
                 <p className="mb-3 mt-1 text-sm text-muted-foreground">{VAMSA_ABOUT[v]}</p>
                 <ul aria-label={`The dynasties of the ${VAMSA_TITLE[v]}`}>
-                  {ds.map((d) => <DynastyCard key={d.key} d={d} find={f} />)}
+                  {ds.map((d) => <DynastyCard key={d.key} d={d} find={f} findings={findingsOf[d.key]} />)}
                 </ul>
               </section>
             );
