@@ -2705,6 +2705,22 @@ export type Database = {
           result: Json
         }[]
       }
+      corpus_reader_index_vamsas: {
+        Args: { p_key?: string }
+        Returns: {
+          aligned_at: string
+          anchor: string
+          counts: Json
+          father: string
+          key: string
+          names: Json
+          ord: number
+          rows: Json
+          title: string
+          vamsa: string
+          works: Json
+        }[]
+      }
       corpus_reader_match: {
         Args: { doc_codes?: string[]; k?: number; query_embedding: unknown }
         Returns: {
