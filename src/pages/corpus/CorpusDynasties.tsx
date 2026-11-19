@@ -12,12 +12,14 @@
  * DYNASTIES_WORKS_2026_11_18: one work's lines at a time (loadDynasties(work), kept 10 minutes), not every work's at
  * once, so that the desk may send all 17 works it reads (index_sync.py --dynasty-works every) without a heavier page;
  * a name typed in plain letters is found (foldPlain).
+ * VAMSA_WAYIN_2026_11_18: ?work=vip4&line=8 opens that text and that line (the vaṃśa page links here); a link to the
+ * way in by vaṃśa (/corpus/genealogies/vamsas).
  */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, ChevronLeft, Crown, HelpCircle, Search } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, Crown, HelpCircle, Search, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -26,7 +28,7 @@ import CorpusGate, { CorpusRefused } from '@/components/corpus/CorpusGate';
 import CorpusNav from '@/components/corpus/CorpusNav';
 import {
   DYNASTY_GUIDE, dynastyCountsText, dynastyPersonHref, foldPlain, GENEALOGIES, INDEX_SAYS, loadDynasties,
-  WORK_ORDER, WORK_TITLE, type Chip, type DynastyRow, type DynastyStep,
+  VAMSAS, WORK_ORDER, WORK_TITLE, type Chip, type DynastyRow, type DynastyStep,
 } from '@/lib/indexSite';
 
 const LINK = 'text-burgundy hover:underline';
@@ -85,7 +87,7 @@ function LineCard({ l, open }: { l: DynastyRow; open: boolean }) {
   const last = l.steps[l.steps.length - 1]?.name ?? '';
   const agree = l.steps.filter((s) => s.index === 'agrees').length;
   return (
-    <li className="mb-3">
+    <li className="mb-3" id={`line-${l.n}`}>
       <details className="rounded-lg border border-border bg-card px-4 py-2" open={open}>
         <summary className="cursor-pointer text-sm">
           <span className="font-semibold text-foreground">A line of {l.length}</span>
@@ -113,7 +115,9 @@ function Failure({ error }: { error: string | null }) {
 }
 
 function Body() {
-  const [work, setWork] = useState<string | null>(null);
+  const [params] = useSearchParams();   // VAMSA_WAYIN_2026_11_18: ?work=vip4&line=8
+  const asked = params.get('work');
+  const [work, setWork] = useState<string | null>(asked);
   const [find, setFind] = useState('');
   const [all, setAll] = useState(false);
   const works = WORK_ORDER;
@@ -127,7 +131,13 @@ function Body() {
   const lines = rows.filter((x) => x.n > 0)
     .filter((x) => f.length < 2 || x.steps.some((s) => foldPlain(s.name).includes(f)))
     .sort((a, b) => a.n - b.n);
-  const shown = all || f.length >= 2 ? lines : lines.slice(0, SHOWN);
+  const focus = asked === w ? Number(params.get('line') || 0) : 0;   // VAMSA_WAYIN_2026_11_18: the line asked for
+  const shown = all || f.length >= 2 ? lines : lines.filter((x, i) => i < SHOWN || x.n === focus);
+  useEffect(() => {
+    if (!focus || !rows.length) return;
+    const el = typeof document !== 'undefined' ? document.getElementById(`line-${focus}`) : null;
+    if (el && typeof el.scrollIntoView === 'function') el.scrollIntoView({ block: 'start' });
+  }, [focus, rows.length]);
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
       <Helmet><title>Dynasties | Working Corpus | Srangam</title></Helmet>
@@ -145,6 +155,11 @@ function Body() {
         </p>
       </header>
       <Guide />
+      <p className="mb-4 text-sm">
+        <Link to={VAMSAS} className={`inline-flex items-center gap-1 ${LINK}`}>
+          <Sun className="h-4 w-4" aria-hidden="true" />Begin from a vaṃśa: the Sūryavaṃśa and the Candravaṃśa across the texts
+        </Link>
+      </p>
 
       {q.isLoading && <div className="space-y-3" aria-busy="true"><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /></div>}
       {r && !r.ok && r.refused && <CorpusRefused message={r.error} />}
@@ -174,7 +189,7 @@ function Body() {
           </label>
           {lines.length === 0
             ? <p className="text-muted-foreground">No line of this text has that name.</p>
-            : <ul aria-label="The lines">{shown.map((l, i) => <LineCard key={l.key} l={l} open={i === 0 && f.length < 2} />)}</ul>}
+            : <ul aria-label="The lines">{shown.map((l, i) => <LineCard key={l.key} l={l} open={f.length < 2 && (focus ? l.n === focus : i === 0)} />)}</ul>}
           {!all && f.length < 2 && lines.length > SHOWN && (
             <Button size="sm" variant="outline" onClick={() => setAll(true)}>Show all {lines.length} lines</Button>
           )}

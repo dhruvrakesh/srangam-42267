@@ -306,6 +306,86 @@ export const DYNASTY_GUIDE: readonly { term: string; text: string }[] = [
   { term: 'What it is not yet', text: 'The lines of the Viṣṇupurāṇa and of the Bhāgavatapurāṇa are drawn apart; where the two Purāṇas differ is for the reader to see, and for our findings to come.' },
 ];
 
+// ---- VAMSA_WAYIN_2026_11_18: the dynasties across the works, by vamsa (docs/cloud/C29_index_vamsas_2026-11-18.sql) --
+
+export const VAMSAS = '/corpus/genealogies/vamsas';
+
+/** A work's name for one generation: its verse, its words, and its line on the Dynasties page when that was sent. */
+export interface VamsaCell { name: string; ref?: string; words?: string; line?: number }
+/** A claim of a scholar's work the site carries (C23), as the vamsas carry it. */
+export interface VamsaClaim { key: string; work: string; printed: string; pdf_page: number; claim: string }
+/** One generation of a dynasty across the works (the desk's G6c, vamsa_align.py): every work's name for it; Dikshitar's
+ *  person (pui); Raychaudhuri's claims on the person and the one before him (ray, ray_n) and on the name (ray_name_n). */
+export interface VamsaGen {
+  gen: number; status: string; name: string; cells: Record<string, VamsaCell>;
+  pui?: { person: string; head: string; index: string; page?: boolean };
+  canonical?: string; ray_name_n?: number; ray_n?: number; ray?: VamsaClaim[];
+}
+export interface VamsaCounts { agree?: number; most?: number; differ?: number; one?: number; share_agree?: number | null }
+/** A dynasty ("solar", "kuru"): its vamsa (surya, candra), founder, the works that tell it, the names they give it; its
+ *  generations (rows) only when one dynasty is asked for. */
+export interface VamsaRow {
+  key: string; vamsa: string; ord: number; anchor: string; father: string; title: string; works: string[];
+  counts: VamsaCounts; rows: VamsaGen[]; names: string[]; aligned_at: string;
+}
+
+/** Every dynasty without its generations (key null: the light list), or one dynasty with them. */
+export function loadVamsas(key: string | null = null): Promise<IndexResult<VamsaRow>> {
+  return list<VamsaRow>('corpus_reader_index_vamsas', { p_key: key });
+}
+
+export const VAMSA_ORDER: readonly string[] = ['surya', 'candra'];
+export const VAMSA_TITLE: Record<string, string> = {
+  surya: 'Sūryavaṃśa, the solar line',
+  candra: 'Candravaṃśa, the lunar line',
+};
+export const VAMSA_ABOUT: Record<string, string> = {
+  surya: 'The descendants of Ikṣvāku, son of Manu Vaivasvata (the kings of Ayodhyā), and of his son Nimi (the Videhas, the Janakas).',
+  candra: 'The descendants of Purūravas, son of Budha and Ilā, and every branch of his line: Yayāti\'s sons Yadu, Turvasu, Druhyu, Anu and Pūru and theirs (the Yādavas, the Haihayas, the Kurus, the kings of Magadha).',
+};
+
+/** How the works stand on a generation (G6c). */
+export const GEN_STATUS: Record<string, Chip> = {
+  agree: { label: 'the texts agree', tone: 'ok', title: 'Every text that tells this generation gives the same name' },
+  most: { label: 'most agree', tone: 'half', title: 'Most texts that tell this generation give the same name; one or more give another' },
+  differ: { label: 'the texts differ', tone: 'half', title: 'The texts that tell this generation give different names: read each' },
+  one: { label: 'one text only', tone: 'no', title: 'Only one of the texts tells this generation' },
+};
+
+/** A work's line on the Dynasties page, opened: /corpus/genealogies/dynasties?work=vip4&line=8 */
+export function dynastyLineHref(work: string, line?: number): string {
+  const q = new URLSearchParams({ work });
+  if (line) q.set('line', String(line));
+  return `${DYNASTIES}?${q.toString()}`;
+}
+
+/** A dynasty's generations, how the texts stand on them, in a sentence. */
+export function vamsaCountsText(c: VamsaCounts): string {
+  const n = (v?: number) => Number(v ?? 0);
+  const all = n(c.agree) + n(c.most) + n(c.differ) + n(c.one);
+  return `${all} generations: ${n(c.agree)} as every text gives them, ${n(c.most)} as most do, ${n(c.differ)} where ` +
+    `the texts differ, ${n(c.one)} told by one text only.`;
+}
+
+/** A scholar's claim's page, as the book prints it. */
+export function vamsaClaimPage(c: Pick<VamsaClaim, 'printed' | 'pdf_page'>): string {
+  return c.printed ? `p. ${c.printed}` : `scan p. ${c.pdf_page}`;
+}
+
+export const VAMSA_GUIDE: readonly { term: string; text: string }[] = [
+  { term: 'What a dynasty is here', text: 'A founder the texts agree on (Ikṣvāku, son of Manu; Purūravas, son of Budha; Yadu, Pūru, Kuru ...) and the line of his sons below him, as each text tells it, set side by side generation by generation. The desk finds the founder in each text by his name and his father\'s, then follows the sons that the other texts also name.' },
+  { term: 'The chips', text: 'the texts agree: every text that tells the generation gives the same name. most agree: one or more give another. the texts differ: read each. one text only: no other text tells it.' },
+  { term: 'The links', text: 'A text\'s name for a king opens that text\'s line on the Dynasties page, with the verse. The Purāṇa Index link opens Dikshitar\'s person in the Genealogies. Raychaudhuri\'s count opens the name\'s page, with what he says of it.' },
+  { term: 'Hover for the source', text: 'Hold the pointer on a name to see the verse it stands in and the Sanskrit words that say it; on the chips and the scholars\' links for what they mean.' },
+  { term: 'What the scholars cover', text: 'Dikshitar\'s Purāṇa Index has most of these kings. Raychaudhuri\'s Political History begins with Parikṣit, so he speaks of the later kings and of the names, rarely of the early generations; a name he uses may be another person of that name. B. C. Law\'s Ancient Indian Tribes is in copyright: it is read on the desk, and what we find with it will come here as our own findings, each cited.' },
+];
+
+export const VAMSA_CREDIT =
+  'The generations: the texts\' own statements of kinship, read verse by verse by a model and each checked by machine ' +
+  'against its verse (GRETIL\'s texts), set side by side by the desk. The persons: V. R. Ramachandra Dikshitar, The ' +
+  'Purāṇa Index (Madras, 1951-55). The historian: H. C. Raychaudhuri, Political History of Ancient India (1923; public ' +
+  'domain), his claims read from the scan page by page. A verse says where to read; the reader judges.';
+
 // ---- names, folded as the desk folds them -----------------------------------------------------------------------
 
 const HONORIFIC = /^\s*(?:śrī|Śrī|sri|shri|śrīmat|bhagavat)\s+/i;           // vamsa_view.py HONORIFIC
