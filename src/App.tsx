@@ -113,6 +113,7 @@ const DataHealth = lazy(() => import("./pages/admin/DataHealth"));
 const GeographyMedia = lazy(() => import("./pages/admin/GeographyMedia"));
 const CorpusCorrelations = lazy(() => import("./pages/admin/CorpusCorrelations"));
 const Researchers = lazy(() => import("./pages/admin/Researchers"));   // RBAC_RESEARCHERS_2026_10_08
+const DeskSite = lazy(() => import("./pages/admin/DeskSite"));   // ADMIN_STATUS_2026_11_19
 const Auth = lazy(() => import("./pages/Auth"));
 // LOAD_W8_2026_10_07: admin only, so out of the entry bundle (with the sidebar it uses).
 const AdminLayout = lazy(() => import("./components/admin/AdminLayout").then((m) => ({ default: m.AdminLayout })));
@@ -301,6 +302,7 @@ const App = () => (
                     <Route path="corpus-correlations" element={<CorpusCorrelations />} />
                     <Route path="data-health" element={<DataHealth />} />
                     <Route path="researchers" element={<Researchers />} />
+                    <Route path="desk-site" element={<DeskSite />} />
                   </Route>
                   
                   <Route path="*" element={<NotFound />} />

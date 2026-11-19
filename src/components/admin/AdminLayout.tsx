@@ -22,6 +22,7 @@ import {
   Library,
   NotebookPen,
   GraduationCap,
+  Activity,
 } from "lucide-react";
 import {
   Sidebar,
@@ -108,6 +109,13 @@ const adminNavItems = [
     title: "Researchers",
     url: "/admin/researchers",
     icon: UserPlus,
+    superOnly: true,
+  },
+  // ADMIN_STATUS_2026_11_19: what the desk on the PC sends, when, and who may read it (docs/cloud/C30)
+  {
+    title: "Desk and site",
+    url: "/admin/desk-site",
+    icon: Activity,
     superOnly: true,
   },
 ];
